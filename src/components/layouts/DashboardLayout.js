@@ -134,7 +134,6 @@ const getSidebarItems = (userRole) => {
       { name: "Backup & Restore", path: "/dashboard/superadmin/backup", icon: Download },
       { name: "System Settings", path: "/dashboard/superadmin/settings", icon: Settings },
     ],
-    // 🔥 PERBAIKAN: Sidebar Inspector yang sudah update
     inspector: [
       { name: "Dashboard", path: "/dashboard/inspector", icon: BarChart3, exact: true },
       { name: "Jadwal Inspeksi", path: "/dashboard/inspector/schedules", icon: Calendar },
@@ -268,7 +267,7 @@ const DashboardLayout = ({
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  // Gunakan fungsi dynamic title
+  // Gunakan fungsi dynamic title - TIDAK PERLU LAGI karena sudah di-handle oleh layout
   const pageTitle = title || getPageTitleFromPath(router.pathname, profile?.role);
   const isDashboard = isMainDashboard(router.pathname, profile?.role);
 
@@ -416,7 +415,7 @@ const DashboardLayout = ({
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen bg-background text-foreground font-roboto">
       
       {/* === MOBILE SIDEBAR === */}
       {!hideSidebar && (
@@ -426,7 +425,7 @@ const DashboardLayout = ({
               <Menu className="w-5 h-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-80 p-0 bg-card border-r">
+          <SheetContent side="left" className="w-80 p-0 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
             <SheetDescription className="sr-only">
               Main navigation menu for SLF Manager application
@@ -434,22 +433,22 @@ const DashboardLayout = ({
             
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="p-4 border-b border-border">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold">
                       SLF
                     </div>
                     <div>
-                      <h1 className="font-bold text-lg">SLF Manager</h1>
-                      <p className="text-xs text-muted-foreground capitalize">{roleName}</p>
+                      <h1 className="font-bold text-lg text-slate-900 dark:text-slate-100">SLF Manager</h1>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 capitalize">{roleName}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* User Info */}
-              <div className="p-4 border-b border-border">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
@@ -458,15 +457,15 @@ const DashboardLayout = ({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{profile?.full_name || user?.email}</p>
-                    <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+                    <p className="font-medium truncate text-slate-900 dark:text-slate-100">{profile?.full_name || user?.email}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 truncate">{user?.email}</p>
                   </div>
                 </div>
               </div>
 
               {/* Navigation */}
-              <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Navigation</h3>
+              <nav className="flex-1 p-4 space-y-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">
+                <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Navigation</h3>
                 {sidebarItems.map((item, index) => {
                   const isActive = item.exact 
                     ? router.pathname === item.path
@@ -480,8 +479,8 @@ const DashboardLayout = ({
                       className={cn(
                         "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all",
                         isActive 
-                          ? "bg-accent text-foreground font-medium" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                          ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 font-medium" 
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
                       )}
                     >
                       <Icon className="w-5 h-5 shrink-0" />
@@ -495,11 +494,11 @@ const DashboardLayout = ({
               </nav>
 
               {/* Footer */}
-              <div className="p-4 border-t border-border space-y-2">
+              <div className="p-4 border-t border-slate-200 dark:border-slate-700 space-y-2 bg-slate-50 dark:bg-slate-900">
                 {/* DARK MODE TOGGLE - Mobile */}
                 <button
                   onClick={toggleDarkMode}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                   <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
@@ -507,14 +506,14 @@ const DashboardLayout = ({
 
                 <button
                   onClick={() => handleNavigation("/dashboard/settings")}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <Settings className="w-5 h-5" />
                   <span>Settings</span>
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
                   <LogOut className="w-5 h-5" />
                   <span>Logout</span>
@@ -532,19 +531,19 @@ const DashboardLayout = ({
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
           className={cn(
-            "hidden md:flex md:flex-col md:fixed md:inset-y-0 md:bg-card md:border-r md:border-border transition-all duration-300 z-20",
+            "hidden md:flex md:flex-col md:fixed md:inset-y-0 md:bg-slate-50 dark:md:bg-slate-900 md:border-r md:border-slate-200 dark:md:border-slate-700 transition-all duration-300 z-20",
             desktopSidebarCollapsed ? "w-16" : "w-64"
           )}
         >
           <div className="flex flex-col h-full">
             {/* Logo/Nama Aplikasi */}
-            <div className="p-4 border-b border-border">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
               {!desktopSidebarCollapsed ? (
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold">
                     SLF
                   </div>
-                  <span className="text-lg font-bold">SLF Manager</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-slate-100">SLF Manager</span>
                 </div>
               ) : (
                 <div className="flex justify-center">
@@ -556,7 +555,7 @@ const DashboardLayout = ({
             </div>
 
             {/* Navigasi Utama */}
-            <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+            <nav className="flex-1 p-2 space-y-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">
               {sidebarItems.map((item, index) => {
                 const isActive = item.exact 
                   ? router.pathname === item.path
@@ -568,8 +567,8 @@ const DashboardLayout = ({
                     key={index}
                     href={item.path}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all",
-                      isActive && "bg-accent text-foreground",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all",
+                      isActive && "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100",
                       desktopSidebarCollapsed && "justify-center px-0"
                     )}
                     title={desktopSidebarCollapsed ? item.name : undefined}
@@ -582,7 +581,7 @@ const DashboardLayout = ({
             </nav>
 
             {/* User Info & Actions */}
-            <div className="p-2 border-t border-border">
+            <div className="p-2 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
               {!desktopSidebarCollapsed ? (
                 <div className="flex items-center gap-3 p-2">
                   <Avatar className="h-8 w-8">
@@ -592,8 +591,8 @@ const DashboardLayout = ({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{profile?.full_name || user?.email}</p>
-                    <p className="text-xs text-muted-foreground truncate capitalize">{profile?.role}</p>
+                    <p className="text-sm font-medium truncate text-slate-900 dark:text-slate-100">{profile?.full_name || user?.email}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 truncate capitalize">{profile?.role}</p>
                   </div>
                 </div>
               ) : (
@@ -612,7 +611,7 @@ const DashboardLayout = ({
                 variant="ghost" 
                 size="icon" 
                 onClick={() => setDesktopSidebarCollapsed(!desktopSidebarCollapsed)} 
-                className="w-full mt-2"
+                className="w-full mt-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
                 title={desktopSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
                 {desktopSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -631,7 +630,7 @@ const DashboardLayout = ({
         
         {/* TOP BAR - Hanya tampilkan jika showHeader true */}
         {shouldShowHeader && (
-          <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-800/60">
             
             {/* Left: Menu & Title */}
             <div className="flex items-center gap-3">
@@ -639,33 +638,33 @@ const DashboardLayout = ({
               {!hideSidebar && (
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="md:hidden">
+                    <Button variant="ghost" size="icon" className="md:hidden text-slate-600 dark:text-slate-400">
                       <Menu className="w-5 h-5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-80 p-0">
+                  <SheetContent side="left" className="w-80 p-0 bg-slate-50 dark:bg-slate-900">
                     <SheetTitle className="sr-only">Mobile Navigation Menu</SheetTitle>
                     <SheetDescription className="sr-only">
                       Mobile navigation menu for SLF Manager application
                     </SheetDescription>
                     
                     <div className="flex flex-col h-full">
-                      <div className="p-4 border-b border-border">
+                      <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold">
                               SLF
                             </div>
                             <div>
-                              <h1 className="font-bold text-lg">SLF Manager</h1>
-                              <p className="text-xs text-muted-foreground capitalize">{roleName}</p>
+                              <h1 className="font-bold text-lg text-slate-900 dark:text-slate-100">SLF Manager</h1>
+                              <p className="text-xs text-slate-600 dark:text-slate-400 capitalize">{roleName}</p>
                             </div>
                           </div>
                         </div>
                       </div>
                       
                       {/* Mobile navigation content */}
-                      <div className="flex-1 p-4">
+                      <div className="flex-1 p-4 bg-slate-50 dark:bg-slate-900">
                         <nav className="space-y-2">
                           {sidebarItems.map((item, index) => {
                             const isActive = item.exact 
@@ -680,8 +679,8 @@ const DashboardLayout = ({
                                 className={cn(
                                   "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all",
                                   isActive 
-                                    ? "bg-accent text-foreground font-medium" 
-                                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                                    ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 font-medium" 
+                                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
                                 )}
                               >
                                 <Icon className="w-5 h-5" />
@@ -696,14 +695,14 @@ const DashboardLayout = ({
                 </Sheet>
               )}
               
-              {/* Tampilkan judul halaman dengan benar */}
+              {/* CENTRALIZED TITLE - Hanya tampilkan judul halaman */}
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-semibold">
+                <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                   {isDashboard ? "Dashboard" : pageTitle}
                 </h1>
-                {/* 🔥 PERBAIKAN: Tampilkan badge khusus untuk inspector */}
+                {/* Badge khusus untuk inspector */}
                 {profile?.role === 'inspector' && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
                     Inspector
                   </Badge>
                 )}
@@ -718,7 +717,7 @@ const DashboardLayout = ({
                 variant="ghost" 
                 size="icon"
                 onClick={toggleDarkMode}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent"
+                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
                 title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
                 {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -729,7 +728,7 @@ const DashboardLayout = ({
                 variant="ghost" 
                 size="icon"
                 onClick={() => router.push("/dashboard/notifications")}
-                className="relative text-muted-foreground hover:text-foreground hover:bg-accent"
+                className="relative text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
                 disabled={loadingNotifications}
               >
                 <Bell className="w-5 h-5" />
@@ -747,7 +746,7 @@ const DashboardLayout = ({
               <div className="hidden md:block">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                    <Button variant="ghost" className="relative h-9 w-9 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
                       <Avatar className="h-9 w-9">
                         <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
                         <AvatarFallback className="bg-primary text-primary-foreground">
@@ -756,36 +755,36 @@ const DashboardLayout = ({
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-background border-border">
-                    <DropdownMenuLabel className="bg-background">
+                  <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                    <DropdownMenuLabel className="bg-white dark:bg-slate-800">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{profile?.full_name || user?.email}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
+                        <p className="text-sm font-medium leading-none text-slate-900 dark:text-slate-100">{profile?.full_name || user?.email}</p>
+                        <p className="text-xs leading-none text-slate-600 dark:text-slate-400">
                           {user?.email}
                         </p>
-                        <p className="text-xs leading-none text-muted-foreground capitalize">
+                        <p className="text-xs leading-none text-slate-600 dark:text-slate-400 capitalize">
                           {roleName}
                         </p>
-                        {/* 🔥 PERBAIKAN: Tampilkan specialization inspector */}
+                        {/* Tampilkan specialization inspector */}
                         {profile?.specialization && (
-                          <p className="text-xs leading-none text-blue-600 font-medium">
+                          <p className="text-xs leading-none text-blue-600 dark:text-blue-400 font-medium">
                             {profile.specialization.replace(/_/g, ' ')}
                           </p>
                         )}
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
                     <DropdownMenuItem 
                       onClick={() => router.push("/dashboard/settings")}
-                      className="cursor-pointer bg-background hover:bg-accent focus:bg-accent focus:text-accent-foreground"
+                      className="cursor-pointer bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 focus:bg-slate-100 dark:focus:bg-slate-700 text-slate-900 dark:text-slate-100"
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       <span>Settings</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
                     <DropdownMenuItem 
                       onClick={handleLogout} 
-                      className="cursor-pointer text-destructive bg-background hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive"
+                      className="cursor-pointer text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20 focus:bg-red-50 dark:focus:bg-red-900/20"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
                       <span>Logout</span>
@@ -799,7 +798,7 @@ const DashboardLayout = ({
 
         {/* MAIN CONTENT AREA */}
         <main className={cn(
-          "flex-1 overflow-y-auto",
+          "flex-1 overflow-y-auto bg-white dark:bg-slate-900",
           fullWidth ? "p-0" : "p-4 md:p-6",
           shouldShowHeader ? 'pb-20 md:pb-6' : ''
         )}>

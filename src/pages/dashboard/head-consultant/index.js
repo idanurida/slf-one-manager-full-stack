@@ -86,7 +86,7 @@ const getProjectPhase = (status) => {
 
 const getStatusColor = (status) => {
   const colors = {
-    'draft': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
+    'draft': 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400',
     'submitted': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
     'project_lead_review': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
     'inspection_scheduled': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
@@ -103,7 +103,7 @@ const getStatusColor = (status) => {
     'approved_by_pl': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
     'approved': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
   };
-  return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+  return colors[status] || 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400';
 };
 
 const getStatusLabel = (status) => {
@@ -133,7 +133,7 @@ const StatCard = ({ label, value, icon: Icon, color, helpText, loading, trend, o
   <TooltipProvider>
     <div>
       <Card 
-        className={`cursor-pointer hover:shadow-md transition-shadow ${onClick ? 'hover:border-primary/50' : ''}`} 
+        className={`cursor-pointer hover:shadow-md transition-shadow border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 ${onClick ? 'hover:border-primary/50' : ''}`} 
         onClick={onClick}
       >
         <CardContent className="p-4">
@@ -143,8 +143,8 @@ const StatCard = ({ label, value, icon: Icon, color, helpText, loading, trend, o
                 {Icon && <Icon className="w-4 h-4" />}
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                <p className="text-2xl font-bold">
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{label}</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                   {loading ? <Skeleton className="h-8 w-12" /> : value}
                 </p>
               </div>
@@ -163,9 +163,9 @@ const StatCard = ({ label, value, icon: Icon, color, helpText, loading, trend, o
 
 // Recent Activities Component
 const RecentActivities = ({ activities, loading }) => (
-  <Card>
+  <Card className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
     <CardHeader className="pb-3">
-      <CardTitle className="text-lg flex items-center gap-2">
+      <CardTitle className="text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
         <ClockIcon className="w-5 h-5 text-green-500" />
         Aktivitas Terbaru
       </CardTitle>
@@ -182,13 +182,13 @@ const RecentActivities = ({ activities, loading }) => (
         </div>
       ) : activities.length === 0 ? (
         <div className="text-center py-6">
-          <ClockIcon className="w-12 h-12 text-muted-foreground mx-auto mb-2 opacity-50" />
-          <p className="text-muted-foreground">Belum ada aktivitas</p>
+          <ClockIcon className="w-12 h-12 text-slate-400 dark:text-slate-600 mx-auto mb-2 opacity-50" />
+          <p className="text-slate-600 dark:text-slate-400">Belum ada aktivitas</p>
         </div>
       ) : (
         <div className="space-y-3">
           {activities.slice(0, 5).map((activity) => (
-            <div key={activity.id} className="p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+            <div key={activity.id} className="p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
               <div className="flex items-start space-x-3">
                 <div className="bg-green-100 dark:bg-green-900/30 p-1 rounded mt-0.5">
                   <ClockIcon className="w-3 h-3 text-green-600 dark:text-green-400" />
@@ -196,8 +196,8 @@ const RecentActivities = ({ activities, loading }) => (
                 <div className="flex-1">
                   <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{activity.description}</p>
                   <div className="flex items-center justify-between mt-1">
-                    <p className="text-xs text-muted-foreground">{activity.project_name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-slate-600 dark:text-slate-400">{activity.project_name}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
                       {new Date(activity.created_at).toLocaleDateString('id-ID', {
                         hour: '2-digit',
                         minute: '2-digit'
@@ -467,49 +467,52 @@ export default function HeadConsultantDashboard() {
     );
   }
 
-  // Main Render - PERBAIKAN: Hapus title dari DashboardLayout
+  // Main Render - TIDAK PERLU LAGI MENGIRIM TITLE KE DASHBOARDLAYOUT
   return (
     <DashboardLayout>
       <TooltipProvider>
         <motion.div
-          className="p-6 space-y-8 bg-white dark:bg-slate-900 min-h-screen"
+          className="p-4 md:p-6 space-y-6 md:space-y-8 bg-white dark:bg-slate-900 min-h-screen font-roboto"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {/* Header - PERBAIKAN: Hapus judul halaman karena sudah ada di DashboardLayout */}
-          <motion.div variants={itemVariants} className="flex justify-between items-start">
+          {/* Header - HANYA WELCOME MESSAGE */}
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              {/* Hanya tampilkan welcome message */}
-              <p className="text-slate-600 dark:text-slate-400 text-lg">
+              {/* Hanya tampilkan welcome message - judul sudah di-handle oleh layout */}
+              <p className="text-slate-600 dark:text-slate-400 text-base md:text-lg">
                 Selamat datang, <span className="font-semibold text-slate-900 dark:text-slate-100">
                   {profile?.full_name || 'Head Consultant'}
                 </span>! Tinjau dan berikan approval akhir.
               </p>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 md:space-x-3 flex-wrap gap-2">
               <Button
                 variant="outline"
                 onClick={handleRefresh}
                 disabled={dataLoading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                size="sm"
+                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs md:text-sm"
               >
-                <RefreshCw className={`w-4 h-4 ${dataLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3 h-3 md:w-4 md:h-4 ${dataLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
               <Button
                 onClick={handleViewTimeline}
                 variant="outline"
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                size="sm"
+                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs md:text-sm"
               >
-                <CalendarIcon className="w-4 h-4" />
+                <CalendarIcon className="w-3 h-3 md:w-4 md:h-4" />
                 Timeline
               </Button>
               <Button
                 onClick={handleViewReports}
-                className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2"
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 text-xs md:text-sm"
               >
-                <FileCheck className="w-4 h-4" />
+                <FileCheck className="w-3 h-3 md:w-4 md:h-4" />
                 Approve Laporan ({stats.reportsNeedingFinalApproval})
               </Button>
             </div>
@@ -519,10 +522,10 @@ export default function HeadConsultantDashboard() {
 
           {/* Quick Stats */}
           <motion.section variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">
+            <h2 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">
               Ringkasan Proyek
             </h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
               <StatCard
                 label="Total Proyek"
                 value={stats.totalProjects}
@@ -585,25 +588,25 @@ export default function HeadConsultantDashboard() {
             </div>
           </motion.section>
 
-          <Separator className="bg-slate-200 dark:bg-slate-700 my-6" />
+          <Separator className="bg-slate-200 dark:bg-slate-700 my-4 md:my-6" />
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="lg:col-span-1 space-y-4 md:space-y-6">
               <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-green-500" />
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100 text-base md:text-lg">
+                    <Users className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
                     Tim Proyek Saya
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-slate-600 dark:text-slate-400">
                     Koordinasikan dengan tim yang terlibat
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-slate-600 dark:text-slate-400 text-center py-4">
+                  <p className="text-slate-600 dark:text-slate-400 text-center py-4 text-sm md:text-base">
                     Lihat daftar tim untuk proyek-proyek tertentu. <br />
-                    <Button variant="link" onClick={handleViewTeam} className="p-0 h-auto">
+                    <Button variant="link" onClick={handleViewTeam} className="p-0 h-auto text-sm md:text-base">
                       Kelola Tim Proyek
                     </Button>
                   </p>
@@ -616,18 +619,18 @@ export default function HeadConsultantDashboard() {
               />
             </div>
 
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
               <motion.section variants={itemVariants}>
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                  <h2 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100">
                     Proyek yang Menunggu Review
                   </h2>
-                  <Button variant="outline" size="sm" onClick={handleViewProjects}>
+                  <Button variant="outline" size="sm" onClick={handleViewProjects} className="text-xs md:text-sm">
                     Lihat Semua
                   </Button>
                 </div>
                 <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 md:p-4">
                     {dataLoading ? (
                       <div className="space-y-3">
                         {[1, 2, 3].map(i => (
@@ -639,58 +642,60 @@ export default function HeadConsultantDashboard() {
                       </div>
                     ) : projects.filter(p => p.status === 'head_consultant_review').length === 0 ? (
                       <div className="text-center py-6">
-                        <CheckCircle2 className="w-12 h-12 text-green-500 dark:text-green-400 mx-auto mb-4 opacity-50" />
-                        <p className="text-slate-600 dark:text-slate-400">Tidak ada proyek menunggu review</p>
+                        <CheckCircle2 className="w-10 h-10 md:w-12 md:h-12 text-green-500 dark:text-green-400 mx-auto mb-4 opacity-50" />
+                        <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base">Tidak ada proyek menunggu review</p>
                       </div>
                     ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Nama Proyek</TableHead>
-                            <TableHead>Client</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Aksi</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {projects
-                            .filter(p => p.status === 'head_consultant_review')
-                            .slice(0, 5)
-                            .map(project => (
-                              <TableRow key={project.id}>
-                                <TableCell className="font-medium">{project.name}</TableCell>
-                                <TableCell>{project.client_name}</TableCell>
-                                <TableCell>
-                                  <Badge className={getStatusColor(project.status)}>
-                                    {getStatusLabel(project.status)}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <Button size="sm" onClick={() => router.push(`/dashboard/head-consultant/projects/${project.id}`)}>
-                                    <Eye className="w-4 h-4 mr-2" />
-                                    Tinjau
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                        </TableBody>
-                      </Table>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="text-slate-900 dark:text-slate-100">Nama Proyek</TableHead>
+                              <TableHead className="text-slate-900 dark:text-slate-100">Client</TableHead>
+                              <TableHead className="text-slate-900 dark:text-slate-100">Status</TableHead>
+                              <TableHead className="text-slate-900 dark:text-slate-100">Aksi</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {projects
+                              .filter(p => p.status === 'head_consultant_review')
+                              .slice(0, 5)
+                              .map(project => (
+                                <TableRow key={project.id}>
+                                  <TableCell className="font-medium text-slate-900 dark:text-slate-100 text-sm">{project.name}</TableCell>
+                                  <TableCell className="text-slate-700 dark:text-slate-300 text-sm">{project.client_name}</TableCell>
+                                  <TableCell>
+                                    <Badge className={cn("text-xs", getStatusColor(project.status))}>
+                                      {getStatusLabel(project.status)}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button size="sm" onClick={() => router.push(`/dashboard/head-consultant/projects/${project.id}`)} className="text-xs">
+                                      <Eye className="w-3 h-3 mr-1 md:mr-2" />
+                                      Tinjau
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
               </motion.section>
 
               <motion.section variants={itemVariants}>
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                  <h2 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100">
                     Laporan Menunggu Approval Final
                   </h2>
-                  <Button variant="outline" size="sm" onClick={handleViewReports}>
+                  <Button variant="outline" size="sm" onClick={handleViewReports} className="text-xs md:text-sm">
                     Lihat Semua Laporan
                   </Button>
                 </div>
                 <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 md:p-4">
                     {dataLoading ? (
                       <div className="space-y-3">
                         {[1, 2].map(i => (
@@ -702,42 +707,44 @@ export default function HeadConsultantDashboard() {
                       </div>
                     ) : reports.length === 0 ? (
                       <div className="text-center py-6">
-                        <FileCheck className="w-12 h-12 text-purple-500 dark:text-purple-400 mx-auto mb-4 opacity-50" />
-                        <p className="text-slate-600 dark:text-slate-400">Tidak ada laporan menunggu approval final</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">(Laporan yang sudah disetujui oleh Project Lead)</p>
+                        <FileCheck className="w-10 h-10 md:w-12 md:h-12 text-purple-500 dark:text-purple-400 mx-auto mb-4 opacity-50" />
+                        <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base">Tidak ada laporan menunggu approval final</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-500 mt-1 text-xs md:text-sm">(Laporan yang sudah disetujui oleh Project Lead)</p>
                       </div>
                     ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Nama Laporan</TableHead>
-                            <TableHead>Proyek</TableHead>
-                            <TableHead>Inspector</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Aksi</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {reports.slice(0, 5).map(report => (
-                            <TableRow key={report.id}>
-                              <TableCell className="font-medium">{report.name}</TableCell>
-                              <TableCell>{report.projects?.name || 'N/A'}</TableCell>
-                              <TableCell>{report.profiles?.full_name || 'N/A'}</TableCell>
-                              <TableCell>
-                                <Badge className={getStatusColor(report.status)}>
-                                  {getStatusLabel(report.status)}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Button size="sm" onClick={() => router.push(`/dashboard/head-consultant/approvals/${report.id}`)}>
-                                  <Eye className="w-4 h-4 mr-2" />
-                                  Review
-                                </Button>
-                              </TableCell>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="text-slate-900 dark:text-slate-100">Nama Laporan</TableHead>
+                              <TableHead className="text-slate-900 dark:text-slate-100">Proyek</TableHead>
+                              <TableHead className="text-slate-900 dark:text-slate-100">Inspector</TableHead>
+                              <TableHead className="text-slate-900 dark:text-slate-100">Status</TableHead>
+                              <TableHead className="text-slate-900 dark:text-slate-100">Aksi</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {reports.slice(0, 5).map(report => (
+                              <TableRow key={report.id}>
+                                <TableCell className="font-medium text-slate-900 dark:text-slate-100 text-sm">{report.name}</TableCell>
+                                <TableCell className="text-slate-700 dark:text-slate-300 text-sm">{report.projects?.name || 'N/A'}</TableCell>
+                                <TableCell className="text-slate-700 dark:text-slate-300 text-sm">{report.profiles?.full_name || 'N/A'}</TableCell>
+                                <TableCell>
+                                  <Badge className={cn("text-xs", getStatusColor(report.status))}>
+                                    {getStatusLabel(report.status)}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Button size="sm" onClick={() => router.push(`/dashboard/head-consultant/approvals/${report.id}`)} className="text-xs">
+                                    <Eye className="w-3 h-3 mr-1 md:mr-2" />
+                                    Review
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
                     )}
                   </CardContent>
                 </Card>

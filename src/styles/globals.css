@@ -1,11 +1,13 @@
 /* styles/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Tema Agusta - Light Mode */
+    /* Tema Agusta - Light Mode dengan warna slate */
     --background: 0 0% 100%; /* #FFFFFF */
     --foreground: 222.2 84% 4.9%; /* #111827 */
 
@@ -38,7 +40,7 @@
   }
 
   .dark {
-    /* Tema Agusta - Dark Mode */
+    /* Tema Agusta - Dark Mode dengan warna slate */
     --background: 222.2 84% 4.9%; /* #121212 (hampir hitam) */
     --foreground: 210 40% 98%; /* #F9FAFB (putih lembut) */
 
@@ -73,8 +75,13 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-roboto;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Font Roboto untuk seluruh aplikasi */
+  .font-roboto {
+    font-family: 'Roboto', sans-serif;
   }
 
   /* Improved scrollbar */

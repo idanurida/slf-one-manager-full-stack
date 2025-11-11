@@ -138,35 +138,40 @@ export async function refreshSession() {
     throw error;
   }
 }
-// Tambah function signUp yang missing
-export async function signUp(email, password, userData = {}) {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: userData
-    }
-  });
-  
-  if (error) throw error;
-  return data;
-}
 
-// SignUp function for user registration
+/**
+ * 📝 signUp(email, password, userData)
+ * Registrasi user baru
+ */
+export async function signUp(email, password, userData = {}) {
   try {
+    console.log('[Auth] Attempting sign up for:', email);
+    
     const { data, error } = await supabase.auth.signUp({
-      email: email,
+      email: email.trim().toLowerCase(),
       password: password,
       options: {
         data: userData
       }
     });
-    
-    if (error) throw error;
+
+    if (error) {
+      console.error('[Auth] Sign up error:', error);
+      
+      let userMessage = 'Registrasi gagal';
+      if (error.message.includes('User already registered')) {
+        userMessage = 'Email sudah terdaftar';
+      } else if (error.message.includes('Password should be at least')) {
+        userMessage = 'Password terlalu lemah';
+      }
+      
+      throw new Error(userMessage);
+    }
+
+    console.log('[Auth] Sign up successful for:', email);
     return data;
   } catch (error) {
-    console.error('SignUp error:', error);
+    console.error('[Auth] signUp catch error:', error);
     throw error;
   }
 }
-

@@ -15,3 +15,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
   }
 });
+
+// ✅ TAMBAHKAN FUNCTION YANG MISSING
+export const logSupabaseError = (error, context = '') => {
+  console.error(`[Supabase Error] ${context}:`, error);
+  return error;
+};

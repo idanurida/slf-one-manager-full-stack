@@ -9,7 +9,6 @@ const nextConfig = {
   },
   experimental: {
     largePageDataBytes: 512 * 1000,
-    missingSuspenseWithCSRBailout: false,
   },
   productionBrowserSourceMaps: false,
   webpack: (config) => {

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { supabase } from "@/utils/supabaseClient";
-import { useRouter } from "next/router";
 
 const AuthContext = createContext();
 
@@ -10,7 +9,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const mountedRef = useRef(true);
-  const router = useRouter();
 
   // ✅ OPTIMIZED: Fast profile fetch
   const fetchUserProfile = async (userId) => {
@@ -37,34 +35,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ OPTIMIZED: Fast redirect
-  const redirectBasedOnRole = (role) => {
-    if (!role || !router) return;
-    
-    const redirectPaths = {
-      'admin_team': '/dashboard/admin-team',
-      'admin_lead': '/dashboard/admin-lead',
-      'head_consultant': '/dashboard/head-consultant', 
-      'superadmin': '/dashboard/superadmin',
-      'project_lead': '/dashboard/project-lead',
-      'inspector': '/dashboard/inspector',
-      'drafter': '/dashboard/drafter',
-      'client': '/dashboard/client'
-    };
-    
-    const redirectPath = redirectPaths[role] || '/dashboard';
-    const currentPath = router.pathname;
-    
-    // Skip jika sudah di halaman yang benar
-    if (currentPath === redirectPath || currentPath.startsWith(redirectPath + '/')) {
-      return;
-    }
-    
-    console.log(`🔀 Redirecting to: ${redirectPath}`);
-    router.replace(redirectPath);
-  };
-
-  // ✅ OPTIMIZED: Initialize session - PARALLEL OPERATIONS
+  // ✅ OPTIMIZED: Initialize session - TANPA ROUTER DEPENDENCY
   useEffect(() => {
     console.log("🚀 Fast auth initialization...");
     
@@ -111,7 +82,7 @@ export const AuthProvider = ({ children }) => {
 
     initSession();
 
-    // ✅ OPTIMIZED: Auth state listener
+    // ✅ OPTIMIZED: Auth state listener TANPA ROUTER
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log(`🔄 Auth event: ${event}`);
       
@@ -125,7 +96,27 @@ export const AuthProvider = ({ children }) => {
           const profileData = await fetchUserProfile(session.user.id);
           if (profileData) {
             setProfile(profileData);
-            redirectBasedOnRole(profileData.role);
+            
+            // ✅ Redirect menggunakan window.location (lebih cepat)
+            const redirectPaths = {
+              'admin_team': '/dashboard/admin-team',
+              'admin_lead': '/dashboard/admin-lead',
+              'head_consultant': '/dashboard/head-consultant', 
+              'superadmin': '/dashboard/superadmin',
+              'project_lead': '/dashboard/project-lead',
+              'inspector': '/dashboard/inspector',
+              'drafter': '/dashboard/drafter',
+              'client': '/dashboard/client'
+            };
+            
+            const redirectPath = redirectPaths[profileData.role] || '/dashboard';
+            const currentPath = window.location.pathname;
+            
+            // Skip jika sudah di halaman yang benar
+            if (currentPath !== redirectPath && !currentPath.startsWith(redirectPath + '/')) {
+              console.log(`🔀 Redirecting to: ${redirectPath}`);
+              window.location.href = redirectPath;
+            }
           }
         } else {
           // For other events, fetch in background
@@ -136,8 +127,8 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
         setProfile(null);
-        if (event === 'SIGNED_OUT' && router.pathname !== '/login') {
-          router.replace('/login');
+        if (event === 'SIGNED_OUT' && window.location.pathname !== '/login') {
+          window.location.href = '/login';
         }
       }
     });
@@ -146,7 +137,7 @@ export const AuthProvider = ({ children }) => {
       mountedRef.current = false;
       listener.subscription.unsubscribe();
     };
-  }, [router]);
+  }, []); // ✅ EMPTY DEPENDENCY ARRAY - tidak ada re-renders
 
   // ✅ OPTIMIZED: Fast login
   const login = async (email, password) => {

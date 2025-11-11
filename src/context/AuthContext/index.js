@@ -5,20 +5,62 @@ import { useRouter } from "next/router";
 import { supabase } from "@/utils/supabaseClient";
 
 const AuthContext = createContext(undefined);
+const PROFILE_CACHE_KEY = "auth_profile_cache_v1";
+const CACHE_TTL = 10 * 60 * 1000; // 10 menit
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isRedirecting, setIsRedirecting] = useState(false); // ✅ NEW: Track redirect state
-  const listenerRef = useRef(null); 
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const listenerRef = useRef(null);
   const mountedRef = useRef(true);
+  const fetchedOnceRef = useRef(false);
   const router = useRouter();
 
-  // --- Fetch profile user ---
-  const fetchUserProfile = async (userId, userObject) => {
+  // --- UTIL: Cache Handler ---
+  const loadCachedProfile = () => {
     try {
+      const cached = localStorage.getItem(PROFILE_CACHE_KEY);
+      if (!cached) return null;
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp > CACHE_TTL) return null; // expired
+      return data;
+    } catch {
+      return null;
+    }
+  };
+
+  const saveProfileToCache = (data) => {
+    try {
+      localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+    } catch (err) {
+      console.warn("[AuthContext] ⚠️ Failed to cache profile:", err);
+    }
+  };
+
+  const clearProfileCache = () => {
+    try {
+      localStorage.removeItem(PROFILE_CACHE_KEY);
+    } catch {}
+  };
+
+  // --- Fetch profile user ---
+  const fetchUserProfile = async (userId, userObject, useCacheFirst = false) => {
+    try {
+      if (!userId) return null;
+
+      // 🧠 Gunakan cache lebih dulu (instant load)
+      if (useCacheFirst) {
+        const cachedProfile = loadCachedProfile();
+        if (cachedProfile && cachedProfile.id === userId) {
+          console.log("[AuthContext] ⚡ Loaded profile from cache:", cachedProfile);
+          setProfile(cachedProfile);
+          return cachedProfile;
+        }
+      }
+
       console.log(`[AuthContext] Fetching profile for user: ${userId}`);
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -26,202 +68,132 @@ export function AuthProvider({ children }) {
         .eq("id", userId)
         .single();
 
-      if (profileError) {
-        console.warn("[AuthContext] Profile fetch error:", profileError);
-
-        if (profileError.code === "PGRST116") {
-          console.warn("[AuthContext] Profile not found, using fallback profile");
-          const fallback = {
-            id: userId,
-            full_name: userObject?.email?.split("@")[0] || "User",
-            role: "inspector",
-            specialization: "general",
-          };
-          setProfile(fallback);
-          return fallback;
-        }
-
-        throw profileError;
-      }
+      if (profileError) throw profileError;
 
       const normalizedProfile = {
         ...profile,
-        role: profile.role?.toLowerCase() || 'inspector'
+        role: profile.role?.toLowerCase() || "inspector",
       };
-      
+
       setProfile(normalizedProfile);
-      console.log("[AuthContext] ✅ Profile loaded:", normalizedProfile);
+      saveProfileToCache(normalizedProfile);
+      console.log("[AuthContext] ✅ Profile loaded from DB:", normalizedProfile);
       return normalizedProfile;
-    } catch (error) {
-      console.error("[AuthContext] ❌ fetchUserProfile error:", error);
+    } catch (err) {
+      console.warn("[AuthContext] ⚠️ Profile fetch failed, using fallback:", err);
       const fallback = {
         id: userId,
         full_name: userObject?.email?.split("@")[0] || "User",
         role: "inspector",
       };
       setProfile(fallback);
+      saveProfileToCache(fallback);
       return fallback;
     }
   };
 
-  // ✅ PERBAIKAN: Function untuk redirect dengan delay yang tepat
+  // --- Redirect handler ---
   const redirectBasedOnRole = (role, fromLogin = false) => {
-    if (!role || !router || isRedirecting) {
-      console.log('[AuthContext] 🚫 Redirect skipped - already redirecting or missing data');
-      return;
-    }
-    
+    if (!role || isRedirecting) return;
+
     const redirectPaths = {
-      'admin_team': '/dashboard/admin-team',
-      'admin_lead': '/dashboard/admin-lead',
-      'head_consultant': '/dashboard/head-consultant', 
-      'superadmin': '/dashboard/superadmin',
-      'project_lead': '/dashboard/project-lead',
-      'inspector': '/dashboard/inspector',
-      'drafter': '/dashboard/drafter',
-      'client': '/dashboard/client'
+      admin_team: "/dashboard/admin-team",
+      admin_lead: "/dashboard/admin-lead",
+      head_consultant: "/dashboard/head-consultant",
+      superadmin: "/dashboard/superadmin",
+      project_lead: "/dashboard/project-lead",
+      inspector: "/dashboard/inspector",
+      drafter: "/dashboard/drafter",
+      client: "/dashboard/client",
     };
-    
-    const redirectPath = redirectPaths[role] || '/dashboard';
+
+    const redirectPath = redirectPaths[role] || "/dashboard";
     const currentPath = router.pathname;
-    
-    // ✅ Jangan redirect jika sudah di halaman yang benar
-    if (currentPath === redirectPath || currentPath.startsWith(redirectPath + '/')) {
+
+    if (currentPath === redirectPath || currentPath.startsWith(redirectPath + "/")) {
       console.log(`[AuthContext] ✅ Already at correct path: ${currentPath}`);
       setIsRedirecting(false);
       return;
     }
-    
-    console.log(`[AuthContext] 🔀 Redirecting ${role} from ${currentPath} to: ${redirectPath}`);
+
     setIsRedirecting(true);
-    
-    // ✅ Delay yang lebih optimal untuk menghindari flicker
-    const redirectDelay = fromLogin ? 500 : 100; // Login butuh delay lebih lama
-    
+    const delay = fromLogin ? 100 : 0;
+
     setTimeout(() => {
       if (mountedRef.current) {
-        router.replace(redirectPath)
-          .then(() => {
-            console.log('[AuthContext] ✅ Redirect completed');
-          })
-          .catch((err) => {
-            console.error('[AuthContext] ❌ Redirect failed:', err);
-          })
-          .finally(() => {
-            if (mountedRef.current) {
-              setIsRedirecting(false);
-            }
-          });
+        router
+          .replace(redirectPath)
+          .then(() => console.log("[AuthContext] ✅ Redirected to", redirectPath))
+          .finally(() => setIsRedirecting(false));
       }
-    }, redirectDelay);
+    }, delay);
   };
 
-  // --- Initialize Auth ---
+  // --- Initialize Auth (once only) ---
   useEffect(() => {
-    console.log("[AuthContext] 🔄 Initializing authentication...");
-    
     mountedRef.current = true;
-    let unsubscribed = false;
+    console.log("[AuthContext] 🔄 Initializing authentication...");
 
     const initializeAuth = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error("[AuthContext] ❌ Session error:", sessionError);
-          throw sessionError;
-        }
-
-        if (!mountedRef.current) return;
+        if (sessionError) throw sessionError;
 
         if (session?.user) {
-          console.log("[AuthContext] 👤 Session found:", session.user.id);
           setUser(session.user);
-          const userProfile = await fetchUserProfile(session.user.id, session.user);
-          
-          // ✅ PERBAIKAN: Redirect hanya jika diperlukan
-          if (userProfile && router) {
-            // Jangan redirect selama initial load - biarkan middleware/handle route
-            console.log('[AuthContext] User authenticated, skipping initial redirect');
+
+          // ⚡ Coba pakai cache dulu (langsung tampil <0.5s)
+          const cached = loadCachedProfile();
+          if (cached && cached.id === session.user.id) {
+            setProfile(cached);
+            console.log("[AuthContext] ⚡ Using cached profile:", cached);
+          }
+
+          // Fetch fresh di background
+          if (!fetchedOnceRef.current) {
+            fetchedOnceRef.current = true;
+            fetchUserProfile(session.user.id, session.user, !cached);
           }
         } else {
-          console.log("[AuthContext] ❌ No session found");
           setUser(null);
           setProfile(null);
-          // Redirect ke login jika tidak ada session
-          if (router.pathname !== '/login' && !router.pathname.startsWith('/auth/')) {
-            router.replace('/login');
+          clearProfileCache();
+          if (!router.pathname.startsWith("/login")) {
+            router.replace("/login");
           }
         }
-      } catch (error) {
-        console.error("[AuthContext] ❌ Initialization error:", error);
-        if (mountedRef.current) {
-          setError(error.message);
-          setUser(null);
-          setProfile(null);
-        }
+      } catch (err) {
+        console.error("[AuthContext] ❌ Initialization error:", err);
+        setError(err.message);
       } finally {
-        if (mountedRef.current) {
-          setLoading(false);
-          console.log("[AuthContext] ✅ Auth initialization complete");
-        }
+        if (mountedRef.current) setLoading(false);
       }
     };
 
     initializeAuth();
 
-    // --- Setup listener hanya sekali ---
+    // --- Setup listener ---
     if (!listenerRef.current) {
       console.log("[AuthContext] 👂 Setting up auth state listener...");
-      
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("[AuthContext] 🔄 Auth state change:", event, "Session:", !!session);
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (!mountedRef.current) return;
+          console.log("[AuthContext] 🔄 Auth event:", event);
 
-        if (unsubscribed || !mountedRef.current) {
-          console.log("[AuthContext] 🚫 Listener skipped - unmounted or unsubscribed");
-          return;
-        }
-
-        try {
-          setLoading(true);
-          
-          if (session?.user) {
-            console.log("[AuthContext] 👤 User authenticated:", session.user.id);
+          if (event === "SIGNED_IN" && session?.user) {
             setUser(session.user);
-            const userProfile = await fetchUserProfile(session.user.id, session.user);
-            
-            // ✅ PERBAIKAN: Redirect hanya untuk SIGNED_IN event
-            if (userProfile && event === 'SIGNED_IN') {
-              redirectBasedOnRole(userProfile.role, true);
-            }
-          } else {
-            console.log("[AuthContext] 👤 User signed out");
+            const userProfile = await fetchUserProfile(session.user.id, session.user, true);
+            redirectBasedOnRole(userProfile?.role, true);
+          }
+
+          if (event === "SIGNED_OUT") {
             setUser(null);
             setProfile(null);
-            setError(null);
-            
-            // Redirect ke login saat logout
-            if (router.pathname !== '/login') {
-              router.replace('/login');
-            }
-          }
-        } catch (error) {
-          console.error("[AuthContext] ❌ Auth state change error:", error);
-          if (mountedRef.current) {
-            setError(error.message);
-            setUser(null);
-            setProfile(null);
-          }
-        } finally {
-          if (mountedRef.current) {
-            setLoading(false);
-            console.log("[AuthContext] ✅ Auth state change processed");
+            clearProfileCache();
+            if (!router.pathname.startsWith("/login")) router.replace("/login");
           }
         }
-      });
+      );
 
       listenerRef.current = subscription;
       console.log("[AuthContext] ✅ Listener attached");
@@ -230,68 +202,35 @@ export function AuthProvider({ children }) {
     return () => {
       console.log("[AuthContext] 🧹 Cleaning up auth context");
       mountedRef.current = false;
-      unsubscribed = true;
-      
       if (listenerRef.current) {
-        console.log("[AuthContext] 🚫 Unsubscribing listener");
         listenerRef.current.unsubscribe();
         listenerRef.current = null;
       }
     };
-  }, [router]);
+  }, []);
 
   // --- Auth actions ---
   const login = async (email, password) => {
     try {
-      console.log("[AuthContext] 🔐 Login attempt for:", email);
-      setLoading(true);
+      console.log("[AuthContext] 🔐 Login attempt:", email);
       setError(null);
-      setIsRedirecting(true); // ✅ Set redirecting state
-      
-      if (!email || !password) {
-        throw new Error("Email dan password harus diisi");
-      }
+      setLoading(true);
 
-      if (!email.includes("@")) {
-        throw new Error("Format email tidak valid");
-      }
-
-      const { data, error } = await supabase.auth.signInWithPassword({ 
-        email: email.trim().toLowerCase(), 
-        password 
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
       });
-      
-      if (error) {
-        console.error("[AuthContext] ❌ Login failed:", error);
-        
-        let errorMessage = "Login gagal";
-        
-        if (error.message === "Invalid login credentials") {
-          errorMessage = "Email atau password salah. Periksa kredensial Anda.";
-        } else if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Email belum dikonfirmasi. Silakan cek email Anda.";
-        } else if (error.message.includes("Too many requests")) {
-          errorMessage = "Terlalu banyak percobaan login. Coba lagi nanti.";
-        } else if (error.status === 400) {
-          errorMessage = "Permintaan tidak valid. Periksa format email dan password.";
-        } else {
-          errorMessage = error.message || "Terjadi kesalahan saat login";
-        }
-        
-        throw new Error(errorMessage);
-      }
-      
-      console.log("[AuthContext] ✅ Login successful:", data.user.id);
-      
-      // ✅ PERBAIKAN: Fetch profile - redirect akan ditangani oleh auth state listener
-      await fetchUserProfile(data.user.id, data.user);
-      
+      if (error) throw error;
+
+      setUser(data.user);
+      const userProfile = await fetchUserProfile(data.user.id, data.user, false);
+      redirectBasedOnRole(userProfile.role, true);
+
       return { success: true, user: data.user };
-    } catch (error) {
-      console.error("[AuthContext] ❌ Login error:", error);
-      setError(error.message);
-      setIsRedirecting(false); // ✅ Reset redirecting state on error
-      return { success: false, error: error.message };
+    } catch (err) {
+      console.error("[AuthContext] ❌ Login error:", err);
+      setError(err.message);
+      return { success: false, error: err.message };
     } finally {
       setLoading(false);
     }
@@ -301,82 +240,57 @@ export function AuthProvider({ children }) {
     try {
       console.log("[AuthContext] 🚪 Logging out...");
       setLoading(true);
-      setIsRedirecting(true); // ✅ Set redirecting state
-      
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
+      await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
-      setError(null);
-      
-      console.log("[AuthContext] ✅ Logout successful");
-      
-      // Redirect akan ditangani oleh auth state listener
-    } catch (error) {
-      console.error("[AuthContext] ❌ Logout error:", error);
-      setError(error.message);
-      setIsRedirecting(false); // ✅ Reset redirecting state on error
+      clearProfileCache();
+      if (!router.pathname.startsWith("/login")) router.replace("/login");
+    } catch (err) {
+      console.error("[AuthContext] ❌ Logout error:", err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper functions untuk role checking
-  const getNormalizedRole = () => {
-    return profile?.role?.toLowerCase() || 'inspector';
-  };
+  const getNormalizedRole = () => profile?.role?.toLowerCase() || "inspector";
 
-  // --- Context value ---
   const value = {
-    // State
     user,
     profile,
-    loading: loading || isRedirecting, // ✅ COMBINE loading dan redirecting states
+    loading: loading || isRedirecting,
     error,
-    isRedirecting, // ✅ EXPOSE redirecting state
-    
-    // Actions
+    isRedirecting,
+
     login,
     logout,
-    
-    // Derived state
+    refreshProfile: async () => user && (await fetchUserProfile(user.id, user)),
+
     isAuthenticated: !!user,
     userRole: getNormalizedRole(),
-    userName: profile?.full_name || user?.email || 'User',
-    
-    // Role checking functions
-    isInspector: getNormalizedRole() === 'inspector',
-    isHeadConsultant: getNormalizedRole() === 'head_consultant',
-    isProjectLead: getNormalizedRole() === 'project_lead', 
-    isClient: getNormalizedRole() === 'client',
-    isAdminLead: getNormalizedRole() === 'admin_lead',
-    isAdminTeam: getNormalizedRole() === 'admin_team',
-    isDrafter: getNormalizedRole() === 'drafter',
-    isSuperAdmin: getNormalizedRole() === 'superadmin',
-    
-    // Additional helpers
-    isManagement: function() {
+    userName: profile?.full_name || user?.email || "User",
+
+    isInspector: getNormalizedRole() === "inspector",
+    isHeadConsultant: getNormalizedRole() === "head_consultant",
+    isProjectLead: getNormalizedRole() === "project_lead",
+    isClient: getNormalizedRole() === "client",
+    isAdminLead: getNormalizedRole() === "admin_lead",
+    isAdminTeam: getNormalizedRole() === "admin_team",
+    isDrafter: getNormalizedRole() === "drafter",
+    isSuperAdmin: getNormalizedRole() === "superadmin",
+
+    isManagement() {
       const role = getNormalizedRole();
-      return ['head_consultant', 'admin_lead', 'superadmin', 'admin_team'].includes(role);
+      return ["head_consultant", "admin_lead", "superadmin", "admin_team"].includes(role);
     },
-    
-    isTechnical: function() {
+    isTechnical() {
       const role = getNormalizedRole();
-      return ['inspector', 'drafter', 'project_lead'].includes(role);
+      return ["inspector", "drafter", "project_lead"].includes(role);
     },
-    
-    hasAdminAccess: function() {
+    hasAdminAccess() {
       const role = getNormalizedRole();
-      return ['admin_lead', 'superadmin', 'admin_team'].includes(role);
+      return ["admin_lead", "superadmin", "admin_team"].includes(role);
     },
-    
-    // Refresh function
-    refreshProfile: async () => {
-      if (user) {
-        await fetchUserProfile(user.id, user);
-      }
-    }
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -384,8 +298,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

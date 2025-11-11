@@ -70,7 +70,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 import { getChecklistTemplate, itemRequiresPhotogeotag, getPhotoRequirements } from "@/utils/checklistTemplates";
-import AutoPhotoGeotag from "@/components/admin-lead/AutoPhotoGeotag";
+import AutoPhotoGeotag from "@/components/AutoPhotoGeotag";
 
 // Animation variants
 const containerVariants = {

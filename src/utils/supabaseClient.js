@@ -1,22 +1,25 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 // Simple validation
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('⚠️ Supabase environment variables missing');
 }
 
-// Create simple client
+// Create client with realtime disabled to avoid WebSocket errors
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+  },
+  realtime: {
+    disabled: true // ✅ Disable realtime to prevent WebSocket errors
   }
-});
+})
 
-// ✅ TAMBAHKAN FUNCTION YANG MISSING
+// ✅ Tambahkan function yang missing
 export const logSupabaseError = (error, context = '') => {
   console.error(`[Supabase Error] ${context}:`, error);
   return error;

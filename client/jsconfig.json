@@ -1,0 +1,45 @@
+// jsconfig.json (FINAL DAN BENAR)
+{
+  "compilerOptions": {
+    /* =====================================
+       📦 Basic Configuration (for JS only)
+    ===================================== */
+    "baseUrl": ".",                         // biar relative import jalan
+    "checkJs": false,                       // nonaktifkan type checking di file JS
+    "allowJs": true,                        // izinkan semua .js & .jsx
+    "resolveJsonModule": true,              // izinkan import file .json
+    "moduleResolution": "node",             // mode resolusi standard
+    "jsx": "preserve",                      // biar JSX tetap utuh (Next.js handle sendiri)
+
+    /* =====================================
+       🧭 Path Aliases (Jalur Disinkronkan)
+    ===================================== */
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/pages/*": ["./src/pages/*"],
+      "@/components/*": ["./src/components/*"],
+      // ✅ FIX: Ganti ke lokasi yang benar: src/components/layouts
+      "@/layouts/*": ["./src/components/layouts/*"],
+      // ✅ Hapus alias lib karena tidak digunakan
+      // "@/lib/*": ["./src/lib/*"], 
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/contexts/*": ["./src/contexts/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/models/*": ["./src/models/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/api/*": ["./src/api/*"],
+      "@/assets/*": ["./src/assets/*"],
+      "@/styles/*": ["./src/styles/*"]
+    }
+  },
+
+  /* =====================================
+     🚫 Skip folders yang tidak perlu dicek
+  ===================================== */
+  "exclude": ["node_modules", ".next", "dist", "build"],
+
+  /* =====================================
+     📂 Sertakan semua file JS & JSX
+  ===================================== */
+  "include": ["src/**/*.js", "src/**/*.jsx", "next-env.d.ts"]
+}

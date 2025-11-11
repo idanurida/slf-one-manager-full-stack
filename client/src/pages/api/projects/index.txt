@@ -1,0 +1,89 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    // Get user info from headers
+    const userId = req.headers['x-user-id'];
+    const userRole = req.headers['x-user-role']?.toLowerCase();
+
+    console.log('🔍 [API Projects] Request received for:', { userId, userRole });
+
+    if (!userId || !userRole) {
+      return res.status(400).json({ 
+        error: 'User ID and Role required',
+        received: { userId, userRole }
+      });
+    }
+
+    let projects = [];
+
+    if (userRole === 'drafter') {
+      console.log('🔍 [API Projects] Fetching projects for drafter...');
+      
+      // Get projects from project_teams where user is drafter
+      const { data: teamData, error: teamError } = await supabase
+        .from('project_teams')
+        .select(`
+          project_id,
+          projects (*)
+        `)
+        .eq('user_id', userId)
+        .eq('role', 'drafter');
+
+      if (teamError) {
+        console.error('❌ [API Projects] Team query error:', teamError);
+        return res.status(500).json({ 
+          error: 'Database error: ' + teamError.message
+        });
+      }
+
+      console.log('🔍 [API Projects] Team data found:', teamData?.length || 0);
+
+      if (!teamData || teamData.length === 0) {
+        console.log('ℹ️ [API Projects] No projects found in project_teams for drafter');
+        return res.status(200).json([]);
+      }
+
+      // Extract projects from team assignments
+      projects = teamData
+        .map(assignment => assignment.projects)
+        .filter(project => project !== null);
+
+      console.log(`✅ [API Projects] Found ${projects.length} projects for drafter`);
+
+    } else {
+      // For other roles, get all projects
+      console.log(`🔍 [API Projects] Fetching all projects for role: ${userRole}`);
+      
+      const { data: allProjects, error } = await supabase
+        .from('projects')
+        .select('*');
+      
+      if (error) {
+        console.error('❌ [API Projects] All projects error:', error);
+        return res.status(500).json({ error: 'Database error: ' + error.message });
+      }
+      
+      projects = allProjects || [];
+    }
+
+    // Return successful response
+    console.log(`✅ [API Projects] Returning ${projects.length} projects`);
+    return res.status(200).json(projects);
+
+  } catch (error) {
+    console.error('❌ [API Projects] Catch error:', error);
+    return res.status(500).json({ 
+      error: 'Internal server error: ' + error.message
+    });
+  }
+}

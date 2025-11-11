@@ -1,0 +1,54 @@
+client/
+└── src/
+    └── pages/
+        └── dashboard/
+            └── drafter/
+                ├── index.js                          # Dashboard utama
+                ├── documents/
+                │   ├── index.js                      # List documents
+                │   ├── new.js                        # Upload document baru
+                │   └── [id]/                         # Dynamic route
+                │       ├── index.js                  # Detail document
+                │       └── edit.js                   # Edit document
+                ├── projects/
+                │   ├── index.js                      # List projects
+                │   └── [id]/                         # Dynamic route
+                │       ├── index.js                  # Detail project
+                │       └── edit.js                   # Edit project (jika diperlukan)
+                ├── checklist/
+                │   ├── index.js                      # List checklist templates & items
+                │   └── [template_id]/                # Dynamic route
+                │       ├── index.js                  # Detail template
+                │       └── [item_id]/                # Dynamic route
+                │           └── index.js              # Detail item & form input
+                ├── inspections/
+                │   ├── index.js                      # List inspections (jika diperlukan)
+                │   └── [id]/                         # Dynamic route
+                │       ├── index.js                  # Detail inspection & checklist form
+                │       └── edit.js                   # Edit inspection (jika diperlukan)
+                └── profile/
+                    └── index.js                      # Profil drafter
+
+
+
+
+
+=========================
+
+
+client/
+└── src/
+    ├── components/
+    │   ├── layouts/
+    │   │   └── DashboardLayout.js                # Layout utama dashboard
+    │   ├── ui/                                   # Komponen shadcn/ui
+    │   └── inspections/
+    │       ├── DynamicChecklistForm.js            # Komponen form dinamis untuk checklist
+    │       └── PhotoUploadWithGeotag.js          # Komponen upload foto dengan geotag
+    ├── utils/
+    │   ├── supabaseClient.js                     # Konfigurasi Supabase
+    │   ├── auth.js                               # Fungsi autentikasi & profil
+    │   └── checklistTemplates.js                 # Data template checklist
+    └── context/
+        └── AuthContext/                          # Context untuk state autentikasi
+            └── index.js

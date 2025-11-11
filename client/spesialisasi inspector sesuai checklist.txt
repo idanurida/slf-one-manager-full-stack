@@ -1,0 +1,15 @@
+structural_engineering → Sistem struktur & proteksi gempa
+
+architectural_design → Tata bangunan & keselamatan
+
+electrical_systems → Sistem kelistrikan
+
+mechanical_systems → Penghawaan & transportasi vertikal
+
+plumbing_systems → Sistem sanitasi
+
+fire_safety → Proteksi kebakaran
+
+environmental_health → Pengendalian dampak lingkungan
+
+building_inspection → Semua checklist (full access)

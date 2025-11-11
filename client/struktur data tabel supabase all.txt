@@ -1,0 +1,280 @@
+| table_name                  | column_name                   | data_type                | is_nullable | column_default                                  | character_maximum_length |
+| --------------------------- | ----------------------------- | ------------------------ | ----------- | ----------------------------------------------- | ------------------------ |
+| activity_logs               | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| activity_logs               | level                         | text                     | NO          | null                                            | null                     |
+| activity_logs               | message                       | text                     | NO          | null                                            | null                     |
+| activity_logs               | user_id                       | uuid                     | YES         | null                                            | null                     |
+| activity_logs               | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| activity_logs               | metadata                      | jsonb                    | YES         | null                                            | null                     |
+| approvals                   | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| approvals                   | report_id                     | uuid                     | NO          | null                                            | null                     |
+| approvals                   | approver_id                   | uuid                     | NO          | null                                            | null                     |
+| approvals                   | role                          | text                     | NO          | null                                            | null                     |
+| approvals                   | status                        | text                     | NO          | null                                            | null                     |
+| approvals                   | comment                       | text                     | YES         | null                                            | null                     |
+| approvals                   | approved_at                   | timestamp with time zone | YES         | now()                                           | null                     |
+| approvals                   | rejected_at                   | timestamp with time zone | YES         | null                                            | null                     |
+| checklist_items             | id                            | text                     | NO          | null                                            | null                     |
+| checklist_items             | template_id                   | text                     | NO          | null                                            | null                     |
+| checklist_items             | template_title                | text                     | NO          | null                                            | null                     |
+| checklist_items             | category                      | text                     | NO          | null                                            | null                     |
+| checklist_items             | specialization                | text                     | YES         | null                                            | null                     |
+| checklist_items             | applicable_for                | jsonb                    | YES         | null                                            | null                     |
+| checklist_items             | item_name                     | text                     | NO          | null                                            | null                     |
+| checklist_items             | columns                       | jsonb                    | NO          | null                                            | null                     |
+| checklist_items             | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| checklist_responses         | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| checklist_responses         | inspection_id                 | uuid                     | YES         | null                                            | null                     |
+| checklist_responses         | item_id                       | text                     | NO          | null                                            | null                     |
+| checklist_responses         | response                      | jsonb                    | NO          | null                                            | null                     |
+| checklist_responses         | notes                         | text                     | YES         | null                                            | null                     |
+| checklist_responses         | responded_by                  | uuid                     | YES         | null                                            | null                     |
+| checklist_responses         | responded_at                  | timestamp with time zone | YES         | now()                                           | null                     |
+| checklist_responses         | status                        | text                     | NO          | 'submitted'::text                               | null                     |
+| checklist_responses         | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| checklist_responses         | project_id                    | uuid                     | YES         | null                                            | null                     |
+| checklist_responses         | photogeotag_data              | jsonb                    | YES         | null                                            | null                     |
+| checklist_templates         | id                            | integer                  | NO          | nextval('checklist_templates_id_seq'::regclass) | null                     |
+| checklist_templates         | name                          | text                     | NO          | null                                            | null                     |
+| checklist_templates         | metadata                      | jsonb                    | YES         | null                                            | null                     |
+| checklist_templates         | checklist_templates           | jsonb                    | YES         | null                                            | null                     |
+| clients                     | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| clients                     | name                          | text                     | NO          | null                                            | null                     |
+| clients                     | address                       | text                     | YES         | null                                            | null                     |
+| clients                     | city                          | text                     | YES         | null                                            | null                     |
+| clients                     | phone                         | text                     | YES         | null                                            | null                     |
+| clients                     | email                         | text                     | YES         | null                                            | null                     |
+| clients                     | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| comments                    | id                            | bigint                   | NO          | null                                            | null                     |
+| comments                    | content                       | text                     | NO          | null                                            | null                     |
+| comments                    | author_id                     | uuid                     | YES         | null                                            | null                     |
+| comments                    | project_id                    | uuid                     | YES         | null                                            | null                     |
+| comments                    | inspection_id                 | uuid                     | YES         | null                                            | null                     |
+| comments                    | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| documents                   | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| documents                   | project_id                    | uuid                     | YES         | null                                            | null                     |
+| documents                   | name                          | text                     | NO          | null                                            | null                     |
+| documents                   | type                          | text                     | NO          | null                                            | null                     |
+| documents                   | url                           | text                     | NO          | null                                            | null                     |
+| documents                   | compliance_status             | text                     | YES         | null                                            | null                     |
+| documents                   | created_by                    | uuid                     | YES         | null                                            | null                     |
+| documents                   | status                        | text                     | NO          | 'generated'::text                               | null                     |
+| documents                   | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| inspection_comments         | id                            | uuid                     | NO          | uuid_generate_v4()                              | null                     |
+| inspection_comments         | inspection_id                 | uuid                     | YES         | null                                            | null                     |
+| inspection_comments         | user_id                       | uuid                     | YES         | null                                            | null                     |
+| inspection_comments         | message                       | text                     | NO          | null                                            | null                     |
+| inspection_comments         | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| inspection_photos           | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| inspection_photos           | inspection_id                 | uuid                     | YES         | null                                            | null                     |
+| inspection_photos           | checklist_item_id             | text                     | YES         | null                                            | null                     |
+| inspection_photos           | photo_url                     | text                     | NO          | null                                            | null                     |
+| inspection_photos           | caption                       | text                     | YES         | null                                            | null                     |
+| inspection_photos           | floor_info                    | text                     | YES         | null                                            | null                     |
+| inspection_photos           | latitude                      | double precision         | YES         | null                                            | null                     |
+| inspection_photos           | longitude                     | double precision         | YES         | null                                            | null                     |
+| inspection_photos           | uploaded_at                   | timestamp with time zone | YES         | now()                                           | null                     |
+| inspection_photos           | uploaded_by                   | uuid                     | YES         | null                                            | null                     |
+| inspection_photos           | project_id                    | uuid                     | YES         | null                                            | null                     |
+| inspections                 | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| inspections                 | project_id                    | uuid                     | YES         | null                                            | null                     |
+| inspections                 | inspector_id                  | uuid                     | YES         | null                                            | null                     |
+| inspections                 | scheduled_date                | timestamp with time zone | NO          | null                                            | null                     |
+| inspections                 | start_time                    | timestamp with time zone | YES         | null                                            | null                     |
+| inspections                 | end_time                      | timestamp with time zone | YES         | null                                            | null                     |
+| inspections                 | status                        | text                     | NO          | 'scheduled'::text                               | null                     |
+| inspections                 | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| inspections                 | updated_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| logs                        | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| logs                        | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| logs                        | log_type                      | text                     | NO          | null                                            | null                     |
+| logs                        | message                       | text                     | NO          | null                                            | null                     |
+| logs                        | details                       | jsonb                    | YES         | null                                            | null                     |
+| logs                        | context                       | text                     | YES         | null                                            | null                     |
+| logs                        | user_id                       | uuid                     | YES         | null                                            | null                     |
+| notifications               | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| notifications               | title                         | text                     | NO          | null                                            | null                     |
+| notifications               | message                       | text                     | NO          | null                                            | null                     |
+| notifications               | type                          | text                     | YES         | 'info'::text                                    | null                     |
+| notifications               | is_read                       | boolean                  | YES         | false                                           | null                     |
+| notifications               | recipient_id                  | uuid                     | YES         | null                                            | null                     |
+| notifications               | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| payments                    | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| payments                    | project_id                    | uuid                     | NO          | null                                            | null                     |
+| payments                    | amount                        | numeric                  | NO          | null                                            | null                     |
+| payments                    | payment_date                  | date                     | NO          | null                                            | null                     |
+| payments                    | proof_url                     | text                     | YES         | null                                            | null                     |
+| payments                    | verification_status           | text                     | NO          | 'Pending'::text                                 | null                     |
+| payments                    | verified_by                   | uuid                     | YES         | null                                            | null                     |
+| payments                    | verified_at                   | timestamp with time zone | YES         | null                                            | null                     |
+| payments                    | created_at                    | timestamp with time zone | NO          | now()                                           | null                     |
+| payments                    | client_id                     | uuid                     | YES         | null                                            | null                     |
+| profile_clients             | profile_id                    | uuid                     | NO          | null                                            | null                     |
+| profile_clients             | client_id                     | integer                  | NO          | null                                            | null                     |
+| profiles                    | id                            | uuid                     | NO          | null                                            | null                     |
+| profiles                    | full_name                     | text                     | YES         | null                                            | null                     |
+| profiles                    | email                         | text                     | YES         | null                                            | null                     |
+| profiles                    | role                          | text                     | NO          | null                                            | null                     |
+| profiles                    | specialization                | text                     | YES         | null                                            | null                     |
+| profiles                    | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| profiles                    | phone_number                  | text                     | YES         | null                                            | null                     |
+| profiles                    | client_id                     | uuid                     | YES         | null                                            | null                     |
+| project_assignments         | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| project_assignments         | project_id                    | uuid                     | YES         | null                                            | null                     |
+| project_assignments         | user_id                       | uuid                     | YES         | null                                            | null                     |
+| project_assignments         | role                          | text                     | NO          | null                                            | null                     |
+| project_assignments         | assigned_at                   | timestamp with time zone | YES         | now()                                           | null                     |
+| project_assignments         | assigned_by                   | uuid                     | YES         | null                                            | null                     |
+| project_teams               | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| project_teams               | project_id                    | uuid                     | YES         | null                                            | null                     |
+| project_teams               | user_id                       | uuid                     | YES         | null                                            | null                     |
+| project_teams               | role                          | text                     | NO          | null                                            | null                     |
+| project_teams               | assigned_at                   | timestamp with time zone | YES         | now()                                           | null                     |
+| project_teams               | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| projects                    | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| projects                    | name                          | text                     | NO          | null                                            | null                     |
+| projects                    | address                       | text                     | YES         | null                                            | null                     |
+| projects                    | city                          | text                     | YES         | null                                            | null                     |
+| projects                    | status                        | text                     | NO          | 'draft'::text                                   | null                     |
+| projects                    | project_lead_id               | uuid                     | YES         | null                                            | null                     |
+| projects                    | client_id                     | uuid                     | YES         | null                                            | null                     |
+| projects                    | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| projects                    | start_date                    | timestamp with time zone | YES         | null                                            | null                     |
+| projects                    | due_date                      | timestamp with time zone | YES         | null                                            | null                     |
+| projects                    | description                   | text                     | YES         | null                                            | null                     |
+| projects                    | application_type              | text                     | YES         | null                                            | null                     |
+| projects                    | is_special_function           | boolean                  | YES         | false                                           | null                     |
+| projects                    | special_function_type         | text                     | YES         | null                                            | null                     |
+| projects                    | special_building_type         | text                     | YES         | null                                            | null                     |
+| projects                    | compliance_status             | text                     | YES         | null                                            | null                     |
+| projects                    | region_name                   | text                     | YES         | null                                            | null                     |
+| projects                    | authority_title               | text                     | YES         | null                                            | null                     |
+| projects                    | department_name               | text                     | YES         | null                                            | null                     |
+| projects                    | region_id                     | uuid                     | YES         | null                                            | null                     |
+| projects                    | building_function             | text                     | YES         | null                                            | null                     |
+| projects                    | request_type                  | text                     | YES         | null                                            | null                     |
+| projects                    | floors                        | integer                  | YES         | null                                            | null                     |
+| projects                    | building_height               | numeric                  | YES         | null                                            | null                     |
+| projects                    | building_area                 | numeric                  | YES         | null                                            | null                     |
+| projects                    | location                      | text                     | YES         | null                                            | null                     |
+| projects                    | imb_number                    | text                     | YES         | null                                            | null                     |
+| projects                    | imb_date                      | date                     | YES         | null                                            | null                     |
+| projects                    | previous_slf_number           | text                     | YES         | null                                            | null                     |
+| projects                    | previous_slf_date             | date                     | YES         | null                                            | null                     |
+| projects                    | drafter_id                    | uuid                     | YES         | null                                            | null                     |
+| projects_backup             | id                            | uuid                     | YES         | null                                            | null                     |
+| projects_backup             | name                          | text                     | YES         | null                                            | null                     |
+| projects_backup             | address                       | text                     | YES         | null                                            | null                     |
+| projects_backup             | city                          | text                     | YES         | null                                            | null                     |
+| projects_backup             | status                        | text                     | YES         | null                                            | null                     |
+| projects_backup             | project_lead_id               | uuid                     | YES         | null                                            | null                     |
+| projects_backup             | created_at                    | timestamp with time zone | YES         | null                                            | null                     |
+| projects_backup             | start_date                    | timestamp with time zone | YES         | null                                            | null                     |
+| projects_backup             | due_date                      | timestamp with time zone | YES         | null                                            | null                     |
+| projects_backup             | description                   | text                     | YES         | null                                            | null                     |
+| projects_backup             | client_id                     | integer                  | YES         | null                                            | null                     |
+| projects_backup             | application_type              | text                     | YES         | null                                            | null                     |
+| projects_backup             | is_special_function           | boolean                  | YES         | null                                            | null                     |
+| projects_backup             | special_function_type         | text                     | YES         | null                                            | null                     |
+| projects_backup             | special_building_type         | text                     | YES         | null                                            | null                     |
+| projects_backup             | compliance_status             | text                     | YES         | null                                            | null                     |
+| projects_backup             | region_name                   | text                     | YES         | null                                            | null                     |
+| projects_backup             | authority_title               | text                     | YES         | null                                            | null                     |
+| projects_backup             | department_name               | text                     | YES         | null                                            | null                     |
+| projects_backup             | region_id                     | uuid                     | YES         | null                                            | null                     |
+| projects_backup             | building_function             | text                     | YES         | null                                            | null                     |
+| projects_backup             | request_type                  | text                     | YES         | null                                            | null                     |
+| projects_backup             | floors                        | integer                  | YES         | null                                            | null                     |
+| projects_backup             | building_height               | numeric                  | YES         | null                                            | null                     |
+| projects_backup             | building_area                 | numeric                  | YES         | null                                            | null                     |
+| projects_backup             | location                      | text                     | YES         | null                                            | null                     |
+| projects_backup             | imb_number                    | text                     | YES         | null                                            | null                     |
+| projects_backup             | imb_date                      | date                     | YES         | null                                            | null                     |
+| projects_backup             | previous_slf_number           | text                     | YES         | null                                            | null                     |
+| projects_backup             | previous_slf_date             | date                     | YES         | null                                            | null                     |
+| projects_policy_backup      | schemaname                    | name                     | YES         | null                                            | null                     |
+| projects_policy_backup      | tablename                     | name                     | YES         | null                                            | null                     |
+| projects_policy_backup      | policyname                    | name                     | YES         | null                                            | null                     |
+| projects_policy_backup      | permissive                    | text                     | YES         | null                                            | null                     |
+| projects_policy_backup      | roles                         | ARRAY                    | YES         | null                                            | null                     |
+| projects_policy_backup      | cmd                           | text                     | YES         | null                                            | null                     |
+| projects_policy_backup      | qual                          | text                     | YES         | null                                            | null                     |
+| projects_policy_backup      | with_check                    | text                     | YES         | null                                            | null                     |
+| regions                     | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| regions                     | name                          | text                     | NO          | null                                            | null                     |
+| regions                     | type                          | text                     | YES         | null                                            | null                     |
+| regions                     | authority_title               | text                     | NO          | null                                            | null                     |
+| regions                     | department_name               | text                     | NO          | null                                            | null                     |
+| regions                     | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| report_approvals            | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| report_approvals            | report_id                     | uuid                     | NO          | null                                            | null                     |
+| report_approvals            | approver_id                   | uuid                     | YES         | null                                            | null                     |
+| report_approvals            | approver_role                 | text                     | NO          | null                                            | null                     |
+| report_approvals            | status                        | text                     | NO          | 'pending'::text                                 | null                     |
+| report_approvals            | comment                       | text                     | YES         | null                                            | null                     |
+| report_approvals            | approved_at                   | timestamp with time zone | YES         | now()                                           | null                     |
+| report_approvals            | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| report_approvals            | project_id                    | uuid                     | YES         | null                                            | null                     |
+| reports                     | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| reports                     | inspection_id                 | uuid                     | NO          | null                                            | null                     |
+| reports                     | drafter_id                    | uuid                     | YES         | null                                            | null                     |
+| reports                     | report_status                 | text                     | NO          | 'Draft'::text                                   | null                     |
+| reports                     | file_url                      | text                     | YES         | null                                            | null                     |
+| reports                     | submitted_to_gov_at           | timestamp with time zone | YES         | null                                            | null                     |
+| reports                     | created_at                    | timestamp with time zone | NO          | now()                                           | null                     |
+| reports                     | project_id                    | uuid                     | YES         | null                                            | null                     |
+| simak_items                 | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| simak_items                 | section_code                  | character varying        | NO          | null                                            | 10                       |
+| simak_items                 | section_name                  | character varying        | NO          | null                                            | 255                      |
+| simak_items                 | item_number                   | character varying        | NO          | null                                            | 20                       |
+| simak_items                 | item_label                    | text                     | NO          | null                                            | null                     |
+| simak_items                 | item_type                     | character varying        | YES         | 'text'::character varying                       | 50                       |
+| simak_items                 | required                      | boolean                  | YES         | true                                            | null                     |
+| simak_items                 | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| simak_items                 | updated_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| simak_responses             | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| simak_responses             | item_id                       | uuid                     | YES         | null                                            | null                     |
+| simak_responses             | response_value                | text                     | YES         | null                                            | null                     |
+| simak_responses             | photo_url                     | text                     | YES         | null                                            | null                     |
+| simak_responses             | inspector_id                  | uuid                     | YES         | null                                            | null                     |
+| simak_responses             | inspection_id                 | uuid                     | YES         | null                                            | null                     |
+| simak_responses             | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| simak_responses             | updated_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| special_building_types      | id                            | text                     | NO          | null                                            | null                     |
+| special_building_types      | name                          | text                     | NO          | null                                            | null                     |
+| special_building_types      | required_instansi_teknis      | text                     | NO          | null                                            | null                     |
+| special_building_types      | description                   | text                     | YES         | null                                            | null                     |
+| special_function_checklists | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| special_function_checklists | function_type                 | text                     | NO          | null                                            | null                     |
+| special_function_checklists | required_specializations      | ARRAY                    | YES         | null                                            | null                     |
+| special_function_checklists | additional_checklist_sections | ARRAY                    | YES         | null                                            | null                     |
+| tasks                       | id                            | bigint                   | NO          | null                                            | null                     |
+| tasks                       | title                         | text                     | NO          | null                                            | null                     |
+| tasks                       | description                   | text                     | YES         | null                                            | null                     |
+| tasks                       | status                        | text                     | YES         | 'pending'::text                                 | null                     |
+| tasks                       | assignee_id                   | uuid                     | YES         | null                                            | null                     |
+| tasks                       | project_id                    | uuid                     | YES         | null                                            | null                     |
+| tasks                       | inspection_id                 | uuid                     | YES         | null                                            | null                     |
+| tasks                       | created_by                    | uuid                     | YES         | null                                            | null                     |
+| tasks                       | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| technical_recommendations   | id                            | uuid                     | NO          | gen_random_uuid()                               | null                     |
+| technical_recommendations   | project_id                    | uuid                     | NO          | null                                            | null                     |
+| technical_recommendations   | instansi_name                 | text                     | NO          | null                                            | null                     |
+| technical_recommendations   | document_url                  | text                     | NO          | null                                            | null                     |
+| technical_recommendations   | issued_date                   | date                     | YES         | null                                            | null                     |
+| technical_recommendations   | valid_until                   | date                     | YES         | null                                            | null                     |
+| technical_recommendations   | notes                         | text                     | YES         | null                                            | null                     |
+| technical_recommendations   | uploaded_by                   | uuid                     | YES         | null                                            | null                     |
+| technical_recommendations   | uploaded_at                   | timestamp with time zone | YES         | now()                                           | null                     |
+| todos                       | id                            | uuid                     | NO          | uuid_generate_v4()                              | null                     |
+| todos                       | title                         | text                     | NO          | null                                            | null                     |
+| todos                       | description                   | text                     | YES         | null                                            | null                     |
+| todos                       | role                          | text                     | YES         | 'inspector'::text                               | null                     |
+| todos                       | created_at                    | timestamp with time zone | YES         | now()                                           | null                     |
+| todos                       | created_by                    | uuid                     | YES         | null                                            | null                     |
+| users                       | id                            | uuid                     | NO          | null                                            | null                     |
+| users                       | created_at                    | timestamp with time zone | NO          | now()                                           | null                     |
+| users                       | full_name                     | text                     | NO          | null                                            | null                     |
+| users                       | email                         | text                     | NO          | null                                            | null                     |
+| users                       | role                          | text                     | NO          | 'user'::text                                    | null                     |
+| users                       | is_active                     | boolean                  | NO          | true                                            | null                     |

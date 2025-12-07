@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
                 <img 
                   src="/leaflet/images/logo-puri-dimensi.png" 
                   alt="PT. Puri Dimensi" 
-                  className="h-16 w-auto object-contain"
+                  className="h-20 md:h-16 w-auto object-contain dark:brightness-110 dark:contrast-110"
                   onError={(e) => {
                     e.target.style.display = 'none';
                     e.target.nextSibling.style.display = 'flex';

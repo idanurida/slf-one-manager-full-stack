@@ -812,23 +812,24 @@ const DashboardLayout = ({
 
         {/* FOOTER */}
         <footer className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 py-4 px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
-            <div className="flex items-center gap-2">
-              <img 
-                src="/leaflet/images/logo-puri-dimensi.png" 
-                alt="PT. Puri Dimensi" 
-                className="h-6 w-auto object-contain hidden md:block"
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
+          <div className="flex flex-col items-center gap-3 text-center">
+            {/* Logo - visible on all devices */}
+            <img 
+              src="/leaflet/images/logo-puri-dimensi.png" 
+              alt="PT. Puri Dimensi" 
+              className="h-10 md:h-8 w-auto object-contain dark:brightness-110 dark:contrast-110"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            <div className="space-y-1">
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 <span className="font-semibold text-slate-900 dark:text-slate-100">SLF One Manager</span>
                 {' '}Powered By{' '}
                 <span className="font-semibold text-primary">PT. Puri Dimensi</span>
               </p>
+              <p className="text-xs text-slate-500 dark:text-slate-500">
+                Your Trusted Partner for Building Certification & Approval
+              </p>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-500">
-              Your Trusted Partner for Building Certification & Approval
-            </p>
           </div>
         </footer>
       </div>

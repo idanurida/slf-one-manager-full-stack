@@ -1,23 +1,41 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useRef } from "react";
-import { useRouter } from "next/router";
 import { supabase } from "@/utils/supabaseClient";
 
 const AuthContext = createContext(undefined);
 const PROFILE_CACHE_KEY = "auth_profile_cache_v1";
 const CACHE_TTL = 10 * 60 * 1000; // 10 menit
 
+// Daftar Path Redirect yang Konsisten
+const REDIRECT_PATHS = {
+  admin_team: "/dashboard/admin-team",
+  admin_lead: "/dashboard/admin-lead",
+  // PENTING: Harus sesuai dengan hasil normalisasi peran
+  head_consultant: "/dashboard/head-consultant", 
+  superadmin: "/dashboard/superadmin",
+  project_lead: "/dashboard/project-lead",
+  inspector: "/dashboard/inspector",
+  drafter: "/dashboard/drafter",
+  client: "/dashboard/client",
+  
+  // Aliases (Jika diperlukan)
+  admin: "/dashboard/admin-team", 
+  team_lead: "/dashboard/project-lead",
+};
+// Default jika peran tidak dikenali (akan ditangani di /dashboard/index.js)
+const UNKNOWN_ROLE_PATH = "/dashboard"; 
+
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); 
   const [isRedirecting, setIsRedirecting] = useState(false);
   const listenerRef = useRef(null);
   const mountedRef = useRef(true);
   const fetchedOnceRef = useRef(false);
-  const router = useRouter();
 
   // --- UTIL: Cache Handler ---
   const loadCachedProfile = () => {
@@ -25,7 +43,7 @@ export function AuthProvider({ children }) {
       const cached = localStorage.getItem(PROFILE_CACHE_KEY);
       if (!cached) return null;
       const { data, timestamp } = JSON.parse(cached);
-      if (Date.now() - timestamp > CACHE_TTL) return null; // expired
+      if (Date.now() - timestamp > CACHE_TTL) return null;
       return data;
     } catch {
       return null;
@@ -48,10 +66,10 @@ export function AuthProvider({ children }) {
 
   // --- Fetch profile user ---
   const fetchUserProfile = async (userId, userObject, useCacheFirst = false) => {
+    setError(null); 
     try {
       if (!userId) return null;
 
-      // 🧠 Gunakan cache lebih dulu (instant load)
       if (useCacheFirst) {
         const cachedProfile = loadCachedProfile();
         if (cachedProfile && cachedProfile.id === userId) {
@@ -68,118 +86,143 @@ export function AuthProvider({ children }) {
         .eq("id", userId)
         .single();
 
-      if (profileError) throw profileError;
-
+      if (profileError) {
+        // ❌ LOGGING ERROR Supabase Rinci
+        console.error("[AuthContext] ❌ Supabase Profile Fetch Error:", profileError);
+        throw new Error(profileError.message || "Failed to retrieve user profile from DB.");
+      }
+      
+      const rawRole = profile.role || 'client'; // Default ke 'client' jika role di DB NULL
       const normalizedProfile = {
         ...profile,
-        role: profile.role?.toLowerCase() || "inspector",
+        // Normalisasi peran: trim spasi, ganti spasi jadi underscore, lalu toLowerCase
+        role: rawRole.trim().toLowerCase().replace(/\s/g, '_'), 
       };
+
+      console.log(`[AuthContext] RAW Role: ${profile.role} | Normalized Role: ${normalizedProfile.role}`);
 
       setProfile(normalizedProfile);
       saveProfileToCache(normalizedProfile);
       console.log("[AuthContext] ✅ Profile loaded from DB:", normalizedProfile);
       return normalizedProfile;
     } catch (err) {
-      console.error("[AuthContext] ❌ Profile fetch failed:", err);
-      console.error("[AuthContext] User ID:", userId);
-      console.error("[AuthContext] Error details:", err.message, err.code);
+      console.error("[AuthContext] ❌ Profile fetch failed (Catch):", err.message, "User ID:", userId);
       
-      // Jangan gunakan fallback role - biarkan null agar user tahu ada masalah
+      setError(err.message); 
+      
       const fallback = {
         id: userId,
         full_name: userObject?.email?.split("@")[0] || "User",
-        role: null, // Jangan set default role
+        role: null, 
         _error: err.message,
       };
       setProfile(fallback);
-      // Jangan cache profile yang error
       return fallback;
     }
   };
 
-  // --- Redirect handler ---
-  const redirectBasedOnRole = (role, fromLogin = false) => {
-    if (!role || isRedirecting) return;
-
-    const redirectPaths = {
-      admin_team: "/dashboard/admin-team",
-      admin_lead: "/dashboard/admin-lead",
-      head_consultant: "/dashboard/head-consultant",
-      superadmin: "/dashboard/superadmin",
-      project_lead: "/dashboard/team-leader", // Redirect ke team-leader URL
-      inspector: "/dashboard/inspector",
-      drafter: "/dashboard/drafter",
-      client: "/dashboard/client",
-    };
-
-    const redirectPath = redirectPaths[role] || "/dashboard";
-    const currentPath = router.pathname;
+  // --- Safe redirect handler ---
+  const safeRedirect = (path, delay = 100) => {
+    if (typeof window === 'undefined' || isRedirecting) return;
     
-    // Also check for team-leader path for project_lead role
-    const isAtCorrectPath = currentPath === redirectPath || 
-      currentPath.startsWith(redirectPath + "/") ||
-      (role === 'project_lead' && currentPath.startsWith('/dashboard/team-leader'));
-
-    if (isAtCorrectPath) {
+    const currentPath = window.location.pathname;
+    if (currentPath === path) { 
       console.log(`[AuthContext] ✅ Already at correct path: ${currentPath}`);
       setIsRedirecting(false);
       return;
     }
 
+    console.log(`[AuthContext] Safe redirect to: ${path}`);
     setIsRedirecting(true);
-    const delay = fromLogin ? 100 : 0;
-
+    
     setTimeout(() => {
       if (mountedRef.current) {
-        router
-          .replace(redirectPath)
-          .then(() => console.log("[AuthContext] ✅ Redirected to", redirectPath))
-          .finally(() => setIsRedirecting(false));
+        try {
+          if (path !== "/login" || !currentPath.startsWith("/login")) {
+             window.location.href = path;
+          } else {
+             setIsRedirecting(false); 
+          }
+        } catch (error) {
+          // ❌ LOGGING ERROR Redirect
+          console.error("[AuthContext] ❌ Redirect failed (Window location error):", error);
+          setIsRedirecting(false);
+        }
       }
     }, delay);
+  };
+
+  // --- Redirect berdasarkan role ---
+  const redirectBasedOnRole = (profileData, fromLogin = false) => {
+    if (!profileData || isRedirecting || typeof window === 'undefined') return;
+    const role = profileData.role; 
+
+    const redirectPath = REDIRECT_PATHS[role] || UNKNOWN_ROLE_PATH;
+    
+    // 📝 LOGGING PATH Redirect
+    if (!REDIRECT_PATHS[role]) {
+        console.warn(`[AuthContext] ⚠️ Role '${role}' not found in REDIRECT_PATHS. Using fallback: ${UNKNOWN_ROLE_PATH}`);
+    }
+
+    console.log(`[AuthContext] Redirecting role '${role}' to path: ${redirectPath}`);
+    
+    safeRedirect(redirectPath, fromLogin ? 100 : 0);
   };
 
   // --- Initialize Auth (once only) ---
   useEffect(() => {
     mountedRef.current = true;
     console.log("[AuthContext] 🔄 Initializing authentication...");
+    setError(null); 
 
     const initializeAuth = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        try {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError) {
+                // ❌ LOGGING ERROR Session Supabase
+                console.error("[AuthContext] ❌ Supabase Session Error:", sessionError);
+                throw sessionError;
+            }
 
-        if (session?.user) {
-          setUser(session.user);
+            if (session?.user) {
+                setUser(session.user);
 
-          // ⚡ Coba pakai cache dulu (langsung tampil <0.5s)
-          const cached = loadCachedProfile();
-          if (cached && cached.id === session.user.id) {
-            setProfile(cached);
-            console.log("[AuthContext] ⚡ Using cached profile:", cached);
-          }
+                const cached = loadCachedProfile();
+                if (cached && cached.id === session.user.id) {
+                    setProfile(cached);
+                    // Coba redirect dengan cache role
+                    redirectBasedOnRole(cached, false); 
+                    console.log("[AuthContext] ⚡ Using cached profile:", cached);
+                }
 
-          // Fetch fresh di background
-          if (!fetchedOnceRef.current) {
-            fetchedOnceRef.current = true;
-            fetchUserProfile(session.user.id, session.user, !cached);
-          }
-        } else {
-          setUser(null);
-          setProfile(null);
-          clearProfileCache();
-          if (!router.pathname.startsWith("/login")) {
-            router.replace("/login");
-          }
+                if (!fetchedOnceRef.current) {
+                    fetchedOnceRef.current = true;
+                    const userProfile = await fetchUserProfile(session.user.id, session.user, !cached);
+                    // Redirect setelah profil fresh diambil, hanya jika belum redirect oleh cache
+                    if (!cached) { 
+                       redirectBasedOnRole(userProfile, false);
+                    }
+                }
+            } else {
+                setUser(null);
+                setProfile(null);
+                clearProfileCache();
+                if (typeof window !== 'undefined' &&  
+                    !window.location.pathname.startsWith("/login") &&
+                    !window.location.pathname.startsWith("/register") &&
+                    !window.location.pathname.startsWith("/reset-password") &&
+                    !window.location.pathname.startsWith("/forgot-password")) {
+                    safeRedirect("/login");
+                }
+            }
+        } catch (err) {
+            console.error("[AuthContext] ❌ Initialization error (Catch):", err);
+            setError(err.message); 
+        } finally {
+            if (mountedRef.current) setLoading(false);
         }
-      } catch (err) {
-        console.error("[AuthContext] ❌ Initialization error:", err);
-        setError(err.message);
-      } finally {
-        if (mountedRef.current) setLoading(false);
-      }
     };
-
+    
     initializeAuth();
 
     // --- Setup listener ---
@@ -189,28 +232,27 @@ export function AuthProvider({ children }) {
         async (event, session) => {
           if (!mountedRef.current) return;
           console.log("[AuthContext] 🔄 Auth event:", event);
+          setError(null); 
 
           if (event === "SIGNED_IN" && session?.user) {
             setUser(session.user);
             const userProfile = await fetchUserProfile(session.user.id, session.user, true);
-            redirectBasedOnRole(userProfile?.role, true);
+            // Redirect terjadi di sini setelah SIGNED_IN
+            redirectBasedOnRole(userProfile, true); 
           }
 
           if (event === "SIGNED_OUT") {
             setUser(null);
             setProfile(null);
             clearProfileCache();
-            if (!router.pathname.startsWith("/login")) router.replace("/login");
+            safeRedirect("/login");
           }
         }
       );
-
       listenerRef.current = subscription;
-      console.log("[AuthContext] ✅ Listener attached");
     }
 
     return () => {
-      console.log("[AuthContext] 🧹 Cleaning up auth context");
       mountedRef.current = false;
       if (listenerRef.current) {
         listenerRef.current.unsubscribe();
@@ -223,23 +265,27 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       console.log("[AuthContext] 🔐 Login attempt:", email);
-      setError(null);
+      setError(null); 
       setLoading(true);
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
-      if (error) throw error;
+      if (error) {
+        // ❌ LOGGING ERROR Login Supabase
+        console.error("[AuthContext] ❌ Supabase Login Error:", error);
+        throw error;
+      }
 
       setUser(data.user);
       const userProfile = await fetchUserProfile(data.user.id, data.user, false);
-      redirectBasedOnRole(userProfile.role, true);
+      redirectBasedOnRole(userProfile, true); 
 
       return { success: true, user: data.user };
     } catch (err) {
-      console.error("[AuthContext] ❌ Login error:", err);
-      setError(err.message);
+      console.error("[AuthContext] ❌ Login error (Catch):", err.message);
+      setError(err.message); 
       return { success: false, error: err.message };
     } finally {
       setLoading(false);
@@ -249,27 +295,36 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       console.log("[AuthContext] 🚪 Logging out...");
+      setError(null); 
       setLoading(true);
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+         // ❌ LOGGING ERROR Logout Supabase
+         console.error("[AuthContext] ❌ Supabase Logout Error:", error);
+         throw error;
+      }
+      
       setUser(null);
       setProfile(null);
       clearProfileCache();
-      if (!router.pathname.startsWith("/login")) router.replace("/login");
+      safeRedirect("/login");
     } catch (err) {
-      console.error("[AuthContext] ❌ Logout error:", err);
+      console.error("[AuthContext] ❌ Logout error (Catch):", err.message);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const getNormalizedRole = () => profile?.role?.toLowerCase() || "inspector";
+  // Default ke 'client' jika profile.role belum ada (untuk menghindari nilai null)
+  const getNormalizedRole = () => profile?.role?.toLowerCase() || "client"; 
 
   const value = {
     user,
     profile,
     loading: loading || isRedirecting,
-    error,
+    error, 
     isRedirecting,
 
     login,
@@ -280,16 +335,16 @@ export function AuthProvider({ children }) {
     userRole: getNormalizedRole(),
     userName: profile?.full_name || user?.email || "User",
 
+    // Helper functions untuk peran
     isInspector: getNormalizedRole() === "inspector",
     isHeadConsultant: getNormalizedRole() === "head_consultant",
     isProjectLead: getNormalizedRole() === "project_lead",
-    isTeamLeader: getNormalizedRole() === "project_lead", // Alias: Team Leader = Project Lead di DB
+    isTeamLeader: getNormalizedRole() === "project_lead", 
     isClient: getNormalizedRole() === "client",
     isAdminLead: getNormalizedRole() === "admin_lead",
     isAdminTeam: getNormalizedRole() === "admin_team",
     isDrafter: getNormalizedRole() === "drafter",
     isSuperadmin: getNormalizedRole() === "superadmin",
-    isSuperAdmin: getNormalizedRole() === "superadmin", // Alias for backward compatibility
 
     isManagement() {
       const role = getNormalizedRole();
@@ -303,6 +358,10 @@ export function AuthProvider({ children }) {
       const role = getNormalizedRole();
       return ["admin_lead", "superadmin", "admin_team"].includes(role);
     },
+
+    // Safe redirect utility
+    safeRedirect,
+    redirectBasedOnRole: (profile) => redirectBasedOnRole(profile, false),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -57,6 +57,7 @@ export default function ClientDashboard() {
   const { user, profile, loading: authLoading, isClient } = useAuth();
 
   const [loading, setLoading] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
   const [stats, setStats] = useState({
     totalProjects: 0,
     activeProjects: 0,
@@ -68,6 +69,26 @@ export default function ClientDashboard() {
   const [recentProjects, setRecentProjects] = useState([]);
   const [pendingActions, setPendingActions] = useState([]);
   const [upcomingSchedules, setUpcomingSchedules] = useState([]);
+
+  // Safe redirect function
+  const safeRedirect = useCallback((path) => {
+    if (typeof window === 'undefined' || redirecting) return;
+    
+    // Don't redirect to current path
+    if (window.location.pathname === path) return;
+    
+    console.log(`[ClientDashboard] Safe redirect to: ${path}`);
+    setRedirecting(true);
+    
+    setTimeout(() => {
+      try {
+        window.location.href = path;
+      } catch (error) {
+        console.error('[ClientDashboard] Redirect failed:', error);
+        setRedirecting(false);
+      }
+    }, 100);
+  }, [redirecting]);
 
   // Fetch dashboard data
   const fetchDashboardData = useCallback(async () => {
@@ -199,14 +220,27 @@ export default function ClientDashboard() {
   }, [user?.id, router]);
 
   useEffect(() => {
-    if (!authLoading && user && isClient) {
-      fetchDashboardData();
-    } else if (!authLoading && user && !isClient) {
-      router.replace('/dashboard');
+    if (typeof window === 'undefined') return;
+    
+    if (!authLoading) {
+      if (!user) {
+        safeRedirect('/login');
+        return;
+      }
+      
+      if (user && !isClient) {
+        console.log('[ClientDashboard] User is not a client, redirecting...');
+        safeRedirect('/dashboard');
+        return;
+      }
+      
+      if (user && isClient) {
+        fetchDashboardData();
+      }
     }
-  }, [authLoading, user, isClient, fetchDashboardData, router]);
+  }, [authLoading, user, isClient, fetchDashboardData, safeRedirect]);
 
-  if (authLoading || loading) {
+  if (authLoading || loading || redirecting) {
     return (
       <DashboardLayout title="Dashboard">
         <div className="p-6 space-y-6">

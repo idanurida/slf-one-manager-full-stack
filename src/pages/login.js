@@ -123,26 +123,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="flex justify-between items-center p-6 border-b border-border">
-        <div className="flex items-center gap-3">
-          {/* Company Logo */}
-          <img 
-            src="/leaflet/images/logo-puri-dimensi.png" 
-            alt="PT. Puri Dimensi" 
-            className="h-10 w-auto object-contain"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
-          {/* Fallback if logo not found */}
-          <div className="hidden items-center gap-2">
-            <div className="bg-primary rounded px-2 py-1 text-primary-foreground font-semibold">
-              SLF
-            </div>
-            <span className="text-xl font-bold text-foreground">One Manager</span>
-          </div>
-        </div>
+      <header className="flex justify-end items-center p-6">
         <Button
           variant="outline"
           size="icon"
@@ -157,9 +138,29 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <Card className="border-border shadow-lg">
-            <CardHeader className="text-center space-y-2 pb-4">
-              <CardTitle className="text-xl font-semibold">Masuk ke Sistem</CardTitle>
-              <p className="text-sm text-muted-foreground">Gunakan kredensial perusahaan Anda</p>
+            <CardHeader className="text-center space-y-4 pb-4">
+              {/* Logo inside form */}
+              <div className="flex justify-center">
+                <img 
+                  src="/leaflet/images/logo-puri-dimensi.png" 
+                  alt="PT. Puri Dimensi" 
+                  className="h-16 w-auto object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="hidden items-center gap-2">
+                  <div className="bg-primary rounded px-2 py-1 text-primary-foreground font-semibold">
+                    SLF
+                  </div>
+                  <span className="text-xl font-bold text-foreground">One Manager</span>
+                </div>
+              </div>
+              <div>
+                <CardTitle className="text-xl font-semibold">Masuk ke Sistem</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">Gunakan kredensial perusahaan Anda</p>
+              </div>
             </CardHeader>
             
             <CardContent className="space-y-4">

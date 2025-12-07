@@ -427,7 +427,7 @@ const DashboardLayout = ({
                       </div>
                     </div>
                     <div>
-                      <h1 className="font-bold text-lg text-slate-900 dark:text-slate-100">SLF Manager</h1>
+                      <h1 className="font-bold text-lg text-slate-900 dark:text-slate-100">SLF One Manager</h1>
                       <p className="text-xs text-slate-600 dark:text-slate-400 capitalize">{roleName}</p>
                     </div>
                   </div>
@@ -539,7 +539,7 @@ const DashboardLayout = ({
                   <div className="hidden w-8 h-8 rounded bg-primary items-center justify-center text-primary-foreground font-bold">
                     SLF
                   </div>
-                  <span className="text-lg font-bold text-slate-900 dark:text-slate-100">SLF Manager</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-slate-100">SLF One Manager</span>
                 </div>
               ) : (
                 <div className="flex justify-center">
@@ -661,7 +661,7 @@ const DashboardLayout = ({
                               SLF
                             </div>
                             <div>
-                              <h1 className="font-bold text-lg text-slate-900 dark:text-slate-100">SLF Manager</h1>
+                              <h1 className="font-bold text-lg text-slate-900 dark:text-slate-100">SLF One Manager</h1>
                               <p className="text-xs text-slate-600 dark:text-slate-400 capitalize">{roleName}</p>
                             </div>
                           </div>

@@ -67,24 +67,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="flex justify-between items-center p-6 border-b border-border">
-        <div className="flex items-center gap-3">
-          <img 
-            src="/leaflet/images/logo-puri-dimensi.png" 
-            alt="PT. Puri Dimensi" 
-            className="h-10 w-auto object-contain"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
-          <div className="hidden items-center gap-2">
-            <div className="bg-primary rounded px-2 py-1 text-primary-foreground font-semibold">
-              SLF
-            </div>
-            <span className="text-xl font-bold text-foreground">One Manager</span>
-          </div>
-        </div>
+      <header className="flex justify-end items-center p-6">
         <Button
           variant="outline"
           size="icon"
@@ -99,14 +82,31 @@ export default function ForgotPasswordPage() {
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <Card className="border-border shadow-lg">
-            <CardHeader className="text-center space-y-2 pb-4">
-              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
-                <Mail className="h-6 w-6 text-primary" />
+            <CardHeader className="text-center space-y-4 pb-4">
+              {/* Logo inside form */}
+              <div className="flex justify-center">
+                <img 
+                  src="/leaflet/images/logo-puri-dimensi.png" 
+                  alt="PT. Puri Dimensi" 
+                  className="h-16 w-auto object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="hidden items-center gap-2">
+                  <div className="bg-primary rounded px-2 py-1 text-primary-foreground font-semibold">
+                    SLF
+                  </div>
+                  <span className="text-xl font-bold text-foreground">One Manager</span>
+                </div>
               </div>
-              <CardTitle className="text-xl font-semibold">Lupa Password?</CardTitle>
-              <CardDescription>
-                Masukkan email Anda dan kami akan mengirimkan link untuk reset password
-              </CardDescription>
+              <div>
+                <CardTitle className="text-xl font-semibold">Lupa Password?</CardTitle>
+                <CardDescription className="mt-1">
+                  Masukkan email Anda dan kami akan mengirimkan link untuk reset password
+                </CardDescription>
+              </div>
             </CardHeader>
             
             <CardContent className="space-y-4">

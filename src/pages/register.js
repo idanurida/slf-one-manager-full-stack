@@ -203,24 +203,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="flex justify-between items-center p-6 border-b border-border">
-        <div className="flex items-center gap-3">
-          <img 
-            src="/leaflet/images/logo-puri-dimensi.png" 
-            alt="PT. Puri Dimensi" 
-            className="h-10 w-auto object-contain"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
-          <div className="hidden items-center gap-2">
-            <div className="bg-primary rounded px-2 py-1 text-primary-foreground font-semibold">
-              SLF
-            </div>
-            <span className="text-xl font-bold text-foreground">One Manager</span>
-          </div>
-        </div>
+      <header className="flex justify-end items-center p-6">
         <Button
           variant="outline"
           size="icon"
@@ -235,17 +218,34 @@ export default function RegisterPage() {
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <Card className="border-border shadow-lg">
-            <CardHeader className="text-center space-y-2 pb-4">
-              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
-                <UserPlus className="h-6 w-6 text-primary" />
+            <CardHeader className="text-center space-y-4 pb-4">
+              {/* Logo inside form */}
+              <div className="flex justify-center">
+                <img 
+                  src="/leaflet/images/logo-puri-dimensi.png" 
+                  alt="PT. Puri Dimensi" 
+                  className="h-16 w-auto object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="hidden items-center gap-2">
+                  <div className="bg-primary rounded px-2 py-1 text-primary-foreground font-semibold">
+                    SLF
+                  </div>
+                  <span className="text-xl font-bold text-foreground">One Manager</span>
+                </div>
               </div>
-              <CardTitle className="text-xl font-semibold">Buat Akun Baru</CardTitle>
-              <CardDescription>
-                {step === 1 ? 'Langkah 1: Informasi Dasar' : 'Langkah 2: Buat Password'}
-              </CardDescription>
+              <div>
+                <CardTitle className="text-xl font-semibold">Buat Akun Baru</CardTitle>
+                <CardDescription className="mt-1">
+                  {step === 1 ? 'Langkah 1: Informasi Dasar' : 'Langkah 2: Buat Password'}
+                </CardDescription>
+              </div>
               
               {/* Progress Indicator */}
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2">
                 <div className={`h-2 w-16 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`} />
                 <div className={`h-2 w-16 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
               </div>

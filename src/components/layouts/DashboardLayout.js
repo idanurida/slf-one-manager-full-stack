@@ -412,8 +412,19 @@ const DashboardLayout = ({
               <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold">
-                      SLF
+                    <img 
+                      src="/logo-puri-dimensi.png" 
+                      alt="PT. Puri Dimensi" 
+                      className="h-8 w-auto object-contain"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div className="hidden items-center gap-2">
+                      <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold">
+                        SLF
+                      </div>
                     </div>
                     <div>
                       <h1 className="font-bold text-lg text-slate-900 dark:text-slate-100">SLF Manager</h1>
@@ -516,14 +527,32 @@ const DashboardLayout = ({
             <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
               {!desktopSidebarCollapsed ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold">
+                  <img 
+                    src="/logo-puri-dimensi.png" 
+                    alt="PT. Puri Dimensi" 
+                    className="h-8 w-auto object-contain"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="hidden w-8 h-8 rounded bg-primary items-center justify-center text-primary-foreground font-bold">
                     SLF
                   </div>
                   <span className="text-lg font-bold text-slate-900 dark:text-slate-100">SLF Manager</span>
                 </div>
               ) : (
                 <div className="flex justify-center">
-                  <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold">
+                  <img 
+                    src="/logo-icon.png" 
+                    alt="SLF" 
+                    className="h-8 w-8 object-contain"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="hidden w-8 h-8 rounded bg-primary items-center justify-center text-primary-foreground font-bold">
                     S
                   </div>
                 </div>
@@ -780,6 +809,28 @@ const DashboardLayout = ({
         )}>
           {children}
         </main>
+
+        {/* FOOTER */}
+        <footer className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 py-4 px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
+            <div className="flex items-center gap-2">
+              <img 
+                src="/logo-puri-dimensi-small.png" 
+                alt="PT. Puri Dimensi" 
+                className="h-6 w-auto object-contain hidden md:block"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                <span className="font-semibold text-slate-900 dark:text-slate-100">SLF One Manager</span>
+                {' '}Powered By{' '}
+                <span className="font-semibold text-primary">PT. Puri Dimensi</span>
+              </p>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-500">
+              Your Trusted Partner for Building Certification & Approval
+            </p>
+          </div>
+        </footer>
       </div>
     </div>
   );

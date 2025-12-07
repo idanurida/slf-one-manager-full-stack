@@ -68,15 +68,22 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
       <header className="flex justify-between items-center p-6 border-b border-border">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            <span className="inline-flex items-center gap-2">
-              <div className="bg-primary rounded px-2 py-1 text-primary-foreground font-semibold">
-                SLF
-              </div>
-              <span>One Manager</span>
-            </span>
-          </h1>
+        <div className="flex items-center gap-3">
+          <img 
+            src="/logo-puri-dimensi.png" 
+            alt="PT. Puri Dimensi" 
+            className="h-10 w-auto object-contain"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="hidden items-center gap-2">
+            <div className="bg-primary rounded px-2 py-1 text-primary-foreground font-semibold">
+              SLF
+            </div>
+            <span className="text-xl font-bold text-foreground">One Manager</span>
+          </div>
         </div>
         <Button
           variant="outline"

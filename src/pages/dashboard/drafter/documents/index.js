@@ -403,26 +403,17 @@ export default function DrafterMyDocumentsPage() {
   return (
     <DashboardLayout title="My Documents" user={user} profile={profile}>
       <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-              My Documents
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Kelola semua dokumen proyek Anda
-            </p>
-          </div>
+        {/* Action Button */}
+        <div className="flex justify-end">
           <Button 
             onClick={() => router.push('/dashboard/drafter/documents/new')}
             className="flex items-center gap-2"
+            size="sm"
           >
             <Plus className="h-4 w-4" />
-            Upload Dokumen Baru
+            Upload Dokumen
           </Button>
         </div>
-
-        <Separator className="bg-border" />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">

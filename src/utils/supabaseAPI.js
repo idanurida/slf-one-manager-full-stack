@@ -128,6 +128,54 @@ export const createUserWithPassword = isSupabaseValid
   : placeholderCreateUserWithPassword;
 
 /**
+ * Create user basic (fallback method tanpa admin API)
+ * Membuat profile langsung tanpa auth user
+ */
+export const createUserBasic = isSupabaseValid
+  ? async function (userData) {
+      try {
+        if (!userData.email) {
+          throw new Error('Email wajib diisi');
+        }
+
+        console.log('[createUserBasic] Creating basic profile:', { 
+          email: userData.email, 
+          role: userData.role 
+        });
+
+        const insertData = {
+          full_name: userData.full_name || userData.email.split('@')[0],
+          email: userData.email,
+          phone_number: userData.phone_number || null,
+          role: userData.role || 'client',
+          specialization: userData.specialization || null,
+        };
+
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .insert([insertData])
+          .select()
+          .single();
+
+        if (profileError) {
+          throw new Error(`Gagal membuat profil: ${profileError.message}`);
+        }
+
+        console.log('[createUserBasic] Profile created successfully:', profileData);
+
+        return {
+          auth: null,
+          profile: profileData
+        };
+      } catch (error) {
+        logSupabaseError(error, 'createUserBasic');
+        console.error("[createUserBasic] Error:", error);
+        throw error;
+      }
+    }
+  : async () => { throw new Error('Supabase not configured'); };
+
+/**
  * Update user password (admin function)
  */
 export const updateUserPassword = isSupabaseValid

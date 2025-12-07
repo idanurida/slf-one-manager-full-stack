@@ -237,37 +237,25 @@ export default function AdminTeamSchedulesPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                Jadwal Proyek Saya
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Pantau dan koordinasikan tugas berdasarkan jadwal yang ditetapkan oleh Project Lead dan Admin Lead.
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => router.push('/dashboard/admin-team')}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Kembali ke Dashboard
-              </Button>
-            </div>
+          {/* Action Buttons */}
+          <motion.div variants={itemVariants} className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => router.push('/dashboard/admin-team')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Kembali
+            </Button>
           </motion.div>
-
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
 
           {/* Filters */}
           <motion.div variants={itemVariants}>

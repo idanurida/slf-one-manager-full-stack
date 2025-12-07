@@ -44,7 +44,7 @@ import {
 
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
-import { getChecklistsBySpecialization, itemRequiresPhotogeotag, getPhotoRequirements } from '@/utils/checklistTemplates';
+import { getChecklistsBySpecialization, itemRequiresPhotogeotag, getPhotoRequirements, INSPECTOR_SPECIALIZATIONS } from '@/utils/checklistTemplates';
 
 export default function InspectorTemplates() {
   const router = useRouter();
@@ -179,10 +179,10 @@ export default function InspectorTemplates() {
 
   if (authLoading) {
     return (
-      <DashboardLayout title="Template Checklist">
+      <DashboardLayout title="Daftar Simak">
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
           <Loader2 className="w-8 w-8 animate-spin text-primary" />
-          <p className="mt-4 text-muted-foreground">Memuat template...</p>
+          <p className="mt-4 text-muted-foreground">Memuat daftar simak...</p>
         </div>
       </DashboardLayout>
     );
@@ -190,7 +190,7 @@ export default function InspectorTemplates() {
 
   if (!user || !isInspector) {
     return (
-      <DashboardLayout title="Template Checklist">
+      <DashboardLayout title="Daftar Simak">
         <div className="p-4 md:p-6">
           <Alert variant="destructive">
             <AlertTitle>Akses Ditolak</AlertTitle>
@@ -204,19 +204,22 @@ export default function InspectorTemplates() {
   }
 
   return (
-    <DashboardLayout title="Template Checklist">
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-foreground">Template Checklist</h1>
-            <p className="text-muted-foreground">
-              Template checklist berdasarkan spesialisasi Anda • {profile?.specialization?.replace(/_/g, ' ') || 'General'}
-            </p>
+    <DashboardLayout title="Daftar Simak">
+      <div className="p-4 md:p-6 space-y-4">
+        {/* Sub-header dengan info dan actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex items-center gap-3">
+            <Badge variant="default" className="capitalize text-xs bg-primary">
+              {INSPECTOR_SPECIALIZATIONS.find(s => s.value === profile?.specialization)?.label || profile?.specialization?.replace(/_/g, ' ') || 'General'}
+            </Badge>
+            <span className="text-sm text-muted-foreground">
+              {templates.length} template tersedia
+            </span>
           </div>
           <Button
             onClick={() => router.push('/dashboard/inspector/checklist')}
-            variant="outline"
+            variant="default"
+            size="sm"
             className="flex items-center gap-2"
           >
             <Eye className="h-4 w-4" />
@@ -225,11 +228,13 @@ export default function InspectorTemplates() {
         </div>
 
         {/* Info Specialization */}
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertTitle>Template yang Ditampilkan</AlertTitle>
+        <Alert className="border-primary/20 bg-primary/5">
+          <Info className="h-4 w-4 text-primary" />
           <AlertDescription>
-            Menampilkan template checklist yang sesuai dengan spesialisasi <strong>{profile?.specialization?.replace(/_/g, ' ') || 'General'}</strong> dan tipe bangunan <strong>{getBuildingTypeLabel(buildingType)}</strong>.
+            Menampilkan daftar simak untuk spesialisasi <strong>{INSPECTOR_SPECIALIZATIONS.find(s => s.value === profile?.specialization)?.label || profile?.specialization?.replace(/_/g, ' ') || 'General'}</strong>
+            {INSPECTOR_SPECIALIZATIONS.find(s => s.value === profile?.specialization)?.description && 
+              ` (${INSPECTOR_SPECIALIZATIONS.find(s => s.value === profile?.specialization)?.description})`}.
+            Tipe bangunan: <strong>{getBuildingTypeLabel(buildingType)}</strong>.
           </AlertDescription>
         </Alert>
 
@@ -243,7 +248,7 @@ export default function InspectorTemplates() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="search"
-                    placeholder="Cari template checklist..."
+                    placeholder="Cari daftar simak..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -309,11 +314,11 @@ export default function InspectorTemplates() {
             <CardContent className="p-6 text-center">
               <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
               <h3 className="text-lg font-semibold text-foreground">
-                {templates.length === 0 ? "Belum ada template" : "Tidak ada template yang sesuai"}
+                {templates.length === 0 ? "Belum ada daftar simak" : "Tidak ada daftar simak yang sesuai"}
               </h3>
               <p className="text-muted-foreground mt-1 mb-4">
                 {templates.length === 0 
-                  ? "Tidak ada template checklist yang tersedia untuk spesialisasi Anda."
+                  ? "Tidak ada daftar simak yang tersedia untuk spesialisasi Anda."
                   : "Coba ubah filter pencarian atau tipe bangunan."
                 }
               </p>

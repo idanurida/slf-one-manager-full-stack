@@ -11,6 +11,7 @@ import {
   AlertTitle,
 } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 
 import {
   ArrowLeft,
@@ -253,28 +254,20 @@ export default function ReportDetail() {
               variant="outline"
               size="sm"
               onClick={() => router.push('/dashboard/inspector/reports')}
-              className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Kembali
             </Button>
-            <div className="space-y-1">
-              <h1 className="text-2xl font-bold text-foreground">{report.title}</h1>
-              <p className="text-muted-foreground">
-                Detail laporan inspeksi • {project?.name}
-              </p>
-            </div>
+            <span className="text-sm text-muted-foreground">{project?.name}</span>
+            {getStatusBadge(report.status)}
           </div>
           <div className="flex items-center gap-2">
-            {getStatusBadge(report.status)}
             {(report.status === 'draft' || report.status === 'rejected') && (
               <Button
                 onClick={() => router.push(`/dashboard/inspector/reports/new?reportId=${report.id}`)}
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2"
               >
-                <Edit className="h-4 w-4" />
+                <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
             )}

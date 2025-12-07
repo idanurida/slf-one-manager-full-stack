@@ -405,26 +405,17 @@ export default function DrafterReportsPage() {
   return (
     <DashboardLayout title="Laporan Saya" user={user} profile={profile}>
       <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-              Laporan Saya
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Kelola semua laporan inspeksi Anda
-            </p>
-          </div>
+        {/* Action Button */}
+        <div className="flex justify-end">
           <Button 
             onClick={() => router.push('/dashboard/drafter/reports/new')}
             className="flex items-center gap-2"
+            size="sm"
           >
             <Plus className="h-4 w-4" />
             Buat Laporan Baru
           </Button>
         </div>
-
-        <Separator className="bg-border" />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-7">

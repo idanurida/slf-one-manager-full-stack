@@ -974,63 +974,138 @@ export const SLF_CHECKLIST_TEMPLATES = {
 };
 
 // 🔥 PERBAIKAN: Mapping spesialisasi yang SESUAI dengan database profiles.specialization
+// 3 Kategori Utama Spesialisasi Inspector:
+// 1. Struktur (structural) - Fokus sistem struktur bangunan
+// 2. Arsitektur (architectural) - Fokus tata bangunan, keselamatan, kenyamanan
+// 3. MEP (mep) - Mekanikal, Elektrikal, Plumbing
 const SPECIALIZATION_MAPPING = {
-  // Structural Engineering - Fokus struktur bangunan
-  'structural_engineering': {
+  // =====================================================
+  // 1. STRUKTUR - Fokus sistem struktur bangunan gedung
+  // =====================================================
+  'struktur': {
+    name: 'Struktur',
+    description: 'Pemeriksaan sistem struktur bangunan gedung',
     categories: ['keandalan'],
-    templates: ['m21', 'm210'], // Sistem struktur & proteksi gempa
-    keywords: ['structural', 'struktur', 'pondasi', 'kolom', 'balok', 'beton', 'baja', 'fondasi', 'gempa']
+    templates: [
+      'm21',   // M.2.1. Pemeriksaan Sistem Struktur Bangunan Gedung
+      'm210'   // M.2.10. Pemeriksaan Sistem Pencegahan dan Penanggulangan Bencana (gempa)
+    ],
+    keywords: ['struktur', 'pondasi', 'kolom', 'balok', 'beton', 'baja', 'gempa', 'bencana']
+  },
+  // Alias untuk backward compatibility
+  'structural_engineering': {
+    name: 'Struktur',
+    description: 'Pemeriksaan sistem struktur bangunan gedung',
+    categories: ['keandalan'],
+    templates: ['m21', 'm210'],
+    keywords: ['struktur', 'pondasi', 'kolom', 'balok', 'beton', 'baja', 'gempa', 'bencana']
   },
   
-  // Architectural Design - Fokus desain arsitektur
+  // =====================================================
+  // 2. ARSITEKTUR - Fokus tata bangunan & keselamatan
+  // =====================================================
+  'arsitektur': {
+    name: 'Arsitektur',
+    description: 'Pemeriksaan persyaratan tata bangunan dan keselamatan',
+    categories: ['tata_bangunan', 'keselamatan'],
+    templates: [
+      'm11',   // M.1.1. Pemeriksaan Persyaratan Peruntukan Bangunan Gedung
+      'm12',   // M.1.2. Pemeriksaan Persyaratan Intensitas Bangunan Gedung
+      'm13',   // M.1.3. Pemeriksaan Persyaratan Arsitektur Bangunan Gedung
+      'm14',   // M.1.4. Pemeriksaan Persyaratan Pengendalian Dampak Lingkungan
+      'm31',   // M.3.1. Pemeriksaan Persyaratan Keselamatan Pengguna
+      'm32',   // M.3.2. Pemeriksaan Persyaratan Kenyamanan Pengguna
+      'm33'    // M.3.3. Pemeriksaan Persyaratan Kemudahan Pengguna
+    ],
+    keywords: ['arsitektur', 'tata_bangunan', 'peruntukan', 'intensitas', 'keselamatan', 'kenyamanan', 'aksesibilitas']
+  },
+  // Alias untuk backward compatibility
   'architectural_design': {
+    name: 'Arsitektur',
+    description: 'Pemeriksaan persyaratan tata bangunan dan keselamatan',
     categories: ['tata_bangunan', 'keselamatan'],
     templates: ['m11', 'm12', 'm13', 'm14', 'm31', 'm32', 'm33'],
-    keywords: ['arsitektur', 'tata_bangunan', 'keselamatan', 'kenyamanan', 'aksesibilitas', 'sirkulasi']
+    keywords: ['arsitektur', 'tata_bangunan', 'peruntukan', 'intensitas', 'keselamatan', 'kenyamanan', 'aksesibilitas']
   },
   
-  // Electrical Systems - Fokus sistem elektrikal
+  // =====================================================
+  // 3. MEP - Mekanikal, Elektrikal, Plumbing
+  // =====================================================
+  'mep': {
+    name: 'MEP (Mekanikal, Elektrikal, Plumbing)',
+    description: 'Pemeriksaan sistem mekanikal, elektrikal, dan plumbing',
+    categories: ['keandalan'],
+    templates: [
+      'm22',   // M.2.2. Pemeriksaan Perlengkapan Proteksi Kebakaran
+      'm23',   // M.2.3. Pemeriksaan Sistem Proteksi Kebakaran Pasif
+      'm24',   // M.2.4. Pemeriksaan Sistem Pencahayaan Alami dan Buatan
+      'm25',   // M.2.5. Pemeriksaan Sistem Penghawaan Alami dan Buatan
+      'm26',   // M.2.6. Pemeriksaan Sistem Sanitasi (Plumbing)
+      'm27',   // M.2.7. Pemeriksaan Sistem Transportasi Vertikal (Lift/Eskalator)
+      'm28',   // M.2.8. Pemeriksaan Sistem Kelistrikan
+      'm29'    // M.2.9. Pemeriksaan Sistem Telekomunikasi
+    ],
+    keywords: ['mekanikal', 'elektrikal', 'plumbing', 'listrik', 'sanitasi', 'lift', 'kebakaran', 'penghawaan', 'pencahayaan']
+  },
+  // Alias untuk backward compatibility
+  'mep_engineering': {
+    name: 'MEP (Mekanikal, Elektrikal, Plumbing)',
+    description: 'Pemeriksaan sistem mekanikal, elektrikal, dan plumbing',
+    categories: ['keandalan'],
+    templates: ['m22', 'm23', 'm24', 'm25', 'm26', 'm27', 'm28', 'm29'],
+    keywords: ['mekanikal', 'elektrikal', 'plumbing', 'listrik', 'sanitasi', 'lift', 'kebakaran', 'penghawaan', 'pencahayaan']
+  },
+  
+  // =====================================================
+  // LEGACY ALIASES - Untuk backward compatibility
+  // =====================================================
   'electrical_systems': {
+    name: 'MEP',
     categories: ['keandalan'],
-    templates: ['m28'], // Sistem kelistrikan
-    keywords: ['listrik', 'elektrikal', 'kelistrikan', 'panel', 'grounding', 'instalasi']
+    templates: ['m22', 'm23', 'm24', 'm25', 'm26', 'm27', 'm28', 'm29'],
+    keywords: ['mekanikal', 'elektrikal', 'plumbing']
   },
-  
-  // Mechanical Systems - Fokus sistem mekanikal
   'mechanical_systems': {
+    name: 'MEP',
     categories: ['keandalan'],
-    templates: ['m25', 'm27'], // Penghawaan & transportasi vertikal
-    keywords: ['mekanikal', 'penghawaan', 'lift', 'eskalator', 'ventilasi']
+    templates: ['m22', 'm23', 'm24', 'm25', 'm26', 'm27', 'm28', 'm29'],
+    keywords: ['mekanikal', 'elektrikal', 'plumbing']
   },
-  
-  // Plumbing Systems - Fokus sistem plumbing
   'plumbing_systems': {
+    name: 'MEP',
     categories: ['keandalan'],
-    templates: ['m26'], // Sistem sanitasi
-    keywords: ['plumbing', 'sanitasi', 'air_bersih', 'air_kotor', 'air_hujan', 'drainase']
+    templates: ['m22', 'm23', 'm24', 'm25', 'm26', 'm27', 'm28', 'm29'],
+    keywords: ['mekanikal', 'elektrikal', 'plumbing']
   },
-  
-  // Fire Safety - Fokus sistem kebakaran
   'fire_safety': {
+    name: 'MEP',
     categories: ['keandalan'],
-    templates: ['m22', 'm23'], // Proteksi kebakaran
-    keywords: ['kebakaran', 'fire', 'proteksi', 'apar', 'hydrant', 'sprinkler', 'alarm']
+    templates: ['m22', 'm23', 'm24', 'm25', 'm26', 'm27', 'm28', 'm29'],
+    keywords: ['mekanikal', 'elektrikal', 'plumbing']
   },
-  
-  // Environmental Health - Fokus kesehatan lingkungan
   'environmental_health': {
-    categories: ['tata_bangunan'],
-    templates: ['m14'], // Pengendalian dampak lingkungan
-    keywords: ['lingkungan', 'environmental', 'drainase', 'sampah', 'kebisingan', 'kesehatan']
+    name: 'Arsitektur',
+    categories: ['tata_bangunan', 'keselamatan'],
+    templates: ['m11', 'm12', 'm13', 'm14', 'm31', 'm32', 'm33'],
+    keywords: ['arsitektur', 'tata_bangunan']
   },
   
-  // Building Inspection - Bisa akses semua checklist
+  // Building Inspection - Bisa akses semua checklist (untuk admin/supervisor)
   'building_inspection': {
+    name: 'Building Inspection (Semua)',
+    description: 'Akses ke semua checklist',
     categories: ['all'],
     templates: ['all'],
     keywords: ['all']
   }
 };
+
+// Export daftar spesialisasi utama untuk dropdown/select
+export const INSPECTOR_SPECIALIZATIONS = [
+  { value: 'struktur', label: 'Struktur', description: 'Sistem struktur bangunan gedung' },
+  { value: 'arsitektur', label: 'Arsitektur', description: 'Tata bangunan dan keselamatan' },
+  { value: 'mep', label: 'MEP', description: 'Mekanikal, Elektrikal, Plumbing' }
+];
 
 // Fungsi helper untuk menentukan apakah item memerlukan photo geotag
 export const itemRequiresPhotogeotag = (templateId, itemId) => {

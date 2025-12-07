@@ -206,9 +206,9 @@ export default function MyInspectionDetail() {
                     <Building className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-blue-900">
+                    <p className="text-lg font-semibold text-blue-900">
                       {inspection.projects?.name}
-                    </h1>
+                    </p>
                     <p className="text-blue-700 flex items-center gap-1 mt-1">
                       <MapPin className="w-4 h-4" />
                       {inspection.projects?.address}, {inspection.projects?.city}

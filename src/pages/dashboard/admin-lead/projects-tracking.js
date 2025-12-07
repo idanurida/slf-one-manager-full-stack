@@ -503,16 +503,11 @@ export default function AdminLeadProjectsTrackingPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                Project Tracking
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Pantau dan kelola status keseluruhan semua proyek dalam sistem.
-              </p>
-            </div>
+          {/* Header Actions */}
+          <motion.div variants={itemVariants} className="flex justify-between items-center">
+            <p className="text-slate-600 dark:text-slate-400">
+              Pantau dan kelola status keseluruhan semua proyek dalam sistem.
+            </p>
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"

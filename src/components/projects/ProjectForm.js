@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useRouter } from 'next/navigation'; // ✅ Gunakan next/navigation
 import { motion } from 'framer-motion';
 

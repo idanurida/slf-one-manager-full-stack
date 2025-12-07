@@ -273,63 +273,31 @@ export default function TeamMemberPerformanceDetail() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex justify-between items-start">
-            <div>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                  <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  {loading ? (
-                    <>
-                      <Skeleton className="h-8 w-48 mb-2" />
-                      <Skeleton className="h-4 w-32" />
-                    </>
-                  ) : (
-                    <>
-                      <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {memberData?.full_name}
-                      </h1>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge className={getRoleColor(memberData?.role)}>
-                          {getRoleLabel(memberData?.role)}
-                        </Badge>
-                        {performanceStats.specialization && (
-                          <Badge variant="outline" className="capitalize">
-                            {performanceStats.specialization}
-                          </Badge>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-              <p className="text-slate-600 dark:text-slate-400">
-                Detail kinerja dan statistik performa anggota tim.
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => router.push('/dashboard/head-consultant/performance')}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
+          {/* Action Buttons */}
+          <motion.div variants={itemVariants} className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/head-consultant/performance')}>
                 <ArrowLeft className="w-4 h-4" />
-                Kembali
               </Button>
+              <span className="text-sm text-muted-foreground">{memberData?.full_name}</span>
+              {!loading && (
+                <>
+                  <Badge className={getRoleColor(memberData?.role)}>
+                    {getRoleLabel(memberData?.role)}
+                  </Badge>
+                  {performanceStats.specialization && (
+                    <Badge variant="outline" className="capitalize">
+                      {performanceStats.specialization}
+                    </Badge>
+                  )}
+                </>
+              )}
             </div>
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </motion.div>
-
-          <Separator />
 
           {loading ? (
             // Loading State

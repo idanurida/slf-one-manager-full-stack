@@ -370,34 +370,24 @@ export default function NotificationCenter() {
           </Alert>
         )}
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-              Pusat Notifikasi
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Kelola semua notifikasi Anda di satu tempat
-            </p>
-          </div>
-          <div className="flex gap-2">
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleMarkAllAsRead}
+            disabled={notificationStats.unread === 0}
+          >
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Tandai Semua Dibaca
+          </Button>
             <Button
-              variant="outline"
-              onClick={handleMarkAllAsRead}
-              disabled={notificationStats.unread === 0}
-              className="flex items-center gap-2"
-            >
-              <CheckCircle className="w-4 h-4" />
-              Tandai Semua Dibaca
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-2"
-            >
-              Kembali ke Dashboard
-            </Button>
-          </div>
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/dashboard')}
+          >
+            Kembali
+          </Button>
         </div>
 
         <Separator className="bg-border" />

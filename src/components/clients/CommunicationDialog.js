@@ -1,8 +1,7 @@
-// client\src\components\client\CommunicationDialog.js
+// FILE: src/components/clients/CommunicationDialog.js
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/utils/supabaseClient";
 import { toast } from "sonner";
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
@@ -16,6 +15,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Send, MessageCircle } from "lucide-react";
+
+// Import messageService untuk konsistensi
+import { fetchProjectMessages, sendMessage as sendMessageService } from "@/utils/messageService";
 
 const formatDateSafely = (dateString) => {
   if (!dateString) return "-";
@@ -38,19 +40,13 @@ export const CommunicationDialog = ({
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Fetch messages menggunakan messageService
   const fetchMessages = async () => {
     if (!projectId) return;
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select(`
-          *,
-          profiles:sender_id(full_name, avatar_url)
-        `)
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: true });
+      const { data, error } = await fetchProjectMessages(projectId, user?.id);
 
       if (error) throw error;
       setMessages(data || []);
@@ -62,19 +58,17 @@ export const CommunicationDialog = ({
     }
   };
 
-  const sendMessage = async () => {
+  // Send message menggunakan messageService
+  const handleSendMessage = async () => {
     if (!message.trim() || !projectId) return;
 
     setSending(true);
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          project_id: projectId,
-          sender_id: user.id,
-          message: message.trim(),
-          message_type: 'text'
-        });
+      const { error } = await sendMessageService({
+        projectId,
+        senderId: user.id,
+        message: message.trim(),
+      });
 
       if (error) throw error;
 
@@ -91,26 +85,6 @@ export const CommunicationDialog = ({
   useEffect(() => {
     if (open && projectId) {
       fetchMessages();
-      
-      // Set up real-time subscription
-      const subscription = supabase
-        .channel('messages')
-        .on('postgres_changes', 
-          { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'messages',
-            filter: `project_id=eq.${projectId}`
-          }, 
-          (payload) => {
-            setMessages(prev => [...prev, payload.new]);
-          }
-        )
-        .subscribe();
-
-      return () => {
-        subscription.unsubscribe();
-      };
     }
   }, [open, projectId]);
 
@@ -169,14 +143,14 @@ export const CommunicationDialog = ({
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                sendMessage();
+                handleSendMessage();
               }
             }}
             disabled={sending}
             className="flex-1"
           />
           <Button 
-            onClick={sendMessage} 
+            onClick={handleSendMessage} 
             disabled={sending || !message.trim()}
             size="icon"
           >

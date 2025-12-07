@@ -325,27 +325,20 @@ export default function NewInspectionReport() {
 
   return (
     <DashboardLayout title="Buat Laporan Baru">
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-4">
+      <div className="p-4 md:p-6 space-y-4">
+        {/* Sub-header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
               onClick={() => router.push(`/dashboard/inspector/inspections/${inspectionId}`)}
-              className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Kembali
             </Button>
-            <div className="space-y-1">
-              <h1 className="text-2xl font-bold text-foreground">Buat Laporan Inspeksi</h1>
-              <p className="text-muted-foreground">
-                Buat laporan untuk inspeksi • {inspection.projects?.name}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Proyek: {inspection.projects?.name}
+            </span>
             {getStatusBadge(inspection.status)}
           </div>
         </div>

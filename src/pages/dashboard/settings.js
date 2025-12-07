@@ -203,9 +203,7 @@ const SettingsPage = () => {
   // --- Main Render ---
   return (
     <DashboardLayout title="Pengaturan Akun">
-      <div className="p-4 md:p-6 space-y-8 max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold tracking-tight">Pengaturan Akun</h1>
-        <Separator className="bg-border" />
+      <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
 
         <div className="space-y-6">
 

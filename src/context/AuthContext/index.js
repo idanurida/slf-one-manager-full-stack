@@ -80,14 +80,19 @@ export function AuthProvider({ children }) {
       console.log("[AuthContext] ✅ Profile loaded from DB:", normalizedProfile);
       return normalizedProfile;
     } catch (err) {
-      console.warn("[AuthContext] ⚠️ Profile fetch failed, using fallback:", err);
+      console.error("[AuthContext] ❌ Profile fetch failed:", err);
+      console.error("[AuthContext] User ID:", userId);
+      console.error("[AuthContext] Error details:", err.message, err.code);
+      
+      // Jangan gunakan fallback role - biarkan null agar user tahu ada masalah
       const fallback = {
         id: userId,
         full_name: userObject?.email?.split("@")[0] || "User",
-        role: "inspector",
+        role: null, // Jangan set default role
+        _error: err.message,
       };
       setProfile(fallback);
-      saveProfileToCache(fallback);
+      // Jangan cache profile yang error
       return fallback;
     }
   };
@@ -101,7 +106,7 @@ export function AuthProvider({ children }) {
       admin_lead: "/dashboard/admin-lead",
       head_consultant: "/dashboard/head-consultant",
       superadmin: "/dashboard/superadmin",
-      project_lead: "/dashboard/project-lead",
+      project_lead: "/dashboard/team-leader", // Redirect ke team-leader URL
       inspector: "/dashboard/inspector",
       drafter: "/dashboard/drafter",
       client: "/dashboard/client",
@@ -109,8 +114,13 @@ export function AuthProvider({ children }) {
 
     const redirectPath = redirectPaths[role] || "/dashboard";
     const currentPath = router.pathname;
+    
+    // Also check for team-leader path for project_lead role
+    const isAtCorrectPath = currentPath === redirectPath || 
+      currentPath.startsWith(redirectPath + "/") ||
+      (role === 'project_lead' && currentPath.startsWith('/dashboard/team-leader'));
 
-    if (currentPath === redirectPath || currentPath.startsWith(redirectPath + "/")) {
+    if (isAtCorrectPath) {
       console.log(`[AuthContext] ✅ Already at correct path: ${currentPath}`);
       setIsRedirecting(false);
       return;
@@ -273,11 +283,13 @@ export function AuthProvider({ children }) {
     isInspector: getNormalizedRole() === "inspector",
     isHeadConsultant: getNormalizedRole() === "head_consultant",
     isProjectLead: getNormalizedRole() === "project_lead",
+    isTeamLeader: getNormalizedRole() === "project_lead", // Alias: Team Leader = Project Lead di DB
     isClient: getNormalizedRole() === "client",
     isAdminLead: getNormalizedRole() === "admin_lead",
     isAdminTeam: getNormalizedRole() === "admin_team",
     isDrafter: getNormalizedRole() === "drafter",
-    isSuperAdmin: getNormalizedRole() === "superadmin",
+    isSuperadmin: getNormalizedRole() === "superadmin",
+    isSuperAdmin: getNormalizedRole() === "superadmin", // Alias for backward compatibility
 
     isManagement() {
       const role = getNormalizedRole();

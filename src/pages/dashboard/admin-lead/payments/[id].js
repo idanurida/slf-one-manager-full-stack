@@ -339,8 +339,8 @@ const PaymentDetailPage = () => {
     return (
       <DashboardLayout title="Detail Pembayaran">
         <div className="flex flex-col items-center justify-center h-[60vh]">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-          <p className="mt-3 text-slate-600">Memuat detail pembayaran...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400" />
+          <p className="mt-3 text-muted-foreground">Memuat detail pembayaran...</p>
         </div>
       </DashboardLayout>
     );
@@ -367,22 +367,16 @@ const PaymentDetailPage = () => {
   return (
     <DashboardLayout title="Detail Pembayaran">
       <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-              Detail Pembayaran
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400">
-              ID: {payment.id}
-            </p>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <NextLink href="/dashboard/admin-lead/payments">
+                <ArrowLeft className="h-4 w-4" />
+              </NextLink>
+            </Button>
+            <span className="text-sm text-muted-foreground">ID: {payment.id}</span>
           </div>
-          <Button asChild variant="outline" size="sm">
-            <NextLink href="/dashboard/admin-lead/payments">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali ke Daftar
-            </NextLink>
-          </Button>
         </div>
 
         {/* ===== CARD DETAIL ===== */}
@@ -411,7 +405,7 @@ const PaymentDetailPage = () => {
               
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-muted-foreground">Jumlah Pembayaran</Label>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {safeFormatCurrency(payment.amount)}
                 </p>
               </div>
@@ -451,7 +445,7 @@ const PaymentDetailPage = () => {
               {payment.verification_status === 'rejected' && payment.rejection_reason && (
                 <div className="md:col-span-2 space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Alasan Penolakan</Label>
-                  <p className="text-lg font-medium text-red-600 bg-red-50 p-3 rounded-md">
+                  <p className="text-lg font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
                     {payment.rejection_reason}
                   </p>
                 </div>

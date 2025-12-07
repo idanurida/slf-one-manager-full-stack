@@ -309,37 +309,23 @@ const DocumentDetailPage = () => {
     <DashboardLayout title={`Detail Dokumen: ${document.name}`}>
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Kembali ke Dokumen
-          </Button>
-
-          <div className="text-center sm:text-left">
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-              {document.name}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              ID: {document.id}
-            </p>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleBack}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground">{document.name}</span>
           </div>
-
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleDownload(document.url, document.name)} // ✅ Gunakan alias 'url' dan 'name'
-              className="flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Unduh Dokumen
+            <Button variant="outline" size="sm" onClick={() => handleDownload(document.url, document.name)}>
+              <Download className="w-4 h-4 mr-2" />
+              Unduh
             </Button>
             {(document.status === 'draft' || document.status === 'rejected') && (
-              <Button
-                onClick={handleEdit}
-                className="flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Edit Dokumen
+              <Button size="sm" onClick={handleEdit}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
               </Button>
             )}
           </div>

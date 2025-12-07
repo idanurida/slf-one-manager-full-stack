@@ -34,7 +34,7 @@ const itemVariants = {
 };
 
 // Helper functions
-const getStatusColor = (status) => {
+export const getStatusColor = (status) => {
   const colors = {
     'active': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
     'completed': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
@@ -45,7 +45,7 @@ const getStatusColor = (status) => {
   return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
 };
 
-const getStatusLabel = (status) => {
+export const getStatusLabel = (status) => {
   const labels = {
     'draft': 'Draft',
     'submitted': 'Submitted',
@@ -533,16 +533,11 @@ export default function AdminLeadCommunicationPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                Komunikasi dengan Client
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Kelola pesan dan notifikasi dari client terkait proyek SLF.
-              </p>
-            </div>
+          {/* Header Actions */}
+          <motion.div variants={itemVariants} className="flex justify-between items-center">
+            <p className="text-slate-600 dark:text-slate-400">
+              Kelola pesan dan notifikasi dari client terkait proyek SLF.
+            </p>
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"

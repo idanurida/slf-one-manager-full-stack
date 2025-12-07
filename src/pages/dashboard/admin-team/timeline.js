@@ -33,8 +33,72 @@ import {
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
-// Reuse ProjectTimelineCard from admin-lead
-import { ProjectTimelineCard } from "@/pages/dashboard/admin-lead/timeline/index";
+
+// ProjectTimelineCard Component (local)
+const ProjectTimelineCard = ({ project, onView, onEdit }) => {
+  const getPhaseProgress = (status) => {
+    const phaseMap = {
+      'draft': 1, 'submitted': 1, 'project_lead_review': 1,
+      'inspection_scheduled': 2, 'inspection_in_progress': 2,
+      'report_draft': 3, 'head_consultant_review': 3,
+      'client_review': 4,
+      'government_submitted': 5, 'slf_issued': 5, 'completed': 5
+    };
+    return phaseMap[status] || 1;
+  };
+
+  const progress = (getPhaseProgress(project.status) / 5) * 100;
+
+  return (
+    <Card className="border hover:shadow-lg transition-all">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold truncate">{project.name}</h3>
+            <p className="text-sm text-muted-foreground">
+              {project.application_type} • {project.location || project.city || '-'}
+            </p>
+          </div>
+          <Badge variant="outline">{project.status?.replace(/_/g, ' ')}</Badge>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="flex justify-between text-xs mb-1">
+            <span>Progress</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-2">
+            <div className="bg-primary h-2 rounded-full" style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+
+        {/* Phase Indicators */}
+        <div className="flex justify-between text-xs mb-4">
+          {[1, 2, 3, 4, 5].map(phase => (
+            <div key={phase} className="flex flex-col items-center">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                phase <= getPhaseProgress(project.status) ? 'bg-primary text-primary-foreground' : 'bg-muted'
+              }`}>
+                {phase}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => onView(project)}>
+            <Eye className="w-3 h-3 mr-1" /> Detail
+          </Button>
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => onEdit(project)}>
+            <Calendar className="w-3 h-3 mr-1" /> Timeline
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 // Animation variants
 const containerVariants = {
@@ -161,40 +225,26 @@ export default function AdminTeamTimeline() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
+          {/* Action Buttons */}
           <motion.div variants={itemVariants} className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => router.push('/dashboard/admin-team')}
-                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                  Timeline Proyek Saya
-                </h1>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Pantau progress proyek yang Anda tangani
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/dashboard/admin-team')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Kembali
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </motion.div>
-
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
 
           {/* Stats Overview */}
           <motion.div variants={itemVariants}>

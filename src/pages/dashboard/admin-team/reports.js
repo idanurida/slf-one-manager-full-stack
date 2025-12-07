@@ -454,37 +454,25 @@ export default function AdminTeamReportsPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                Laporan Inspector
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Verifikasi dan tangani laporan dari inspector dalam proyek yang Anda tangani
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => router.push('/dashboard/admin-team')}
-                className="flex items-center gap-2"
-              >
-                <ArrowRight className="w-4 h-4 rotate-180" />
-                Kembali
-              </Button>
-            </div>
+          {/* Action Buttons */}
+          <motion.div variants={itemVariants} className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => router.push('/dashboard/admin-team')}
+            >
+              <ArrowRight className="w-4 h-4 rotate-180 mr-2" />
+              Kembali
+            </Button>
           </motion.div>
-
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
 
           {/* Filters */}
           <motion.div variants={itemVariants}>

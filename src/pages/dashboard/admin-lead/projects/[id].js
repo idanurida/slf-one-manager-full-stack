@@ -461,35 +461,23 @@ export default function AdminLeadProjectDetailPage() {
     <DashboardLayout title={`${project.name}`}>
       <div className="p-4 md:p-6 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" onClick={handleBack} className="flex items-center gap-2 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600">
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={handleBack}>
               <ArrowLeft className="w-4 h-4" />
-              Kembali
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                {project.name}
-              </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant={getStatusColor(project.status)}>
-                  {getStatusText(project.status)}
-                </Badge>
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  {project.application_type}
-                </span>
-              </div>
-            </div>
+            <span className="text-sm text-muted-foreground">{project.name}</span>
+            <Badge variant={getStatusColor(project.status)}>
+              {getStatusText(project.status)}
+            </Badge>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild className="text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600">
-              <a href={`/dashboard/admin-lead/projects/${id}/edit`}>
-                <Settings className="w-4 h-4 mr-2" />
-                Edit
-              </a>
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" asChild>
+            <a href={`/dashboard/admin-lead/projects/${id}/edit`}>
+              <Settings className="w-4 h-4 mr-2" />
+              Edit
+            </a>
+          </Button>
         </div>
 
         {/* Progress Overview */}

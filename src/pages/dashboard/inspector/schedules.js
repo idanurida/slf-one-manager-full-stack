@@ -165,17 +165,7 @@ export default function InspectorSchedules() {
 
   return (
     <DashboardLayout title="Jadwal Inspeksi">
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-foreground">Jadwal Inspeksi</h1>
-            <p className="text-muted-foreground">
-              Kelola jadwal inspeksi dari project lead • {profile?.full_name || 'Inspector'}
-            </p>
-          </div>
-        </div>
-
+      <div className="p-4 md:p-6 space-y-4">
         {/* Filters */}
         <Card>
           <CardContent className="p-4">

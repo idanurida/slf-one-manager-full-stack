@@ -304,29 +304,17 @@ export default function AdminTeamSubmissionsPage() {
     <DashboardLayout title="Konfirmasi ke SIMBG">
       <TooltipProvider>
         <div className="p-6 space-y-6 bg-white dark:bg-slate-900 min-h-screen">
-          {/* Header */}
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                Konfirmasi ke SIMBG
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Konfirmasi manual upload ke portal SIMBG. Pastikan semua dokumen lengkap sebelum dikonfirmasi.
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button 
-                onClick={() => router.push('/dashboard/admin-team')}
-                variant="outline"
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <ArrowRight className="w-4 h-4" /> {/* ✅ SEKARANG SUDAH DIIMPORT */}
-                Kembali ke Dashboard
-              </Button>
-            </div>
+          {/* Action Buttons */}
+          <div className="flex justify-end">
+            <Button 
+              onClick={() => router.push('/dashboard/admin-team')}
+              variant="outline"
+              size="sm"
+            >
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Kembali
+            </Button>
           </div>
-
-          <Separator />
 
           {/* Info Alert */}
           <Alert className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">

@@ -305,36 +305,28 @@ const ReportDetailPage = () => {
     <DashboardLayout title={`Detail Laporan: ${report.projects?.name || 'N/A'}`}>
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Kembali
-          </Button>
-
-          <div className="text-center sm:text-left">
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-              {report.projects?.name || 'Laporan Tidak Dikenal'}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">ID: {report.id}</p>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleBack}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground">{report.projects?.name || 'Laporan'}</span>
           </div>
-
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => handleDownload(report.file_url, report.description || `Laporan_${report.id}`)} // Gunakan file_url
-              className="flex items-center gap-2"
+              size="sm"
+              onClick={() => handleDownload(report.file_url, report.description || `Laporan_${report.id}`)}
               disabled={!report.file_url}
             >
-              <Download className="w-4 h-4" />
-              Unduh Laporan
+              <Download className="w-4 h-4 mr-2" />
+              Unduh
             </Button>
             {(report.report_status === 'draft' || report.report_status === 'rejected') && (
-              <Button
-                onClick={handleEdit}
-                className="flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Edit Laporan
+              <Button size="sm" onClick={handleEdit}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
               </Button>
             )}
           </div>

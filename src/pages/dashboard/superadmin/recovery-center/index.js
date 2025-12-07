@@ -93,24 +93,14 @@ const RecoveryCenter = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header Section */}
+      {/* Action Buttons */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={handleBack} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Kembali
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-              <Wrench className="h-8 w-8 text-blue-600" />
-              Error Response & Recovery Center
-            </h1>
-            <p className="text-slate-600 mt-1">
-              Pantau error sistem, dapatkan rekomendasi tindakan, dan jalankan perbaikan otomatis
-            </p>
-          </div>
-        </div>
-        <Button onClick={fetchLogs} variant="outline" className="gap-2" disabled={loading}>
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+        <Button variant="ghost" size="sm" onClick={handleBack}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Kembali
+        </Button>
+        <Button onClick={fetchLogs} variant="outline" size="sm" disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>

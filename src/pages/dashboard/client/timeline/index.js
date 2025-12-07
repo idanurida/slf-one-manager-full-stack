@@ -386,42 +386,23 @@ export default function ClientTimeline() {
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={() => router.push('/dashboard/client')}
-                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                  Timeline Project Saya
-                </h1>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Pantau progress dan timeline semua project Anda
-                </p>
-              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              <Button
-                onClick={() => router.push('/dashboard/client/projects/new')}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
+              <Button size="sm" onClick={() => router.push('/dashboard/client/projects/new')}>
                 <Building className="w-4 h-4 mr-2" />
                 Project Baru
               </Button>
             </div>
           </motion.div>
-
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
 
           {/* Stats Overview */}
           <motion.div variants={itemVariants}>

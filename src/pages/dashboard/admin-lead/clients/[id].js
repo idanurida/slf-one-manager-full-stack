@@ -370,53 +370,26 @@ export default function AdminLeadClientDetailPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBack}
-                className="flex items-center gap-2"
-              >
+          {/* Action Buttons */}
+          <motion.div variants={itemVariants} className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={handleBack}>
                 <ArrowLeft className="w-4 h-4" />
               </Button>
-              <div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                  {client.name}
-                </h1>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    <Crown className="w-3 h-3 mr-1" />
-                    Client Anda sebagai Admin Lead
-                  </Badge>
-                  <Badge variant="secondary">
-                    {projects.length} Proyek
-                  </Badge>
-                </div>
-              </div>
+              <span className="text-sm text-muted-foreground">{client.name}</span>
+              <Badge variant="secondary">{projects.length} Proyek</Badge>
             </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              <Button
-                onClick={handleSendMessage}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
-                <MessageCircle className="w-4 h-4" />
+              <Button size="sm" onClick={handleSendMessage}>
+                <MessageCircle className="w-4 h-4 mr-2" />
                 Kirim Pesan
               </Button>
             </div>
           </motion.div>
-
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
 
           {/* Tabs */}
           <motion.section variants={itemVariants}>

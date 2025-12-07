@@ -231,28 +231,13 @@ export default function CreateUserPage() {
   return (
     <DashboardLayout title="Tambah Pengguna">
       <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Shield className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Tambah Pengguna Baru</h1>
-              <p className="text-muted-foreground">Buat akun pengguna baru dengan role dan spesialisasi</p>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={() => router.push('/dashboard/notifications')}
-          >
-            <Bell className="w-4 h-4" />
+        {/* Action Button */}
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/notifications')}>
+            <Bell className="w-4 h-4 mr-2" />
             Notifikasi
           </Button>
         </div>
-
-        <Separator />
 
         {/* Form */}
         <Card className="border-border">

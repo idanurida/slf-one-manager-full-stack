@@ -1,0 +1,477 @@
+﻿// FILE: src/pages/dashboard/superadmin/projects/new.js
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
+import { useToast } from '@/components/ui/use-toast';
+
+// shadcn/ui Components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+// Lucide Icons
+import {
+  FileText, Clock, Activity, CheckCircle, XCircle, Bell, Eye, Search, X,
+  CheckSquare, AlertTriangle, Loader2, Info, Calendar, UserCheck, Camera, Plus, Save, RotateCcw
+} from 'lucide-react';
+
+// Other Imports
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { supabase } from '@/utils/supabaseClient';
+import { getUserAndProfile } from '@/utils/auth';
+
+// --- Utility Functions ---
+const formatDateSafely = (dateString) => {
+  if (!dateString) return '-';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
+    return format(date, 'dd MMM yyyy', { locale: localeId });
+  } catch (e) {
+    console.error("Date formatting error:", e);
+    return dateString;
+  }
+};
+
+const getStatusColor = (status) => {
+  switch (status?.toLowerCase()) {
+    case 'draft': return 'secondary';
+    case 'submitted': return 'default';
+    case 'project_lead_review': return 'default';
+    case 'head_consultant_review': return 'default';
+    case 'client_review': return 'default';
+    case 'government_submitted': return 'default';
+    case 'slf_issued': return 'default';
+    case 'completed': return 'default';
+    case 'cancelled': return 'destructive';
+    case 'rejected': return 'destructive';
+    default: return 'outline';
+  }
+};
+
+const getStatusText = (status) => {
+  return status?.replace(/_/g, ' ') || 'N/A';
+};
+
+// --- Main Component ---
+export default function CreateProjectPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [form, setForm] = useState({
+    name: "",
+    address: "",
+    city: "",
+    client_id: "",
+    project_lead_id: "",
+    start_date: "",
+    due_date: "",
+    status: "draft",
+    description: "",
+  });
+
+  const [clients, setClients] = useState([]);
+  const [leads, setLeads] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // --- Data Fetching ---
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const { user: authUser, profile: userProfile } = await getUserAndProfile();
+        if (!authUser || !userProfile || userProfile.role !== 'superadmin') {
+          console.warn('[CreateProjectPage] Bukan superadmin atau tidak ada profil.');
+          router.push('/login');
+          return;
+        }
+        setUser(authUser);
+        setProfile(userProfile);
+      } catch (err) {
+        console.error('[CreateProjectPage] Load user error:', err);
+        const errorMessage = err.message || 'Terjadi kesalahan saat memuat data pengguna.';
+        setError(errorMessage);
+        toast({
+          title: 'Gagal memuat data pengguna.',
+          description: errorMessage,
+          variant: "destructive",
+        });
+        router.push('/login');
+      }
+    };
+
+    const loadProfiles = async () => {
+      if (!user?.id || !profile) return;
+      setLoading(true);
+      setError(null);
+
+      try {
+        // --- Ambil daftar client ---
+        const { data: clientData, error: clientError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .eq('role', 'client')
+          .order('full_name', { ascending: true });
+
+        if (clientError) throw clientError;
+        setClients(Array.isArray(clientData) ? clientData : []);
+
+        // --- Ambil daftar project_lead ---
+        const { data: leadData, error: leadError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .eq('role', 'project_lead')
+          .order('full_name', { ascending: true });
+
+        if (leadError) throw leadError;
+        setLeads(Array.isArray(leadData) ? leadData : []);
+
+      } catch (err) {
+        console.error('[CreateProjectPage] Load profiles error:', err);
+        const errorMessage = err.message || 'Terjadi kesalahan saat memuat data pengguna.';
+        setError(errorMessage);
+        toast({
+          title: 'Gagal memuat data pengguna.',
+          description: errorMessage,
+          variant: "destructive",
+        });
+        setClients([]);
+        setLeads([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (router.isReady) {
+      loadUserData().then(() => {
+        loadProfiles();
+      });
+    }
+  }, [router.isReady, router, toast]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    try {
+      // --- Validasi form ---
+      if (!form.name.trim()) {
+        toast({
+          title: 'Nama proyek wajib diisi.',
+          variant: "warning",
+        });
+        return;
+      }
+
+      // --- Buat proyek baru ---
+      const { data: projectData, error: projectError } = await supabase
+        .from('projects')
+        .insert([{
+          name: form.name.trim(),
+          address: form.address.trim() || null,
+          city: form.city.trim() || null,
+          client_id: form.client_id || null,
+          project_lead_id: form.project_lead_id || null,
+          start_date: form.start_date ? new Date(form.start_date).toISOString() : null,
+          due_date: form.due_date ? new Date(form.due_date).toISOString() : null,
+          status: form.status,
+          description: form.description.trim() || null,
+        }])
+        .select()
+        .single();
+
+      if (projectError) throw projectError;
+
+      toast({
+        title: 'Proyek berhasil dibuat.',
+        description: `Proyek baru #${projectData.id} telah berhasil dibuat.`,
+        variant: "default",
+      });
+
+      // --- Redirect ke halaman detail proyek ---
+      router.push(`/dashboard/superadmin/projects/${projectData.id}`);
+
+    } catch (err) {
+      console.error('[CreateProjectPage] Create project error:', err);
+      const errorMessage = err.message || 'Terjadi kesalahan saat membuat proyek.';
+      setError(errorMessage);
+      toast({
+        title: 'Gagal membuat proyek.',
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    router.push('/dashboard/superadmin/projects');
+  };
+
+  // --- Loading State ---
+  if (loading || !router.isReady) {
+    return (
+      <DashboardLayout title="Buat Proyek Baru">
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">Memverifikasi sesi dan memuat data...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // --- Error State ---
+  if (error || !user || !profile) {
+    return (
+      <DashboardLayout title="Buat Proyek Baru">
+        <div className="p-4 md:p-6">
+          <Alert variant="destructive" className="m-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Terjadi Kesalahan</AlertTitle>
+            <AlertDescription>
+              {error || "Akses Ditolak. Silakan login kembali."}
+            </AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // --- Render Utama ---
+  return (
+    <DashboardLayout title="Buat Proyek Baru" user={user} profile={profile}>
+      <div className="p-4 md:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-xl md:text-2xl font-semibold text-blue-600">
+            Buat Proyek Baru
+          </h1>
+          <Button
+            variant="ghost"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            onClick={() => router.push('/dashboard/notifications')}
+          >
+            <Bell className="w-4 h-4" />
+            Notifikasi
+          </Button>
+        </div>
+
+        <Separator className="bg-border" />
+
+        <Card className="border-border">
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <Label htmlFor="name" className="text-sm font-medium text-foreground">
+                  Nama Proyek *
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Masukkan nama proyek"
+                  disabled={saving}
+                  className="bg-background"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label htmlFor="address" className="text-sm font-medium text-foreground">
+                  Alamat
+                </Label>
+                <Textarea
+                  id="address"
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  placeholder="Alamat lengkap proyek"
+                  rows={3}
+                  disabled={saving}
+                  className="bg-background min-h-[100px]"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label htmlFor="city" className="text-sm font-medium text-foreground">
+                  Kota
+                </Label>
+                <Input
+                  id="city"
+                  name="city"
+                  value={form.city}
+                  onChange={handleChange}
+                  placeholder="Kota proyek"
+                  disabled={saving}
+                  className="bg-background"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label htmlFor="client_id" className="text-sm font-medium text-foreground">
+                  Client
+                </Label>
+                <Select name="client_id" value={form.client_id} onValueChange={(value) => setForm(prev => ({ ...prev, client_id: value }))}>
+                  <SelectTrigger id="client_id" className="bg-background">
+                    <SelectValue placeholder="Pilih Client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Pilih Client</SelectItem>
+                    {clients.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.full_name || c.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-4">
+                <Label htmlFor="project_lead_id" className="text-sm font-medium text-foreground">
+                  Project Lead
+                </Label>
+                <Select name="project_lead_id" value={form.project_lead_id} onValueChange={(value) => setForm(prev => ({ ...prev, project_lead_id: value }))}>
+                  <SelectTrigger id="project_lead_id" className="bg-background">
+                    <SelectValue placeholder="Pilih Project Lead" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Pilih Project Lead</SelectItem>
+                    {leads.map((l) => (
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.full_name || l.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="start_date" className="text-sm font-medium text-foreground">
+                    Tanggal Mulai
+                  </Label>
+                  <Input
+                    id="start_date"
+                    name="start_date"
+                    type="date"
+                    value={form.start_date}
+                    onChange={handleChange}
+                    disabled={saving}
+                    className="bg-background"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="due_date" className="text-sm font-medium text-foreground">
+                    Tanggal Selesai
+                  </Label>
+                  <Input
+                    id="due_date"
+                    name="due_date"
+                    type="date"
+                    value={form.due_date}
+                    onChange={handleChange}
+                    disabled={saving}
+                    className="bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Label htmlFor="description" className="text-sm font-medium text-foreground">
+                  Deskripsi
+                </Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Deskripsikan proyek ini..."
+                  rows={4}
+                  disabled={saving}
+                  className="bg-background min-h-[100px]"
+                />
+              </div>
+
+              <Separator className="bg-border" />
+
+              <div className="flex justify-end gap-4 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={saving}
+                  className="flex items-center gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  variant="default"
+                  disabled={saving}
+                  className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-800"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Simpan
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+}
+
+

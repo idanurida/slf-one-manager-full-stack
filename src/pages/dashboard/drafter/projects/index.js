@@ -427,36 +427,15 @@ export default function DrafterDashboard() {
           </Alert>
         )}
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-foreground leading-tight">
-              Selamat Datang, {profile?.full_name || user?.email}!
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Dashboard Overview - Kelola aktivitas drafting Anda
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="capitalize text-xs">
-              {profile?.specialization?.replace(/_/g, ' ') || 'Drafter'}
-              {projectStats.total > 0 && (
-                <span className="ml-1">• {projectStats.total} Proyek</span>
-              )}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-              onClick={() => router.push('/dashboard/drafter/projects')}
-            >
-              <ClipboardList className="w-4 h-4" />
-              Semua Proyek
-            </Button>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end gap-3">
+          <Badge variant="secondary" className="capitalize text-xs">
+            {profile?.specialization?.replace(/_/g, ' ') || 'Drafter'}
+            {projectStats.total > 0 && (
+              <span className="ml-1">• {projectStats.total} Proyek</span>
+            )}
+          </Badge>
         </div>
-
-        <Separator className="bg-border" />
 
         {/* Quick Stats Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">

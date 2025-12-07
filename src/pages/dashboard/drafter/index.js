@@ -458,16 +458,11 @@ export default function DrafterDashboard() {
           </Alert>
         )}
 
-        {/* Header */}
+        {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-foreground leading-tight">
-              Selamat Datang, {profile?.full_name || user?.email}!
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Dashboard Overview - Kelola aktivitas drafting Anda
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Selamat Datang, {profile?.full_name || user?.email}! Kelola aktivitas drafting Anda.
+          </p>
           <div className="flex items-center gap-3">
             <Badge variant="secondary" className="capitalize text-xs">
               {profile?.specialization?.replace(/_/g, ' ') || 'Drafter'}

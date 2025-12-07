@@ -328,35 +328,23 @@ const EditDocumentPage = () => {
     <DashboardLayout title={`Edit Dokumen: ${document.name}`}>
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Kembali ke Detail
-          </Button>
-
-          <div className="text-center sm:text-left">
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-              Edit Dokumen
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Perbarui informasi dokumen
-            </p>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleBack}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground">Edit Dokumen</span>
           </div>
-
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={saving}
-              className="flex items-center gap-2"
-            >
-              <X className="w-4 h-4" />
+            <Button variant="outline" size="sm" onClick={handleBack} disabled={saving}>
+              <X className="w-4 h-4 mr-2" />
               Batal
             </Button>
             <Button
+              size="sm"
               onClick={handleSave}
               disabled={saving || document.status !== 'draft' && document.status !== 'rejected'}
-              className="flex items-center gap-2"
             >
               {saving ? (
                 <>

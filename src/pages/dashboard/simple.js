@@ -13,10 +13,10 @@ export default function SimpleDashboard() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold">Simple Dashboard</h1>
+      <p className="text-lg font-semibold">Simple Dashboard</p>
       <p>User: {user?.email}</p>
       <p>Role: {profile?.role}</p>
-      <p>Login berhasil! 🎉</p>
+      <p>Login berhasil!</p>
       
       <div className="mt-4">
         <button 

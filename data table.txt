@@ -1,0 +1,588 @@
+| table_name                  | table_type | column_count |
+| --------------------------- | ---------- | ------------ |
+| activity_logs               | BASE TABLE | 1            |
+| approvals                   | BASE TABLE | 1            |
+| checklist_items             | BASE TABLE | 1            |
+| checklist_responses         | BASE TABLE | 1            |
+| checklist_templates         | BASE TABLE | 1            |
+| clients                     | BASE TABLE | 1            |
+| comments                    | BASE TABLE | 1            |
+| documents                   | BASE TABLE | 1            |
+| inspection_comments         | BASE TABLE | 1            |
+| inspection_photos           | BASE TABLE | 1            |
+| inspection_reports          | BASE TABLE | 1            |
+| inspections                 | BASE TABLE | 1            |
+| logs                        | BASE TABLE | 1            |
+| messages                    | BASE TABLE | 1            |
+| notifications               | BASE TABLE | 1            |
+| payments                    | BASE TABLE | 1            |
+| profile_clients             | BASE TABLE | 1            |
+| profiles                    | BASE TABLE | 1            |
+| project_assignments         | BASE TABLE | 1            |
+| project_teams               | BASE TABLE | 1            |
+| projects                    | BASE TABLE | 1            |
+| projects_backup             | BASE TABLE | 1            |
+| projects_policy_backup      | BASE TABLE | 1            |
+| regions                     | BASE TABLE | 1            |
+| report_approvals            | BASE TABLE | 1            |
+| reports                     | BASE TABLE | 1            |
+| schedules                   | BASE TABLE | 1            |
+| simak_items                 | BASE TABLE | 1            |
+| simak_responses             | BASE TABLE | 1            |
+| special_building_types      | BASE TABLE | 1            |
+| special_function_checklists | BASE TABLE | 1            |
+| support_requests            | BASE TABLE | 1            |
+| tasks                       | BASE TABLE | 1            |
+| technical_recommendations   | BASE TABLE | 1            |
+| todos                       | BASE TABLE | 1            |
+| users                       | BASE TABLE | 1            |
+
+==================
+| column_name           | data_type                | is_nullable | column_default    | character_maximum_length |
+| --------------------- | ------------------------ | ----------- | ----------------- | ------------------------ |
+| id                    | uuid                     | NO          | gen_random_uuid() | null                     |
+| name                  | text                     | NO          | null              | null                     |
+| address               | text                     | YES         | null              | null                     |
+| city                  | text                     | YES         | null              | null                     |
+| status                | text                     | NO          | 'draft'::text     | null                     |
+| project_lead_id       | uuid                     | YES         | null              | null                     |
+| client_id             | uuid                     | YES         | null              | null                     |
+| created_at            | timestamp with time zone | YES         | now()             | null                     |
+| start_date            | timestamp with time zone | YES         | null              | null                     |
+| due_date              | timestamp with time zone | YES         | null              | null                     |
+| description           | text                     | YES         | null              | null                     |
+| application_type      | text                     | YES         | null              | null                     |
+| is_special_function   | boolean                  | YES         | false             | null                     |
+| special_function_type | text                     | YES         | null              | null                     |
+| special_building_type | text                     | YES         | null              | null                     |
+| compliance_status     | text                     | YES         | null              | null                     |
+| region_name           | text                     | YES         | null              | null                     |
+| authority_title       | text                     | YES         | null              | null                     |
+| department_name       | text                     | YES         | null              | null                     |
+| region_id             | uuid                     | YES         | null              | null                     |
+| building_function     | text                     | YES         | null              | null                     |
+| request_type          | text                     | YES         | null              | null                     |
+| floors                | integer                  | YES         | null              | null                     |
+| building_height       | numeric                  | YES         | null              | null                     |
+| building_area         | numeric                  | YES         | null              | null                     |
+| location              | text                     | YES         | null              | null                     |
+| imb_number            | text                     | YES         | null              | null                     |
+| imb_date              | date                     | YES         | null              | null                     |
+| previous_slf_number   | text                     | YES         | null              | null                     |
+| previous_slf_date     | date                     | YES         | null              | null                     |
+| drafter_id            | uuid                     | YES         | null              | null                     |
+| admin_lead_id         | uuid                     | NO          | null              | null                     |
+| updated_at            | timestamp with time zone | YES         | now()             | null                     |
+| report_submitted_at   | timestamp with time zone | YES         | null              | null                     |
+| report_notes          | text                     | YES         | null              | null                     |
+
+=====================
+| id                                   | name                                 | address                   | city              | status    | project_lead_id                      | client_id                            | created_at                    | start_date | due_date | description | application_type | is_special_function | special_function_type | special_building_type | compliance_status | region_name | authority_title | department_name | region_id | building_function | request_type | floors | building_height | building_area | location | imb_number | imb_date | previous_slf_number | previous_slf_date | drafter_id                           | admin_lead_id                        | updated_at                   | report_submitted_at | report_notes |
+| ------------------------------------ | ------------------------------------ | ------------------------- | ----------------- | --------- | ------------------------------------ | ------------------------------------ | ----------------------------- | ---------- | -------- | ----------- | ---------------- | ------------------- | --------------------- | --------------------- | ----------------- | ----------- | --------------- | --------------- | --------- | ----------------- | ------------ | ------ | --------------- | ------------- | -------- | ---------- | -------- | ------------------- | ----------------- | ------------------------------------ | ------------------------------------ | ---------------------------- | ------------------- | ------------ |
+| a49ab709-66e2-4c0b-81a3-f80144b7b20e | Proyek Gedung Perkantoran Mega Tower | Jl. Mega Kuningan No. 1   | Jakarta Selatan   | draft     | 015a4911-0101-4bed-9475-d8dad207b799 | a1b2c3d4-e5f6-7890-abcd-ef1234567890 | 2025-11-09 13:03:41.645743+00 | null       | null     | null        | null             | false               | null                  | null                  | null              | null        | null            | null            | null      | null              | null         | null   | null            | null          | null     | null       | null     | null                | null              | null                                 | 967b1bcf-73bb-4c66-b9b7-77dd786ad608 | 2025-11-10 15:48:18.07326+00 | null                | null         |
+| 071b487a-3be5-49fa-afd3-6648568c0b80 | Proyek Renovasi Mall Central         | Jl. Thamrin No. 45        | Jakarta Utara     | active    | 015a4911-0101-4bed-9475-d8dad207b799 | a1b2c3d4-e5f6-7890-abcd-ef1234567890 | 2025-10-28 12:08:12.681661+00 | null       | null     | null        | null             | false               | null                  | null                  | null              | null        | null            | null            | null      | null              | null         | null   | null            | null          | null     | null       | null     | null                | null              | null                                 | 967b1bcf-73bb-4c66-b9b7-77dd786ad608 | 2025-11-10 15:48:18.07326+00 | null                | null         |
+| 071b487a-3be5-49fa-afd3-6648568c0b81 | Proyek Ruko Komersial BSD            | Jl. BSD Green Office Park | Tangerang Selatan | active    | 015a4911-0101-4bed-9475-d8dad207b799 | a1b2c3d4-e5f6-7890-abcd-ef1234567890 | 2025-10-28 12:08:12.681661+00 | null       | null     | null        | null             | false               | null                  | null                  | null              | null        | null            | null            | null      | null              | null         | null   | null            | null          | null     | null       | null     | null                | null              | null                                 | 967b1bcf-73bb-4c66-b9b7-77dd786ad608 | 2025-11-10 15:48:18.07326+00 | null                | null         |
+| 071b487a-3be5-49fa-afd3-6648568c0b82 | Proyek Gudang Logistik Cibitung      | Kawasan Industri Cibitung | Bekasi            | active    | 015a4911-0101-4bed-9475-d8dad207b799 | a1b2c3d4-e5f6-7890-abcd-ef1234567890 | 2025-10-28 12:08:12.681661+00 | null       | null     | null        | null             | false               | null                  | null                  | null              | null        | null            | null            | null      | null              | null         | null   | null            | null          | null     | null       | null     | null                | null              | null                                 | 967b1bcf-73bb-4c66-b9b7-77dd786ad608 | 2025-11-10 15:48:18.07326+00 | null                | null         |
+| b2c3d4e5-f6a7-8901-bcde-fa2345678901 | Proyek Hotel Bintang 5 Bali          | Jl. Pantai Kuta No. 12    | Badung            | submitted | 015a4911-0101-4bed-9475-d8dad207b799 | a1b2c3d4-e5f6-7890-abcd-ef1234567890 | 2025-10-23 05:28:03.303194+00 | null       | null     | null        | null             | false               | null                  | null                  | null              | null        | null            | null            | null      | null              | null         | null   | null            | null          | null     | null       | null     | null                | null              | 405a1081-1965-41f9-8173-f520a3352872 | 967b1bcf-73bb-4c66-b9b7-77dd786ad608 | 2025-11-10 15:48:18.07326+00 | null                | null         |
+
+===============
+SELECT 
+    project_type,
+    COUNT(*) as count
+FROM projects 
+GROUP BY project_type 
+ORDER BY count DESC;
+
+=================
+| table_name | column_count |
+| ---------- | ------------ |
+| documents  | 12           |
+
+===============
+| column_name            | data_type                | is_nullable |
+| ---------------------- | ------------------------ | ----------- |
+| id                     | uuid                     | NO          |
+| project_id             | uuid                     | YES         |
+| name                   | text                     | NO          |
+| type                   | text                     | NO          |
+| url                    | text                     | NO          |
+| compliance_status      | text                     | YES         |
+| created_by             | uuid                     | YES         |
+| status                 | text                     | NO          |
+| created_at             | timestamp with time zone | YES         |
+| document_type          | character varying        | YES         |
+| metadata               | jsonb                    | YES         |
+| verified_by_admin_team | boolean                  | YES         |
+
+================
+| column_name    | data_type                | is_nullable | column_default |
+| -------------- | ------------------------ | ----------- | -------------- |
+| id             | text                     | NO          | null           |
+| template_id    | text                     | NO          | null           |
+| template_title | text                     | NO          | null           |
+| category       | text                     | NO          | null           |
+| specialization | text                     | YES         | null           |
+| applicable_for | jsonb                    | YES         | null           |
+| item_name      | text                     | NO          | null           |
+| columns        | jsonb                    | NO          | null           |
+| created_at     | timestamp with time zone | YES         | now()          |
+
+==================
+| column_name       | data_type                | is_nullable | column_default    |
+| ----------------- | ------------------------ | ----------- | ----------------- |
+| id                | uuid                     | NO          | gen_random_uuid() |
+| inspection_id     | uuid                     | YES         | null              |
+| checklist_item_id | text                     | YES         | null              |
+| photo_url         | text                     | NO          | null              |
+| caption           | text                     | YES         | null              |
+| floor_info        | text                     | YES         | null              |
+| latitude          | double precision         | YES         | null              |
+| longitude         | double precision         | YES         | null              |
+| created_at        | timestamp with time zone | YES         | now()             |
+| uploaded_by       | uuid                     | YES         | null              |
+| project_id        | uuid                     | YES         | null              |
+| accuracy          | double precision         | YES         | null              |
+| updated_at        | timestamp with time zone | YES         | now()             |
+| gps_quality       | character varying        | YES         | null              |
+
+===============
+
+| table_name      | columns                                                                         |
+| --------------- | ------------------------------------------------------------------------------- |
+| profile_clients | profile_id, client_id                                                           |
+| profiles        | email, role, specialization, id, phone_number, client_id, created_at, full_name |
+
+==============
+| table_name | column_name     | foreign_table_name | foreign_column_name |
+| ---------- | --------------- | ------------------ | ------------------- |
+| projects   | admin_lead_id   | profiles           | id                  |
+| projects   | client_id       | clients            | id                  |
+| projects   | drafter_id      | profiles           | id                  |
+| projects   | project_lead_id | profiles           | id                  |
+
+==============
+| table_name      | columns                                                                         |
+| --------------- | ------------------------------------------------------------------------------- |
+| clients         | created_at, phone, city, address, name, id, email                               |
+| profile_clients | profile_id, client_id                                                           |
+| profiles        | id, full_name, email, role, specialization, created_at, phone_number, client_id |
+| users           | is_active, role, email, full_name, created_at, id                               |
+
+================
+Error: Failed to run sql query: ERROR: 42703: column "project_type" does not exist LINE 6: WHERE project_type IS NOT NULL ^
+
+Note: A limit of 100 was applied to your query. If this was the cause of a syntax error, try selecting "No limit" instead and re-run the query.
+
+====================
+| table_name      | column_name            | data_type                | is_nullable | key_type |
+| --------------- | ---------------------- | ------------------------ | ----------- | -------- |
+| documents       | id                     | uuid                     | NO          | PK       |
+| documents       | project_id             | uuid                     | YES         | FK       |
+| documents       | project_id             | uuid                     | YES         | FK       |
+| documents       | name                   | text                     | NO          |          |
+| documents       | type                   | text                     | NO          |          |
+| documents       | url                    | text                     | NO          |          |
+| documents       | compliance_status      | text                     | YES         |          |
+| documents       | created_by             | uuid                     | YES         | FK       |
+| documents       | status                 | text                     | NO          |          |
+| documents       | created_at             | timestamp with time zone | YES         |          |
+| documents       | document_type          | character varying        | YES         |          |
+| documents       | metadata               | jsonb                    | YES         |          |
+| documents       | verified_by_admin_team | boolean                  | YES         |          |
+| profile_clients | profile_id             | uuid                     | NO          | PK       |
+| profile_clients | client_id              | integer                  | NO          | PK       |
+| profiles        | id                     | uuid                     | NO          | PK       |
+| profiles        | full_name              | text                     | YES         |          |
+| profiles        | email                  | text                     | YES         |          |
+| profiles        | role                   | text                     | NO          |          |
+| profiles        | specialization         | text                     | YES         |          |
+| profiles        | created_at             | timestamp with time zone | YES         |          |
+| profiles        | phone_number           | text                     | YES         |          |
+| profiles        | client_id              | uuid                     | YES         |          |
+
+======================
+| column_name           | data_type | is_nullable | column_default |
+| --------------------- | --------- | ----------- | -------------- |
+| application_type      | text      | YES         | null           |
+| special_function_type | text      | YES         | null           |
+| special_building_type | text      | YES         | null           |
+| request_type          | text      | YES         | null           |
+
+==============
+| table_to_check     | exists | columns                                                                                                                                                                                        |
+| ------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| document_templates | false  | Table does not exist                                                                                                                                                                           |
+| checklist_items    | true   | id (text), template_id (text), template_title (text), category (text), specialization (text), applicable_for (jsonb), item_name (text), columns (jsonb), created_at (timestamp with time zone) |
+
+============
+
+
+| column_name            | data_type                | is_nullable | column_default           |
+| ---------------------- | ------------------------ | ----------- | ------------------------ |
+| id                     | uuid                     | NO          | gen_random_uuid()        |
+| project_id             | uuid                     | YES         | null                     |
+| name                   | text                     | NO          | null                     |
+| type                   | text                     | NO          | null                     |
+| url                    | text                     | NO          | null                     |
+| compliance_status      | text                     | YES         | null                     |
+| created_by             | uuid                     | YES         | null                     |
+| status                 | text                     | NO          | 'pending'::text          |
+| created_at             | timestamp with time zone | YES         | now()                    |
+| document_type          | character varying        | YES         | null                     |
+| metadata               | jsonb                    | YES         | null                     |
+| verified_by_admin_team | boolean                  | YES         | false                    |
+| file_size              | bigint                   | YES         | null                     |
+| file_format            | character varying        | YES         | null                     |
+| version                | integer                  | YES         | 1                        |
+| uploaded_at            | timestamp with time zone | YES         | null                     |
+| verified_at            | timestamp with time zone | YES         | null                     |
+| verified_by            | uuid                     | YES         | null                     |
+| revision_notes         | text                     | YES         | null                     |
+| template_id            | text                     | YES         | null                     |
+| category               | character varying        | YES         | null                     |
+| is_required            | boolean                  | YES         | true                     |
+| requirement_type       | character varying        | YES         | 'SLF'::character varying |
+| updated_at             | timestamp with time zone | YES         | now()                    |
+| verified_by_id         | uuid                     | YES         | null                     |
+| verification_notes     | text                     | YES         | null                     |
+| approved_by_id         | uuid                     | YES         | null                     |
+| approved_at            | timestamp with time zone | YES         | null                     |
+| approval_notes         | text                     | YES         | null                     |
+| rejected_by_id         | uuid                     | YES         | null                     |
+| rejected_at            | timestamp with time zone | YES         | null                     |
+| rejection_reason       | text                     | YES         | null                     |
+| revision_requested     | boolean                  | YES         | false                    |
+| revision_count         | integer                  | YES         | 0                        |
+
+============
+
+| column_name | data_type                | is_nullable |
+| ----------- | ------------------------ | ----------- |
+| id          | uuid                     | NO          |
+| document_id | uuid                     | NO          |
+| user_id     | uuid                     | YES         |
+| action      | character varying        | NO          |
+| old_status  | character varying        | YES         |
+| new_status  | character varying        | YES         |
+| notes       | text                     | YES         |
+| metadata    | jsonb                    | YES         |
+| ip_address  | inet                     | YES         |
+| user_agent  | text                     | YES         |
+| created_at  | timestamp with time zone | YES         |
+
+==================
+| function_name          | function_source                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| get_document_stats     | 
+DECLARE
+    v_stats JSONB;
+BEGIN
+    SELECT jsonb_build_object(
+        'total', COUNT(*),
+        'pending', COUNT(*) FILTER (WHERE status = 'pending'),
+        'verified', COUNT(*) FILTER (WHERE status = 'verified'),
+        'approved', COUNT(*) FILTER (WHERE status = 'approved'),
+        'revision_needed', COUNT(*) FILTER (WHERE status = 'revision_needed'),
+        'rejected', COUNT(*) FILTER (WHERE status = 'rejected'),
+        'completion_rate', 
+            CASE 
+                WHEN COUNT(*) = 0 THEN 0
+                ELSE ROUND(
+                    (COUNT(*) FILTER (WHERE status = 'approved')::DECIMAL / 
+                     COUNT(*) FILTER (WHERE status IN ('pending', 'verified', 'approved'))::DECIMAL) * 100, 
+                    2
+                )
+            END,
+        'avg_verification_time_hours',
+            AVG(EXTRACT(EPOCH FROM (verified_at - created_at)) / 3600) 
+            FILTER (WHERE verified_at IS NOT NULL),
+        'avg_approval_time_hours',
+            AVG(EXTRACT(EPOCH FROM (approved_at - verified_at)) / 3600) 
+            FILTER (WHERE approved_at IS NOT NULL AND verified_at IS NOT NULL)
+    ) INTO v_stats
+    FROM documents
+    WHERE (p_project_id IS NULL OR project_id = p_project_id);
+    
+    RETURN COALESCE(v_stats, '{}'::jsonb);
+END;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| update_document_status | 
+DECLARE
+    v_old_status TEXT;
+    v_user_role TEXT;
+    v_document_name TEXT;
+    v_project_id UUID;
+    v_created_by UUID;
+BEGIN
+    -- Get document info
+    SELECT status, name, project_id, created_by 
+    INTO v_old_status, v_document_name, v_project_id, v_created_by
+    FROM documents 
+    WHERE id = p_document_id;
+    
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object(
+            'success', false, 
+            'message', 'Dokumen tidak ditemukan'
+        );
+    END IF;
+    
+    -- Get user role
+    SELECT role INTO v_user_role FROM profiles WHERE id = p_user_id;
+    
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object(
+            'success', false, 
+            'message', 'User tidak ditemukan'
+        );
+    END IF;
+    
+    -- Validasi status transition berdasarkan role
+    IF p_new_status = 'verified' AND v_user_role NOT IN ('admin', 'team_lead') THEN
+        RETURN jsonb_build_object(
+            'success', false, 
+            'message', 'Hanya Admin Team yang dapat memverifikasi dokumen'
+        );
+    END IF;
+    
+    IF p_new_status = 'approved' AND v_user_role != 'admin_lead' THEN
+        RETURN jsonb_build_object(
+            'success', false, 
+            'message', 'Hanya Admin Lead yang dapat menyetujui dokumen'
+        );
+    END IF;
+    
+    IF p_new_status IN ('revision_needed', 'rejected') 
+       AND v_user_role NOT IN ('admin', 'admin_lead', 'team_lead') THEN
+        RETURN jsonb_build_object(
+            'success', false, 
+            'message', 'Hanya admin yang dapat meminta revisi atau menolak dokumen'
+        );
+    END IF;
+    
+    -- Update dokumen berdasarkan status
+    IF p_new_status = 'verified' THEN
+        UPDATE documents 
+        SET 
+            status = 'verified',
+            verified_by_id = p_user_id,
+            verified_at = NOW(),
+            verification_notes = p_notes,
+            updated_at = NOW()
+        WHERE id = p_document_id;
+        
+    ELSIF p_new_status = 'approved' THEN
+        UPDATE documents 
+        SET 
+            status = 'approved',
+            approved_by_id = p_user_id,
+            approved_at = NOW(),
+            approval_notes = p_notes,
+            updated_at = NOW()
+        WHERE id = p_document_id;
+        
+    ELSIF p_new_status = 'revision_needed' THEN
+        UPDATE documents 
+        SET 
+            status = 'revision_needed',
+            revision_notes = p_notes,
+            updated_at = NOW()
+        WHERE id = p_document_id;
+        
+    ELSIF p_new_status = 'rejected' THEN
+        UPDATE documents 
+        SET 
+            status = 'rejected',
+            rejected_by_id = p_user_id,
+            rejected_at = NOW(),
+            rejection_reason = p_notes,
+            updated_at = NOW()
+        WHERE id = p_document_id;
+        
+    ELSE
+        -- Untuk status lainnya
+        UPDATE documents 
+        SET 
+            status = p_new_status,
+            updated_at = NOW()
+        WHERE id = p_document_id;
+    END IF;
+    
+    -- Log ke history
+    INSERT INTO document_history (
+        document_id,
+        user_id,
+        action,
+        old_status,
+        new_status,
+        notes
+    ) VALUES (
+        p_document_id,
+        p_user_id,
+        'status_update',
+        v_old_status,
+        p_new_status,
+        p_notes
+    );
+    
+    -- Buat notifikasi berdasarkan status
+    INSERT INTO notifications (
+        user_id,
+        title,
+        message,
+        type,
+        metadata,
+        is_read
+    ) 
+    SELECT 
+        v_created_by,
+        CASE 
+            WHEN p_new_status = 'verified' THEN 'Dokumen Diverifikasi'
+            WHEN p_new_status = 'approved' THEN 'Dokumen Disetujui'
+            WHEN p_new_status = 'revision_needed' THEN 'Dokumen Perlu Revisi'
+            WHEN p_new_status = 'rejected' THEN 'Dokumen Ditolak'
+            ELSE 'Status Dokumen Diubah'
+        END,
+        CASE 
+            WHEN p_new_status = 'verified' THEN 'Dokumen "' || v_document_name || '" telah diverifikasi'
+            WHEN p_new_status = 'approved' THEN 'Dokumen "' || v_document_name || '" telah disetujui'
+            WHEN p_new_status = 'revision_needed' THEN 'Dokumen "' || v_document_name || '" perlu direvisi. Catatan: ' || COALESCE(p_notes, '')
+            WHEN p_new_status = 'rejected' THEN 'Dokumen "' || v_document_name || '" ditolak. Alasan: ' || COALESCE(p_notes, '')
+            ELSE 'Status dokumen "' || v_document_name || '" diubah menjadi ' || p_new_status
+        END,
+        CASE 
+            WHEN p_new_status = 'verified' THEN 'success'
+            WHEN p_new_status = 'approved' THEN 'success'
+            WHEN p_new_status = 'revision_needed' THEN 'warning'
+            WHEN p_new_status = 'rejected' THEN 'error'
+            ELSE 'info'
+        END,
+        jsonb_build_object(
+            'document_id', p_document_id,
+            'project_id', v_project_id,
+            'old_status', v_old_status,
+            'new_status', p_new_status,
+            'action', 'document_status_updated'
+        ),
+        false;
+    
+    RETURN jsonb_build_object(
+        'success', true, 
+        'message', 'Status dokumen berhasil diupdate menjadi ' || p_new_status,
+        'document_id', p_document_id,
+        'old_status', v_old_status,
+        'new_status', p_new_status
+    );
+    
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+        'success', false, 
+        'message', 'Error: ' || SQLERRM
+    );
+END;
+ |
+
+=================
+| id                                   | document_name        | document_type | status         | created_at                    | updated_at                    | project_id                           | project_name                           | application_type | client_name | client_email | uploaded_by | verified_by | verified_at | approved_by | approved_at | hours_to_verify | hours_to_approve |
+| ------------------------------------ | -------------------- | ------------- | -------------- | ----------------------------- | ----------------------------- | ------------------------------------ | -------------------------------------- | ---------------- | ----------- | ------------ | ----------- | ----------- | ----------- | ----------- | ----------- | --------------- | ---------------- |
+| 6dedb3fe-fcf5-4132-be5b-e717d167960a | Test Document        | LEG-001       | pending_review | 2025-11-04 06:27:49.774111+00 | 2025-12-06 14:05:26.628739+00 | 071b487a-3be5-49fa-afd3-6648568c0b78 | Proyek SLF Gedung Perkantoran Sudirman | SLF              | null        | null         | Rina        | null        | null        | null        | null        | null            | null             |
+| ef4f3776-9a1a-45fc-ac29-207e7d7d80d7 | KTP Pemilik Bangunan | LEG-003       | pending_review | 2025-11-07 06:27:16.114761+00 | 2025-12-06 14:05:26.628739+00 | 071b487a-3be5-49fa-afd3-6648568c0b78 | Proyek SLF Gedung Perkantoran Sudirman | SLF              | null        | null         | Rina        | null        | null        | null        | null        | null            | null             |
+| d3a39fb2-51e6-42e6-8e2b-b91f123310ae | NPWP Perusahaan      | LEG-005       | approved       | 2025-11-07 06:27:16.114761+00 | 2025-12-06 14:05:26.628739+00 | 071b487a-3be5-49fa-afd3-6648568c0b78 | Proyek SLF Gedung Perkantoran Sudirman | SLF              | null        | null         | Rina        | null        | null        | null        | null        | null            | null             |
+
+============
+
+| schemaname | tablename        | policyname                       | permissive | roles    | cmd    | qual                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | ---------------- | -------------------------------- | ---------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| public     | document_history | document_history_select_policy   | PERMISSIVE | {public} | SELECT | ((document_id IN ( SELECT documents.id
+   FROM documents
+  WHERE ((documents.created_by = auth.uid()) OR (documents.project_id IN ( SELECT projects.id
+           FROM projects
+          WHERE (projects.client_id = auth.uid())))))) OR (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text])))))) |
+| public     | documents        | Allow all for drafter documents  | PERMISSIVE | {public} | ALL    | true                                                                                                                                                                                                                                                                                                                                                                                                          |
+| public     | documents        | Enable read access for all users | PERMISSIVE | {public} | SELECT | true                                                                                                                                                                                                                                                                                                                                                                                                          |
+| public     | documents        | admin_update_all_documents       | PERMISSIVE | {public} | UPDATE | (EXISTS ( SELECT 1
+   FROM profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text])))))                                                                                                                                                                                                                                                        |
+| public     | documents        | admin_view_all_documents         | PERMISSIVE | {public} | SELECT | (EXISTS ( SELECT 1
+   FROM profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text, 'project_lead'::text, 'drafter'::text])))))                                                                                                                                                                                                                 |
+| public     | documents        | admins_update_documents          | PERMISSIVE | {public} | UPDATE | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text])))))                                                                                                                                                                                                                                            |
+| public     | documents        | client_insert_documents          | PERMISSIVE | {public} | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                          |
+| public     | documents        | client_update_own_documents      | PERMISSIVE | {public} | UPDATE | ((created_by = auth.uid()) AND (status = ANY (ARRAY['pending_review'::text, 'revision_required'::text])))                                                                                                                                                                                                                                                                                                     |
+| public     | documents        | client_view_own_documents        | PERMISSIVE | {public} | SELECT | ((project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.client_id = auth.uid()))) OR (created_by = auth.uid()))                                                                                                                                                                                                                                                                               |
+| public     | documents        | documents_insert_policy          | PERMISSIVE | {public} | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                          |
+| public     | documents        | documents_select_policy          | PERMISSIVE | {public} | SELECT | ((project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.client_id = auth.uid()))) OR (created_by = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text]))))))                                                                                                         |
+| public     | documents        | documents_update_admin_policy    | PERMISSIVE | {public} | UPDATE | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text])))))                                                                                                                                                                                                                                            |
+| public     | documents        | documents_update_client_policy   | PERMISSIVE | {public} | UPDATE | ((created_by = auth.uid()) AND (status = ANY (ARRAY['pending'::text, 'revision_needed'::text])))                                                                                                                                                                                                                                                                                                              |
+| public     | documents        | drafter_access_policy            | PERMISSIVE | {public} | SELECT | true                                                                                                                                                                                                                                                                                                                                                                                                          |
+| public     | documents        | users_insert_own_documents       | PERMISSIVE | {public} | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                          |
+| public     | documents        | users_view_own_documents         | PERMISSIVE | {public} | SELECT | ((created_by = auth.uid()) OR (project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.client_id = auth.uid()))) OR (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text]))))))                                                                                                         |
+
+==============
+| get_document_stats                                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| {"total":3,"pending":0,"approved":1,"rejected":0,"verified":0,"completion_rate":100,"revision_needed":0,"avg_approval_time_hours":null,"avg_verification_time_hours":null} |
+
+===========
+
+| get_document_stats                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| {"total":0,"pending":0,"approved":0,"rejected":0,"verified":0,"completion_rate":0,"revision_needed":0,"avg_approval_time_hours":null,"avg_verification_time_hours":null} |
+
+===============
+| trigger_name               | event_manipulation | action_statement                               | action_timing |
+| -------------------------- | ------------------ | ---------------------------------------------- | ------------- |
+| update_documents_timestamp | UPDATE             | EXECUTE FUNCTION update_documents_updated_at() | BEFORE        |
+
+============
+| id                                   | full_name | email              | role       |
+| ------------------------------------ | --------- | ------------------ | ---------- |
+| 967b1bcf-73bb-4c66-b9b7-77dd786ad608 | Dindin    | admin.lead@slf.com | admin_lead |
+
+=========
+
+
+
+| phase_name                 | phase_status   | phase_icon | progress | start_date | end_date   | estimated_days |
+| -------------------------- | -------------- | ---------- | -------- | ---------- | ---------- | -------------- |
+| Pendaftaran & Administrasi | ready_to_start | ⏳          | 0        | 2025-10-23 | 2025-10-30 | 7              |
+| Verifikasi Dokumen         | pending        | ⏳          | 0        | null       | null       | null           |
+| Inspeksi Lapangan          | pending        | ⏳          | 0        | null       | null       | null           |
+| Evaluasi Teknis            | pending        | ⏳          | 0        | null       | null       | null           |
+| Persetujuan Admin Lead     | pending        | ⏳          | 0        | null       | null       | null           |
+| Penerbitan SLF             | pending        | ⏳          | 0        | null       | null       | null           |
+
+
+++++++++++++++++++++
+
+| id                                   | full_name      | email                       | role            | specialization | created_at                    | phone_number | client_id                            |
+| ------------------------------------ | -------------- | --------------------------- | --------------- | -------------- | ----------------------------- | ------------ | ------------------------------------ |
+| 967b1bcf-73bb-4c66-b9b7-77dd786ad608 | Dindin         | admin.lead@slf.com          | admin_lead      | null           | 2025-10-23 08:21:29.88251+00  | null         | null                                 |
+| c2b271bb-13a3-421b-a1ef-c8e13c3ec983 | Maman          | inspector.struktur@slf.com  | inspector       | sipil          | 2025-10-24 07:33:39.35566+00  | 08989678789  | null                                 |
+| d353b0f2-a16d-4f45-8f35-9519e3d85f42 | Bambang        | admin-team@slf.com          | admin_team      | null           | 2025-11-01 12:21:59.343768+00 | null         | null                                 |
+| d490dea6-0815-48cc-8e57-3ec47a006d6b | Wildan         | inspector.mekanikal@slf.com | inspector       | mekanikal      | 2025-11-05 06:12:48.595439+00 | null         | null                                 |
+| f9b721d9-b9d9-4b60-8f50-83d906a19046 | Hendra         | client_2@slf.com            | client          | null           | 2025-11-01 12:13:56.451958+00 | null         | null                                 |
+| 00bbb25b-3c40-416e-ac60-1158cc741fe3 | Andri          | head-consultant@slf.com     | head_consultant | null           | 2025-10-23 03:22:16.942888+00 | null         | null                                 |
+| a88a0347-a3ab-49f3-816f-fb31f7daa120 | Admin Team SLF | admin.team@slf.com          | admin_team      | null           | 2025-12-06 14:32:31.470245+00 | null         | null                                 |
+| d71b487a-3be5-49fa-afd3-6648568c0b78 | Agusta         | superadmin2@slf.com         | superadmin      | null           | 2025-10-23 08:10:01.498698+00 | null         | null                                 |
+| 015a4911-0101-4bed-9475-d8dad207b799 | Irawan         | projectlead2@slf.com        | project_lead    | null           | 2025-10-23 03:22:16.942888+00 | null         | null                                 |
+| 405a1081-1965-41f9-8173-f520a3352872 | Rina           | drafter@slf.com             | drafter         | null           | 2025-10-23 08:20:03.80921+00  | null         | null                                 |
+| 13e6f08a-1312-4dbe-a214-2a8b8c285156 | majubersama    | client.majubersama@slf.com  | client          | null           | 2025-11-01 12:31:51.362368+00 | null         | a1b2c3d4-e5f6-7890-abcd-ef1234567890 |
+
+

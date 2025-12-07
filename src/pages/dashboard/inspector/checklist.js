@@ -49,9 +49,11 @@ import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import AutoPhotoGeotag from '@/components/AutoPhotoGeotag';
+import CameraGeotagging from '@/components/CameraGeotagging';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 // Import data checklist lokal dari checklistTemplates.js
-import checklistTemplateData from "@/utils/checklistTemplates.js";
+import checklistTemplateData, { getChecklistsBySpecialization, INSPECTOR_SPECIALIZATIONS } from "@/utils/checklistTemplates.js";
 
 // Import utils untuk inspection_photos
 import { saveInspectionPhoto, getPhotosByInspection } from '@/utils/inspectionPhotos';
@@ -153,17 +155,29 @@ const syncAllChecklistItems = async (items, inspectionId, projectId) => {
 };
 
 // 🔥 PERBAIKAN FUNGSI: Photogeotag untuk NON-administratif
-const itemRequiresPhotogeotag = (templateId, itemId) => {
-  if (!templateId) return true; // Default true untuk safety
+const itemRequiresPhotogeotag = (templateId, itemId, category) => {
+  // Kategori administratif TIDAK perlu photo geotag
+  const noPhotoCategories = [
+    'administrative', 'admin', 'document_review', 'permit_verification', 'paperwork'
+  ];
   
-  // HANYA template administratif yang TIDAK perlu photo
+  // Cek berdasarkan category (lebih akurat)
+  if (category && noPhotoCategories.includes(category.toLowerCase())) {
+    return false;
+  }
+  
+  // Fallback: cek berdasarkan templateId
   const noPhotoTemplates = [
     'administrative', 'admin', 'a1', 'a2', 'a3', 'a4', 'a5',
     'document_review', 'permit_verification', 'paperwork'
   ];
   
-  // Return TRUE jika template BUKAN administratif
-  return !noPhotoTemplates.includes(templateId);
+  if (templateId && noPhotoTemplates.includes(templateId.toLowerCase())) {
+    return false;
+  }
+  
+  // Default: perlu photo untuk kategori teknis (tata_bangunan, dll)
+  return true;
 };
 
 // Komponen untuk menampilkan form dinamis berdasarkan kolom
@@ -181,8 +195,8 @@ const DynamicChecklistForm = ({
   const [savedPhotos, setSavedPhotos] = useState([]);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
   
-  // 🔥 PERBAIKAN: Photogeotag untuk NON-administratif
-  const requiresPhotoGeotag = itemRequiresPhotogeotag(templateId, item.id);
+  // 🔥 PERBAIKAN: Photogeotag untuk NON-administratif (berdasarkan category)
+  const requiresPhotoGeotag = itemRequiresPhotogeotag(templateId, item.id, item.category);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -507,23 +521,23 @@ const DynamicChecklistForm = ({
                 </Alert>
               )}
 
-              {/* Action Button */}
+              {/* Action Button - 🔥 DIPERBAIKI: Tombol selalu aktif setelah form terisi */}
               <Button
                 onClick={() => setShowCamera(true)}
                 variant={savedPhotos.length > 0 ? "outline" : "default"}
                 className="w-full"
-                disabled={!inspectionId || !projectId}
                 size="lg"
               >
                 <Camera className="w-4 h-4 mr-2" />
                 {savedPhotos.length > 0 ? 'Tambah Foto Dokumentasi' : 'Ambil Dokumentasi dengan Kamera'}
               </Button>
 
-              {(!inspectionId || !projectId) && (
-                <Alert className="bg-blue-50 border-blue-200">
-                  <AlertTitle className="text-blue-800 text-sm">Info</AlertTitle>
-                  <AlertDescription className="text-blue-700 text-sm">
-                    Simpan checklist terlebih dahulu untuk mengaktifkan fitur dokumentasi
+              {/* Info jika belum ada inspectionId */}
+              {!inspectionId && (
+                <Alert className="bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800">
+                  <Info className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                  <AlertDescription className="text-yellow-700 dark:text-yellow-300 text-sm">
+                    Foto akan disimpan sementara. Setelah checklist disimpan, foto akan terhubung ke inspeksi.
                   </AlertDescription>
                 </Alert>
               )}
@@ -533,17 +547,34 @@ const DynamicChecklistForm = ({
       )}
 
       {/* Camera Dialog */}
-      {showCamera && inspectionId && projectId && user && (
-        <AutoPhotoGeotag
-          inspectionId={inspectionId}
-          checklistItemId={item.id}
-          itemName={item.item_name || item.description}
-          projectId={projectId}
-          uploadedBy={user.id}
-          onPhotoSaved={handlePhotoSaved}
-          onCancel={() => setShowCamera(false)}
-        />
-      )}
+      <Dialog open={showCamera} onOpenChange={setShowCamera}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+              <Camera className="w-5 h-5 text-blue-500" />
+              Dokumentasi Foto
+            </DialogTitle>
+            <DialogDescription>
+              Ambil foto untuk: {item.item_name || item.description}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <CameraGeotagging
+            inspectionId={inspectionId}
+            checklistItemId={item.id}
+            itemName={item.item_name || item.description}
+            projectId={projectId}
+            onCapture={(capturedPhoto) => {
+              console.log('📸 Photo captured:', capturedPhoto ? 'yes' : 'no');
+            }}
+            onSave={(savedPhoto) => {
+              handlePhotoSaved(savedPhoto);
+              setShowCamera(false);
+            }}
+            showSaveButton={true}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -594,24 +625,7 @@ const groupBy = (array, key) => {
   }, {});
 };
 
-// Komponen StatCard yang reusable
-const StatCard = ({ label, value, icon: Icon, color }) => (
-  <Card className="border-border">
-    <CardContent className="p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="text-xl font-bold text-foreground">{value}</p>
-        </div>
-        {Icon && (
-          <div className={`p-2 rounded-full ${color}`}>
-            <Icon className="w-5 h-5 text-white" />
-          </div>
-        )}
-      </div>
-    </CardContent>
-  </Card>
-);
+
 
 // Komponen utama
 export default function InspectorChecklistDashboard({ inspectionId }) {
@@ -627,74 +641,31 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
   // States untuk checklist dari checklistTemplates.js
   const [allChecklistItems, setAllChecklistItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('administrative');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [checklistResponses, setChecklistResponses] = useState({});
 
-  // States untuk Daftar Simak
-  const [simakItems, setSimakItems] = useState([]);
-  const [simakResponses, setSimakResponses] = useState([]);
-  const [loadingSimak, setLoadingSimak] = useState(true);
 
-  // Quick Actions untuk Checklist - SINKRON DENGAN inspector/index.js
-  const quickActions = [
-    {
-      id: 1,
-      title: "Checklist Baru",
-      description: "Mulai checklist baru",
-      icon: Plus,
-      action: () => router.push('/dashboard/inspector/checklist/new'),
-      color: "bg-blue-500",
-      enabled: true
-    },
-    {
-      id: 2,
-      title: "Butuh Photogeotag",
-      description: "Item yang butuh foto+GPS",
-      icon: Camera,
-      action: () => {
-        // Filter untuk item yang butuh photogeotag
-        const itemsNeedingPhoto = allChecklistItems.filter(item => 
-          itemRequiresPhotogeotag(item.template_id, item.id) && 
-          !checklistResponses[item.id]
-        );
-        if (itemsNeedingPhoto.length === 0) {
-          toast({
-            title: "Tidak ada item butuh photogeotag",
-            description: "Semua item sudah memiliki foto dengan GPS",
-            variant: "default",
-          });
-        }
-      },
-      color: "bg-red-500",
-      enabled: true,
-      badge: "📸 Wajib"
-    },
-    {
-      id: 3,
-      title: "Kembali ke Dashboard",
-      description: "Kembali ke dashboard utama",
-      icon: ArrowLeft,
-      action: () => router.push('/dashboard/inspector'),
-      color: "bg-gray-500",
-      enabled: true
-    },
-    {
-      id: 4,
-      title: "Template",
-      description: "Lihat template checklist",
-      icon: FileText,
-      action: () => router.push('/dashboard/inspector/templates'),
-      color: "bg-purple-500",
-      enabled: true
-    }
-  ];
 
-  // Ambil semua checklist items dari checklistTemplates.js
+  // Ambil checklist items berdasarkan spesialisasi inspector (exclude administrative - handled by admin_team)
   useEffect(() => {
-    const items = flattenChecklistItems(checklistTemplateData.checklist_templates);
+    if (!profile?.specialization) return;
+    
+    // Dapatkan template yang sesuai dengan spesialisasi inspector
+    const specializationTemplates = getChecklistsBySpecialization(profile.specialization, 'baru');
+    
+    // Flatten items dari template yang sesuai (exclude administrative)
+    const items = flattenChecklistItems(specializationTemplates)
+      .filter(item => item.category !== 'administrative');
+    
     setAllChecklistItems(items);
-    setFilteredItems(items.filter(item => item.category === 'administrative'));
-  }, []);
+    
+    // Set default category berdasarkan spesialisasi
+    const defaultCategory = items.length > 0 ? items[0].category : 'keandalan';
+    setSelectedCategory(defaultCategory);
+    setFilteredItems(items.filter(item => item.category === defaultCategory));
+    
+    console.log(`[Checklist] Loaded ${items.length} items for specialization: ${profile.specialization}`);
+  }, [profile?.specialization]);
 
   // Ambil data user & inspeksi dengan filter inspectionId
   useEffect(() => {
@@ -802,82 +773,11 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
     );
   }, [selectedCategory, allChecklistItems]);
 
-  // Ambil data Daftar Simak
-  useEffect(() => {
-    const loadSimakData = async () => {
-      if (!user) return;
-
-      try {
-        setLoadingSimak(true);
-
-        const { data: items, error: itemsErr } = await supabase
-          .from('simak_items')
-          .select('*')
-          .order('section_code', { ascending: true })
-          .order('item_number', { ascending: true });
-
-        if (itemsErr) throw itemsErr;
-        setSimakItems(items || []);
-
-        let responsesQuery = supabase
-          .from('simak_responses')
-          .select(`
-            id,
-            item_id,
-            response_value,
-            photo_url,
-            inspector_id
-          `)
-          .eq('inspector_id', user.id);
-
-        if (inspectionId) {
-          responsesQuery = responsesQuery.eq('inspection_id', inspectionId);
-        }
-
-        const { data: responses, error: respErr } = await responsesQuery;
-
-        if (respErr) throw respErr;
-        setSimakResponses(responses || []);
-      } catch (err) {
-        console.error('[InspectorChecklistDashboard] Load simak data error:', err);
-        toast({
-          title: 'Gagal memuat data Daftar Simak.',
-          description: err.message || 'Terjadi kesalahan saat memuat data.',
-          variant: "destructive",
-        });
-      } finally {
-        setLoadingSimak(false);
-      }
-    };
-
-    if (user) {
-      loadSimakData();
-    }
-  }, [user, inspectionId, toast]);
-
-  // Stats
-  const total = inspections.length;
-  const pending = inspections.filter((i) => i.status === "scheduled").length;
-  const completed = inspections.filter((i) => i.status === "completed").length;
-  const progress = inspections.filter((i) => i.status === "in_progress").length;
-
   // Ambil kategori unik dari checklist items
   const categories = useMemo(() => {
     const uniqueCategories = [...new Set(allChecklistItems.map(item => item.category))];
     return uniqueCategories.filter(cat => cat);
   }, [allChecklistItems]);
-
-  const handleQuickAction = (action) => {
-    if (action.enabled) {
-      action.action();
-    } else {
-      toast({
-        title: "Fitur belum tersedia",
-        description: "Fitur ini sedang dalam pengembangan.",
-        variant: "default",
-      });
-    }
-  };
 
   // 🔥 FUNGSI SIMPAN CHECKLIST ITEM - VERSI YANG SUDAH DIPERBAIKI
   const handleSaveChecklistItem = async (itemId, data) => {
@@ -980,107 +880,10 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
     }
   };
 
-  // FUNGSI SIMPAN SIMAK ITEM
-  const handleSaveSimakItem = async (item, responseValue, photoUrl = null) => {
-    if (!user) return;
-
-    try {
-      console.log('🔄 Menyimpan simak item:', {
-        itemId: item.id,
-        responseValue,
-        inspectionId
-      });
-
-      // 1. DELETE data lama jika ada
-      let deleteQuery = supabase
-        .from('simak_responses')
-        .delete()
-        .eq('item_id', item.id)
-        .eq('inspector_id', user.id);
-
-      if (inspectionId) {
-        deleteQuery = deleteQuery.eq('inspection_id', inspectionId);
-      }
-
-      const { error: deleteError } = await deleteQuery;
-
-      if (deleteError) {
-        console.warn('⚠️ Tidak ada data simak lama untuk dihapus:', deleteError);
-      }
-
-      // 2. INSERT data baru
-      const responseData = {
-        item_id: item.id,
-        inspector_id: user.id,
-        response_value: responseValue,
-        photo_url: photoUrl,
-      };
-
-      if (inspectionId) {
-        responseData.inspection_id = inspectionId;
-      }
-
-      const { error: insertError } = await supabase
-        .from('simak_responses')
-        .insert([responseData]);
-
-      if (insertError) {
-        console.error('❌ Insert simak error:', insertError);
-        throw insertError;
-      }
-
-      console.log('✅ Simak item berhasil disimpan');
-
-      toast({
-        title: '✅ Daftar Simak tersimpan!',
-        description: 'Respons berhasil disimpan ke database',
-        variant: "default",
-      });
-
-      // 3. Refresh data
-      let refreshQuery = supabase
-        .from('simak_responses')
-        .select(`
-          id,
-          item_id,
-          response_value,
-          photo_url,
-          inspector_id
-        `)
-        .eq('inspector_id', user.id);
-
-      if (inspectionId) {
-        refreshQuery = refreshQuery.eq('inspection_id', inspectionId);
-      }
-
-      const { data: refreshed, error: refreshError } = await refreshQuery;
-
-      if (refreshError) {
-        console.warn('⚠️ Gagal refresh simak responses:', refreshError);
-      } else {
-        setSimakResponses(refreshed || []);
-      }
-
-    } catch (err) {
-      console.error('❌ Save simak item error:', err);
-      toast({
-        title: 'Gagal menyimpan Daftar Simak',
-        description: err.message || 'Terjadi kesalahan saat menyimpan data',
-        variant: "destructive",
-      });
-    }
-  };
-
   // Kelompokkan items berdasarkan template
   const groupedItems = useMemo(() => {
     return groupBy(filteredItems, 'template_title');
   }, [filteredItems]);
-
-  // Kelompokkan simak items berdasarkan section_code
-  const groupedSimakItems = useMemo(() => {
-    const itemsWithCode = simakItems.filter(item => item.section_code);
-    return groupBy(itemsWithCode, 'section_code');
-  }, [simakItems]);
 
   // Dapatkan inspection dan project info
   const currentInspection = inspections[0];
@@ -1089,7 +892,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
   // Loading state untuk auth
   if (authLoading) {
     return (
-      <DashboardLayout title="Checklist Inspector">
+      <DashboardLayout title="Checklist SIMAK">
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
           <p className="mt-4 text-muted-foreground">Memuat dashboard...</p>
@@ -1100,7 +903,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
 
   if (!user || !isInspector) {
     return (
-      <DashboardLayout title="Checklist Inspector">
+      <DashboardLayout title="Checklist SIMAK">
         <div className="p-4 md:p-6">
           <Alert variant="destructive" className="m-4">
             <AlertTriangle className="h-4 w-4" />
@@ -1121,95 +924,31 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
   }
 
   return (
-    <DashboardLayout title="Checklist Inspector">
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Header - SINKRON DENGAN inspector/index.js */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-1">
-            <h1 className="text-xl md:text-2xl font-bold text-foreground">
-              Checklist & Photogeotag
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Kelola checklist dengan dokumentasi foto+GPS • {profile?.full_name || 'Inspector'}
-            </p>
-          </div>
+    <DashboardLayout title="Checklist SIMAK">
+      <div className="p-4 md:p-6 space-y-4">
+        {/* Sub-header dengan info dan actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="capitalize text-xs">
-              {profile?.specialization?.replace(/_/g, ' ') || 'Inspector'}
+            <Badge variant="default" className="capitalize text-xs bg-primary">
+              {INSPECTOR_SPECIALIZATIONS.find(s => s.value === profile?.specialization)?.label || 
+               profile?.specialization?.replace(/_/g, ' ') || 'Inspector'}
             </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-              onClick={() => router.push('/dashboard/inspector')}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Kembali ke Dashboard
-            </Button>
+            <span className="text-sm text-muted-foreground">
+              {allChecklistItems.length} item checklist
+            </span>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => router.push('/dashboard/inspector')}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Kembali
+          </Button>
         </div>
 
-        {/* Quick Actions - SINKRON DENGAN inspector/index.js */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action) => (
-            <Card 
-              key={action.id} 
-              className={`border-border transition-all hover:shadow-md cursor-pointer ${
-                !action.enabled ? 'opacity-60' : 'hover:scale-105'
-              }`}
-              onClick={() => handleQuickAction(action)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-foreground text-sm leading-tight">
-                      {action.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground leading-tight">
-                      {action.description}
-                    </p>
-                  </div>
-                  <div className={`p-2 rounded-full ${action.color} text-white`}>
-                    <action.icon className="w-4 h-4" />
-                  </div>
-                </div>
-                {action.badge && (
-                  <Badge variant="secondary" className="mt-2 text-xs flex items-center gap-1">
-                    {action.badge}
-                  </Badge>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
-        {/* Stats Overview - SINKRON DENGAN inspector/index.js */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard 
-            label="Total Inspeksi" 
-            value={total}
-            icon={ClipboardList}
-            color="bg-blue-500"
-          />
-          <StatCard 
-            label="Dijadwalkan" 
-            value={pending}
-            icon={Clock}
-            color="bg-yellow-500"
-          />
-          <StatCard 
-            label="Dalam Proses" 
-            value={progress}
-            icon={Activity}
-            color="bg-orange-500"
-          />
-          <StatCard 
-            label="Selesai" 
-            value={completed}
-            icon={CheckCircle}
-            color="bg-green-500"
-          />
-        </div>
 
         {/* Info inspection spesifik jika ada */}
         {inspectionId && (
@@ -1243,32 +982,13 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
           </Card>
         )}
 
-        {/* Tabs: Checklist vs Daftar Simak */}
-        <Tabs defaultValue="checklist" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1">
-            <TabsTrigger 
-              value="checklist" 
-              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Checklist Inspeksi
-            </TabsTrigger>
-            <TabsTrigger 
-              value="simak" 
-              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-            >
-              <Activity className="w-4 h-4 mr-2" />
-              Daftar Simak
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Tab: Checklist */}
-          <TabsContent value="checklist" className="space-y-4 mt-4">
+        {/* Checklist SIMAK */}
+        <div className="space-y-4">
             {/* Kategori Selector */}
             <Card className="border-border">
               <CardContent className="p-4">
                 <Label className="text-sm font-medium text-foreground mb-2 block">
-                  Pilih Kategori Checklist
+                  Pilih Kategori Checklist SIMAK
                 </Label>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger className="bg-background text-foreground border-border">
@@ -1324,94 +1044,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
                 </div>
               ))
             )}
-          </TabsContent>
-
-          {/* Tab: Daftar Simak */}
-          <TabsContent value="simak" className="space-y-4 mt-4">
-            {loadingSimak ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
-                <p className="text-muted-foreground">Memuat Daftar Simak...</p>
-              </div>
-            ) : simakItems.length === 0 ? (
-              <Card className="border-border">
-                <CardContent className="p-6 text-center">
-                  <Info className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">
-                    Tidak ada item Daftar Simak tersedia.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-8">
-                {Object.entries(groupedSimakItems).map(([sectionCode, items]) => (
-                  <div key={sectionCode} className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                      <Activity className="w-5 h-5" />
-                      Bagian {sectionCode}
-                    </h3>
-                    <Separator className="my-2 bg-border" />
-                    <div className="space-y-4">
-                      {items.map((item) => {
-                        const existingResponse = simakResponses.find(
-                          (r) => r.item_id === item.id
-                        );
-                        return (
-                          <Card
-                            key={item.id}
-                            className="border-border hover:bg-accent/50 transition-colors"
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex flex-col gap-3">
-                                <div>
-                                  <span className="text-sm font-medium text-muted-foreground mr-2">
-                                    {item.item_number}.
-                                  </span>
-                                  <span className="text-foreground">{item.item_text}</span>
-                                </div>
-
-                                <div className="flex flex-wrap gap-2">
-                                  {['Ya', 'Tidak', 'Tidak Relevan'].map((option) => (
-                                    <Button
-                                      key={option}
-                                      size="sm"
-                                      variant={
-                                        existingResponse?.response_value === option
-                                          ? 'default'
-                                          : 'outline'
-                                      }
-                                      onClick={() =>
-                                        handleSaveSimakItem(item, option)
-                                      }
-                                      className={
-                                        existingResponse?.response_value === option
-                                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                                          : 'border-border text-foreground hover:bg-accent'
-                                      }
-                                    >
-                                      {option}
-                                    </Button>
-                                  ))}
-                                </div>
-
-                                {existingResponse && (
-                                  <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    Disimpan: {new Date(existingResponse.id).toLocaleString('id-ID')}
-                                  </div>
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </DashboardLayout>
   );

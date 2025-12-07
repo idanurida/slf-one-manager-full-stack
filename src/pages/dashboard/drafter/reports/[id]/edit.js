@@ -323,32 +323,19 @@ const EditReportPage = () => {
     <DashboardLayout title={`Edit Laporan: ${report.projects?.name || 'N/A'}`}>
       <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Kembali
-          </Button>
-
-          <div className="text-center sm:text-left">
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-              Edit Laporan
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">ID: {report.id}</p>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleBack}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground">Edit Laporan</span>
           </div>
-
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={saving}
-            >
+            <Button variant="outline" size="sm" onClick={handleBack} disabled={saving}>
               Batal
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2"
-            >
+            <Button size="sm" onClick={handleSave} disabled={saving}>
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -357,7 +344,7 @@ const EditReportPage = () => {
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Simpan Perubahan
+                  Simpan
                 </>
               )}
             </Button>

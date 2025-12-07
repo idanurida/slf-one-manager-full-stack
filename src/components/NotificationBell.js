@@ -24,26 +24,6 @@ const NotificationBell = () => {
 
   useEffect(() => {
     loadUnreadNotifications();
-    
-    // Setup real-time subscription
-    const subscription = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications'
-        },
-        () => {
-          loadUnreadNotifications();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   const loadUnreadNotifications = async () => {

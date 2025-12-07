@@ -1,42 +1,35 @@
 // FILE: src/pages/dashboard/admin-lead/timeline/index.js
-import React, { useState, useEffect } from "react";
+// Halaman Timeline Admin Lead - Clean dengan dropdown proyek
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
-import { motion } from "framer-motion";
+import { format } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
 import { toast } from "sonner";
 
-// Components
+// UI Components
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
+} from "@/components/ui/dialog";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger
 } from "@/components/ui/tooltip";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Icons
 import {
-  ArrowLeft, Calendar, Filter, Search, RefreshCw,
-  Eye, Edit, Trash2, Plus, Users, Building,
-  FileText, CheckCircle2, Clock, AlertTriangle,
-  ChevronDown, ChevronUp, Download, Upload
+  Calendar, Clock, CheckCircle2, PlayCircle, Edit, 
+  RefreshCw, Save, Loader2, Building, AlertTriangle
 } from "lucide-react";
 
 // Utils & Context
@@ -44,577 +37,573 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
+// Format date helper
+const formatDate = (dateString) => {
+  if (!dateString) return '-';
+  try {
+    return format(new Date(dateString), 'dd MMM yyyy', { locale: localeId });
+  } catch (e) {
+    return '-';
   }
 };
 
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut"
-    }
-  }
+// Get category from application_type
+const getCategory = (applicationType) => {
+  if (!applicationType) return 'all';
+  if (applicationType.startsWith('SLF')) return 'SLF';
+  if (applicationType.startsWith('PBG')) return 'PBG';
+  return 'all';
 };
 
-// Project Timeline Card Component
-const ProjectTimelineCard = ({ project, onView, onEdit }) => {
-  const getStatusColor = (status) => {
-    const colors = {
-      'draft': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
-      'submitted': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      'project_lead_review': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-      'inspection_scheduled': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-      'inspection_in_progress': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-      'report_draft': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
-      'head_consultant_review': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
-      'client_review': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400',
-      'government_submitted': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      'slf_issued': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400',
-      'completed': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
-  };
-
-  const getStatusLabel = (status) => {
-    const labels = {
-      'draft': 'Draft',
-      'submitted': 'Submitted',
-      'project_lead_review': 'Project Lead Review',
-      'inspection_scheduled': 'Inspection Scheduled',
-      'inspection_in_progress': 'Inspection in Progress',
-      'report_draft': 'Report Draft',
-      'head_consultant_review': 'Head Consultant Review',
-      'client_review': 'Client Review',
-      'government_submitted': 'Government Submitted',
-      'slf_issued': 'SLF Issued',
-      'completed': 'Completed',
-      'cancelled': 'Cancelled'
-    };
-    return labels[status] || status;
-  };
-
-  const getPhaseProgress = (status) => {
-    const phaseMap = {
-      'draft': 1,
-      'submitted': 1,
-      'project_lead_review': 1,
-      'inspection_scheduled': 2,
-      'inspection_in_progress': 2,
-      'report_draft': 3,
-      'head_consultant_review': 3,
-      'client_review': 4,
-      'government_submitted': 5,
-      'slf_issued': 5,
-      'completed': 5
-    };
-    return phaseMap[status] || 1;
-  };
-
-  const calculateProgress = (status) => {
-    const phase = getPhaseProgress(status);
-    return (phase / 5) * 100;
-  };
-
-  const progress = calculateProgress(project.status);
-
-  return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-lg transition-all">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
-                {project.name}
-              </h3>
-              <Badge className={getStatusColor(project.status)}>
-                {getStatusLabel(project.status)}
-              </Badge>
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-              {project.application_type} • {project.location}
-            </p>
-            <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-              <div className="flex items-center gap-1">
-                <Building className="w-3 h-3" />
-                <span>{project.client_name || 'No Client'}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                <span>{new Date(project.created_at).toLocaleDateString('id-ID')}</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onView(project)}
-                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-                >
-                  <Eye className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Lihat Detail</TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onEdit(project)}
-                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-                >
-                  <Edit className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Edit Timeline</TooltipContent>
-            </Tooltip>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mb-4">
-          <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mb-1">
-            <span>Progress</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Phase Indicators */}
-        <div className="flex justify-between text-xs">
-          {[1, 2, 3, 4, 5].map(phase => (
-            <div key={phase} className="flex flex-col items-center">
-              <div className={`
-                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
-                ${phase <= getPhaseProgress(project.status) 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
-                }
-              `}>
-                {phase}
-              </div>
-              <span className="mt-1 text-slate-500 dark:text-slate-400 text-center">
-                {phase === 1 ? 'Prep' : 
-                 phase === 2 ? 'Inspec' : 
-                 phase === 3 ? 'Report' : 
-                 phase === 4 ? 'Approval' : 'Govt'}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Team Members */}
-        {project.team_members && project.team_members.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Team:</span>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {project.team_members.slice(0, 3).map((member, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {member.role === 'project_lead' ? 'PL' : 
-                   member.role === 'inspector' ? 'Insp' : 
-                   member.role === 'drafter' ? 'Draft' : 
-                   member.role === 'head_consultant' ? 'HC' : member.role}
-                </Badge>
-              ))}
-              {project.team_members.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{project.team_members.length - 3}
-                </Badge>
-              )}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-// Main Component
-export default function AdminLeadTimeline() {
+export default function AdminLeadTimelinePage() {
   const router = useRouter();
-  const { user, profile, loading: authLoading, isAdminLead } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [projects, setProjects] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [applicationTypeFilter, setApplicationTypeFilter] = useState('all');
+  const [phases, setPhases] = useState([]);
+  
+  // Filter states
+  const [categoryFilter, setCategoryFilter] = useState('all'); // SLF atau PBG
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  
+  // Edit dialog
+  const [editDialog, setEditDialog] = useState({ open: false, phase: null });
+  const [editForm, setEditForm] = useState({
+    phase_name: '',
+    description: '',
+    estimated_duration: 7,
+    start_date: '',
+    status: 'pending',
+    notes: ''
+  });
 
-  // Fetch data
-  const fetchData = async () => {
+  // Fetch projects
+  const fetchProjects = useCallback(async () => {
     setLoading(true);
-    setError(null);
-
     try {
-      // Fetch projects with related data
-      const { data: projectsData, error: projectsError } = await supabase
+      const { data, error } = await supabase
         .from('projects')
-        .select(`
-          *,
-          clients (
-            name
-          ),
-          project_teams (
-            profiles (
-              id,
-              full_name,
-              role
-            )
-          )
-        `)
+        .select('id, name, application_type, status, city, clients(name)')
         .order('created_at', { ascending: false });
 
-      if (projectsError) throw projectsError;
+      if (error) throw error;
+      setProjects(data || []);
 
-      // Process projects data
-      const processedProjects = (projectsData || []).map(project => ({
-        ...project,
-        client_name: project.clients?.name,
-        team_members: project.project_teams?.map(pt => ({
-          id: pt.profiles?.id,
-          full_name: pt.profiles?.full_name,
-          role: pt.profiles?.role
-        })) || []
-      }));
-
-      setProjects(processedProjects);
-
+      // Auto-select first project if available
+      if (data && data.length > 0 && !selectedProjectId) {
+        setSelectedProjectId(data[0].id);
+      }
     } catch (err) {
-      console.error('Timeline data loading error:', err);
-      setError('Gagal memuat data timeline');
-      toast.error('Gagal memuat data timeline');
+      console.error('Error fetching projects:', err);
+      toast.error('Gagal memuat daftar proyek');
     } finally {
       setLoading(false);
+    }
+  }, [selectedProjectId]);
+
+  // Fetch phases for selected project
+  const fetchPhases = useCallback(async () => {
+    if (!selectedProjectId) {
+      setPhases([]);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('project_phases')
+        .select('*')
+        .eq('project_id', selectedProjectId)
+        .order('phase', { ascending: true });
+
+      if (error) throw error;
+      setPhases(data || []);
+    } catch (err) {
+      console.error('Error fetching phases:', err);
+      toast.error('Gagal memuat timeline');
+    }
+  }, [selectedProjectId]);
+
+  // Filter projects by category
+  const filteredProjects = projects.filter(p => {
+    if (categoryFilter === 'all') return true;
+    return getCategory(p.application_type) === categoryFilter;
+  });
+
+  // Get selected project
+  const selectedProject = projects.find(p => p.id === selectedProjectId);
+
+  // Calculate total progress
+  const totalProgress = phases.length > 0
+    ? Math.round(phases.filter(p => p.status === 'completed').length / phases.length * 100)
+    : 0;
+
+  // Open edit dialog
+  const openEditDialog = (phase) => {
+    setEditForm({
+      phase_name: phase.phase_name || '',
+      description: phase.description || '',
+      estimated_duration: phase.estimated_duration || 7,
+      start_date: phase.start_date ? phase.start_date.split('T')[0] : '',
+      status: phase.status || 'pending',
+      notes: phase.notes || ''
+    });
+    setEditDialog({ open: true, phase });
+  };
+
+  // Save phase changes
+  const handleSavePhase = async () => {
+    if (!editDialog.phase) return;
+
+    setSaving(true);
+    try {
+      const updateData = {
+        phase_name: editForm.phase_name,
+        description: editForm.description,
+        estimated_duration: parseInt(editForm.estimated_duration) || 7,
+        status: editForm.status,
+        notes: editForm.notes,
+        updated_at: new Date().toISOString()
+      };
+
+      if (editForm.start_date) {
+        updateData.start_date = editForm.start_date;
+        const startDate = new Date(editForm.start_date);
+        startDate.setDate(startDate.getDate() + updateData.estimated_duration);
+        updateData.end_date = startDate.toISOString().split('T')[0];
+      }
+
+      const { error } = await supabase
+        .from('project_phases')
+        .update(updateData)
+        .eq('id', editDialog.phase.id);
+
+      if (error) throw error;
+
+      toast.success('Fase berhasil diupdate');
+      setEditDialog({ open: false, phase: null });
+      fetchPhases();
+    } catch (err) {
+      console.error('Error saving phase:', err);
+      toast.error('Gagal menyimpan perubahan');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Change phase status
+  const handlePhaseAction = async (action, phase) => {
+    setSaving(true);
+    try {
+      const updateData = { updated_at: new Date().toISOString() };
+
+      if (action === 'start') {
+        updateData.status = 'in_progress';
+        updateData.start_date = new Date().toISOString().split('T')[0];
+        updateData.started_at = new Date().toISOString();
+      } else if (action === 'complete') {
+        updateData.status = 'completed';
+        updateData.end_date = new Date().toISOString().split('T')[0];
+        updateData.completed_at = new Date().toISOString();
+        updateData.progress = 100;
+      }
+
+      const { error } = await supabase
+        .from('project_phases')
+        .update(updateData)
+        .eq('id', phase.id);
+
+      if (error) throw error;
+
+      // Start next phase if completing
+      if (action === 'complete') {
+        const nextPhase = phases.find(p => p.phase === phase.phase + 1);
+        if (nextPhase && nextPhase.status === 'pending') {
+          await supabase
+            .from('project_phases')
+            .update({ 
+              status: 'in_progress', 
+              start_date: new Date().toISOString().split('T')[0],
+              started_at: new Date().toISOString()
+            })
+            .eq('id', nextPhase.id);
+        }
+      }
+
+      toast.success(`Fase ${action === 'start' ? 'dimulai' : 'diselesaikan'}`);
+      fetchPhases();
+    } catch (err) {
+      console.error('Error updating phase:', err);
+      toast.error('Gagal mengubah status fase');
+    } finally {
+      setSaving(false);
     }
   };
 
   useEffect(() => {
-    if (router.isReady && !authLoading && user && isAdminLead) {
-      fetchData();
+    if (!authLoading && user) {
+      fetchProjects();
     }
-  }, [router.isReady, authLoading, user, isAdminLead]);
+  }, [authLoading, user, fetchProjects]);
 
-  // Filter projects
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.client_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    const matchesApplicationType = applicationTypeFilter === 'all' || 
-                                  project.application_type === applicationTypeFilter;
+  useEffect(() => {
+    if (selectedProjectId) {
+      fetchPhases();
+    }
+  }, [selectedProjectId, fetchPhases]);
 
-    return matchesSearch && matchesStatus && matchesApplicationType;
-  });
+  // When category changes, reset project selection to first matching project
+  useEffect(() => {
+    if (filteredProjects.length > 0) {
+      const currentProjectInFilter = filteredProjects.find(p => p.id === selectedProjectId);
+      if (!currentProjectInFilter) {
+        setSelectedProjectId(filteredProjects[0].id);
+      }
+    } else {
+      setSelectedProjectId('');
+    }
+  }, [categoryFilter, filteredProjects, selectedProjectId]);
 
-  // Get unique statuses and application types for filters
-  const statuses = [...new Set(projects.map(p => p.status))];
-  const applicationTypes = [...new Set(projects.map(p => p.application_type))];
-
-  // Statistics
-  const stats = {
-    total: projects.length,
-    active: projects.filter(p => !['completed', 'cancelled'].includes(p.status)).length,
-    completed: projects.filter(p => p.status === 'completed').length,
-    in_progress: projects.filter(p => ['inspection_scheduled', 'inspection_in_progress', 'report_draft'].includes(p.status)).length
-  };
-
-  // Handle actions
-  const handleViewProject = (project) => {
-    router.push(`/dashboard/admin-lead/projects/${project.id}`);
-  };
-
-  const handleEditTimeline = (project) => {
-    router.push(`/dashboard/admin-lead/projects/${project.id}/timeline`);
-  };
-
-  const handleRefresh = () => {
-    fetchData();
-    toast.success('Data timeline diperbarui');
-  };
-
-  if (authLoading || (user && !isAdminLead)) {
+  if (authLoading || loading) {
     return (
-      <DashboardLayout title="Project Timeline">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
+      <DashboardLayout title="Timeline">
+        <div className="p-6 space-y-4">
+          <Skeleton className="h-10 w-full max-w-md" />
+          <Skeleton className="h-64 w-full" />
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Project Timeline">
+    <DashboardLayout title="Timeline">
       <TooltipProvider>
-        <motion.div 
-          className="p-6 space-y-6 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => router.back()}
-                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                  Project Timeline
-                </h1>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Pantau progress semua project dalam sistem
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => router.push('/dashboard/admin-lead/projects/new')}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Project Baru
-              </Button>
-            </div>
-          </motion.div>
-
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
-
-          {/* Stats Overview */}
-          <motion.div variants={itemVariants}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Projects</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.total}</p>
-                    </div>
-                    <Building className="w-8 h-8 text-blue-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Active Projects</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.active}</p>
-                    </div>
-                    <Clock className="w-8 h-8 text-orange-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">In Progress</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.in_progress}</p>
-                    </div>
-                    <FileText className="w-8 h-8 text-purple-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Completed</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.completed}</p>
-                    </div>
-                    <CheckCircle2 className="w-8 h-8 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </motion.div>
+        <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
 
           {/* Filters */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="search" className="sr-only">Search</Label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <Input
-                        id="search"
-                        placeholder="Cari nama project, lokasi, atau client..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="w-full sm:w-48">
-                    <Label htmlFor="status-filter" className="sr-only">Filter Status</Label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                        <SelectValue placeholder="Filter Status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                        <SelectItem value="all">Semua Status</SelectItem>
-                        {statuses.map(status => (
-                          <SelectItem key={status} value={status}>
-                            {getStatusLabel(status)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Kategori Permohonan</Label>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih kategori" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua Kategori</SelectItem>
+                      <SelectItem value="SLF">SLF (Sertifikat Laik Fungsi)</SelectItem>
+                      <SelectItem value="PBG">PBG (Persetujuan Bangunan Gedung)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  <div className="w-full sm:w-48">
-                    <Label htmlFor="type-filter" className="sr-only">Filter Tipe Aplikasi</Label>
-                    <Select value={applicationTypeFilter} onValueChange={setApplicationTypeFilter}>
-                      <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                        <SelectValue placeholder="Filter Tipe" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                        <SelectItem value="all">Semua Tipe</SelectItem>
-                        {applicationTypes.map(type => (
-                          <SelectItem key={type} value={type}>
-                            {type}
+                <div className="space-y-2">
+                  <Label>Pilih Proyek</Label>
+                  <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih proyek" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredProjects.length === 0 ? (
+                        <SelectItem value="" disabled>Tidak ada proyek</SelectItem>
+                      ) : (
+                        filteredProjects.map(project => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.name} - {project.clients?.name || 'N/A'}
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Selected Project Info */}
+          {selectedProject && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold">{selectedProject.name}</h2>
+                    <p className="text-muted-foreground flex items-center gap-2">
+                      <Building className="w-4 h-4" />
+                      {selectedProject.clients?.name || '-'} • {selectedProject.city || '-'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">
+                      {selectedProject.application_type || 'SLF'}
+                    </Badge>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => router.push(`/dashboard/admin-lead/projects/${selectedProject.id}`)}
+                    >
+                      Detail Proyek
+                    </Button>
                   </div>
                 </div>
+
+                {/* Progress */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">
+                    Progress: {phases.filter(p => p.status === 'completed').length} dari {phases.length} fase
+                  </span>
+                  <Badge variant="outline">{totalProgress}%</Badge>
+                </div>
+                <Progress value={totalProgress} className="h-2" />
               </CardContent>
             </Card>
-          </motion.div>
-
-          {/* Error Alert */}
-          {error && (
-            <motion.div variants={itemVariants}>
-              <Alert variant="destructive" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle className="text-slate-900 dark:text-slate-100">Error</AlertTitle>
-                <AlertDescription className="text-slate-600 dark:text-slate-400">{error}</AlertDescription>
-              </Alert>
-            </motion.div>
           )}
 
-          {/* Projects Grid */}
-          <motion.div variants={itemVariants}>
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <Card key={i} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          {/* Timeline Phases */}
+          {!selectedProject ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Pilih Proyek</h3>
+                <p className="text-muted-foreground">
+                  Pilih proyek dari dropdown di atas untuk melihat timeline
+                </p>
+              </CardContent>
+            </Card>
+          ) : phases.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <AlertTriangle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Belum Ada Fase</h3>
+                <p className="text-muted-foreground">
+                  Timeline belum dibuat untuk proyek ini
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {phases.map((phase, index) => {
+                const isActive = phase.status === 'in_progress';
+                const isCompleted = phase.status === 'completed';
+                const isPending = phase.status === 'pending';
+                const canStart = isPending && index === phases.findIndex(p => p.status === 'pending');
+
+                return (
+                  <Card 
+                    key={phase.id} 
+                    className={`border-l-4 ${
+                      isCompleted ? 'border-l-green-500' :
+                      isActive ? 'border-l-blue-500' :
+                      'border-l-muted'
+                    }`}
+                  >
                     <CardContent className="p-6">
-                      <div className="space-y-4">
-                        <Skeleton className="h-6 w-3/4 bg-slate-300 dark:bg-slate-600" />
-                        <Skeleton className="h-4 w-1/2 bg-slate-300 dark:bg-slate-600" />
-                        <Skeleton className="h-2 w-full bg-slate-300 dark:bg-slate-600" />
-                        <div className="flex justify-between">
-                          {[1,2,3,4,5].map(j => (
-                            <Skeleton key={j} className="w-6 h-6 rounded-full bg-slate-300 dark:bg-slate-600" />
-                          ))}
+                      <div className="flex items-start justify-between gap-4">
+                        {/* Phase Info */}
+                        <div className="flex items-start gap-4 flex-1">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            isCompleted ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+                            isActive ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+                            'bg-muted text-muted-foreground'
+                          }`}>
+                            {isCompleted ? (
+                              <CheckCircle2 className="w-5 h-5" />
+                            ) : isActive ? (
+                              <PlayCircle className="w-5 h-5" />
+                            ) : (
+                              <Clock className="w-5 h-5" />
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold">
+                                Fase {phase.phase}: {phase.phase_name}
+                              </h3>
+                              <Badge variant={isCompleted ? 'default' : isActive ? 'default' : 'secondary'}>
+                                {isCompleted ? 'Selesai' : isActive ? 'Berjalan' : 'Menunggu'}
+                              </Badge>
+                            </div>
+
+                            <p className="text-sm text-muted-foreground mb-3">
+                              {phase.description || '-'}
+                            </p>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Durasi:</span>
+                                <p className="font-medium">{phase.estimated_duration || 7} hari</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Mulai:</span>
+                                <p className="font-medium">{formatDate(phase.start_date)}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Selesai:</span>
+                                <p className="font-medium">{formatDate(phase.end_date)}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Progress:</span>
+                                <div className="flex items-center gap-2">
+                                  <Progress value={phase.progress || 0} className="h-2 flex-1" />
+                                  <span className="font-medium">{phase.progress || 0}%</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {phase.notes && (
+                              <p className="text-sm text-muted-foreground mt-2 italic">
+                                Catatan: {phase.notes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-col gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(phase)}
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Edit
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit fase</TooltipContent>
+                          </Tooltip>
+
+                          {canStart && (
+                            <Button
+                              size="sm"
+                              onClick={() => handlePhaseAction('start', phase)}
+                              disabled={saving}
+                            >
+                              <PlayCircle className="w-4 h-4 mr-1" />
+                              Mulai
+                            </Button>
+                          )}
+
+                          {isActive && (
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                              onClick={() => handlePhaseAction('complete', phase)}
+                              disabled={saving}
+                            >
+                              <CheckCircle2 className="w-4 h-4 mr-1" />
+                              Selesai
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            ) : filteredProjects.length === 0 ? (
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-12 text-center">
-                  <Calendar className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                    Tidak ada projects
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-6">
-                    {searchTerm || statusFilter !== 'all' || applicationTypeFilter !== 'all'
-                      ? 'Tidak ada projects yang sesuai dengan filter' 
-                      : 'Belum ada projects yang dibuat'}
-                  </p>
-                  <Button onClick={() => router.push('/dashboard/admin-lead/projects/new')}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Buat Project Pertama
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProjects.map((project) => (
-                  <ProjectTimelineCard
-                    key={project.id}
-                    project={project}
-                    onView={handleViewProject}
-                    onEdit={handleEditTimeline}
+                );
+              })}
+            </div>
+          )}
+
+          {/* Edit Phase Dialog */}
+          <Dialog open={editDialog.open} onOpenChange={(open) => !saving && setEditDialog({ open, phase: open ? editDialog.phase : null })}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Fase {editDialog.phase?.phase}</DialogTitle>
+                <DialogDescription>
+                  Ubah detail fase {editDialog.phase?.phase_name}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Nama Fase</Label>
+                  <Input
+                    value={editForm.phase_name}
+                    onChange={(e) => setEditForm({ ...editForm, phase_name: e.target.value })}
                   />
-                ))}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Deskripsi</Label>
+                  <Textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    rows={2}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Durasi (hari)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={60}
+                      value={editForm.estimated_duration}
+                      onChange={(e) => setEditForm({ ...editForm, estimated_duration: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tanggal Mulai</Label>
+                    <Input
+                      type="date"
+                      value={editForm.start_date}
+                      onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Menunggu</SelectItem>
+                      <SelectItem value="in_progress">Berjalan</SelectItem>
+                      <SelectItem value="completed">Selesai</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Catatan (opsional)</Label>
+                  <Textarea
+                    value={editForm.notes}
+                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                    placeholder="Catatan tambahan..."
+                    rows={2}
+                  />
+                </div>
               </div>
-            )}
-          </motion.div>
-        </motion.div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditDialog({ open: false, phase: null })} disabled={saving}>
+                  Batal
+                </Button>
+                <Button onClick={handleSavePhase} disabled={saving}>
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Simpan
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+        </div>
       </TooltipProvider>
     </DashboardLayout>
   );
-}
-
-// Helper function for status labels (moved outside component)
-function getStatusLabel(status) {
-  const labels = {
-    'draft': 'Draft',
-    'submitted': 'Submitted',
-    'project_lead_review': 'Project Lead Review',
-    'inspection_scheduled': 'Inspection Scheduled',
-    'inspection_in_progress': 'Inspection in Progress',
-    'report_draft': 'Report Draft',
-    'head_consultant_review': 'Head Consultant Review',
-    'client_review': 'Client Review',
-    'government_submitted': 'Government Submitted',
-    'slf_issued': 'SLF Issued',
-    'completed': 'Completed',
-    'cancelled': 'Cancelled'
-  };
-  return labels[status] || status;
 }

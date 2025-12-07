@@ -1098,22 +1098,13 @@ export default function InspectionDetailPage() {
               size="sm"
               onClick={() => router.push('/dashboard/inspector/inspections')}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                {inspection.projects?.name}
-              </h1>
-              <p className="text-muted-foreground">
-                Inspeksi oleh {user?.email}
-              </p>
-            </div>
+            <span className="text-sm text-muted-foreground">{inspection.projects?.name}</span>
+            {getStatusBadge(inspection.status)}
           </div>
           
           <div className="flex items-center gap-3">
-            {/* Menggunakan getStatusBadge dari InspectionList untuk konsistensi */}
-            {getStatusBadge(inspection.status)}
             
             {inspection.status === 'scheduled' && (
               <Button onClick={handleStartInspection} className="flex items-center gap-2">

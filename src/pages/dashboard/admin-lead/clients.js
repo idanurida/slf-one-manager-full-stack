@@ -437,16 +437,11 @@ export default function AdminLeadClientsPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
+          {/* Header Actions */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                Manajemen Client
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Daftar client dari projects yang Anda buat sebagai <strong>Admin Lead</strong>.
-              </p>
-            </div>
+            <p className="text-slate-600 dark:text-slate-400">
+              Daftar client dari projects yang Anda buat sebagai <strong>Admin Lead</strong>.
+            </p>
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
@@ -493,7 +488,7 @@ export default function AdminLeadClientsPage() {
             <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Crown className="w-5 h-5 text-blue-600" />
+                  <Crown className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Daftar Client Anda
                   {clients.length > 0 && (
                     <Badge variant="secondary" className="ml-2">

@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { useRouter } from 'next/navigation'; // ✅ Ganti ke next/navigation
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -87,9 +88,11 @@ const getStatusText = (status) => {
 };
 
 // --- Main Component ---
-const ApprovalForm = ({ project, role, user, onApprovalChange }) => {
-  const router = useRouter(); // ✅ Ganti ke next/navigation
-  const { toast } = useToast(); // ✅ Gunakan useToast dari shadcn/ui
+// NOTE: onSuccess callback digunakan untuk decouple router logic dari komponen ini
+// Parent component bertanggung jawab untuk routing setelah approval/rejection
+const ApprovalForm = ({ project, role, user, onApprovalChange, onSuccess, onError }) => {
+  const router = useRouter(); // Fallback jika onSuccess tidak disediakan
+  const { toast } = useToast();
 
   const [comment, setComment] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
@@ -97,6 +100,17 @@ const ApprovalForm = ({ project, role, user, onApprovalChange }) => {
   const [showRejectionForm, setShowRejectionForm] = useState(false);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  
+  // Handle navigation - prefer callback, fallback to router
+  const handleNavigateAfterAction = (approval, action) => {
+    if (onSuccess) {
+      onSuccess(approval, action); // Delegate routing to parent
+    } else {
+      // Fallback: navigate to dashboard
+      const dashboardPath = user?.role ? `/dashboard/${user.role.replace(/_/g, '-')}` : '/dashboard';
+      router.push(dashboardPath);
+    }
+  };
 
   const handleApprove = async () => {
     setLoading(true);
@@ -119,8 +133,8 @@ const ApprovalForm = ({ project, role, user, onApprovalChange }) => {
         onApprovalChange(response.data.approval);
       }
 
-      // Redirect ke dashboard
-      router.push(`/dashboard/${user.role.replace(/_/g, '-')}`);
+      // Navigate - use callback or fallback to router
+      handleNavigateAfterAction(response.data.approval, 'approve');
 
     } catch (error) {
       console.error('Approval error:', error);
@@ -128,8 +142,10 @@ const ApprovalForm = ({ project, role, user, onApprovalChange }) => {
       toast({
         title: 'Error',
         description: errorMessage,
-        variant: "destructive", // ✅ Gunakan variant shadcn/ui
+        variant: "destructive",
       });
+      // Notify parent of error if callback provided
+      if (onError) onError(error, 'approve');
     } finally {
       setLoading(false);
     }
@@ -165,8 +181,8 @@ const ApprovalForm = ({ project, role, user, onApprovalChange }) => {
         onApprovalChange(response.data.approval);
       }
 
-      // Redirect ke dashboard
-      router.push(`/dashboard/${user.role.replace(/_/g, '-')}`);
+      // Navigate - use callback or fallback to router
+      handleNavigateAfterAction(response.data.approval, 'reject');
 
     } catch (error) {
       console.error('Rejection error:', error);
@@ -174,8 +190,10 @@ const ApprovalForm = ({ project, role, user, onApprovalChange }) => {
       toast({
         title: 'Error',
         description: errorMessage,
-        variant: "destructive", // ✅ Gunakan variant shadcn/ui
+        variant: "destructive",
       });
+      // Notify parent of error if callback provided
+      if (onError) onError(error, 'reject');
     } finally {
       setLoading(false);
       setShowRejectionForm(false);
@@ -330,6 +348,43 @@ const ApprovalForm = ({ project, role, user, onApprovalChange }) => {
       </Card>
     </motion.div>
   );
+};
+
+// PropTypes validation
+ApprovalForm.propTypes = {
+  /** Project object containing id, name, status, etc */
+  project: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    name: PropTypes.string,
+    owner_name: PropTypes.string,
+    status: PropTypes.string,
+  }).isRequired,
+  /** Role of the approver */
+  role: PropTypes.oneOf([
+    'project_lead',
+    'team_leader',
+    'head_consultant',
+    'admin_lead',
+    'admin_team',
+    'client',
+  ]).isRequired,
+  /** Current user object */
+  user: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    role: PropTypes.string,
+  }).isRequired,
+  /** Callback when approval status changes */
+  onApprovalChange: PropTypes.func,
+  /** Callback after successful approval/rejection - used to decouple routing */
+  onSuccess: PropTypes.func,
+  /** Callback when error occurs */
+  onError: PropTypes.func,
+};
+
+ApprovalForm.defaultProps = {
+  onApprovalChange: null,
+  onSuccess: null, // If null, component will handle routing internally
+  onError: null,
 };
 
 export default ApprovalForm;

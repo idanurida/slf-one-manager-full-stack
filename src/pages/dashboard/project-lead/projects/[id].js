@@ -578,31 +578,17 @@ export default function ProjectLeadProjectDetailPage() {
           {/* Header */}
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                className="flex items-center gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={handleBack}>
                 <ArrowLeft className="w-4 h-4" />
-                Kembali
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                  {project?.name || 'Loading...'}
-                </h1>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Detail dan manajemen proyek - Project Lead
-                </p>
-              </div>
+              <span className="text-sm text-muted-foreground">{project?.name || 'Loading...'}</span>
+              {project && (
+                <Badge className={`text-sm ${getStatusColor(project.status)}`}>
+                  {getStatusLabel(project.status)}
+                </Badge>
+              )}
             </div>
-            {project && (
-              <Badge className={`text-sm ${getStatusColor(project.status)}`}>
-                {getStatusLabel(project.status)}
-              </Badge>
-            )}
           </div>
-
-          <Separator />
 
           {project ? (
             <>

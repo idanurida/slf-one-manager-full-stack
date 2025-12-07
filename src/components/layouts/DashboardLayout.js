@@ -37,11 +37,18 @@ import {
   ChevronRight, ChevronLeft,
   Eye, TrendingUp, AlertCircle, FileQuestion, Upload, Download,
   CreditCard, MessageCircle, User, Camera, Database,
-  MapPin, ListChecks, ClipboardCheck, CameraIcon
+  MapPin, ListChecks, ClipboardCheck, CameraIcon, FolderOpen
 } from "lucide-react";
 
 // === Supabase ===
 import { supabase } from "@/utils/supabaseClient";
+
+// === Role Mapping ===
+import { 
+  getRoleDisplayLabel, 
+  getDashboardPath as getRoleDashboardPath,
+  ROLE_URL_PATHS 
+} from "@/utils/roleMapping";
 
 /* ==========================
    🧭 Utility Functions
@@ -49,28 +56,20 @@ import { supabase } from "@/utils/supabaseClient";
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
+// Use role mapping utility - displays "Team Leader" for project_lead
 const getRoleDisplayName = (role) => {
-  const roleNames = {
-    superadmin: "Super Admin",
-    head_consultant: "Head Consultant", 
-    admin_lead: "Admin Lead",
-    admin_team: "Admin Team",
-    project_lead: "Project Lead",
-    inspector: "Inspector",
-    drafter: "Drafter",
-    client: "Client",
-  };
-  return roleNames[role] || "N/A";
+  return getRoleDisplayLabel(role);
 };
 
 // Function untuk mendapatkan path dashboard yang benar
 const getDashboardPath = (userRole) => {
+  // Gunakan roleMapping utility, tapi tetap gunakan path project-lead untuk backward compatibility
   const pathMap = {
     'admin_team': '/dashboard/admin-team',
     'admin_lead': '/dashboard/admin-lead',
     'head_consultant': '/dashboard/head-consultant',
     'superadmin': '/dashboard/superadmin',
-    'project_lead': '/dashboard/project-lead',
+    'project_lead': '/dashboard/team-leader', // URL menggunakan team-leader
     'inspector': '/dashboard/inspector',
     'drafter': '/dashboard/drafter',
     'client': '/dashboard/client'
@@ -91,57 +90,47 @@ const getSidebarItems = (userRole) => {
 
   const roleSpecificItems = {
     admin_lead: [
-      { name: "Projects", path: "/dashboard/admin-lead/projects", icon: Building },
+      { name: "Proyek", path: "/dashboard/admin-lead/projects", icon: Building },
+      { name: "Proyek Baru", path: "/dashboard/admin-lead/projects/new", icon: Plus },
       { name: "Timeline", path: "/dashboard/admin-lead/timeline", icon: Calendar },
-      { name: "Team", path: "/dashboard/admin-lead/team", icon: Users },
-      { name: "Documents", path: "/dashboard/admin-lead/documents", icon: FileText },
-      { name: "Schedules", path: "/dashboard/admin-lead/schedules", icon: Clock },
-      { name: "Clients", path: "/dashboard/admin-lead/clients", icon: User },
-      { name: "Communication", path: "/dashboard/admin-lead/communication", icon: MessageCircle },
-      { name: "Payments", path: "/dashboard/admin-lead/payments", icon: CreditCard },
+      { name: "Tim", path: "/dashboard/admin-lead/team", icon: Users },
+      { name: "Dokumen", path: "/dashboard/admin-lead/documents", icon: FileText },
+      { name: "Jadwal", path: "/dashboard/admin-lead/schedules", icon: Clock },
+      { name: "Klien", path: "/dashboard/admin-lead/clients", icon: User },
+      { name: "Komunikasi", path: "/dashboard/admin-lead/communication", icon: MessageCircle },
+      { name: "Pembayaran", path: "/dashboard/admin-lead/payments", icon: CreditCard },
     ],
     head_consultant: [
-      { name: "Review Projects", path: "/dashboard/head-consultant/projects", icon: FileText },
-      { name: "Project Timeline", path: "/dashboard/head-consultant/timeline", icon: Calendar },
-      { name: "Approvals", path: "/dashboard/head-consultant/approvals", icon: FileCheck },
-      { name: "Quality Control", path: "/dashboard/head-consultant/quality", icon: CheckSquare },
-      { name: "Team Performance", path: "/dashboard/head-consultant/performance", icon: TrendingUp },
-      { name: "Reports & Analytics", path: "/dashboard/head-consultant/reports", icon: BarChart3 },
-      { name: "Audit Trail", path: "/dashboard/head-consultant/audit", icon: History },
+      { name: "Proyek", path: "/dashboard/head-consultant/projects", icon: Building },
+      { name: "Timeline", path: "/dashboard/head-consultant/timeline", icon: Calendar },
+      { name: "Approval", path: "/dashboard/head-consultant/approvals", icon: FileCheck },
+      { name: "Tim", path: "/dashboard/head-consultant/team", icon: Users },
+      { name: "Performa", path: "/dashboard/head-consultant/performance", icon: TrendingUp },
     ],
     admin_team: [
+      { name: "Proyek", path: "/dashboard/admin-team/projects", icon: Building },
       { name: "Verifikasi Dokumen", path: "/dashboard/admin-team/documents", icon: FileCheck },
-      { name: "Laporan Inspector", path: "/dashboard/admin-team/reports", icon: FileQuestion },
-      { name: "Konfirmasi SIMBG", path: "/dashboard/admin-team/submissions", icon: Upload },
-      { name: "Timeline Proyek", path: "/dashboard/admin-team/timeline", icon: Calendar },
+      { name: "Laporan Inspector", path: "/dashboard/admin-team/reports", icon: FileText },
+      { name: "Timeline", path: "/dashboard/admin-team/timeline", icon: Calendar },
       { name: "Jadwal", path: "/dashboard/admin-team/schedules", icon: Clock },
-      { name: "Proyek Saya", path: "/dashboard/admin-team/projects", icon: Building },
-      { name: "Progress Tracking", path: "/dashboard/admin-team/progress", icon: TrendingUp },
     ],
     project_lead: [
-      { name: "Proyek Saya", path: "/dashboard/project-lead/projects", icon: Building },
-      { name: "Timeline Proyek", path: "/dashboard/project-lead/timeline", icon: Calendar },
-      { name: "Tim Proyek", path: "/dashboard/project-lead/team", icon: Users },
-      { name: "Laporan Inspector", path: "/dashboard/project-lead/reports", icon: FileText },
-      { name: "Jadwal", path: "/dashboard/project-lead/schedules", icon: Clock },
-      { name: "Komunikasi", path: "/dashboard/project-lead/communication", icon: MessageCircle },
+      { name: "Proyek", path: "/dashboard/team-leader/projects", icon: Building },
+      { name: "Timeline", path: "/dashboard/team-leader/timeline", icon: Calendar },
+      { name: "Tim", path: "/dashboard/team-leader/team", icon: Users },
+      { name: "Laporan", path: "/dashboard/team-leader/reports", icon: FileText },
+      { name: "Jadwal", path: "/dashboard/team-leader/schedules", icon: Clock },
     ],
     superadmin: [
-      { name: "User Management", path: "/dashboard/superadmin/users", icon: Users },
-      { name: "All Projects", path: "/dashboard/superadmin/projects", icon: Building },
-      { name: "System Logs", path: "/dashboard/superadmin/logs", icon: Database },
-      { name: "Audit Trail", path: "/dashboard/superadmin/audit", icon: History },
-      { name: "Backup & Restore", path: "/dashboard/superadmin/backup", icon: Download },
-      { name: "System Settings", path: "/dashboard/superadmin/settings", icon: Settings },
+      { name: "Pengguna", path: "/dashboard/superadmin/users", icon: Users },
+      { name: "Proyek", path: "/dashboard/superadmin/projects", icon: Building },
+      { name: "Recovery", path: "/dashboard/superadmin/recovery-center", icon: Database },
     ],
     inspector: [
-      { name: "Dashboard", path: "/dashboard/inspector", icon: BarChart3, exact: true },
-      { name: "Jadwal Inspeksi", path: "/dashboard/inspector/schedules", icon: Calendar },
-      { name: "Semua Inspeksi", path: "/dashboard/inspector/inspections", icon: ClipboardList },
-      { name: "Checklist & Photogeotag", path: "/dashboard/inspector/checklist", icon: CheckSquare },
-      { name: "Laporan Saya", path: "/dashboard/inspector/reports", icon: FileText },
+      { name: "Jadwal", path: "/dashboard/inspector/schedules", icon: Calendar },
       { name: "Proyek Saya", path: "/dashboard/inspector/projects", icon: Building },
-      { name: "Template Checklist", path: "/dashboard/inspector/templates", icon: ListChecks },
+      { name: "Checklist", path: "/dashboard/inspector/checklist", icon: CheckSquare },
+      { name: "Laporan", path: "/dashboard/inspector/reports", icon: FileText },
       { name: "Inspeksi Saya", path: "/dashboard/inspector/my-inspections", icon: ClipboardCheck },
     ],
     drafter: [
@@ -155,8 +144,7 @@ const getSidebarItems = (userRole) => {
     client: [
       { name: "My Projects", path: "/dashboard/client/projects", icon: Building },
       { name: "Project Timeline", path: "/dashboard/client/timeline", icon: Calendar },
-      { name: "New Project", path: "/dashboard/client/projects/new", icon: Plus },
-      { name: "Documents", path: "/dashboard/client/documents", icon: FileText },
+      { name: "Upload Dokumen", path: "/dashboard/client/upload", icon: Upload },
       { name: "Payments", path: "/dashboard/client/payments", icon: CreditCard },
       { name: "Messages", path: "/dashboard/client/messages", icon: MessageCircle },
       { name: "Support", path: "/dashboard/client/support", icon: HelpCircle },
@@ -271,49 +259,53 @@ const DashboardLayout = ({
   const pageTitle = title || getPageTitleFromPath(router.pathname, profile?.role);
   const isDashboard = isMainDashboard(router.pathname, profile?.role);
 
-  // Untuk client dashboard yang kompleks, sembunyikan header default
-  const shouldShowHeader = showHeader && !customHeader && !(profile?.role === 'client' && isDashboard);
+  // Tampilkan header untuk semua role termasuk client
+  const shouldShowHeader = showHeader && !customHeader;
 
   // Memoized values untuk performance
   const sidebarItems = useMemo(() => getSidebarItems(profile?.role), [profile?.role]);
   const roleName = useMemo(() => getRoleDisplayName(profile?.role), [profile?.role]);
 
-  // --- Load notifications ---
+  // --- Load notifications (tanpa realtime untuk menghindari connection issues) ---
   useEffect(() => {
+    let isMounted = true;
+
     const loadUnreadNotifications = async () => {
-      if (!profile?.id) return;
+      if (!profile?.id || !isMounted) return;
 
       setLoadingNotifications(true);
       try {
         const { count, error } = await supabase
           .from('notifications')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact' })
           .eq('recipient_id', profile.id)
-          .eq('is_read', false);
+          .eq('is_read', false)
+          .limit(1);
 
         if (error) {
           // Fallback ke read_status jika kolom is_read tidak ada
           const { count: countFallback, error: errorFallback } = await supabase
             .from('notifications')
-            .select('*', { count: 'exact', head: true })
+            .select('id', { count: 'exact' })
             .eq('recipient_id', profile.id)
-            .eq('read_status', 'unread');
+            .eq('read_status', 'unread')
+            .limit(1);
 
           if (errorFallback) {
             console.warn('Load notifications error (fallback):', errorFallback);
-            setNotifications(0);
+            if (isMounted) setNotifications(0);
             return;
           }
-          setNotifications(countFallback || 0);
+          if (isMounted) setNotifications(countFallback || 0);
           return;
         }
 
-        setNotifications(count || 0);
+        if (isMounted) setNotifications(count || 0);
       } catch (err) {
         console.error('Load notifications error:', err);
-        setNotifications(0); // Fallback jika error
+        if (isMounted) setNotifications(0);
       } finally {
-        setLoadingNotifications(false);
+        if (isMounted) setLoadingNotifications(false);
       }
     };
 
@@ -321,25 +313,9 @@ const DashboardLayout = ({
       loadUnreadNotifications();
     }
 
-    // Real-time subscription untuk notifikasi
-    const channel = supabase
-      .channel('notifications_channel')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `recipient_id=eq.${profile?.id}`
-        },
-        () => {
-          loadUnreadNotifications();
-        }
-      )
-      .subscribe();
-
+    // Cleanup
     return () => {
-      supabase.removeChannel(channel);
+      isMounted = false;
     };
   }, [profile?.id]);
 

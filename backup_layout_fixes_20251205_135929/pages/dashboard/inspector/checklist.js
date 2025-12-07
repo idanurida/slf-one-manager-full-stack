@@ -1,0 +1,1459 @@
+// FILE: src/pages/dashboard/inspector/checklist.js
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/router';
+import { useToast } from '@/components/ui/use-toast';
+
+// shadcn/ui Components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+
+// Lucide Icons
+import {
+  FileText, Clock, Activity, CheckCircle, XCircle, Eye,
+  CheckSquare, AlertTriangle, Loader2, Info, Camera, 
+  Plus, MapPin, TrendingUp, ClipboardList, ListChecks,
+  Building, Users, Search, Filter, Download, Upload,
+  Save, X, ArrowLeft
+} from 'lucide-react';
+
+// Other Imports
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { supabase } from '@/utils/supabaseClient';
+import { useAuth } from '@/context/AuthContext';
+import AutoPhotoGeotag from '@/components/AutoPhotoGeotag';
+
+// Import data checklist lokal dari checklistTemplates.js
+import checklistTemplateData from "@/utils/checklistTemplates.js";
+
+// Import utils untuk inspection_photos
+import { saveInspectionPhoto, getPhotosByInspection } from '@/utils/inspectionPhotos';
+
+// Utility function untuk class names
+const cn = (...classes) => classes.filter(Boolean).join(' ');
+
+// 🔥 FUNGSI BARU: MEMASTIKAN ITEM ADA DI DATABASE
+const ensureChecklistItemExists = async (itemId, itemData) => {
+  try {
+    console.log('🔍 Checking item in database:', itemId);
+    
+    // Cek apakah item sudah ada
+    const { data: existingItem, error: checkError } = await supabase
+      .from('checklist_items')
+      .select('id')
+      .eq('id', itemId)
+      .single();
+
+    // Jika error bukan "no rows", log warning
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.warn('⚠️ Check error:', checkError);
+    }
+
+    // Jika item tidak ada, BUAT SEKARANG
+    if (!existingItem) {
+      console.log('🔄 CREATING checklist item:', itemId);
+      
+      const newItemData = {
+        id: itemId,
+        template_id: itemData.template_id,
+        template_title: itemData.template_title,
+        category: itemData.category,
+        specialization: itemData.specialization || 'general',
+        applicable_for: itemData.applicable_for || [],
+        item_name: itemData.item_name || itemData.description,
+        columns: itemData.columns || [],
+        created_at: new Date().toISOString()
+      };
+
+      const { error: createError } = await supabase
+        .from('checklist_items')
+        .insert([newItemData]);
+
+      if (createError) {
+        // Jika error duplicate, itu artinya item sudah ada (race condition)
+        if (createError.code === '23505') {
+          console.log('✅ Item already created by another process:', itemId);
+          return true;
+        }
+        console.error('❌ CREATE item failed:', createError);
+        throw createError;
+      }
+
+      console.log('✅ SUCCESS created item:', itemId);
+      return true;
+    }
+
+    console.log('✅ Item already exists:', itemId);
+    return true;
+    
+  } catch (err) {
+    console.error('❌ ensureChecklistItemExists FAILED:', err);
+    throw err;
+  }
+};
+
+// 🔥 FUNGSI SYNC ALL ITEMS - PASTIKAN SEMUA ITEM ADA DI DB
+const syncAllChecklistItems = async (items, inspectionId, projectId) => {
+  try {
+    console.log('🔄 SYNCING all checklist items to database...');
+    console.log('📦 Total items to sync:', items.length);
+    
+    if (items.length === 0) {
+      console.warn('⚠️ No items to sync');
+      return true;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (const item of items) {
+      try {
+        await ensureChecklistItemExists(item.id, item);
+        successCount++;
+      } catch (err) {
+        console.error(`❌ Failed to sync item ${item.id}:`, err);
+        errorCount++;
+      }
+    }
+    
+    console.log(`📊 Sync result: ${successCount} success, ${errorCount} failed`);
+    
+    return true;
+  } catch (err) {
+    console.error('❌ Sync failed:', err);
+    return false;
+  }
+};
+
+// 🔥 PERBAIKAN FUNGSI: Photogeotag untuk NON-administratif
+const itemRequiresPhotogeotag = (templateId, itemId) => {
+  if (!templateId) return true; // Default true untuk safety
+  
+  // HANYA template administratif yang TIDAK perlu photo
+  const noPhotoTemplates = [
+    'administrative', 'admin', 'a1', 'a2', 'a3', 'a4', 'a5',
+    'document_review', 'permit_verification', 'paperwork'
+  ];
+  
+  // Return TRUE jika template BUKAN administratif
+  return !noPhotoTemplates.includes(templateId);
+};
+
+// Komponen untuk menampilkan form dinamis berdasarkan kolom
+const DynamicChecklistForm = ({ 
+  templateId, 
+  item, 
+  inspectionId, 
+  projectId, 
+  onSave, 
+  existingResponse 
+}) => {
+  const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [savedPhotos, setSavedPhotos] = useState([]);
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
+  
+  // 🔥 PERBAIKAN: Photogeotag untuk NON-administratif
+  const requiresPhotoGeotag = itemRequiresPhotogeotag(templateId, item.id);
+  
+  const { user } = useAuth();
+  const { toast } = useToast();
+    const [resolvedProjectId, setResolvedProjectId] = useState(projectId);
+
+    // 🔥 PERBAIKAN: Resolve projectId jika belum tersedia
+    useEffect(() => {
+      const resolveProjectId = async () => {
+        if (projectId) {
+          setResolvedProjectId(projectId);
+        } else if (inspectionId && !projectId) {
+          // Fetch projectId dari database jika belum tersedia
+          try {
+            const { data, error } = await supabase
+              .from('inspections')
+              .select('project_id, projects(id)')
+              .eq('id', inspectionId)
+              .single();
+          
+            if (data && !error) {
+              const resolvedId = data.project_id || data.projects?.id;
+              setResolvedProjectId(resolvedId);
+              console.log('✅ Resolved projectId from database:', resolvedId);
+            }
+          } catch (err) {
+            console.warn('⚠️ Failed to resolve projectId:', err);
+          }
+        }
+      };
+    
+      resolveProjectId();
+    }, [inspectionId, projectId]);
+
+  // 🔥 DEBUG: Tambahkan console log untuk troubleshooting
+  useEffect(() => {
+    console.log('🔍 PHOTOGEOTAG DEBUG:', {
+      templateId,
+      itemId: item.id,
+      itemName: item.item_name,
+      category: item.category,
+      requiresPhotoGeotag,
+      hasInspectionId: !!inspectionId,
+      hasProjectId: !!projectId
+    });
+  }, [templateId, item.id, requiresPhotoGeotag, inspectionId, projectId]);
+
+  // Inisialisasi form data
+  useEffect(() => {
+    const initialData = {};
+    item.columns.forEach(column => {
+      if (column.type === 'radio_with_text') {
+        initialData[column.name] = existingResponse?.[column.name] || { option: '', text: '' };
+      } else {
+        initialData[column.name] = existingResponse?.[column.name] || '';
+      }
+    });
+    setFormData(initialData);
+  }, [item, existingResponse]);
+
+  // Load existing photos untuk item ini
+  useEffect(() => {
+    if (requiresPhotoGeotag && inspectionId && item.id) {
+      loadExistingPhotos();
+    }
+  }, [inspectionId, item.id, requiresPhotoGeotag]);
+
+  const loadExistingPhotos = async () => {
+    if (!inspectionId) return;
+    
+    setLoadingPhotos(true);
+    try {
+      const photos = await getPhotosByInspection(inspectionId);
+      const itemPhotos = photos.filter(photo => 
+        photo.checklist_item_id === item.id
+      );
+      setSavedPhotos(itemPhotos);
+    } catch (error) {
+      console.error('Error loading photos:', error);
+    } finally {
+      setLoadingPhotos(false);
+    }
+  };
+
+  const handleInputChange = (columnName, value) => {
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [columnName]: value
+      };
+      console.log('📝 Form input changed:', { columnName, value, allFormData: updated });
+      return updated;
+    });
+  };
+
+  const handleSave = async () => {
+    if (!Object.keys(formData).length) return;
+
+    setSaving(true);
+    try {
+      await onSave(item.id, formData);
+      
+    } catch (err) {
+      console.error("Error saving checklist item:", err);
+      toast({
+        title: "Gagal menyimpan",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePhotoSaved = async (savedPhoto) => {
+    try {
+      setSavedPhotos(prev => [...prev, savedPhoto]);
+      setShowCamera(false);
+      
+      toast({
+        title: "✅ Dokumentasi tersimpan",
+        description: "Foto dan lokasi berhasil disimpan ke database",
+        variant: "default",
+      });
+
+      // Reload photos untuk memastikan data terbaru
+      await loadExistingPhotos();
+
+    } catch (error) {
+      console.error('Error handling photo save:', error);
+    }
+  };
+
+  // Helper: Cek apakah form items sudah terisi
+  const isFormFilled = () => {
+    if (!formData || Object.keys(formData).length === 0) {
+      return false;
+    }
+    
+    // Cek apakah ada minimal satu field yang terisi dan bukan kosong
+    return Object.values(formData).some(value => {
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      if (typeof value === 'object' && value !== null) {
+        // Untuk radio_with_text, cek apakah ada pilihan
+        return value.option && value.option.trim().length > 0;
+      }
+      return value && String(value).trim().length > 0;
+    });
+  };
+
+  // 🔥 AUTO-TRIGGER: Buka camera dialog otomatis saat form terisi
+  useEffect(() => {
+    const formFilled = isFormFilled();
+
+    console.log('🎥 Auto-trigger check:', {
+      formFilled,
+      requiresPhotoGeotag,
+      inspectionId,
+      resolvedProjectId,
+      itemId: item?.id,
+      showCamera
+    });
+
+    // Auto-trigger camera ketika:
+    // 1. Form sudah ada isian
+    // 2. Checklist item memerlukan photogeotag (non-administrative)
+    // 3. Belum menampilkan camera dialog
+    // 4. Ada inspectionId DAN resolvedProjectId tersedia (untuk simpan ke DB)
+    if (formFilled && requiresPhotoGeotag && !showCamera && inspectionId && resolvedProjectId) {
+      console.log('✅ AUTO-TRIGGER: Camera dialog opened...');
+      setShowCamera(true);
+    }
+  }, [formData, requiresPhotoGeotag, inspectionId, resolvedProjectId, showCamera]);
+
+  const renderInputField = (column) => {
+    const value = formData[column.name] || '';
+
+    switch (column.type) {
+      case 'radio':
+        return (
+          <div className="flex flex-wrap gap-4">
+            {column.options.map(option => (
+              <label key={option} className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name={`${item.id}-${column.name}`}
+                  value={option}
+                  checked={value === option}
+                  onChange={(e) => handleInputChange(column.name, e.target.value)}
+                  className="w-4 h-4 text-primary bg-background border-border"
+                />
+                <span className="text-sm text-foreground">{option}</span>
+              </label>
+            ))}
+          </div>
+        );
+
+      case 'textarea':
+        return (
+          <textarea
+            value={value}
+            onChange={(e) => handleInputChange(column.name, e.target.value)}
+            placeholder="Masukkan keterangan..."
+            rows={3}
+            className="w-full p-2 border border-border rounded-md text-sm bg-background text-foreground placeholder:text-muted-foreground"
+          />
+        );
+
+      case 'input_number':
+        return (
+          <div className="flex items-center space-x-2">
+            <Input
+              type="number"
+              value={value}
+              onChange={(e) => handleInputChange(column.name, e.target.value)}
+              placeholder="0"
+              className="w-32 bg-background text-foreground border-border"
+            />
+            {column.unit && <span className="text-sm text-muted-foreground">{column.unit}</span>}
+          </div>
+        );
+
+      default:
+        return (
+          <Input
+            type="text"
+            value={value}
+            onChange={(e) => handleInputChange(column.name, e.target.value)}
+            placeholder="Masukkan nilai..."
+            className="text-sm bg-background text-foreground border-border"
+          />
+        );
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card className="border-border">
+        <CardContent className="p-4">
+          <div className="space-y-4">
+            {item.columns.map((column) => (
+              <div key={column.name} className="space-y-2">
+                <Label className="text-sm font-medium capitalize text-foreground">
+                  {column.name.replace(/_/g, ' ')}
+                </Label>
+                {renderInputField(column)}
+              </div>
+            ))}
+
+            <div className="flex justify-end pt-2">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                size="sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    Simpan Checklist
+                    <Save className="w-4 h-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 🔥 PERBAIKAN: Photogeotag Section - Tampil untuk NON-administratif */}
+      {requiresPhotoGeotag && (
+        <Card className="border-border mt-6 border-l-4 border-l-blue-500">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-full">
+                    <Camera className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground text-lg">
+                      Dokumentasi Photogeotag
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Wajib dilengkapi foto dengan metadata GPS
+                    </p>
+                  </div>
+                </div>
+                
+                {savedPhotos.length > 0 ? (
+                  <Badge variant="default" className="bg-green-500 text-white">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    {savedPhotos.length} Foto
+                  </Badge>
+                ) : (
+                  <Badge variant="destructive" className="bg-red-500 text-white">
+                    <AlertTriangle className="w-3 h-3 mr-1" />
+                    Belum Ada Dokumentasi
+                  </Badge>
+                )}
+              </div>
+
+              {/* Status Photos */}
+              {loadingPhotos ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <span className="text-sm text-muted-foreground">Memuat dokumentasi...</span>
+                </div>
+              ) : savedPhotos.length > 0 ? (
+                <div className="space-y-3">
+                  <Alert className="bg-green-50 border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertTitle className="text-green-800">Dokumentasi Tersedia</AlertTitle>
+                    <AlertDescription className="text-green-700">
+                      {savedPhotos.length} foto dengan metadata GPS telah disimpan
+                    </AlertDescription>
+                  </Alert>
+                  
+                  {savedPhotos.map((photo) => (
+                    <Card key={photo.id} className="bg-green-50 border-green-200">
+                      <CardContent className="p-3">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={photo.photo_url} 
+                            alt="Dokumentasi" 
+                            className="w-12 h-12 object-cover rounded border"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-green-800">
+                              {photo.caption || 'Dokumentasi'}
+                            </p>
+                            {photo.latitude && (
+                              <p className="text-xs text-green-600 flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                GPS: {photo.latitude.toFixed(6)}, {photo.longitude.toFixed(6)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Alert variant="destructive" className="bg-red-50 border-red-200">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertTitle className="text-red-800">Dokumentasi Wajib</AlertTitle>
+                  <AlertDescription className="text-red-700">
+                    Checklist teknis ini <strong>wajib</strong> dilengkapi dengan dokumentasi foto dan lokasi GPS.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Action Button */}
+              <Button
+                onClick={() => setShowCamera(true)}
+                variant={savedPhotos.length > 0 ? "outline" : "default"}
+                className="w-full"
+                disabled={!isFormFilled() || !inspectionId || !resolvedProjectId}
+                size="lg"
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                {savedPhotos.length > 0 ? 'Tambah Foto Dokumentasi' : 'Ambil Dokumentasi dengan Kamera'}
+              </Button>
+
+              {!isFormFilled() && (
+                <Alert className="bg-blue-50 border-blue-200">
+                  <AlertTitle className="text-blue-800 text-sm">Info</AlertTitle>
+                  <AlertDescription className="text-blue-700 text-sm">
+                    Isi form checklist terlebih dahulu untuk mengaktifkan fitur dokumentasi foto
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {isFormFilled() && (!inspectionId || !resolvedProjectId) && (
+                <Alert className="bg-amber-50 border-amber-200">
+                  <AlertTitle className="text-amber-800 text-sm">Info</AlertTitle>
+                  <AlertDescription className="text-amber-700 text-sm">
+                    Simpan checklist terlebih dahulu untuk mengaktifkan fitur dokumentasi
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Camera Dialog */}
+      {showCamera && inspectionId && resolvedProjectId && user && (
+        <AutoPhotoGeotag
+          inspectionId={inspectionId}
+          checklistItemId={item.id}
+          itemName={item.item_name || item.description}
+          projectId={resolvedProjectId}
+          uploadedBy={user.id}
+          onPhotoSaved={handlePhotoSaved}
+          onCancel={() => setShowCamera(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+// Fungsi utilitas untuk flatten checklist
+const flattenChecklistItems = (templates) => {
+  const items = [];
+  templates.forEach((template) => {
+    const category = template.category || 'administrative';
+
+    if (template.subsections) {
+      template.subsections.forEach((subsection) => {
+        subsection.items?.forEach((item) => {
+          items.push({
+            ...item,
+            template_id: template.id,
+            template_title: template.title,
+            category,
+            subsection_title: subsection.title,
+            applicable_for: subsection.applicable_for || template.applicable_for || []
+          });
+        });
+      });
+    } else if (template.items) {
+      template.items?.forEach((item) => {
+        items.push({
+          ...item,
+          template_id: template.id,
+          template_title: template.title,
+          category,
+          applicable_for: template.applicable_for || []
+        });
+      });
+    }
+  });
+  return items;
+};
+
+// Fungsi utilitas untuk mengelompokkan array berdasarkan key
+const groupBy = (array, key) => {
+  return array.reduce((result, currentItem) => {
+    const group = currentItem[key];
+    if (!result[group]) {
+      result[group] = [];
+    }
+    result[group].push(currentItem);
+    return result;
+  }, {});
+};
+
+// Komponen StatCard yang reusable
+const StatCard = ({ label, value, icon: Icon, color }) => (
+  <Card className="border-border">
+    <CardContent className="p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">{label}</p>
+          <p className="text-xl font-bold text-foreground">{value}</p>
+        </div>
+        {Icon && (
+          <div className={`p-2 rounded-full ${color}`}>
+            <Icon className="w-5 h-5 text-white" />
+          </div>
+        )}
+      </div>
+    </CardContent>
+  </Card>
+);
+
+// Komponen utama
+export default function InspectorChecklistDashboard({ inspectionId }) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { user, profile, loading: authLoading, isInspector } = useAuth();
+
+  const [inspections, setInspections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [savingItems, setSavingItems] = useState({});
+  const [syncStatus, setSyncStatus] = useState('idle');
+
+  // States untuk checklist dari checklistTemplates.js
+  const [allChecklistItems, setAllChecklistItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('administrative');
+  const [checklistResponses, setChecklistResponses] = useState({});
+
+  // States untuk Daftar Simak
+  const [simakItems, setSimakItems] = useState([]);
+  const [simakResponses, setSimakResponses] = useState([]);
+  const [loadingSimak, setLoadingSimak] = useState(true);
+
+  // Quick Actions untuk Checklist - SINKRON DENGAN inspector/index.js
+  const quickActions = [
+    {
+      id: 1,
+      title: "Checklist Baru",
+      description: "Mulai checklist baru",
+      icon: Plus,
+      action: () => router.push('/dashboard/inspector/checklist/new'),
+      color: "bg-blue-500",
+      enabled: true
+    },
+    {
+      id: 2,
+      title: "Butuh Photogeotag",
+      description: "Item yang butuh foto+GPS",
+      icon: Camera,
+      action: () => {
+        // Filter untuk item yang butuh photogeotag
+        const itemsNeedingPhoto = allChecklistItems.filter(item => 
+          itemRequiresPhotogeotag(item.template_id, item.id) && 
+          !checklistResponses[item.id]
+        );
+        if (itemsNeedingPhoto.length === 0) {
+          toast({
+            title: "Tidak ada item butuh photogeotag",
+            description: "Semua item sudah memiliki foto dengan GPS",
+            variant: "default",
+          });
+        }
+      },
+      color: "bg-red-500",
+      enabled: true,
+      badge: "📸 Wajib"
+    },
+    {
+      id: 3,
+      title: "Kembali ke Dashboard",
+      description: "Kembali ke dashboard utama",
+      icon: ArrowLeft,
+      action: () => router.push('/dashboard/inspector'),
+      color: "bg-gray-500",
+      enabled: true
+    },
+    {
+      id: 4,
+      title: "Template",
+      description: "Lihat template checklist",
+      icon: FileText,
+      action: () => router.push('/dashboard/inspector/templates'),
+      color: "bg-purple-500",
+      enabled: true
+    }
+  ];
+
+  // Ambil semua checklist items dari checklistTemplates.js
+  useEffect(() => {
+    const items = flattenChecklistItems(checklistTemplateData.checklist_templates);
+    setAllChecklistItems(items);
+    setFilteredItems(items.filter(item => item.category === 'administrative'));
+  }, []);
+
+  // Ambil data user & inspeksi dengan filter inspectionId
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user?.id || !isInspector) return;
+
+      try {
+        setLoading(true);
+
+        let query = supabase
+          .from('inspections')
+          .select(`
+            *,
+            projects (
+              name,
+              id
+            )
+          `)
+          .eq('inspector_id', user.id);
+
+        if (inspectionId) {
+          query = query.eq('id', inspectionId);
+        }
+
+        const { data: inspData, error: inspError } = await query;
+
+        if (inspError) {
+          console.warn("Gagal ambil inspeksi:", inspError.message);
+          setInspections([]);
+        } else {
+          setInspections(inspData || []);
+        }
+
+        // Ambil checklist responses dengan filter inspectionId
+        let responsesQuery = supabase
+          .from('checklist_responses')
+          .select('*')
+          .eq('responded_by', user.id);
+
+        if (inspectionId) {
+          responsesQuery = responsesQuery.eq('inspection_id', inspectionId);
+        }
+
+        const { data: responses, error: respError } = await responsesQuery;
+
+        if (!respError && responses) {
+          const responsesMap = {};
+          responses.forEach(response => {
+            responsesMap[response.item_id] = response.response;
+          });
+          setChecklistResponses(responsesMap);
+        }
+      } catch (err) {
+        console.error("LoadData Error:", err);
+        toast({
+          title: "Gagal memuat data inspeksi",
+          description: err.message,
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user && isInspector) {
+      loadData();
+    }
+  }, [user, isInspector, inspectionId, toast]);
+
+  // 🔥 SYNC CHECKLIST ITEMS KE DATABASE
+  useEffect(() => {
+    const syncItems = async () => {
+      if (allChecklistItems.length > 0 && user?.id) {
+        console.log('🔄 Starting checklist items sync...');
+        setSyncStatus('syncing');
+        
+        const currentInspection = inspections[0];
+        const projectId = currentInspection?.project_id || currentInspection?.projects?.id;
+        
+        const syncSuccess = await syncAllChecklistItems(
+          allChecklistItems, 
+          inspectionId, 
+          projectId
+        );
+        
+        if (syncSuccess) {
+          setSyncStatus('done');
+          console.log('✅ All checklist items synced to database!');
+        } else {
+          setSyncStatus('error');
+          console.warn('⚠️ Some items failed to sync');
+        }
+      }
+    };
+
+    if (allChecklistItems.length > 0 && inspections.length > 0) {
+      syncItems();
+    }
+  }, [allChecklistItems, inspections, inspectionId, user]);
+
+  // Filter checklist berdasarkan kategori yang dipilih
+  useEffect(() => {
+    setFilteredItems(
+      allChecklistItems.filter(item => item.category === selectedCategory)
+    );
+  }, [selectedCategory, allChecklistItems]);
+
+  // Ambil data Daftar Simak
+  useEffect(() => {
+    const loadSimakData = async () => {
+      if (!user) return;
+
+      try {
+        setLoadingSimak(true);
+
+        const { data: items, error: itemsErr } = await supabase
+          .from('simak_items')
+          .select('*')
+          .order('section_code', { ascending: true })
+          .order('item_number', { ascending: true });
+
+        if (itemsErr) throw itemsErr;
+        setSimakItems(items || []);
+
+        let responsesQuery = supabase
+          .from('simak_responses')
+          .select(`
+            id,
+            item_id,
+            response_value,
+            photo_url,
+            inspector_id
+          `)
+          .eq('inspector_id', user.id);
+
+        if (inspectionId) {
+          responsesQuery = responsesQuery.eq('inspection_id', inspectionId);
+        }
+
+        const { data: responses, error: respErr } = await responsesQuery;
+
+        if (respErr) throw respErr;
+        setSimakResponses(responses || []);
+      } catch (err) {
+        console.error('[InspectorChecklistDashboard] Load simak data error:', err);
+        toast({
+          title: 'Gagal memuat data Daftar Simak.',
+          description: err.message || 'Terjadi kesalahan saat memuat data.',
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingSimak(false);
+      }
+    };
+
+    if (user) {
+      loadSimakData();
+    }
+  }, [user, inspectionId, toast]);
+
+  // Stats
+  const total = inspections.length;
+  const pending = inspections.filter((i) => i.status === "scheduled").length;
+  const completed = inspections.filter((i) => i.status === "completed").length;
+  const progress = inspections.filter((i) => i.status === "in_progress").length;
+
+  // Ambil kategori unik dari checklist items
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(allChecklistItems.map(item => item.category))];
+    return uniqueCategories.filter(cat => cat);
+  }, [allChecklistItems]);
+
+  const handleQuickAction = (action) => {
+    if (action.enabled) {
+      action.action();
+    } else {
+      toast({
+        title: "Fitur belum tersedia",
+        description: "Fitur ini sedang dalam pengembangan.",
+        variant: "default",
+      });
+    }
+  };
+
+  // 🔥 FUNGSI SIMPAN CHECKLIST ITEM - VERSI YANG SUDAH DIPERBAIKI
+  const handleSaveChecklistItem = async (itemId, data) => {
+    if (!user) return;
+
+    setSavingItems(prev => ({ ...prev, [itemId]: true }));
+
+    try {
+      console.log('🚀 STARTING SAVE for item:', itemId);
+
+      // 1. CARI DATA ITEM DARI TEMPLATE
+      const itemData = allChecklistItems.find(item => item.id === itemId);
+      if (!itemData) {
+        throw new Error(`Item ${itemId} tidak ditemukan dalam daftar checklist`);
+      }
+
+      // 2. 🔥 PASTIKAN ITEM ADA DI DATABASE SEBELUM SIMPAN
+      console.log('🛠️ Ensuring item exists in database...');
+      await ensureChecklistItemExists(itemId, itemData);
+      console.log('✅ Item confirmed in database');
+
+      const responseData = {
+        item_id: itemId,
+        response: data,
+        notes: '',
+        responded_by: user.id,
+        responded_at: new Date().toISOString(),
+        status: 'submitted',
+      };
+
+      // Tambahkan inspection_id jika ada
+      if (inspectionId) {
+        responseData.inspection_id = inspectionId;
+      }
+
+      console.log('💾 Prepared response data, saving to database...');
+
+      // 3. DELETE data lama jika ada
+      let deleteQuery = supabase
+        .from('checklist_responses')
+        .delete()
+        .eq('item_id', itemId)
+        .eq('responded_by', user.id);
+
+      if (inspectionId) {
+        deleteQuery = deleteQuery.eq('inspection_id', inspectionId);
+      }
+
+      const { error: deleteError } = await deleteQuery;
+
+      if (deleteError && deleteError.code !== 'PGRST116') {
+        console.warn('⚠️ Delete warning:', deleteError);
+      }
+
+      // 4. INSERT data baru
+      const { data: insertedData, error: insertError } = await supabase
+        .from('checklist_responses')
+        .insert([responseData])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('❌ Insert error:', insertError);
+        throw insertError;
+      }
+
+      console.log('✅ Save successful!');
+
+      // 5. Update local state
+      setChecklistResponses(prev => ({
+        ...prev,
+        [itemId]: data
+      }));
+
+      console.log('🎉 SAVE COMPLETED SUCCESSFULLY for item:', itemId);
+
+      toast({
+        title: "✅ Checklist tersimpan",
+        description: "Data berhasil disimpan ke database",
+        variant: "default",
+      });
+
+    } catch (err) {
+      console.error("❌ Save checklist item error:", err);
+      
+      let errorMessage = "Gagal menyimpan checklist";
+      if (err.code === '23503') {
+        errorMessage = "Item checklist tidak valid. Silakan refresh halaman.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      toast({
+        title: "Gagal menyimpan checklist",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setSavingItems(prev => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  // FUNGSI SIMPAN SIMAK ITEM
+  const handleSaveSimakItem = async (item, responseValue, photoUrl = null) => {
+    if (!user) return;
+
+    try {
+      console.log('🔄 Menyimpan simak item:', {
+        itemId: item.id,
+        responseValue,
+        inspectionId
+      });
+
+      // 1. DELETE data lama jika ada
+      let deleteQuery = supabase
+        .from('simak_responses')
+        .delete()
+        .eq('item_id', item.id)
+        .eq('inspector_id', user.id);
+
+      if (inspectionId) {
+        deleteQuery = deleteQuery.eq('inspection_id', inspectionId);
+      }
+
+      const { error: deleteError } = await deleteQuery;
+
+      if (deleteError) {
+        console.warn('⚠️ Tidak ada data simak lama untuk dihapus:', deleteError);
+      }
+
+      // 2. INSERT data baru
+      const responseData = {
+        item_id: item.id,
+        inspector_id: user.id,
+        response_value: responseValue,
+        photo_url: photoUrl,
+      };
+
+      if (inspectionId) {
+        responseData.inspection_id = inspectionId;
+      }
+
+      const { error: insertError } = await supabase
+        .from('simak_responses')
+        .insert([responseData]);
+
+      if (insertError) {
+        console.error('❌ Insert simak error:', insertError);
+        throw insertError;
+      }
+
+      console.log('✅ Simak item berhasil disimpan');
+
+      toast({
+        title: '✅ Daftar Simak tersimpan!',
+        description: 'Respons berhasil disimpan ke database',
+        variant: "default",
+      });
+
+      // 3. Refresh data
+      let refreshQuery = supabase
+        .from('simak_responses')
+        .select(`
+          id,
+          item_id,
+          response_value,
+          photo_url,
+          inspector_id
+        `)
+        .eq('inspector_id', user.id);
+
+      if (inspectionId) {
+        refreshQuery = refreshQuery.eq('inspection_id', inspectionId);
+      }
+
+      const { data: refreshed, error: refreshError } = await refreshQuery;
+
+      if (refreshError) {
+        console.warn('⚠️ Gagal refresh simak responses:', refreshError);
+      } else {
+        setSimakResponses(refreshed || []);
+      }
+
+    } catch (err) {
+      console.error('❌ Save simak item error:', err);
+      toast({
+        title: 'Gagal menyimpan Daftar Simak',
+        description: err.message || 'Terjadi kesalahan saat menyimpan data',
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Kelompokkan items berdasarkan template
+  const groupedItems = useMemo(() => {
+    return groupBy(filteredItems, 'template_title');
+  }, [filteredItems]);
+
+  // Kelompokkan simak items berdasarkan section_code
+  const groupedSimakItems = useMemo(() => {
+    const itemsWithCode = simakItems.filter(item => item.section_code);
+    return groupBy(itemsWithCode, 'section_code');
+  }, [simakItems]);
+
+  // Dapatkan inspection dan project info
+  const currentInspection = inspections[0];
+  const projectId = currentInspection?.project_id || currentInspection?.projects?.id;
+
+  // Loading state untuk auth
+  if (authLoading) {
+    return (
+      <DashboardLayout title="Checklist Inspector">
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">Memuat dashboard...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!user || !isInspector) {
+    return (
+      <DashboardLayout title="Checklist Inspector">
+        <div className="p-4 md:p-6">
+          <Alert variant="destructive" className="m-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Akses Ditolak</AlertTitle>
+            <AlertDescription>
+              Hanya inspector yang dapat mengakses halaman ini.
+            </AlertDescription>
+          </Alert>
+          <Button 
+            onClick={() => router.push('/dashboard')}
+            className="mt-4"
+          >
+            Kembali ke Dashboard
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout title="Checklist Inspector">
+      <div className="p-4 md:p-6 space-y-6">
+        {/* Header - SINKRON DENGAN inspector/index.js */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-1">
+            
+            <p className="text-sm text-muted-foreground">
+              Kelola checklist dengan dokumentasi foto+GPS • {profile?.full_name || 'Inspector'}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary" className="capitalize text-xs">
+              {profile?.specialization?.replace(/_/g, ' ') || 'Inspector'}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+              onClick={() => router.push('/dashboard/inspector')}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Kembali ke Dashboard
+            </Button>
+          </div>
+        </div>
+
+        {/* Quick Actions - SINKRON DENGAN inspector/index.js */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickActions.map((action) => (
+            <Card 
+              key={action.id} 
+              className={`border-border transition-all hover:shadow-md cursor-pointer ${
+                !action.enabled ? 'opacity-60' : 'hover:scale-105'
+              }`}
+              onClick={() => handleQuickAction(action)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h3 className="font-semibold text-foreground text-sm leading-tight">
+                      {action.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-tight">
+                      {action.description}
+                    </p>
+                  </div>
+                  <div className={`p-2 rounded-full ${action.color} text-white`}>
+                    <action.icon className="w-4 h-4" />
+                  </div>
+                </div>
+                {action.badge && (
+                  <Badge variant="secondary" className="mt-2 text-xs flex items-center gap-1">
+                    {action.badge}
+                  </Badge>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Stats Overview - SINKRON DENGAN inspector/index.js */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard 
+            label="Total Inspeksi" 
+            value={total}
+            icon={ClipboardList}
+            color="bg-blue-500"
+          />
+          <StatCard 
+            label="Dijadwalkan" 
+            value={pending}
+            icon={Clock}
+            color="bg-yellow-500"
+          />
+          <StatCard 
+            label="Dalam Proses" 
+            value={progress}
+            icon={Activity}
+            color="bg-orange-500"
+          />
+          <StatCard 
+            label="Selesai" 
+            value={completed}
+            icon={CheckCircle}
+            color="bg-green-500"
+          />
+        </div>
+
+        {/* Info inspection spesifik jika ada */}
+        {inspectionId && (
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="bg-secondary text-secondary-foreground">
+                  Inspection ID: {inspectionId}
+                </Badge>
+                {currentInspection?.projects?.name && (
+                  <span className="text-sm text-muted-foreground">
+                    Project: {currentInspection.projects.name}
+                  </span>
+                )}
+                <div className="ml-auto flex items-center gap-2">
+                  {syncStatus === 'syncing' && (
+                    <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Syncing...
+                    </Badge>
+                  )}
+                  {syncStatus === 'done' && (
+                    <Badge variant="outline" className="bg-green-100 text-green-800">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Ready
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Tabs: Checklist vs Daftar Simak */}
+        <Tabs defaultValue="checklist" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1">
+            <TabsTrigger 
+              value="checklist" 
+              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Checklist Inspeksi
+            </TabsTrigger>
+            <TabsTrigger 
+              value="simak" 
+              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            >
+              <Activity className="w-4 h-4 mr-2" />
+              Daftar Simak
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab: Checklist */}
+          <TabsContent value="checklist" className="space-y-4 mt-4">
+            {/* Kategori Selector */}
+            <Card className="border-border">
+              <CardContent className="p-4">
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  Pilih Kategori Checklist
+                </Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="bg-background text-foreground border-border">
+                    <SelectValue placeholder="Pilih kategori..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background text-foreground border-border">
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat} className="cursor-pointer">
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+
+            {/* Checklist Items */}
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+                <p className="text-muted-foreground">Memuat checklist...</p>
+              </div>
+            ) : filteredItems.length === 0 ? (
+              <Card className="border-border">
+                <CardContent className="p-6 text-center">
+                  <Info className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground">
+                    Tidak ada item checklist untuk kategori ini.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              Object.entries(groupedItems).map(([templateTitle, items]) => (
+                <div key={templateTitle} className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    {templateTitle}
+                  </h3>
+                  <Separator className="my-2 bg-border" />
+                  <div className="space-y-6">
+                    {items.map((item) => (
+                      <DynamicChecklistForm
+                        key={item.id}
+                        templateId={item.template_id}
+                        item={item}
+                        inspectionId={inspectionId}
+                        projectId={projectId}
+                        onSave={handleSaveChecklistItem}
+                        existingResponse={checklistResponses[item.id]}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </TabsContent>
+
+          {/* Tab: Daftar Simak */}
+          <TabsContent value="simak" className="space-y-4 mt-4">
+            {loadingSimak ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+                <p className="text-muted-foreground">Memuat Daftar Simak...</p>
+              </div>
+            ) : simakItems.length === 0 ? (
+              <Card className="border-border">
+                <CardContent className="p-6 text-center">
+                  <Info className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground">
+                    Tidak ada item Daftar Simak tersedia.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-8">
+                {Object.entries(groupedSimakItems).map(([sectionCode, items]) => (
+                  <div key={sectionCode} className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <Activity className="w-5 h-5" />
+                      Bagian {sectionCode}
+                    </h3>
+                    <Separator className="my-2 bg-border" />
+                    <div className="space-y-4">
+                      {items.map((item) => {
+                        const existingResponse = simakResponses.find(
+                          (r) => r.item_id === item.id
+                        );
+                        return (
+                          <Card
+                            key={item.id}
+                            className="border-border hover:bg-accent/50 transition-colors"
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex flex-col gap-3">
+                                <div>
+                                  <span className="text-sm font-medium text-muted-foreground mr-2">
+                                    {item.item_number}.
+                                  </span>
+                                  <span className="text-foreground">{item.item_text}</span>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                  {['Ya', 'Tidak', 'Tidak Relevan'].map((option) => (
+                                    <Button
+                                      key={option}
+                                      size="sm"
+                                      variant={
+                                        existingResponse?.response_value === option
+                                          ? 'default'
+                                          : 'outline'
+                                      }
+                                      onClick={() =>
+                                        handleSaveSimakItem(item, option)
+                                      }
+                                      className={
+                                        existingResponse?.response_value === option
+                                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                          : 'border-border text-foreground hover:bg-accent'
+                                      }
+                                    >
+                                      {option}
+                                    </Button>
+                                  ))}
+                                </div>
+
+                                {existingResponse && (
+                                  <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    Disimpan: {new Date(existingResponse.id).toLocaleString('id-ID')}
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardLayout>
+  );
+}

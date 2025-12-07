@@ -1,1131 +1,442 @@
 // FILE: src/pages/dashboard/inspector/index.js
-
-"use client";
-
-import React, { useState, useEffect, useMemo } from "react";
+// Dashboard Inspector - Clean & User Friendly
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from 'next/router';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
-// shadcn/ui Components
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Lucide Icons
+// Icons
 import {
-  FileText, Clock, Activity, CheckCircle, XCircle, Eye,
-  CheckSquare, AlertTriangle, Loader2, Info, Calendar, UserCheck, Camera, 
-  Plus, MapPin, TrendingUp, ClipboardList, ListChecks,
-  Building, Users, MessageSquare, Bell, Upload, Send
+  Calendar, CheckCircle, Eye, Clock, Camera, FileText,
+  Building, ChevronRight, AlertTriangle, Loader2, Plus,
+  ClipboardList, MapPin
 } from "lucide-react";
 
-// Other Imports
+// Layout & Utils
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
-import { itemRequiresPhotogeotag } from "@/utils/checklistTemplates";
 
-// Utility function untuk class names
-const cn = (...classes) => classes.filter(Boolean).join(' ');
-
-// --- Utility Functions ---
-const getStatusBadge = (status) => {
-  const statusClasses = {
-    scheduled: "bg-yellow-100 text-yellow-800 border border-yellow-300",
-    in_progress: "bg-orange-100 text-orange-800 border border-orange-300",
-    completed: "bg-green-100 text-green-800 border border-green-300",
-    cancelled: "bg-red-100 text-red-800 border border-red-300",
-    rejected: "bg-red-100 text-red-800 border border-red-300",
-    draft: "bg-gray-100 text-gray-800 border border-gray-300",
-    submitted: "bg-blue-100 text-blue-800 border border-blue-300",
-    verified_by_admin_team: "bg-purple-100 text-purple-800 border border-purple-300",
-    approved_by_pl: "bg-green-100 text-green-800 border border-green-300"
-  };
-
-  const statusText = status?.replace(/_/g, ' ') || 'unknown';
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-        statusClasses[status] || "bg-gray-100 text-gray-800 border border-gray-300"
-      )}
-    >
-      {statusText}
-    </span>
-  );
-};
-
-const formatDateSafely = (dateString) => {
+// Helpers
+const formatDate = (dateString) => {
   if (!dateString) return '-';
   try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '-';
-    return format(date, 'dd MMM yyyy', { locale: localeId });
+    return format(new Date(dateString), 'dd MMM yyyy', { locale: localeId });
   } catch (e) {
-    console.error("Date formatting error:", e);
-    return dateString;
+    return '-';
   }
 };
 
-// Flatten checklist items function
-const flattenChecklistItems = (templates) => {
-  const items = [];
-  templates?.forEach(template => {
-    if (template.subsections) {
-      template.subsections.forEach(subsection => {
-        subsection.items?.forEach(item => {
-          items.push({
-            ...item,
-            template_id: template.id,
-            template_title: template.title,
-            subsection_title: subsection.title,
-            category: template.category || 'general'
-          });
-        });
-      });
-    } else if (template.items) {
-      template.items?.forEach(item => {
-        items.push({
-          ...item,
-          template_id: template.id,
-          template_title: template.title,
-          subsection_title: null,
-          category: template.category || 'general'
-        });
-      });
-    }
-  });
-  return items;
-};
-
-// Fungsi lokal untuk mendapatkan checklist berdasarkan spesialisasi
-const getChecklistsBySpecialization = (specialization, type = 'all') => {
-  // Data dummy checklist - sesuaikan dengan data aktual Anda
-  const allChecklists = [
-    // Structural
-    { id: 'm60', title: 'Struktur Bangunan', category: 'keandalan' },
-    { id: 'structural_assessment', title: 'Penilaian Struktur', category: 'keandalan' },
-    
-    // Architectural
-    { id: 'm51', title: 'Fasilitas Penunjang', category: 'tata_bangunan' },
-    { id: 'm52', title: 'Sistem Air Kotor', category: 'tata_bangunan' },
-    { id: 'm53', title: 'Toilet & Penyimpanan', category: 'tata_bangunan' },
-    
-    // Electrical
-    { id: 'm55', title: 'Sistem Pencahayaan', category: 'utilitas' },
-    { id: 'm58', title: 'Sistem Kelistrikan', category: 'utilitas' },
-    
-    // Mechanical
-    { id: 'm56', title: 'Sistem Ventilasi', category: 'utilitas' },
-    { id: 'm57', title: 'Transportasi Vertikal', category: 'utilitas' },
-    
-    // Safety
-    { id: 'm54', title: 'Proteksi Kebakaran', category: 'keselamatan' },
-    
-    // Environmental
-    { id: 'kesehatan', title: 'Kesehatan Bangunan', category: 'kesehatan' },
-    { id: 'kenyamanan', title: 'Kenyamanan Bangunan', category: 'kenyamanan' },
-    
-    // Administrative (bisa diakses semua)
-    { id: 'administrative', title: 'Administratif', category: 'administrative' }
-  ];
-
-  // Mapping spesialisasi ke template checklist
-  const specializationMapping = {
-    structural_engineering: ['m60', 'structural_assessment', 'keandalan'],
-    architectural_design: ['m51', 'm52', 'm53', 'tata_bangunan'],
-    electrical_systems: ['m55', 'm58'],
-    mechanical_systems: ['m56', 'm57'],
-    plumbing_systems: ['m52', 'm53'],
-    fire_safety: ['m54', 'keselamatan'],
-    environmental_health: ['kesehatan', 'kenyamanan'],
-    building_inspection: ['all'] // Bisa akses semua
+const getStatusBadge = (status) => {
+  const config = {
+    scheduled: { label: 'Dijadwalkan', variant: 'secondary' },
+    in_progress: { label: 'Berlangsung', variant: 'default' },
+    completed: { label: 'Selesai', variant: 'default' },
+    cancelled: { label: 'Dibatalkan', variant: 'destructive' },
+    draft: { label: 'Draft', variant: 'secondary' },
+    submitted: { label: 'Dikirim', variant: 'default' },
+    approved: { label: 'Disetujui', variant: 'default' },
   };
-
-  const allowedTemplates = specializationMapping[specialization] || [];
-  
-  if (allowedTemplates.includes('all')) {
-    return allChecklists;
-  }
-
-  return allChecklists.filter(checklist => 
-    allowedTemplates.includes(checklist.id) || 
-    allowedTemplates.includes(checklist.category)
-  );
+  const { label, variant } = config[status] || { label: status, variant: 'secondary' };
+  return <Badge variant={variant}>{label}</Badge>;
 };
 
-// --- Main Component ---
 export default function InspectorDashboard() {
   const router = useRouter();
-  const { toast } = useToast();
   const { user, profile, loading: authLoading, isInspector } = useAuth();
 
-  const [inspections, setInspections] = useState([]);
-  const [recentInspections, setRecentInspections] = useState([]);
-  const [upcomingInspections, setUpcomingInspections] = useState([]);
-  const [myProjects, setMyProjects] = useState([]);
-  const [reports, setReports] = useState([]);
-  const [pendingReports, setPendingReports] = useState([]);
-  const [checklistStats, setChecklistStats] = useState({
-    totalItems: 0,
-    completedItems: 0,
-    pendingItems: 0,
-    applicableTemplates: 0
-  });
-  const [simakStats, setSimakStats] = useState({
-    totalItems: 0,
-    completedItems: 0,
-    pendingItems: 0
-  });
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    total: 0,
-    scheduled: 0,
-    in_progress: 0,
-    completed: 0,
-    cancelled: 0,
-    rejected: 0
+    totalInspections: 0,
+    completedInspections: 0,
+    pendingReports: 0,
+    upcomingSchedules: 0
   });
+  const [upcomingInspections, setUpcomingInspections] = useState([]);
+  const [recentProjects, setRecentProjects] = useState([]);
+  const [pendingReports, setPendingReports] = useState([]);
 
-  const [photogeotagStats, setPhotogeotagStats] = useState({
-    required: 0,
-    completed: 0,
-    pending: 0
-  });
+  // Fetch dashboard data
+  const fetchDashboardData = useCallback(async () => {
+    if (!user?.id) return;
+    setLoading(true);
 
-  const [reportStats, setReportStats] = useState({
-    total: 0,
-    draft: 0,
-    submitted: 0,
-    verified: 0,
-    approved: 0
-  });
+    try {
+      // Fetch inspections
+      const { data: inspections } = await supabase
+        .from('inspections')
+        .select(`
+          id, scheduled_date, status, created_at,
+          projects(id, name, address, city, clients(name))
+        `)
+        .eq('inspector_id', user.id)
+        .order('scheduled_date', { ascending: true });
 
-  const quickActions = [
-    {
-      id: 1,
-      title: "Jadwal Saya",
-      description: "Lihat jadwal dari project lead",
-      icon: Calendar,
-      action: () => router.push('/dashboard/inspector/schedules'),
-      color: "bg-blue-500",
-      enabled: true,
-      badge: "project_lead"
-    },
-    {
-      id: 2,
-      title: "Checklist SLF",
-      description: "Kelola checklist dengan photogeotag",
-      icon: ListChecks,
-      action: () => router.push('/dashboard/inspector/checklist'),
-      color: "bg-purple-500",
-      enabled: true,
-      badge: "📸 Photo+GPS"
-    },
-    {
-      id: 3,
-      title: "Buat Laporan",
-      description: "Buat laporan untuk admin team",
-      icon: FileText,
-      action: () => router.push('/dashboard/inspector/reports/new'),
-      color: "bg-green-500",
-      enabled: true,
-      badge: "admin_team"
-    },
-    {
-      id: 4,
-      title: "Proyek Saya",
-      description: "Lihat proyek yang ditugaskan",
-      icon: Building,
-      action: () => router.push('/dashboard/inspector/projects'),
-      color: "bg-orange-500",
-      enabled: true
-    }
-  ];
+      const inspectionsList = inspections || [];
+      
+      // Upcoming inspections (scheduled, future date)
+      const today = new Date().toISOString().split('T')[0];
+      const upcoming = inspectionsList.filter(i => 
+        i.scheduled_date >= today && 
+        (i.status === 'scheduled' || i.status === 'in_progress')
+      ).slice(0, 5);
+      setUpcomingInspections(upcoming);
 
-  // Data spesialisasi langsung
-  const specializationInfo = profile?.specialization ? {
-    structural_engineering: { 
-      name: 'Teknik Struktur', 
-      normalized: 'Teknik Struktur',
-      color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-      checklistIds: ['m60', 'structural_assessment', 'keandalan']
-    },
-    architectural_design: { 
-      name: 'Desain Arsitektur', 
-      normalized: 'Desain Arsitektur',
-      color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      checklistIds: ['m51', 'm52', 'm53', 'tata_bangunan']
-    },
-    electrical_systems: { 
-      name: 'Sistem Kelistrikan', 
-      normalized: 'Sistem Kelistrikan',
-      color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      checklistIds: ['m55', 'm58']
-    },
-    mechanical_systems: { 
-      name: 'Sistem Mekanikal', 
-      normalized: 'Sistem Mekanikal',
-      color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      checklistIds: ['m56', 'm57']
-    },
-    plumbing_systems: { 
-      name: 'Sistem Plumbing', 
-      normalized: 'Sistem Plumbing',
-      color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
-      checklistIds: ['m52', 'm53']
-    },
-    fire_safety: { 
-      name: 'Keselamatan Kebakaran', 
-      normalized: 'Keselamatan Kebakaran',
-      color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-      checklistIds: ['m54', 'keselamatan']
-    },
-    environmental_health: { 
-      name: 'Kesehatan Lingkungan', 
-      normalized: 'Kesehatan Lingkungan',
-      color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300',
-      checklistIds: ['kesehatan', 'kenyamanan']
-    },
-    building_inspection: { 
-      name: 'Inspektur Bangunan', 
-      normalized: 'Inspektur Bangunan',
-      color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-      checklistIds: ['all']
-    }
-  }[profile.specialization] : null;
+      // Fetch my projects
+      const { data: projectTeams } = await supabase
+        .from('project_teams')
+        .select(`
+          project_id,
+          projects(id, name, status, city, clients(name))
+        `)
+        .eq('user_id', user.id)
+        .eq('role', 'inspector');
 
-  // Fetch semua data dari Supabase
-  useEffect(() => {
-    if (!user?.id || !isInspector) return;
+      const projects = (projectTeams || [])
+        .map(pt => pt.projects)
+        .filter(p => p && p.status !== 'completed' && p.status !== 'cancelled')
+        .slice(0, 5);
+      setRecentProjects(projects);
 
-    const fetchDashboardData = async () => {
-      setLoading(true);
-      try {
-        // 1. Fetch semua inspeksi (untuk stats & recent)
-        const { data: allInspections, error: allError } = await supabase
-          .from("inspections")
-          .select(`
-            id,
-            project_id,
-            inspector_id,
-            scheduled_date,
-            start_time,
-            end_time,
-            status,
-            created_at,
-            updated_at,
-            projects(
-              name, 
-              address, 
-              city, 
-              client_id,
-              clients(name)
-            ),
-            profiles!inspector_id(full_name, email, specialization)
-          `)
-          .eq("inspector_id", user.id)
-          .order("scheduled_date", { ascending: false });
+      // Fetch reports
+      const { data: reports } = await supabase
+        .from('reports')
+        .select('id, name, status, created_at, projects(name)')
+        .eq('created_by', user.id)
+        .order('created_at', { ascending: false });
 
-        if (allError) throw allError;
+      const reportsList = reports || [];
+      const pending = reportsList.filter(r => r.status === 'draft' || r.status === 'submitted');
+      setPendingReports(pending.slice(0, 5));
 
-        const safeAll = Array.isArray(allInspections) ? allInspections : [];
-        setInspections(safeAll);
-
-        // Hitung stats dari semua inspeksi
-        const statsData = {
-          total: safeAll.length,
-          scheduled: safeAll.filter(i => i.status === "scheduled").length,
-          in_progress: safeAll.filter(i => i.status === "in_progress").length,
-          completed: safeAll.filter(i => i.status === "completed").length,
-          cancelled: safeAll.filter(i => i.status === "cancelled").length,
-          rejected: safeAll.filter(i => i.status === "rejected").length,
-        };
-        setStats(statsData);
-
-        // Ambil 5 inspeksi terbaru
-        setRecentInspections(safeAll.slice(0, 5));
-
-        // 2. Fetch upcoming inspeksi secara terpisah (server-side filter)
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const { data: upcomingData, error: upcomingError } = await supabase
-          .from("inspections")
-          .select(`
-            id,
-            project_id,
-            inspector_id,
-            scheduled_date,
-            start_time,
-            end_time,
-            status,
-            created_at,
-            updated_at,
-            projects(
-              name, 
-              address, 
-              city, 
-              client_id,
-              clients(name)
-            ),
-            profiles!inspector_id(full_name, email, specialization)
-          `)
-          .eq("inspector_id", user.id)
-          .eq("status", "scheduled")
-          .gte("scheduled_date", todayStart.toISOString())
-          .order("scheduled_date", { ascending: true })
-          .limit(5);
-
-        if (!upcomingError) {
-          setUpcomingInspections(upcomingData || []);
-        }
-
-        // 3. Fetch proyek yang ditugaskan ke inspector
-        const { data: projectsData, error: projectsError } = await supabase
-          .from("project_teams")
-          .select(`
-            project_id,
-            projects(
-              id,
-              name,
-              status,
-              address,
-              city,
-              clients(name),
-              project_lead_id,
-              profiles!project_lead_id(full_name)
-            )
-          `)
-          .eq("user_id", user.id)
-          .eq("role", "inspector");
-
-        if (!projectsError) {
-          setMyProjects(projectsData?.map(p => p.projects) || []);
-        }
-
-        // 4. Fetch laporan yang dibuat oleh inspector
-        const { data: reportsData, error: reportsError } = await supabase
-          .from("documents")
-          .select(`
-            id,
-            name,
-            status,
-            document_type,
-            created_at,
-            updated_at,
-            projects(name, clients(name))
-          `)
-          .eq("created_by", user.id)
-          .eq("document_type", "REPORT")
-          .order("created_at", { ascending: false });
-
-        if (!reportsError) {
-          setReports(reportsData || []);
-          
-          // Hitung statistik laporan
-          const reportStatsData = {
-            total: reportsData?.length || 0,
-            draft: reportsData?.filter(r => r.status === 'draft').length || 0,
-            submitted: reportsData?.filter(r => r.status === 'submitted').length || 0,
-            verified: reportsData?.filter(r => r.status === 'verified_by_admin_team').length || 0,
-            approved: reportsData?.filter(r => r.status === 'approved_by_pl').length || 0
-          };
-          setReportStats(reportStatsData);
-
-          // Laporan yang masih pending (draft atau submitted)
-          setPendingReports(reportsData?.filter(r => 
-            r.status === 'draft' || r.status === 'submitted'
-          ) || []);
-        }
-
-        // 5. Checklist & Photogeotag Stats
-        const userSpecialization = profile?.specialization || 'building_inspection';
-        const applicableChecklists = getChecklistsBySpecialization(userSpecialization, 'baru');
-        const applicableItems = flattenChecklistItems(applicableChecklists);
-
-        // Fetch checklist responses
-        const { data: checklistResponses = [], error: checklistError } = await supabase
-          .from('checklist_responses')
-          .select('*')
-          .eq('responded_by', user.id);
-
-        if (!checklistError) {
-          // Filter hanya respons yang sesuai dengan template/item yang masih berlaku
-          const validResponses = checklistResponses.filter(response =>
-            applicableItems.some(item =>
-              item.template_id === response.template_id &&
-              item.id === response.item_id
-            )
-          );
-
-          // Filter item yang benar-benar butuh photogeotag
-          const photogeotagRequiredItems = applicableItems.filter(item =>
-            itemRequiresPhotogeotag(item.template_id, item.id)
-          );
-
-          const photogeotagCompleted = validResponses.filter(response => {
-            const item = applicableItems.find(
-              i => i.template_id === response.template_id && i.id === response.item_id
-            );
-            return item && itemRequiresPhotogeotag(item.template_id, item.id) && response.photogeotag_data;
-          }).length;
-
-          setChecklistStats({
-            totalItems: applicableItems.length,
-            completedItems: validResponses.length,
-            pendingItems: applicableItems.length - validResponses.length,
-            applicableTemplates: applicableChecklists.length
-          });
-
-          setPhotogeotagStats({
-            required: photogeotagRequiredItems.length,
-            completed: photogeotagCompleted,
-            pending: photogeotagRequiredItems.length - photogeotagCompleted
-          });
-        }
-
-        // 6. Simak Stats
-        const { data: simakResponses = [], error: simakError } = await supabase
-          .from('simak_responses')
-          .select('*')
-          .eq('inspector_id', user.id);
-
-        const { data: simakItems = [], error: simakItemsError } = await supabase
-          .from('simak_items')
-          .select('*');
-
-        if (!simakError && !simakItemsError) {
-          setSimakStats({
-            totalItems: simakItems.length,
-            completedItems: simakResponses.length,
-            pendingItems: simakItems.length - simakResponses.length
-          });
-        }
-
-      } catch (error) {
-        console.error('[InspectorDashboard] Fetch data error:', error);
-        toast({
-          title: "Gagal memuat data dashboard",
-          description: error.message,
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, [user?.id, isInspector, profile?.specialization, toast]);
-
-  const handleViewInspection = (inspectionId) => {
-    router.push(`/dashboard/inspector/inspections/${inspectionId}`);
-  };
-
-  const handleViewReport = (reportId) => {
-    router.push(`/dashboard/inspector/reports/${reportId}`);
-  };
-
-  const handleQuickAction = (action) => {
-    if (action.enabled) {
-      action.action();
-    } else {
-      toast({
-        title: "Fitur belum tersedia",
-        description: "Fitur ini sedang dalam pengembangan.",
-        variant: "default",
+      // Calculate stats
+      setStats({
+        totalInspections: inspectionsList.length,
+        completedInspections: inspectionsList.filter(i => i.status === 'completed').length,
+        pendingReports: pending.length,
+        upcomingSchedules: upcoming.length
       });
+
+    } catch (error) {
+      console.error('Error fetching dashboard:', error);
+      toast.error('Gagal memuat data dashboard');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [user?.id]);
 
-  const completionRate = useMemo(() => {
-    if (stats.total === 0) return 0;
-    return Math.round((stats.completed / stats.total) * 100);
-  }, [stats]);
+  useEffect(() => {
+    if (!authLoading && user && isInspector) {
+      fetchDashboardData();
+    }
+  }, [authLoading, user, isInspector, fetchDashboardData]);
 
-  const checklistCompletionRate = useMemo(() => {
-    if (checklistStats.totalItems === 0) return 0;
-    return Math.round((checklistStats.completedItems / checklistStats.totalItems) * 100);
-  }, [checklistStats]);
-
-  const simakCompletionRate = useMemo(() => {
-    if (simakStats.totalItems === 0) return 0;
-    return Math.round((simakStats.completedItems / simakStats.totalItems) * 100);
-  }, [simakStats]);
-
-  const photogeotagCompletionRate = useMemo(() => {
-    if (photogeotagStats.required === 0) return 0;
-    return Math.round((photogeotagStats.completed / photogeotagStats.required) * 100);
-  }, [photogeotagStats]);
-
-  const reportCompletionRate = useMemo(() => {
-    if (reportStats.total === 0) return 0;
-    return Math.round((reportStats.approved / reportStats.total) * 100);
-  }, [reportStats]);
-
-  if (authLoading) {
+  // Loading state
+  if (authLoading || loading) {
     return (
-      <DashboardLayout title="Inspector Dashboard">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="mt-4 text-muted-foreground">Memuat dashboard...</p>
+      <DashboardLayout title="Dashboard">
+        <div className="p-6 space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <div className="grid gap-4 md:grid-cols-4">
+            {[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}
+          </div>
+          <Skeleton className="h-64" />
         </div>
       </DashboardLayout>
     );
   }
 
+  // Access denied
   if (!user || !isInspector) {
     return (
-      <DashboardLayout title="Inspector Dashboard">
-        <div className="p-4 md:p-6">
-          <Alert variant="destructive" className="m-4">
+      <DashboardLayout title="Dashboard">
+        <div className="p-6">
+          <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Akses Ditolak</AlertTitle>
             <AlertDescription>
               Hanya inspector yang dapat mengakses halaman ini.
             </AlertDescription>
           </Alert>
-          <Button 
-            onClick={() => router.push('/dashboard')}
-            className="mt-4"
-          >
-            Kembali ke Dashboard
-          </Button>
         </div>
       </DashboardLayout>
     );
   }
 
+  const completionRate = stats.totalInspections > 0 
+    ? Math.round((stats.completedInspections / stats.totalInspections) * 100) 
+    : 0;
+
   return (
-    <DashboardLayout title="Inspector Dashboard">
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Header - Updated dengan workflow context */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-1">
-            <h1 className="text-xl md:text-2xl font-bold text-foreground">
-              Selamat datang, {profile?.full_name || user?.email}
+    <DashboardLayout title="Dashboard">
+      <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+
+        {/* Welcome Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">
+              Selamat Datang, {profile?.full_name?.split(' ')[0] || 'Inspector'}
             </h1>
-            <p className="text-sm text-muted-foreground">
-              {specializationInfo?.normalized || 'Inspector'} • 
-              {myProjects.length > 0 ? ` ${myProjects.length} Proyek Aktif` : ' Menunggu Penugasan'}
+            <p className="text-muted-foreground">
+              {profile?.specialization?.replace(/_/g, ' ') || 'Inspector'} • {recentProjects.length} Proyek Aktif
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="capitalize text-xs">
-              {specializationInfo?.normalized || profile?.specialization?.replace(/_/g, ' ') || 'Inspector'}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-              onClick={() => router.push('/dashboard/inspector/schedules')}
-            >
-              <Calendar className="w-4 h-4" />
-              Jadwal Saya
-            </Button>
-            {pendingReports.length > 0 && (
-              <Button
-                size="sm"
-                className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600"
-                onClick={() => router.push('/dashboard/inspector/reports')}
+          
+          <div className="flex gap-2">
+            {stats.upcomingSchedules > 0 && (
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/dashboard/inspector/schedules')}
               >
-                <FileText className="w-4 h-4" />
-                Laporan Tertunda ({pendingReports.length})
+                <Calendar className="w-4 h-4 mr-2" />
+                Jadwal
+                <Badge variant="secondary" className="ml-2">
+                  {stats.upcomingSchedules}
+                </Badge>
               </Button>
             )}
+            <Button onClick={() => router.push('/dashboard/inspector/reports/new')}>
+              <Plus className="w-4 h-4 mr-2" />
+              Buat Laporan
+            </Button>
           </div>
         </div>
 
-        {/* Quick Actions - Updated untuk workflow */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action) => (
-            <Card 
-              key={action.id} 
-              className={`border-border transition-all hover:shadow-md cursor-pointer ${
-                !action.enabled ? 'opacity-60' : 'hover:scale-105'
-              }`}
-              onClick={() => handleQuickAction(action)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-foreground text-sm leading-tight">
-                      {action.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground leading-tight">
-                      {action.description}
+        {/* Pending Reports Alert */}
+        {stats.pendingReports > 0 && (
+          <Alert>
+            <FileText className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>Ada <strong>{stats.pendingReports}</strong> laporan yang belum selesai</span>
+              <Button size="sm" variant="outline" onClick={() => router.push('/dashboard/inspector/reports')}>
+                Kelola Laporan
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/inspector/schedules')}>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Inspeksi</p>
+                  <p className="text-3xl font-bold">{stats.totalInspections}</p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                  <ClipboardList className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/inspector/my-inspections')}>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Selesai</p>
+                  <p className="text-3xl font-bold">{stats.completedInspections}</p>
+                </div>
+                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              <Progress value={completionRate} className="h-1 mt-3" />
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/inspector/schedules')}>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Jadwal Mendatang</p>
+                  <p className="text-3xl font-bold">{stats.upcomingSchedules}</p>
+                </div>
+                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                  <Calendar className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/inspector/reports')}>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Laporan Pending</p>
+                  <p className="text-3xl font-bold">{stats.pendingReports}</p>
+                </div>
+                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                  <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          
+          {/* Upcoming Inspections */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Jadwal Mendatang
+              </CardTitle>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => router.push('/dashboard/inspector/schedules')}
+              >
+                Lihat Semua
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {upcomingInspections.length === 0 ? (
+                <div className="text-center py-8">
+                  <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground">Tidak ada jadwal mendatang</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {upcomingInspections.map(inspection => (
+                    <div 
+                      key={inspection.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                      onClick={() => router.push(`/dashboard/inspector/inspections/${inspection.id}`)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded">
+                          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium line-clamp-1">{inspection.projects?.name || '-'}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {inspection.projects?.city || '-'} • {formatDate(inspection.scheduled_date)}
+                          </p>
+                        </div>
+                      </div>
+                      {getStatusBadge(inspection.status)}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Aksi Cepat</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3">
+                <Button 
+                  variant="outline" 
+                  className="justify-start h-auto py-4"
+                  onClick={() => router.push('/dashboard/inspector/schedules')}
+                >
+                  <Calendar className="w-5 h-5 mr-3 text-blue-600 dark:text-blue-400" />
+                  <div className="text-left">
+                    <p className="font-medium">Lihat Jadwal</p>
+                    <p className="text-xs text-muted-foreground">Jadwal inspeksi dari Project Lead</p>
+                  </div>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="justify-start h-auto py-4"
+                  onClick={() => router.push('/dashboard/inspector/checklist')}
+                >
+                  <ClipboardList className="w-5 h-5 mr-3 text-purple-600 dark:text-purple-400" />
+                  <div className="text-left">
+                    <p className="font-medium">Checklist Inspeksi</p>
+                    <p className="text-xs text-muted-foreground">Isi checklist dengan foto & GPS</p>
+                  </div>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="justify-start h-auto py-4"
+                  onClick={() => router.push('/dashboard/inspector/reports/new')}
+                >
+                  <FileText className="w-5 h-5 mr-3 text-green-600 dark:text-green-400" />
+                  <div className="text-left">
+                    <p className="font-medium">Buat Laporan</p>
+                    <p className="text-xs text-muted-foreground">Buat laporan hasil inspeksi</p>
+                  </div>
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  className="justify-start h-auto py-4"
+                  onClick={() => router.push('/dashboard/inspector/projects')}
+                >
+                  <Building className="w-5 h-5 mr-3 text-orange-600 dark:text-orange-400" />
+                  <div className="text-left">
+                    <p className="font-medium">Proyek Saya</p>
+                    <p className="text-xs text-muted-foreground">Lihat proyek yang ditugaskan</p>
+                  </div>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Projects */}
+        {recentProjects.length > 0 && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Building className="w-5 h-5" />
+                Proyek Aktif
+              </CardTitle>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => router.push('/dashboard/inspector/projects')}
+              >
+                Lihat Semua
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {recentProjects.map(project => (
+                  <div 
+                    key={project.id}
+                    className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                    onClick={() => router.push(`/dashboard/inspector/projects`)}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="p-2 bg-primary/10 rounded">
+                        <Building className="w-4 h-4 text-primary" />
+                      </div>
+                      {getStatusBadge(project.status)}
+                    </div>
+                    <p className="font-medium line-clamp-1">{project.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {project.clients?.name || '-'} • {project.city || '-'}
                     </p>
                   </div>
-                  <div className={`p-2 rounded-full ${action.color} text-white`}>
-                    <action.icon className="w-4 h-4" />
-                  </div>
-                </div>
-                {action.badge && (
-                  <Badge variant="secondary" className="mt-2 text-xs flex items-center gap-1">
-                    {action.badge}
-                  </Badge>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Stats Overview - Updated dengan report stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Inspeksi</p>
-                  <p className="text-xl font-bold text-foreground">{stats.total}</p>
-                </div>
-                <div className="p-2 bg-blue-100 rounded-full">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <Progress value={100} className="h-1" />
-                <p className="text-xs text-muted-foreground mt-1">Semua inspeksi</p>
+                ))}
               </div>
             </CardContent>
           </Card>
+        )}
 
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Laporan Disetujui</p>
-                  <p className="text-xl font-bold text-foreground">
-                    {reportStats.approved}/{reportStats.total}
-                  </p>
-                </div>
-                <div className="p-2 bg-green-100 rounded-full">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <Progress 
-                  value={reportCompletionRate} 
-                  className="h-1" 
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {reportCompletionRate}% disetujui project_lead
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Checklist Selesai</p>
-                  <p className="text-xl font-bold text-foreground">
-                    {checklistStats.completedItems}/{checklistStats.totalItems}
-                  </p>
-                </div>
-                <div className="p-2 bg-purple-100 rounded-full">
-                  <ClipboardList className="w-5 h-5 text-purple-600" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <Progress 
-                  value={checklistCompletionRate} 
-                  className="h-1" 
-                />
-                <p className="text-xs text-muted-foreground mt-1">{checklistCompletionRate}% checklist</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Photogeotag</p>
-                  <p className="text-xl font-bold text-foreground">
-                    {photogeotagStats.completed}/{photogeotagStats.required}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">Foto dengan GPS</p>
-                </div>
-                <div className="p-2 bg-red-100 rounded-full">
-                  <Camera className="w-5 h-5 text-red-600" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <Progress 
-                  value={photogeotagCompletionRate} 
-                  className="h-1" 
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {photogeotagCompletionRate}% wajib foto
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content Tabs - Updated dengan workflow context */}
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1">
-            <TabsTrigger 
-              value="overview" 
-              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-            >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger 
-              value="reports" 
-              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-            >
-              Laporan & Status
-            </TabsTrigger>
-            <TabsTrigger 
-              value="progress" 
-              className="text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-            >
-              Progress
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Jadwal Mendatang */}
-              <Card className="border-border">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    Jadwal Mendatang dari Project Lead
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <div className="space-y-3">
-                      {[...Array(3)].map((_, i) => (
-                        <Skeleton key={i} className="h-12 w-full" />
-                      ))}
-                    </div>
-                  ) : upcomingInspections.length > 0 ? (
-                    <div className="space-y-3">
-                      {upcomingInspections.map((inspection) => (
-                        <div key={inspection.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-                          <div className="flex items-center space-x-3 min-w-0 flex-1">
-                            <div className="p-2 rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
-                              <Calendar className="w-3 h-3" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium text-sm truncate">{inspection.projects?.name}</p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {formatDateSafely(inspection.scheduled_date)}
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleViewInspection(inspection.id)}
-                          >
-                            <Eye className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <Alert>
-                      <Info className="h-4 w-4" />
-                      <AlertTitle>Tidak ada jadwal mendatang</AlertTitle>
-                      <AlertDescription>
-                        Menunggu penugasan dari project lead.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Proyek Aktif */}
-              <Card className="border-border">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Building className="w-4 h-4" />
-                    Proyek Ditugaskan
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <div className="space-y-3">
-                      {[...Array(3)].map((_, i) => (
-                        <Skeleton key={i} className="h-12 w-full" />
-                      ))}
-                    </div>
-                  ) : myProjects.length > 0 ? (
-                    <div className="space-y-3">
-                      {myProjects.slice(0, 3).map((project) => (
-                        <div key={project.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-                          <div className="flex items-center space-x-3 min-w-0 flex-1">
-                            <div className="p-2 rounded-full bg-green-100 text-green-600 flex-shrink-0">
-                              <Building className="w-3 h-3" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium text-sm truncate">{project.name}</p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {project.clients?.name} • {project.address}
-                              </p>
-                            </div>
-                          </div>
-                          <Badge variant="outline" className="capitalize text-xs">
-                            {project.status}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <Alert>
-                      <Info className="h-4 w-4" />
-                      <AlertTitle>Belum ada proyek</AlertTitle>
-                      <AlertDescription>
-                        Menunggu penugasan proyek dari project lead.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="reports" className="space-y-4">
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-base">
-                  <span className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Status Laporan ke Admin Team
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{reports.length} Total</Badge>
-                    <Button
-                      size="sm"
-                      onClick={() => router.push('/dashboard/inspector/reports/new')}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Buat Laporan
-                    </Button>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="space-y-3">
-                    {[...Array(5)].map((_, i) => (
-                      <Skeleton key={i} className="h-12 w-full" />
-                    ))}
-                  </div>
-                ) : reports.length > 0 ? (
-                  <div className="w-full overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-sm">Nama Laporan</TableHead>
-                          <TableHead className="text-sm">Proyek</TableHead>
-                          <TableHead className="text-sm">Tanggal</TableHead>
-                          <TableHead className="text-sm">Status</TableHead>
-                          <TableHead className="text-sm text-center">Aksi</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {reports.slice(0, 5).map((report) => (
-                          <TableRow key={report.id} className="hover:bg-accent/50">
-                            <TableCell className="font-medium">
-                              <p className="text-sm text-foreground truncate max-w-[150px]">{report.name}</p>
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              <span className="truncate max-w-[120px] inline-block">
-                                {report.projects?.name || "-"}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              {formatDateSafely(report.created_at)}
-                            </TableCell>
-                            <TableCell>
-                              {getStatusBadge(report.status)}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="flex items-center gap-1"
-                                onClick={() => handleViewReport(report.id)}
-                              >
-                                <Eye className="h-3 w-3" />
-                                Lihat
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                ) : (
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Belum ada laporan</AlertTitle>
-                    <AlertDescription>
-                      Buat laporan pertama Anda untuk diserahkan ke admin team.
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Workflow Information */}
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="h-4 w-4 text-blue-600" />
-              <AlertTitle className="text-blue-800">Alur Laporan ke Admin Team</AlertTitle>
-              <AlertDescription className="text-blue-700">
-                <ul className="list-disc list-inside space-y-1 text-sm">
-                  <li>Anda buat laporan → status: <strong>draft</strong></li>
-                  <li>Anda submit ke admin team → status: <strong>submitted</strong></li>
-                  <li>Admin team verifikasi → status: <strong>verified_by_admin_team</strong></li>
-                  <li>Project lead approve → status: <strong>approved_by_pl</strong></li>
-                  <li>Admin lead final approve → status: <strong>approved</strong></li>
-                </ul>
-              </AlertDescription>
-            </Alert>
-          </TabsContent>
-
-          <TabsContent value="progress" className="space-y-4">
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-base">
-                  <span className="flex items-center gap-2">
-                    <ListChecks className="w-4 h-4" />
-                    Progress Checklist & Photogeotag
-                  </span>
-                  <Button
-                    size="sm"
-                    onClick={() => router.push('/dashboard/inspector/checklist')}
-                    className="flex items-center gap-2"
-                  >
-                    <Camera className="w-4 h-4" />
-                    Kelola dengan Foto
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="border-border">
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                        <ListChecks className="w-4 h-4" />
-                        Checklist Progress
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Total Items</span>
-                          <span className="font-bold">{checklistStats.totalItems}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Terselesaikan</span>
-                          <span className="font-bold text-green-600">{checklistStats.completedItems}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Tertunda</span>
-                          <span className="font-bold text-orange-600">{checklistStats.pendingItems}</span>
-                        </div>
-                        <Progress value={checklistCompletionRate} className="h-2" />
-                        <p className="text-center text-sm text-muted-foreground">
-                          {checklistCompletionRate}% Complete
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-border">
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                        <Camera className="w-4 h-4" />
-                        Photogeotag Progress
-                        <Badge variant="outline" className="text-xs ml-1">
-                          Wajib
-                        </Badge>
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Butuh Photogeotag</span>
-                          <span className="font-bold">{photogeotagStats.required}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Foto Terselesaikan</span>
-                          <span className="font-bold text-green-600">{photogeotagStats.completed}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Foto Tertunda</span>
-                          <span className="font-bold text-orange-600">
-                            {photogeotagStats.pending}
-                          </span>
-                        </div>
-                        <Progress value={photogeotagCompletionRate} className="h-2 bg-orange-100" />
-                        <p className="text-center text-sm text-muted-foreground">
-                          {photogeotagCompletionRate}% Foto dengan GPS
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-border">
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-sm mb-3">Daftar Simak Progress</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Total Items</span>
-                          <span className="font-bold">{simakStats.totalItems}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Terselesaikan</span>
-                          <span className="font-bold text-green-600">{simakStats.completedItems}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Tertunda</span>
-                          <span className="font-bold text-orange-600">{simakStats.pendingItems}</span>
-                        </div>
-                        <Progress value={simakCompletionRate} className="h-2" />
-                        <p className="text-center text-sm text-muted-foreground">
-                          {simakCompletionRate}% Complete
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <Alert className="mt-4">
-                  <Info className="h-4 w-4" />
-                  <AlertTitle>Persyaratan Photogeotag</AlertTitle>
-                  <AlertDescription>
-                    Semua checklist teknis (non-administratif) wajib dilengkapi foto dengan metadata GPS untuk validasi lokasi inspeksi. Checklist administratif tidak memerlukan photogeotag.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
     </DashboardLayout>
   );

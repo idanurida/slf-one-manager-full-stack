@@ -15,12 +15,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Icons
-import { MessageCircle, User, Building, Clock, Send, RefreshCw, ArrowLeft } from "lucide-react";
+import { MessageCircle, User, Building, Clock, Send, RefreshCw, ArrowLeft, Loader2 } from "lucide-react";
 
 // Utils & Context
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { fetchProjectMessages, sendMessage, markMessagesAsRead } from "@/utils/messageService";
 
 // Animation variants
 const containerVariants = {
@@ -84,79 +85,77 @@ export default function AdminLeadCommunicationThreadPage() {
   }, [projectId]);
 
   // Fetch messages for this project/client thread
-  const fetchMessages = useCallback(async () => {
-    if (!projectId || !clientId) return;
+  const fetchMessagesData = useCallback(async () => {
+    if (!projectId) return;
 
     try {
-      // Asumsi tabel messages memiliki struktur: id, project_id, sender_id, recipient_id, message, created_at
-      // Atau tabel notifications dengan type 'message_from_client'/'message_to_client'
-      // Contoh dengan tabel notifications:
-      const { data: msgs, error: msgErr } = await supabase
-        .from('notifications') // Ganti dengan 'messages' jika ada tabel messages
-        .select(`
-          *,
-          sender:profiles!sender_id(full_name)
-        `)
-        .eq('project_id', projectId)
-        .or(`sender_id.eq.${clientId},recipient_id.eq.${clientId}`) // Pesan dari client ke admin_lead atau sebaliknya
-        .order('created_at', { ascending: true });
+      // Gunakan messageService untuk konsistensi
+      const { data: msgs, error: msgErr } = await fetchProjectMessages(projectId, user?.id);
 
       if (msgErr) throw msgErr;
 
-      setMessages(msgs);
+      setMessages(msgs || []);
+
+      // Mark messages as read
+      const unreadIds = (msgs || [])
+        .filter(m => !m.is_read && m.sender_id !== user?.id)
+        .map(m => m.id);
+      
+      if (unreadIds.length > 0) {
+        await markMessagesAsRead(unreadIds, user?.id);
+      }
 
     } catch (err) {
       console.error('Error fetching messages:', err);
       setError('Gagal memuat pesan');
       toast.error('Gagal memuat pesan');
     }
-  }, [projectId, clientId]);
+  }, [projectId, user?.id]);
 
   useEffect(() => {
-    if (router.isReady && !authLoading && user && isAdminLead && projectId && clientId) {
-      fetchProjectAndClient();
-      fetchMessages();
+    if (router.isReady && !authLoading && user && isAdminLead && projectId) {
+      setLoading(true);
+      Promise.all([fetchProjectAndClient(), fetchMessagesData()])
+        .finally(() => setLoading(false));
     } else if (!authLoading && user && !isAdminLead) {
       router.replace('/dashboard');
-    } else if (router.isReady && (!projectId || !clientId)) {
-      router.replace('/dashboard/admin-lead/communication'); // Redirect jika parameter tidak lengkap
+    } else if (router.isReady && !projectId) {
+      router.replace('/dashboard/admin-lead/communication');
     }
-  }, [router.isReady, authLoading, user, isAdminLead, projectId, clientId, fetchProjectAndClient, fetchMessages]);
+  }, [router.isReady, authLoading, user, isAdminLead, projectId, fetchProjectAndClient, fetchMessagesData]);
 
   // Send new message
+  const [sending, setSending] = useState(false);
+  
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !projectId || !client) return;
+    if (!newMessage.trim() || !projectId) return;
 
+    setSending(true);
     try {
-      // Simpan pesan ke tabel messages/notifications
-      // Contoh dengan notifications:
-      const { error: insertErr } = await supabase
-        .from('notifications') // Ganti dengan 'messages' jika ada tabel messages
-        .insert({
-          project_id: projectId,
-          type: 'message_to_client', // atau 'admin_to_client'
-          message: newMessage,
-          sender_id: user.id,
-          recipient_id: client.id, // Kirim ke client
-          read: false,
-          created_at: new Date().toISOString()
-        });
+      // Gunakan messageService untuk konsistensi
+      const { error: insertErr } = await sendMessage({
+        projectId,
+        senderId: user.id,
+        recipientId: client?.id,
+        message: newMessage.trim(),
+      });
 
       if (insertErr) throw insertErr;
 
       toast.success('Pesan berhasil dikirim');
       setNewMessage('');
-      // Refresh pesan
-      fetchMessages();
+      await fetchMessagesData();
 
     } catch (err) {
       console.error('Error sending message:', err);
       toast.error('Gagal mengirim pesan');
+    } finally {
+      setSending(false);
     }
   };
 
-  const handleRefresh = () => {
-    fetchMessages();
+  const handleRefresh = async () => {
+    await fetchMessagesData();
     toast.success('Pesan diperbarui');
   };
 
@@ -199,24 +198,19 @@ export default function AdminLeadCommunicationThreadPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex items-center gap-4">
-            <Button variant="outline" size="icon" onClick={() => router.back()}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{project?.name}</h1>
-              <p className="text-slate-600 dark:text-slate-400">Dengan {client?.full_name || client?.email}</p>
-            </div>
-            <div className="ml-auto flex items-center gap-2">
-              <Badge variant="outline">{project?.status ? getStatusLabel(project.status) : '...'}</Badge>
-              <Button variant="outline" onClick={handleRefresh}>
-                <RefreshCw className="w-4 h-4" />
+          {/* Action Buttons */}
+          <motion.div variants={itemVariants} className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => router.back()}>
+                <ArrowLeft className="w-4 h-4" />
               </Button>
+              <span className="text-sm text-muted-foreground">{project?.name}</span>
+              <Badge variant="outline">{project?.status ? getStatusLabel(project.status) : '...'}</Badge>
             </div>
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <RefreshCw className="w-4 h-4" />
+            </Button>
           </motion.div>
-
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
 
           {/* Messages Area */}
           <motion.div variants={itemVariants} className="h-[60vh] overflow-y-auto p-4 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700">

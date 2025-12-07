@@ -46,6 +46,17 @@ const ClientCommunicationList = ({ projects, loading, unreadOnly, readOnly, onVi
     return labels[status] || status;
   };
 
+  // Filter proyek berdasarkan props unreadOnly atau readOnly
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+    if (unreadOnly) {
+      return projects.filter(p => p.has_unread_messages);
+    } else if (readOnly) {
+      return projects.filter(p => !p.has_unread_messages);
+    }
+    return projects;
+  }, [projects, unreadOnly, readOnly]);
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -66,16 +77,6 @@ const ClientCommunicationList = ({ projects, loading, unreadOnly, readOnly, onVi
       </div>
     );
   }
-
-  // Filter proyek berdasarkan props unreadOnly atau readOnly
-  const filteredProjects = useMemo(() => {
-    if (unreadOnly) {
-      return projects.filter(p => p.has_unread_messages);
-    } else if (readOnly) {
-      return projects.filter(p => !p.has_unread_messages);
-    }
-    return projects;
-  }, [projects, unreadOnly, readOnly]);
 
   if (filteredProjects.length === 0) {
     return (

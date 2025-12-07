@@ -129,26 +129,7 @@ const ProjectsPage = () => {
   }, [userLoading, userRole, router]); 
   // --- AKHIR PERBAIKAN ---
 
-  // Realtime listener Supabase
-  useEffect(() => {
-    if (!userRole) return; 
-
-    const channel = supabase
-      .channel(`projects_update_for_${userRole}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, (payload) => {
-        toast({
-          title: 'Project Updated',
-          description: `Project "${payload.new?.name}" changed to ${payload.new?.status}. Refreshing data...`,
-          duration: 3000,
-        });
-        refetch(); 
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userRole, toast, refetch]);
+  // Realtime disabled - menggunakan manual refresh
 
   // Filter projects (search + status)
   const filteredProjects = useMemo(() => {
@@ -229,13 +210,11 @@ const ProjectsPage = () => {
   return (
     <DashboardLayout title="Projects Management">
       <div className="p-4 md:p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-            Projects Management ({userRole?.toUpperCase() || 'USER'})
-          </h1>
+        {/* Action Button */}
+        <div className="flex justify-end">
           {userRole === 'project_lead' && (
-            <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700" onClick={handleCreateNewProject}>
-              <Plus className="w-4 h-4" />
+            <Button size="sm" onClick={handleCreateNewProject}>
+              <Plus className="w-4 h-4 mr-2" />
               Create New Project
             </Button>
           )}

@@ -490,35 +490,18 @@ export default function DrafterProjectDetailPage() {
   return (
     <DashboardLayout title={`Detail Proyek: ${project.name || 'N/A'}`} user={user} profile={profile}>
       <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-              {project.name || 'Proyek Tidak Dikenal'}
-            </h1>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <Badge variant="outline" className="capitalize">
-                {project.status.replace(/_/g, ' ')}
-              </Badge>
-              <Badge variant="outline" className="capitalize">
-                {drafter?.specialization?.replace(/_/g, ' ') || 'Drafter'}
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                Tanggal: {formatDateSafely(project.created_at)}
-              </span>
-            </div>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/drafter/projects')}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground">{project.name}</span>
+            <Badge variant="outline" className="capitalize">
+              {project.status.replace(/_/g, ' ')}
+            </Badge>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/dashboard/drafter/projects')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Kembali
-          </Button>
         </div>
-
-        <Separator className="bg-border" />
 
         {/* Stats Detail */}
         <Card className="border-border">

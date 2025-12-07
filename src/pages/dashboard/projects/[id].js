@@ -298,26 +298,16 @@ const ProjectDetailPage = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <Button
             variant="ghost"
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            size="sm"
             onClick={() => router.push('/dashboard/projects')}
           >
             <ArrowLeft className="w-4 h-4" />
-            Kembali
           </Button>
-          <h1 className="text-xl md:text-2xl font-semibold text-blue-600">
-            {project.name}
-          </h1>
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-            onClick={() => router.push('/dashboard/notifications')}
-          >
+          <span className="text-sm text-muted-foreground">{project.name}</span>
+          <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard/notifications')}>
             <Bell className="w-4 h-4" />
-            Notifikasi
           </Button>
         </div>
-
-        <Separator className="bg-border" />
 
         {/* Informasi Proyek */}
         <Card className="border-border hover:shadow-md transition-shadow duration-300">

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/utils/supabaseClient";
+import { batchSaveChecklistResponses, fetchInspectionPageData } from "@/utils/checklistOptimizer";
 import PhotoUploadWithGeotag from "./PhotoUploadWithGeotag";
 import { cn } from "@/lib/utils"; // Utilitas untuk menggabungkan kelas Tailwind
 
@@ -126,22 +127,20 @@ const HybridChecklistForm = ({ inspectorId }) => {
     }
 
     try {
-      // Save to Supabase (or API)
-      for (const item of checklistItems) {
-        const payload = {
-          inspection_id: item.inspection_id,
-          checklist_item_id: item.id,
-          sample_number: sampleNumber,
-          responses: responses[item.id] || {}
-        };
-        // Example insert (update sesuai DB schema)
-        await supabase.from("inspection_responses").insert(payload);
-      }
+      // OPTIMIZED: Batch save all responses in single transaction
+      const batchPayload = checklistItems.map(item => ({
+        inspection_id: item.inspection_id,
+        checklist_item_id: item.id,
+        sample_number: sampleNumber,
+        response: responses[item.id] || {}
+      }));
+
+      const result = await batchSaveChecklistResponses(batchPayload);
 
       toast({
         title: "Checklist Tersimpan",
-        description: "Semua item checklist berhasil disimpan",
-        variant: "default", // Mengganti status: "success"
+        description: `${result.count} item checklist berhasil disimpan`,
+        variant: "default",
         duration: 3000,
       });
 

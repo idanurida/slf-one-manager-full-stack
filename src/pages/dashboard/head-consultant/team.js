@@ -30,9 +30,16 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Icons
-import { Users, Building, User, Mail, Phone, MapPin, Calendar, FileText, Clock, CheckCircle2, TrendingUp, RefreshCw, Download, MessageCircle, Search, Filter, ArrowLeft, AlertCircle, ExternalLink, UserCheck, UserRound, UserRoundCheck, MessageSquare, PhoneIcon, Building2, MapPinIcon }
+import { Users, Building, User, Mail, Phone, MapPin, Calendar, FileText, Clock, CheckCircle2, TrendingUp, RefreshCw, Download, MessageCircle, Search, Filter, ArrowLeft, AlertCircle, ExternalLink, UserCheck, UserRound, UserRoundCheck, MessageSquare, PhoneIcon, Building2, MapPinIcon, Info }
 from "lucide-react";
 
 // Utils & Context
@@ -102,7 +109,7 @@ export default function HeadConsultantTeamPage() {
     try {
       // Ambil proyek (mungkin semua proyek atau proyek yang terlibat dalam review oleh HC)
       // Untuk saat ini, kita ambil semua proyek agar bisa melihat tim di semua proyek
-      const {  projectsData, error: projectsErr } = await supabase
+      const { data: projectsData, error: projectsErr } = await supabase
         .from('projects')
         .select(`
           id, name
@@ -111,28 +118,28 @@ export default function HeadConsultantTeamPage() {
 
       if (projectsErr) throw projectsErr;
 
-      setProjects(projectsData);
+      setProjects(projectsData || []);
 
       // Ambil semua anggota tim dari semua proyek
-      const {  teamData, error: teamErr } = await supabase
+      const { data: teamData, error: teamErr } = await supabase
         .from('project_teams')
         .select(`
           *,
-          profiles!inner(full_name, email, phone, specialization, role)
+          profiles:user_id(id, full_name, email, phone_number, specialization, role)
         `)
-        .order('assigned_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (teamErr) throw teamErr;
 
       // Proses data
-      const processedTeam = teamData.map(tm => ({
+      const processedTeam = (teamData || []).map(tm => ({
         ...tm,
         full_name: tm.profiles?.full_name || 'N/A',
         email: tm.profiles?.email,
-        phone: tm.profiles?.phone,
+        phone: tm.profiles?.phone_number,
         specialization: tm.profiles?.specialization,
-        profile_role: tm.profiles?.role, // Role dari profil
-        project_name: projectsData.find(p => p.id === tm.project_id)?.name || 'Proyek Tidak Dikenal'
+        profile_role: tm.profiles?.role,
+        project_name: (projectsData || []).find(p => p.id === tm.project_id)?.name || 'Proyek Tidak Dikenal'
       }));
 
       setTeamMembers(processedTeam);
@@ -192,8 +199,8 @@ export default function HeadConsultantTeamPage() {
   };
 
   // Get unique roles and projects for filters
-  const availableRoles = [...new Set(teamMembers.map(m => m.role))]; // Gunakan role dari project_teams
-  const availableProjects = projects;
+  const availableRoles = [...new Set(teamMembers.map(m => m.role).filter(Boolean))];
+  const availableProjects = projects || [];
 
   if (authLoading || (user && !isHeadConsultant)) {
     return (
@@ -230,37 +237,17 @@ export default function HeadConsultantTeamPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                Tim Proyek
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Koordinasikan dengan tim yang terlibat dalam proyek-proyek dalam sistem.
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => router.push('/dashboard/head-consultant')}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Kembali
-              </Button>
-            </div>
+          {/* Action Buttons */}
+          <motion.div variants={itemVariants} className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button size="sm" onClick={() => router.push('/dashboard/head-consultant')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Kembali
+            </Button>
           </motion.div>
-
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
 
           {/* Filters */}
           <motion.div variants={itemVariants}>
@@ -289,7 +276,7 @@ export default function HeadConsultantTeamPage() {
                     <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                       <SelectItem value="all" className="text-slate-900 dark:text-slate-100">Semua Proyek</SelectItem>
                       {availableProjects.map(project => (
-                        <SelectItem key={project.id} value={project.id} className="text-slate-900 dark:text-slate-100">
+                        <SelectItem key={project.id} value={String(project.id)} className="text-slate-900 dark:text-slate-100">
                           {project.name}
                         </SelectItem>
                       ))}

@@ -176,81 +176,11 @@ const RealtimeNotificationCenter = () => {
 
     loadInitialNotifications();
 
-    // ✅ Subscribe ke realtime updates pada tabel checklist_responses
-    const channel = supabase
-      .channel('checklist_responses_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT', // Hanya INSERT baru
-          schema: 'public',
-          table: 'checklist_responses',
-          // ✅ Filter untuk status yang spesifik
-          filter: 'status=eq.project_lead_approved',
-        },
-        async (payload) => {
-          console.log('[Realtime] New checklist response approved:', payload.new);
-          if (!isMounted) return;
-
-          try {
-            // Opsional: Ambil data lengkap inspector jika diperlukan
-            // Untuk sekarang, kita asumsikan data inspector sudah cukup dari payload
-            // atau kita bisa fetch lagi jika perlu data lebih detail.
-
-            const newNotification = {
-              id: payload.new.id,
-              title: 'Laporan Baru untuk Disetujui',
-              // ✅ Gunakan inspector_id untuk nama
-              message: `Laporan checklist ${payload.new.item_id} dari Inspector siap untuk disetujui.`,
-              created_at: payload.new.responded_at,
-              is_read: false,
-              priority: 'high',
-              type: 'approval',
-              action_url: `/dashboard/head-consultant/approvals/${payload.new.id}`,
-            };
-
-            // Update state
-            setNotifications(prev => [newNotification, ...prev]);
-            setUnreadCount(prev => prev + 1);
-
-            // Tampilkan toast notifikasi
-            toast({
-              title: 'Laporan Baru',
-              description: `Laporan checklist ${payload.new.item_id} siap untuk disetujui.`,
-              variant: "default", // ✅ Gunakan variant shadcn/ui
-            });
-          } catch (procErr) {
-            console.error('[RealtimeNotificationCenter] Error processing realtime insert:', procErr);
-            // Tidak perlu toast untuk error ini, cukup log
-          }
-        }
-      )
-      .subscribe(async (status) => {
-        // ✅ Callback untuk status subscription
-        if (status === 'SUBSCRIBED') {
-          console.log('[RealtimeNotificationCenter] Successfully subscribed to checklist_responses changes.');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('[RealtimeNotificationCenter] Channel error subscribing to checklist_responses.');
-          if (isMounted) {
-            toast({
-              title: 'Realtime Error',
-              description: 'Gagal terhubung ke notifikasi realtime.',
-              variant: "destructive", // ✅ Gunakan variant shadcn/ui
-            });
-          }
-        } else if (status === 'CLOSED') {
-           console.log('[RealtimeNotificationCenter] Subscription to checklist_responses closed.');
-           // Tidak perlu toast untuk closed biasanya
-        }
-      });
-
     // Cleanup function
     return () => {
       isMounted = false;
-      console.log('[RealtimeNotificationCenter] Cleaning up subscription...');
-      supabase.removeChannel(channel);
     };
-  }, [toast]); // ✅ Tambahkan toast ke dependency
+  }, [toast]);
 
   const markAsRead = (id) => {
     setNotifications(prev =>

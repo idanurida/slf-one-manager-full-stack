@@ -585,4 +585,359 @@ END;
 | 405a1081-1965-41f9-8173-f520a3352872 | Rina           | drafter@slf.com             | drafter         | null           | 2025-10-23 08:20:03.80921+00  | null         | null                                 |
 | 13e6f08a-1312-4dbe-a214-2a8b8c285156 | majubersama    | client.majubersama@slf.com  | client          | null           | 2025-11-01 12:31:51.362368+00 | null         | a1b2c3d4-e5f6-7890-abcd-ef1234567890 |
 
+=============================
 
+| table_name                  | column_count |
+| --------------------------- | ------------ |
+| activity_logs               | 6            |
+| admin_document_monitoring   | 33           |
+| approvals                   | 8            |
+| checklist_items             | 9            |
+| checklist_responses         | 11           |
+| checklist_templates         | 4            |
+| client_project_summary      | 16           |
+| clients                     | 10           |
+| comments                    | 6            |
+| contracts                   | 14           |
+| document_history            | 12           |
+| document_verifications      | 8            |
+| document_workflow_overview  | 18           |
+| documents                   | 39           |
+| documents_with_status       | 30           |
+| inspection_comments         | 5            |
+| inspection_photos           | 21           |
+| inspection_reports          | 14           |
+| inspections                 | 18           |
+| logs                        | 7            |
+| messages                    | 15           |
+| notifications               | 8            |
+| payments                    | 11           |
+| profile_clients             | 2            |
+| profiles                    | 11           |
+| project_activities          | 7            |
+| project_assignments         | 6            |
+| project_documents           | 6            |
+| project_phases              | 13           |
+| project_teams               | 6            |
+| project_timeline_view       | 25           |
+| projects                    | 49           |
+| projects_backup             | 30           |
+| projects_policy_backup      | 8            |
+| quotations                  | 12           |
+| regions                     | 6            |
+| report_approvals            | 9            |
+| reports                     | 8            |
+| schedules                   | 12           |
+| simak_items                 | 9            |
+| simak_responses             | 8            |
+| special_building_types      | 4            |
+| special_function_checklists | 4            |
+| support_requests            | 6            |
+| tasks                       | 9            |
+| technical_recommendations   | 9            |
+| todos                       | 6            |
+| users                       | 41           |
+
+=============
+
+
+| table_name             | column_name           | foreign_table_name  | foreign_column_name |
+| ---------------------- | --------------------- | ------------------- | ------------------- |
+| simak_responses        | item_id               | simak_items         | id                  |
+| simak_responses        | inspector_id          | profiles            | id                  |
+| simak_responses        | inspection_id         | inspections         | id                  |
+| payments               | project_id            | projects            | id                  |
+| inspection_photos      | inspection_id         | inspections         | id                  |
+| inspection_photos      | project_id            | projects            | id                  |
+| inspection_photos      | project_id            | projects            | id                  |
+| payments               | client_id             | clients             | id                  |
+| projects               | project_lead_id       | profiles            | id                  |
+| projects               | client_id             | clients             | id                  |
+| checklist_responses    | inspection_id         | inspections         | id                  |
+| checklist_responses    | item_id               | checklist_items     | id                  |
+| checklist_responses    | responded_by          | profiles            | id                  |
+| payments               | verified_by           | profiles            | id                  |
+| projects               | created_by            | profiles            | id                  |
+| projects               | assigned_to           | profiles            | id                  |
+| documents              | approved_by           | profiles            | id                  |
+| inspections            | project_id            | projects            | id                  |
+| documents              | verified_by_id        | profiles            | id                  |
+| documents              | approved_by_id        | profiles            | id                  |
+| project_phases         | project_id            | projects            | id                  |
+| documents              | uploaded_by           | profiles            | id                  |
+| inspections            | schedule_id           | schedules           | id                  |
+| document_verifications | document_id           | documents           | id                  |
+| document_verifications | verifier_id           | profiles            | id                  |
+| project_activities     | project_id            | projects            | id                  |
+| project_activities     | performed_by          | profiles            | id                  |
+| inspections            | created_by            | profiles            | id                  |
+| inspection_photos      | checklist_item_id     | checklist_items     | id                  |
+| inspection_photos      | checklist_response_id | checklist_responses | id                  |
+| inspection_photos      | inspection_id         | inspections         | id                  |
+| inspection_photos      | uploaded_by           | profiles            | id                  |
+| tasks                  | project_id            | projects            | id                  |
+| projects               | admin_lead_id         | profiles            | id                  |
+| documents              | verified_by           | profiles            | id                  |
+| documents              | template_id           | checklist_items     | id                  |
+| project_documents      | project_id            | projects            | id                  |
+| project_documents      | document_id           | documents           | id                  |
+| project_teams          | project_id            | projects            | id                  |
+| project_teams          | user_id               | profiles            | id                  |
+| report_approvals       | approver_id           | profiles            | id                  |
+| report_approvals       | project_id            | projects            | id                  |
+| projects               | drafter_id            | profiles            | id                  |
+| documents              | project_id            | projects            | id                  |
+| schedules              | project_id            | projects            | id                  |
+| schedules              | assigned_to           | users               | id                  |
+| schedules              | created_by            | users               | id                  |
+| documents              | rejected_by_id        | profiles            | id                  |
+| document_history       | document_id           | documents           | id                  |
+| documents              | project_id            | projects            | id                  |
+| documents              | created_by            | profiles            | id                  |
+| checklist_responses    | project_id            | projects            | id                  |
+| project_assignments    | project_id            | projects            | id                  |
+| project_assignments    | user_id               | profiles            | id                  |
+| project_assignments    | assigned_by           | profiles            | id                  |
+| tasks                  | project_id            | projects            | id                  |
+| messages               | project_id            | projects            | id                  |
+| messages               | sender_id             | users               | id                  |
+| inspection_reports     | project_id            | projects            | id                  |
+| inspections            | inspector_id          | profiles            | id                  |
+| support_requests       | user_id               | users               | id                  |
+| inspection_reports     | inspector_id          | profiles            | id                  |
+| inspection_reports     | admin_team_id         | profiles            | id                  |
+| document_history       | user_id               | profiles            | id                  |
+| quotations             | project_id            | projects            | id                  |
+| quotations             | created_by            | profiles            | id                  |
+| contracts              | project_id            | projects            | id                  |
+| contracts              | quotation_id          | quotations          | id                  |
+
+============================
+
+
+| bucket_id         | name              | public | created_at                    |
+| ----------------- | ----------------- | ------ | ----------------------------- |
+| documents         | documents         | false  | 2025-10-21 01:27:40.551329+00 |
+| inspection_photos | inspection_photos | true   | 2025-12-06 01:53:03.633274+00 |
+| avatars           | avatars           | true   | 2025-12-07 07:16:17.761173+00 |
+| inspection-photos | inspection-photos | false  | 2025-12-07 07:16:17.761173+00 |
+| reports           | reports           | false  | 2025-12-07 07:16:17.761173+00 |
+| payment-proofs    | payment-proofs    | false  | 2025-12-07 07:16:17.761173+00 |
+| contracts         | contracts         | false  | 2025-12-07 07:16:17.761173+00 |
+
+
+================
+
+| bucket_id         | name              | public | created_at                    |
+| ----------------- | ----------------- | ------ | ----------------------------- |
+| avatars           | avatars           | true   | 2025-12-07 07:16:17.761173+00 |
+| contracts         | contracts         | false  | 2025-12-07 07:16:17.761173+00 |
+| documents         | documents         | false  | 2025-10-21 01:27:40.551329+00 |
+| inspection_photos | inspection_photos | true   | 2025-12-06 01:53:03.633274+00 |
+| inspection-photos | inspection-photos | false  | 2025-12-07 07:16:17.761173+00 |
+| payment-proofs    | payment-proofs    | false  | 2025-12-07 07:16:17.761173+00 |
+| reports           | reports           | false  | 2025-12-07 07:16:17.761173+00 |
+
+
+====================
+
+| schemaname | tablename              | policyname                                                 | permissive | roles           | cmd    | qual                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------- | ---------------------- | ---------------------------------------------------------- | ---------- | --------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| public     | approvals              | allow_head_consultant_read                                 | PERMISSIVE | {authenticated} | SELECT | (auth.role() = 'head_consultant'::text)                                                                                                                                                                                                                                                                                                                                                                           |
+| public     | checklist_items        | Allow all operations on checklist_items                    | PERMISSIVE | {public}        | ALL    | true                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | checklist_items        | Users can view checklist items                             | PERMISSIVE | {public}        | SELECT | true                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | checklist_responses    | Inspector can view own checklist responses                 | PERMISSIVE | {public}        | SELECT | (responded_by = auth.uid())                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | checklist_responses    | Users can delete own checklist responses                   | PERMISSIVE | {public}        | DELETE | (auth.uid() = responded_by)                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | checklist_responses    | Users can insert own checklist responses                   | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | checklist_responses    | Users can update own checklist responses                   | PERMISSIVE | {public}        | UPDATE | (auth.uid() = responded_by)                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | checklist_responses    | Users can view own checklist responses                     | PERMISSIVE | {public}        | SELECT | (auth.uid() = responded_by)                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | clients                | Allow head_consultant to view clients                      | PERMISSIVE | {authenticated} | SELECT | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'head_consultant'::text))))                                                                                                                                                                                                                                                                                          |
+| public     | clients                | Authenticated users can insert clients                     | PERMISSIVE | {authenticated} | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | clients                | Head Consultant can view clients                           | PERMISSIVE | {public}        | SELECT | true                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | clients                | Superadmin full access to clients                          | PERMISSIVE | {public}        | ALL    | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'superadmin'::text))))                                                                                                                                                                                                                                                                                               |
+| public     | clients                | Users can view clients                                     | PERMISSIVE | {public}        | SELECT | true                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | clients                | allow_pl_select_all_clients                                | PERMISSIVE | {authenticated} | SELECT | true                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | document_history       | document_history_select_policy                             | PERMISSIVE | {public}        | SELECT | ((document_id IN ( SELECT documents.id
+   FROM documents
+  WHERE ((documents.created_by = auth.uid()) OR (documents.project_id IN ( SELECT projects.id
+           FROM projects
+          WHERE (projects.client_id = auth.uid())))))) OR (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text]))))))     |
+| public     | document_verifications | admin_view_document_verifications                          | PERMISSIVE | {public}        | SELECT | (EXISTS ( SELECT 1
+   FROM profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text])))))                                                                                                                                                                                                                                                            |
+| public     | document_verifications | user_view_own_document_verifications                       | PERMISSIVE | {public}        | SELECT | (document_id IN ( SELECT d.id
+   FROM documents d
+  WHERE ((d.created_by = auth.uid()) OR (d.project_id IN ( SELECT p.id
+           FROM projects p
+          WHERE (p.client_id = auth.uid()))))))                                                                                                                                                                                                               |
+| public     | documents              | documents_insert                                           | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | documents              | documents_insert_policy                                    | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | documents              | documents_select                                           | PERMISSIVE | {public}        | SELECT | ((project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.client_id = auth.uid()))) OR (created_by = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text, 'project_lead'::text, 'drafter'::text]))))))                                                                      |
+| public     | documents              | documents_select_policy                                    | PERMISSIVE | {public}        | SELECT | ((project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.client_id = auth.uid()))) OR (created_by = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin_team'::text, 'admin_lead'::text, 'team_lead'::text, 'project_lead'::text, 'inspector'::text, 'drafter'::text, 'head_consultant'::text, 'superadmin'::text])))))) |
+| public     | documents              | documents_update_admin                                     | PERMISSIVE | {public}        | UPDATE | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'admin_lead'::text, 'team_lead'::text])))))                                                                                                                                                                                                                                                |
+| public     | documents              | documents_update_admin_policy                              | PERMISSIVE | {public}        | UPDATE | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin_team'::text, 'admin_lead'::text, 'team_lead'::text, 'superadmin'::text])))))                                                                                                                                                                                                                       |
+| public     | documents              | documents_update_client                                    | PERMISSIVE | {public}        | UPDATE | ((created_by = auth.uid()) AND (status = ANY (ARRAY['pending'::text, 'pending_review'::text, 'revision_needed'::text])))                                                                                                                                                                                                                                                                                          |
+| public     | documents              | documents_update_client_policy                             | PERMISSIVE | {public}        | UPDATE | ((created_by = auth.uid()) AND (status = ANY (ARRAY['pending'::text, 'pending_review'::text, 'revision_needed'::text])))                                                                                                                                                                                                                                                                                          |
+| public     | inspection_photos      | Inspector can view own photos                              | PERMISSIVE | {public}        | SELECT | (uploaded_by = auth.uid())                                                                                                                                                                                                                                                                                                                                                                                        |
+| public     | inspection_photos      | Users can delete their own photos                          | PERMISSIVE | {public}        | DELETE | (uploaded_by = auth.uid())                                                                                                                                                                                                                                                                                                                                                                                        |
+| public     | inspection_photos      | Users can insert their own photos                          | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | inspection_photos      | Users can update their own photos                          | PERMISSIVE | {public}        | UPDATE | (uploaded_by = auth.uid())                                                                                                                                                                                                                                                                                                                                                                                        |
+| public     | inspection_photos      | Users can view their own photos                            | PERMISSIVE | {public}        | SELECT | (uploaded_by = auth.uid())                                                                                                                                                                                                                                                                                                                                                                                        |
+| public     | inspections            | Head Consultant can view inspections for assigned projects | PERMISSIVE | {public}        | SELECT | (EXISTS ( SELECT 1
+   FROM project_teams
+  WHERE ((project_teams.project_id = inspections.project_id) AND (project_teams.user_id = auth.uid()) AND (project_teams.role = 'head_consultant'::text))))                                                                                                                                                                                                              |
+| public     | inspections            | Inspectors can update their own inspections                | PERMISSIVE | {public}        | UPDATE | (inspector_id = auth.uid())                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | inspections            | Inspectors can view their own inspections                  | PERMISSIVE | {public}        | SELECT | (inspector_id = auth.uid())                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | inspections            | inspectors_view_own_inspections                            | PERMISSIVE | {public}        | SELECT | (inspector_id = auth.uid())                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | inspections            | project-lead select                                        | PERMISSIVE | {authenticated} | SELECT | (EXISTS ( SELECT 1
+   FROM project_teams
+  WHERE ((project_teams.project_id = inspections.project_id) AND (project_teams.user_id = auth.uid()) AND (project_teams.role = 'preject_lead'::text))))                                                                                                                                                                                                                 |
+| public     | inspections            | project_leads_create_inspections                           | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | inspections            | project_leads_create_own_inspections                       | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | inspections            | project_leads_view_own_inspections                         | PERMISSIVE | {public}        | SELECT | (project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.project_lead_id = auth.uid())))                                                                                                                                                                                                                                                                                                            |
+| public     | profiles               | Admin-Lead can select all profiles.                        | PERMISSIVE | {authenticated} | SELECT | (role = 'admin_lead'::text)                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | profiles               | Allow all for authenticated users                          | PERMISSIVE | {public}        | ALL    | (auth.role() = 'authenticated'::text)                                                                                                                                                                                                                                                                                                                                                                             |
+| public     | profiles               | Allow insert for authenticated                             | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | profiles               | Allow read for authenticated                               | PERMISSIVE | {public}        | SELECT | (auth.role() = 'authenticated'::text)                                                                                                                                                                                                                                                                                                                                                                             |
+| public     | profiles               | Allow update for own profile                               | PERMISSIVE | {public}        | UPDATE | (auth.uid() = id)                                                                                                                                                                                                                                                                                                                                                                                                 |
+| public     | profiles               | Enable read access for all users                           | PERMISSIVE | {public}        | SELECT | true                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | profiles               | User can view own profile                                  | PERMISSIVE | {public}        | SELECT | (auth.uid() = id)                                                                                                                                                                                                                                                                                                                                                                                                 |
+| public     | profiles               | Users can update own profile                               | PERMISSIVE | {public}        | ALL    | (auth.uid() = id)                                                                                                                                                                                                                                                                                                                                                                                                 |
+| public     | profiles               | Users can view own profile                                 | PERMISSIVE | {public}        | SELECT | (auth.uid() = id)                                                                                                                                                                                                                                                                                                                                                                                                 |
+| public     | profiles               | insert_profiles                                            | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | profiles               | superadmin_delete                                          | PERMISSIVE | {public}        | DELETE | (auth.uid() IN ( SELECT profiles_1.id
+   FROM profiles profiles_1
+  WHERE (profiles_1.role = 'superadmin'::text)))                                                                                                                                                                                                                                                                                                |
+| public     | profiles               | update_own_profile                                         | PERMISSIVE | {public}        | UPDATE | (auth.uid() = id)                                                                                                                                                                                                                                                                                                                                                                                                 |
+| public     | profiles               | user_update_own_profile                                    | PERMISSIVE | {public}        | UPDATE | (auth.uid() = id)                                                                                                                                                                                                                                                                                                                                                                                                 |
+| public     | profiles               | user_view_own_profile                                      | PERMISSIVE | {public}        | SELECT | (auth.uid() = id)                                                                                                                                                                                                                                                                                                                                                                                                 |
+| public     | profiles               | view_all_profiles                                          | PERMISSIVE | {public}        | SELECT | (auth.role() = 'authenticated'::text)                                                                                                                                                                                                                                                                                                                                                                             |
+| public     | project_phases         | project_phases_insert_policy                               | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | project_phases         | project_phases_select_policy                               | PERMISSIVE | {public}        | SELECT | ((project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.client_id = auth.uid()))) OR (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin_team'::text, 'admin_lead'::text, 'team_lead'::text, 'project_lead'::text, 'drafter'::text, 'inspector'::text]))))))                                                                           |
+| public     | project_phases         | project_phases_update_policy                               | PERMISSIVE | {public}        | UPDATE | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin_team'::text, 'admin_lead'::text, 'team_lead'::text, 'project_lead'::text])))))                                                                                                                                                                                                                     |
+| public     | project_teams          | head_consultant_can_read_all_teams                         | PERMISSIVE | {public}        | SELECT | (auth.role() = 'head_consultant'::text)                                                                                                                                                                                                                                                                                                                                                                           |
+| public     | projects               | Allow head_consultant to view all projects                 | PERMISSIVE | {authenticated} | SELECT | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'head_consultant'::text))))                                                                                                                                                                                                                                                                                          |
+| public     | projects               | Clients can view their own projects                        | PERMISSIVE | {public}        | SELECT | ((( SELECT profiles.role
+   FROM profiles
+  WHERE (profiles.id = auth.uid())) = 'client'::text) AND (client_id = ( SELECT profiles.client_id
+   FROM profiles
+  WHERE (profiles.id = auth.uid()))))                                                                                                                                                                                                               |
+| public     | projects               | Head Consultant can view assigned projects                 | PERMISSIVE | {public}        | SELECT | (EXISTS ( SELECT 1
+   FROM project_teams
+  WHERE ((project_teams.project_id = projects.id) AND (project_teams.user_id = auth.uid()) AND (project_teams.role = 'head_consultant'::text))))                                                                                                                                                                                                                         |
+| public     | projects               | Inspectors can read assigned projects                      | PERMISSIVE | {public}        | SELECT | (EXISTS ( SELECT 1
+   FROM inspections
+  WHERE ((inspections.project_id = projects.id) AND (inspections.inspector_id = auth.uid()))))                                                                                                                                                                                                                                                                             |
+| public     | projects               | Service role full access                                   | PERMISSIVE | {public}        | ALL    | (auth.role() = 'service_role'::text)                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | projects               | Superadmin all operations                                  | PERMISSIVE | {public}        | ALL    | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'superadmin'::text))))                                                                                                                                                                                                                                                                                               |
+| public     | projects               | Superadmin full access to projects                         | PERMISSIVE | {public}        | ALL    | ((auth.jwt() ->> 'role'::text) = 'superadmin'::text)                                                                                                                                                                                                                                                                                                                                                              |
+| public     | projects               | admin_lead_can_manage_own_projects                         | PERMISSIVE | {public}        | ALL    | ((auth.uid() = admin_lead_id) OR (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'superadmin'::text)))))                                                                                                                                                                                                                                                             |
+| public     | projects               | new policy                                                 | PERMISSIVE | {authenticated} | SELECT | ((auth.uid() IN ( SELECT project_teams.user_id
+   FROM project_teams
+  WHERE ((project_teams.project_id = projects.id) AND (project_teams.role = 'project_lead'::text)))) OR (project_lead_id = auth.uid()))                                                                                                                                                                                                      |
+| public     | projects               | project_lead_can_read_their_projects                       | PERMISSIVE | {public}        | SELECT | ((auth.role() = 'authenticated'::text) AND (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'project_lead'::text) AND (profiles.id = projects.project_lead_id)))))                                                                                                                                                                                                    |
+| public     | projects               | project_leads_create_projects                              | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | report_approvals       | Head Consultant can view pending approvals                 | PERMISSIVE | {public}        | SELECT | ((approver_role = 'head_consultant'::text) AND (status = 'pending'::text) AND (project_id IS NOT NULL) AND (EXISTS ( SELECT 1
+   FROM project_teams
+  WHERE ((project_teams.project_id = report_approvals.project_id) AND (project_teams.user_id = auth.uid()) AND (project_teams.role = 'head_consultant'::text)))))                                                                                             |
+| public     | reports                | Drafter can insert reports                                 | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | reports                | Drafter can manage their own reports                       | PERMISSIVE | {public}        | ALL    | (drafter_id = auth.uid())                                                                                                                                                                                                                                                                                                                                                                                         |
+| public     | reports                | Drafter can update own draft reports                       | PERMISSIVE | {public}        | UPDATE | ((auth.uid() = drafter_id) AND ((report_status = 'draft'::text) OR (report_status = 'rejected'::text)))                                                                                                                                                                                                                                                                                                           |
+| public     | reports                | Drafter can view own reports                               | PERMISSIVE | {public}        | SELECT | (auth.uid() = drafter_id)                                                                                                                                                                                                                                                                                                                                                                                         |
+| public     | simak_items            | Enable read access for all users                           | PERMISSIVE | {public}        | SELECT | true                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | simak_responses        | Users can delete own simak responses                       | PERMISSIVE | {public}        | DELETE | (auth.uid() = inspector_id)                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | simak_responses        | Users can insert own simak responses                       | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | simak_responses        | Users can update own simak responses                       | PERMISSIVE | {public}        | UPDATE | (auth.uid() = inspector_id)                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | simak_responses        | Users can view own simak responses                         | PERMISSIVE | {public}        | SELECT | (auth.uid() = inspector_id)                                                                                                                                                                                                                                                                                                                                                                                       |
+| public     | support_requests       | Admins can view all support requests                       | PERMISSIVE | {public}        | SELECT | (auth.uid() IN ( SELECT users.id
+   FROM auth.users
+  WHERE ((users.raw_user_meta_data ->> 'role'::text) = ANY (ARRAY['admin_lead'::text, 'admin'::text]))))                                                                                                                                                                                                                                                      |
+| public     | support_requests       | Users can create support requests                          | PERMISSIVE | {public}        | INSERT | null                                                                                                                                                                                                                                                                                                                                                                                                              |
+| public     | support_requests       | Users can view own support requests                        | PERMISSIVE | {public}        | SELECT | (auth.uid() = user_id)                                                                                                                                                                                                                                                                                                                                                                                            |
+| public     | users                  | Superadmins can view all data.                             | PERMISSIVE | {public}        | SELECT | (( SELECT users_1.role
+   FROM users users_1
+  WHERE (users_1.id = auth.uid())) = 'superadmin'::text)                                                                                                                                                                                                                                                                                                             |
+| public     | users                  | Users can view their own data.                             | PERMISSIVE |
+ {public}        | SELECT | (auth.uid() = id)   
+
+
+perbaikan:
+| policyname                           | tablename              | status | qual_preview                                                                                         |
+| ------------------------------------ | ---------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
+| Superadmin full access to clients    | clients                | Fixed  | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (AR |
+| document_history_select_policy       | document_history       | Fixed  | ((document_id IN ( SELECT documents.id
+   FROM documents
+  WHERE ((documents.created_by = auth.uid() |
+| admin_view_document_verifications    | document_verifications | Fixed  | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (AR |
+| documents_select                     | documents              | Fixed  | ((project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.client_id = auth.uid()))) OR |
+| documents_select_policy              | documents              | Fixed  | ((project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.client_id = auth.uid()))) OR |
+| documents_update_admin               | documents              | Fixed  | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (AR |
+| documents_update_admin_policy        | documents              | Fixed  | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (AR |
+| superadmin_delete                    | profiles               | Fixed  | (EXISTS ( SELECT 1
+   FROM profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = ANY (ARRAY['superad |
+| project_phases_update_policy         | project_phases         | Fixed  | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (AR |
+| project_phases_select_policy         | project_phases         | Fixed  | ((project_id IN ( SELECT projects.id
+   FROM projects
+  WHERE (projects.client_id = auth.uid()))) OR |
+| Superadmin all operations            | projects               | Fixed  | (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'supera |
+| Superadmin full access to projects   | projects               | Fixed  | ((auth.jwt() ->> 'role'::text) = ANY (ARRAY['superadmin'::text, 'admin_team'::text]))                |
+| admin_lead_can_manage_own_projects   | projects               | Fixed  | ((auth.uid() = admin_lead_id) OR (EXISTS ( SELECT 1
+   FROM profiles
+  WHERE ((profiles.id = auth.ui |
+| Admins can view all support requests | support_requests       | Fixed  | (EXISTS ( SELECT 1
+   FROM auth.users
+  WHERE ((users.id = auth.uid()) AND ((users.raw_user_meta_dat |
+| Superadmins can view all data.       | users                  | Fixed  | (EXISTS ( SELECT 1
+   FROM users u
+  WHERE ((u.id = auth.uid()) AND (u.role = ANY (ARRAY['superadmin |                                                                                                                                                                                                                                                                                                                                                                                              |

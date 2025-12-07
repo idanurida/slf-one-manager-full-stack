@@ -124,13 +124,13 @@ const DocumentUpload = ({ projectId, onUpload, user }) => { // ✅ Tambahkan use
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `documents/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
-        .from('slf-uploads')
+        .from('documents')
         .upload(fileName, selectedFile);
 
       if (uploadError) throw uploadError;
 
       const {  publicUrl } = supabase.storage
-        .from('slf-uploads')
+        .from('documents')
         .getPublicUrl(fileName);
 
       const { error: insertError } = await supabase.from('documents').insert([

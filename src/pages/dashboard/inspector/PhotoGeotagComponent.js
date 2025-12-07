@@ -315,14 +315,14 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
       const fileName = `inspection-photos/${user.id}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
-        .from('slf-uploads')
+        .from('inspection_photos')
         .upload(fileName, selectedFile);
 
       if (uploadError) throw uploadError;
 
       // 2. Ambil URL publik
       const { data: publicUrlData } = supabase.storage
-        .from('slf-uploads')
+        .from('inspection_photos')
         .getPublicUrl(fileName);
 
       // 3. Panggil callback onCapture dengan data lengkap

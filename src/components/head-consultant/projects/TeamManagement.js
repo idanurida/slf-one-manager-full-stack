@@ -99,7 +99,7 @@ const TeamManagement = ({ projectId }) => {
         // 1. Ambil anggota tim saat ini untuk proyek ini
         // NOTE: Asumsi struktur response Supabase di-destructure menjadi { data: teamData }
         const { data: teamData, error: teamError } = await supabase
-          .from('project_team')
+          .from('project_teams')
           .select(`
             id,
             user_id,
@@ -162,7 +162,7 @@ const TeamManagement = ({ projectId }) => {
       setAdding(true);
 
       const { error } = await supabase
-        .from('project_team')
+        .from('project_teams')
         .insert([
           {
             project_id: projectId,
@@ -185,7 +185,7 @@ const TeamManagement = ({ projectId }) => {
 
       // Refresh data
       const { data: teamData, error: teamError } = await supabase
-        .from('project_team')
+        .from('project_teams')
         .select(`
           id,
           user_id,
@@ -220,7 +220,7 @@ const TeamManagement = ({ projectId }) => {
       setRemoving(prev => ({ ...prev, [teamMemberId]: true }));
 
       const { error } = await supabase
-        .from('project_team')
+        .from('project_teams')
         .delete()
         .eq('id', teamMemberId);
 

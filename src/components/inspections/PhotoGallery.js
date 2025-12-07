@@ -405,7 +405,7 @@ const PhotoGallery = ({
 
             // Mock: Delete file from storage
             const { error: storageError } = await supabase.storage
-                .from("slf-uploads")
+                .from("inspection_photos")
                 .remove([`photos/${filePath}`]);
             if (storageError) throw storageError;
 

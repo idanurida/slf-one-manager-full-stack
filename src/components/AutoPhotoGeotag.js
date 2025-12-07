@@ -118,7 +118,7 @@ const AutoPhotoGeotag = ({
         const fileName = `${projectId || 'unknown'}/${inspectionId || 'temp'}/${checklistItemId || 'item'}_${Date.now()}_${file.name}`;
         
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('inspection-photos')
+          .from('inspection_photos')
           .upload(fileName, file, {
             cacheControl: '3600',
             upsert: false
@@ -132,7 +132,7 @@ const AutoPhotoGeotag = ({
 
         // Get public URL
         const { data: urlData } = supabase.storage
-          .from('inspection-photos')
+          .from('inspection_photos')
           .getPublicUrl(fileName);
 
         const photoData = {
@@ -215,7 +215,7 @@ const AutoPhotoGeotag = ({
       // Delete from storage
       if (photoToDelete.file_path) {
         await supabase.storage
-          .from('inspection-photos')
+          .from('inspection_photos')
           .remove([photoToDelete.file_path]);
       }
 

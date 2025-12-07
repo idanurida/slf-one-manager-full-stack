@@ -84,7 +84,7 @@ const uploadPhoto = async (file, storagePath) => {
   const filePath = `${storagePath}/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
-    .from('photos_bucket') // Ganti dengan nama bucket Anda
+    .from('inspection_photos')
     .upload(filePath, file, {
       cacheControl: '3600',
       upsert: false
@@ -97,7 +97,7 @@ const uploadPhoto = async (file, storagePath) => {
 
   // Mendapatkan URL publik
   const { data: publicUrlData } = supabase.storage
-    .from('photos_bucket') // Ganti dengan nama bucket Anda
+    .from('inspection_photos')
     .getPublicUrl(filePath);
 
   if (!publicUrlData.publicUrl) {

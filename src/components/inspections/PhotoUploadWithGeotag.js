@@ -180,14 +180,14 @@ const PhotoUploadWithGeotag = ({ checklistItem, onSave, userId }) => {
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `photos/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
-        .from('slf-uploads') // ✅ Ganti dengan bucket name kamu
+        .from('inspection_photos')
         .upload(fileName, selectedFile);
 
       if (uploadError) throw uploadError;
 
       // 2. Ambil URL publik
       const { data: publicUrlData } = supabase.storage
-        .from('slf-uploads') // ✅ Ganti dengan bucket name kamu
+        .from('inspection_photos')
         .getPublicUrl(fileName);
 
       // 3. Simpan metadata ke tabel inspection_photos

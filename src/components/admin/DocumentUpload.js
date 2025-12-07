@@ -171,7 +171,7 @@ const DocumentUpload = ({ projectId, onUploadSuccess, defaultDocumentType = '' }
 
       // 2. Unggah file ke Supabase Storage
       const { error: storageError } = await supabase.storage
-        .from('project-documents') // Nama bucket
+        .from('documents')
         .upload(filePath, selectedFile, {
           cacheControl: '3600',
           upsert: false,

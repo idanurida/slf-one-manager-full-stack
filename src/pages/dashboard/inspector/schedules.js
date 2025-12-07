@@ -63,9 +63,9 @@ export default function InspectorSchedules() {
       try {
         setLoading(true);
 
-        // Ambil jadwal dari project_lead yang terkait dengan inspector
+        // Ambil jadwal inspeksi yang terkait dengan inspector
         const { data: schedulesData, error } = await supabase
-          .from('project_lead')
+          .from('schedules')
           .select(`
             *,
             projects (
@@ -73,12 +73,9 @@ export default function InspectorSchedules() {
               name,
               location,
               client_name
-            ),
-            assigned_inspectors!inner (
-              inspector_id
             )
           `)
-          .eq('assigned_inspectors.inspector_id', user.id)
+          .eq('inspector_id', user.id)
           .order('scheduled_date', { ascending: true });
 
         if (error) throw error;

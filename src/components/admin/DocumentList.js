@@ -184,7 +184,7 @@ const DocumentList = ({ projectId = null }) => {
     try {
       // ✅ Ganti 'project-documents' dengan nama bucket Anda jika berbeda
       const { data } = supabase.storage
-        .from('project-documents')
+        .from('documents')
         .getPublicUrl(doc.url);
 
       if (data?.publicUrl) {
@@ -214,7 +214,7 @@ const DocumentList = ({ projectId = null }) => {
     try {
       // ✅ Ganti 'project-documents' dengan nama bucket Anda jika berbeda
       const { data } = supabase.storage
-        .from('project-documents')
+        .from('documents')
         .getPublicUrl(doc.url);
 
       if (data?.publicUrl) {
@@ -254,7 +254,7 @@ const DocumentList = ({ projectId = null }) => {
       // 1. Hapus file dari storage (jika path tersedia)
       if (filePath) {
         const { error: storageError } = await supabase.storage
-          .from('project-documents')
+          .from('documents')
           .remove([filePath]); 
 
         if(storageError) {

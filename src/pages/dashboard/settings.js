@@ -458,7 +458,7 @@ const SettingsPage = () => {
                       />
                     </div>
                     
-                    {(profileData.role === 'inspector' || profileData.role === 'drafter') && (
+                    {profileData.role === 'inspector' && (
                       <div className="space-y-2">
                         <Label htmlFor="specialization">Spesialisasi</Label>
                         <Select value={specialization} onValueChange={setSpecialization} disabled={loading}>
@@ -468,9 +468,7 @@ const SettingsPage = () => {
                           <SelectContent>
                             <SelectItem value="architectural">Arsitektur</SelectItem>
                             <SelectItem value="structural">Struktur</SelectItem>
-                            <SelectItem value="mep">MEP</SelectItem>
-                            <SelectItem value="fire_safety">Keselamatan Kebakaran</SelectItem>
-                            <SelectItem value="hvac">HVAC</SelectItem>
+                            <SelectItem value="mep">MEP (Mekanikal, Elektrikal, Plumbing)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

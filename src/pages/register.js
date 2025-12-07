@@ -42,8 +42,19 @@ const checkPasswordStrength = (password) => {
 // Available roles for registration
 const AVAILABLE_ROLES = [
   { value: 'client', label: 'Klien', description: 'Pemilik proyek' },
+  { value: 'head_consultant', label: 'Head Consultant', description: 'Kepala konsultan' },
+  { value: 'admin_lead', label: 'Admin Lead', description: 'Pimpinan administrasi' },
+  { value: 'admin_team', label: 'Admin Team', description: 'Tim administrasi' },
+  { value: 'project_lead', label: 'Team Leader', description: 'Pimpinan tim proyek' },
   { value: 'inspector', label: 'Inspector', description: 'Melakukan inspeksi lapangan' },
   { value: 'drafter', label: 'Drafter', description: 'Membuat dokumen teknis' },
+];
+
+// Inspector specializations (3 categories only)
+const INSPECTOR_SPECIALIZATIONS = [
+  { value: 'architectural', label: 'Arsitektur' },
+  { value: 'structural', label: 'Struktur' },
+  { value: 'mep', label: 'MEP (Mekanikal, Elektrikal, Plumbing)' },
 ];
 
 export default function RegisterPage() {
@@ -58,6 +69,7 @@ export default function RegisterPage() {
     phone: '',
     company: '',
     role: '',
+    specialization: '', // For inspector only
   });
   
   const [showPassword, setShowPassword] = useState(false);
@@ -71,7 +83,8 @@ export default function RegisterPage() {
   const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword !== '';
 
   // Validation for step 1
-  const isStep1Valid = formData.fullName && formData.email && formData.role;
+  const isStep1Valid = formData.fullName && formData.email && formData.role && 
+    (formData.role !== 'inspector' || formData.specialization); // Inspector must have specialization
   
   // Validation for step 2
   const isStep2Valid = formData.password && formData.confirmPassword && passwordsMatch && formData.password.length >= 8;
@@ -83,7 +96,14 @@ export default function RegisterPage() {
   };
 
   const handleSelectChange = (name, value) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+      // Reset specialization if role changes to non-inspector
+      if (name === 'role' && value !== 'inspector') {
+        newData.specialization = '';
+      }
+      return newData;
+    });
     if (error) setError('');
   };
 
@@ -128,19 +148,24 @@ export default function RegisterPage() {
 
       // 2. If user created, also create profile (some setups might need this)
       if (authData.user) {
+        const profileData = {
+          id: authData.user.id,
+          email: formData.email.trim().toLowerCase(),
+          full_name: formData.fullName,
+          phone_number: formData.phone || null,
+          company_name: formData.company || null,
+          role: formData.role,
+          created_at: new Date().toISOString(),
+        };
+        
+        // Add specialization for inspector
+        if (formData.role === 'inspector' && formData.specialization) {
+          profileData.specialization = formData.specialization;
+        }
+
         const { error: profileError } = await supabase
           .from('profiles')
-          .upsert({
-            id: authData.user.id,
-            email: formData.email.trim().toLowerCase(),
-            full_name: formData.fullName,
-            phone_number: formData.phone || null,
-            company_name: formData.company || null,
-            role: formData.role,
-            created_at: new Date().toISOString(),
-          }, {
-            onConflict: 'id'
-          });
+          .upsert(profileData, { onConflict: 'id' });
 
         if (profileError) {
           console.error('[Register] Profile creation error:', profileError);
@@ -304,6 +329,29 @@ export default function RegisterPage() {
                             </p>
                           )}
                         </div>
+
+                        {/* Specialization - Only for Inspector */}
+                        {formData.role === 'inspector' && (
+                          <div className="space-y-2">
+                            <Label htmlFor="specialization">Spesialisasi *</Label>
+                            <Select
+                              value={formData.specialization}
+                              onValueChange={(value) => handleSelectChange('specialization', value)}
+                              disabled={loading}
+                            >
+                              <SelectTrigger id="specialization">
+                                <SelectValue placeholder="Pilih spesialisasi" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {INSPECTOR_SPECIALIZATIONS.map((spec) => (
+                                  <SelectItem key={spec.value} value={spec.value}>
+                                    {spec.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
 
                         {/* Phone (Optional) */}
                         <div className="space-y-2">

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from 'next-themes';
 
@@ -12,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 // Lucide Icons
-import { AlertTriangle, Loader2, Eye, EyeOff, Moon, Sun } from 'lucide-react';
+import { AlertTriangle, Loader2, Eye, EyeOff, Moon, Sun, LogIn } from 'lucide-react';
 
 export default function LoginPage() {
   const { login, loading: authLoading, user, profile } = useAuth();
@@ -176,7 +177,15 @@ export default function LoginPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Kata Sandi</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Kata Sandi</Label>
+                    <Link 
+                      href="/forgot-password" 
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Lupa password?
+                    </Link>
+                  </div>
                   <div className="relative">
                     <Input 
                       id="password"
@@ -214,10 +223,23 @@ export default function LoginPage() {
                       Memproses...
                     </>
                   ) : (
-                    'Masuk'
+                    <>
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Masuk
+                    </>
                   )}
                 </Button>
               </form>
+              
+              {/* Register Link */}
+              <div className="pt-4 border-t text-center">
+                <p className="text-sm text-muted-foreground">
+                  Belum punya akun?{' '}
+                  <Link href="/register" className="text-primary hover:underline font-medium">
+                    Daftar sekarang
+                  </Link>
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>

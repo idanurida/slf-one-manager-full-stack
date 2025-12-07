@@ -127,7 +127,7 @@ export default function LoginPage() {
         <div className="flex items-center gap-3">
           {/* Company Logo */}
           <img 
-            src="/logo-puri-dimensi.webp" 
+            src="/leaflet/images/logo-puri-dimensi.png" 
             alt="PT. Puri Dimensi" 
             className="h-10 w-auto object-contain"
             onError={(e) => {

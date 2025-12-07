@@ -413,7 +413,7 @@ const DashboardLayout = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img 
-                      src="/logo-puri-dimensi.png" 
+                      src="/logo-puri-dimensi.webp" 
                       alt="PT. Puri Dimensi" 
                       className="h-8 w-auto object-contain"
                       onError={(e) => {
@@ -528,7 +528,7 @@ const DashboardLayout = ({
               {!desktopSidebarCollapsed ? (
                 <div className="flex items-center gap-2">
                   <img 
-                    src="/logo-puri-dimensi.png" 
+                    src="/logo-puri-dimensi.webp" 
                     alt="PT. Puri Dimensi" 
                     className="h-8 w-auto object-contain"
                     onError={(e) => {
@@ -544,7 +544,7 @@ const DashboardLayout = ({
               ) : (
                 <div className="flex justify-center">
                   <img 
-                    src="/logo-icon.png" 
+                    src="/logo-icon.webp" 
                     alt="SLF" 
                     className="h-8 w-8 object-contain"
                     onError={(e) => {
@@ -815,7 +815,7 @@ const DashboardLayout = ({
           <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
             <div className="flex items-center gap-2">
               <img 
-                src="/logo-puri-dimensi-small.png" 
+                src="/logo-puri-dimensi-small.webp" 
                 alt="PT. Puri Dimensi" 
                 className="h-6 w-auto object-contain hidden md:block"
                 onError={(e) => { e.target.style.display = 'none'; }}

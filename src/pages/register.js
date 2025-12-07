@@ -206,7 +206,7 @@ export default function RegisterPage() {
       <header className="flex justify-between items-center p-6 border-b border-border">
         <div className="flex items-center gap-3">
           <img 
-            src="/logo-puri-dimensi.png" 
+            src="/logo-puri-dimensi.webp" 
             alt="PT. Puri Dimensi" 
             className="h-10 w-auto object-contain"
             onError={(e) => {

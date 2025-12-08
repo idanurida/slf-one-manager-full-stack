@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/admin-team/reports.js
+﻿// FILE: src/pages/dashboard/admin-team/reports.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
@@ -281,7 +281,7 @@ export default function AdminTeamReportsPage() {
           .select(`
             *,
             profiles!created_by(full_name, specialization),
-            projects!inner(name)
+            projects(name)
           `)
           .in('project_id', projectIds)
           .eq('document_type', 'REPORT') // Atau gunakan filter nama: .ilike('name', '%laporan%')

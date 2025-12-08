@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -289,7 +289,7 @@ export default function EditUserPage() {
                       <SelectValue placeholder="Pilih Role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Pilih Role</SelectItem>
+                      <SelectItem value="fixed">Pilih Role</SelectItem>
                       <SelectItem value="superadmin">Super Admin</SelectItem>
                       <SelectItem value="project_lead">Project Lead</SelectItem>
                       <SelectItem value="client">Client</SelectItem>

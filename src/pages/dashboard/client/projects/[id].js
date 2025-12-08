@@ -1,4 +1,4 @@
-// src/pages/dashboard/client/projects/[id].js
+﻿// src/pages/dashboard/client/projects/[id].js
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";

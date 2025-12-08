@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/project-lead/projects/[id].js
+﻿// FILE: src/pages/dashboard/project-lead/projects/[id].js
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";

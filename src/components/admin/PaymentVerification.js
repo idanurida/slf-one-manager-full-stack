@@ -1,4 +1,4 @@
-// src/components/admin/PaymentVerification.js
+﻿// src/components/admin/PaymentVerification.js
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -151,7 +151,7 @@ const PaymentVerification = () => {
           rejection_reason,
           proof_file_path,
           created_at,
-          projects!inner(name),
+          projects(name),
           client_id,
           clients!inner(name)
         `)

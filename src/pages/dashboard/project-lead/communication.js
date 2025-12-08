@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/project-lead/communication.js
+﻿// FILE: src/pages/dashboard/project-lead/communication.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
@@ -158,7 +158,7 @@ export default function ProjectLeadCommunicationPage() {
         throw assignErr; // Lempar error untuk ditangkap oleh blok catch
       }
 
-      // ✅ PERBAIKAN: Pastikan assignments tidak null/undefined sebelum .map()
+      // âœ… PERBAIKAN: Pastikan assignments tidak null/undefined sebelum .map()
       const safeAssignments = assignments || []; // Gunakan array kosong jika null/undefined
       const projectIds = safeAssignments.map(a => a.project_id);
 
@@ -187,7 +187,7 @@ export default function ProjectLeadCommunicationPage() {
             *,
             sender:profiles!sender_id(full_name),
             recipient:profiles!recipient_id(full_name),
-            projects!inner(name)
+            projects(name)
           `)
           .or(`sender_id.in.(${clientIds.join(',')})`) // Kiriman dari client saya
           .or(`recipient_id.in.(${clientIds.join(',')})`) // Kiriman ke client saya

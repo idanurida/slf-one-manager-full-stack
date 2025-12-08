@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/drafter/projects/[id]/index.js
+﻿// FILE: src/pages/dashboard/drafter/projects/[id]/index.js
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';

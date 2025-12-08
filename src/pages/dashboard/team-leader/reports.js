@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/team-leader/reports.js
+﻿// FILE: src/pages/dashboard/team-leader/reports.js
 // Note: Database tetap menggunakan 'project_lead', UI menampilkan 'Team Leader'
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
@@ -134,7 +134,7 @@ export default function TeamLeaderReportsPage() {
           .from('documents')
           .select(`
             *,
-            projects!inner(name),
+            projects(name),
             profiles!created_by(full_name, specialization)
           `)
           .in('project_id', projectIds)

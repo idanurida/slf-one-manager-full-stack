@@ -1,4 +1,4 @@
-// client/src/utils/checklistAPI.js
+﻿// client/src/utils/checklistAPI.js
 import { supabase, logSupabaseError } from './supabaseClient';
 
 // In-memory cache with TTL
@@ -38,7 +38,7 @@ export const fetchGroupedChecklistItemsByInspection = async (inspectionId) => {
   try {
     // OPTIMIZED: Single query with join instead of 2 separate queries
     const { data: inspectionData, error: inspectionError } = await supabase
-      .from('inspections')
+      .from('vw_inspections_fixed')
       .select(`
         checklist_template_id,
         checklist_items:checklist_template_id (
@@ -156,3 +156,4 @@ export default {
   batchSaveChecklistResponses,
   clearChecklistCache
 };
+

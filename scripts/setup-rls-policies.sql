@@ -69,42 +69,82 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =============================================
+-- 4.5. PROFILES TABLE POLICIES
+-- =============================================
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "profiles_select_policy" ON profiles;
+DROP POLICY IF EXISTS "profiles_update_policy" ON profiles;
+
+-- SELECT: User bisa lihat profile sendiri
+-- Superadmin: Lihat semua
+-- Admin Lead: Lihat semua (untuk staffing)
+-- Head Consultant: Lihat semua (untuk review info tim)
+-- Staff Lain: Lihat semua internal (untuk kolaborasi)
+-- Client: HANYA lihat diri sendiri
+CREATE POLICY "profiles_select_policy" ON profiles
+FOR SELECT USING (
+  auth.uid() = id -- User lihat diri sendiri
+  OR (
+    -- Internal roles can view all profiles (simplified for collaboration & assignment)
+    -- Client is EXCLUDED from this list
+    get_user_role(auth.uid()) IN ('superadmin', 'admin_lead', 'head_consultant', 'admin_team', 'project_lead', 'inspector', 'drafter')
+    AND role != 'client' -- Optional: Don't show clients to everyone if not needed, but usually safe
+  )
+);
+
+-- UPDATE: User bisa update profile sendiri
+-- Superadmin: Update semua
+-- Admin Lead: Update timnya (simplified to all for now or strict?)
+-- Let's stick to Superadmin global, others self. Admin Lead usually manages assignments, not user data editing.
+CREATE POLICY "profiles_update_policy" ON profiles
+FOR UPDATE USING (
+  auth.uid() = id
+  OR get_user_role(auth.uid()) = 'superadmin'
+);
+
+-- =============================================
 -- 5. PROJECTS TABLE POLICIES
 -- =============================================
 
 -- SELECT: Semua role bisa melihat projects sesuai role mereka
+-- SELECT: Role based access control
 CREATE POLICY "projects_select_policy" ON projects
 FOR SELECT USING (
   CASE get_user_role(auth.uid())
-    -- Superadmin & Admin Lead bisa lihat semua
+    -- Superadmin: ALL ACCESS
     WHEN 'superadmin' THEN TRUE
-    WHEN 'admin_lead' THEN TRUE
     
-    -- Head Consultant bisa lihat semua
+    -- Head Consultant: ALL ACCESS (Reviewer)
     WHEN 'head_consultant' THEN TRUE
     
-    -- Admin Team bisa lihat project yang di-assign ke mereka atau semua
-    WHEN 'admin_team' THEN TRUE
+    -- Admin Lead: Only projects created by or assigned to them
+    WHEN 'admin_lead' THEN created_by = auth.uid() OR assigned_to = auth.uid()
     
-    -- Project Lead hanya project yang mereka lead
-    WHEN 'project_lead' THEN project_lead_id = auth.uid()
+    -- Project Lead: Only projects assigned to them (via column or team)
+    WHEN 'project_lead' THEN project_lead_id = auth.uid() OR EXISTS (
+      SELECT 1 FROM project_teams pt WHERE pt.project_id = projects.id AND pt.user_id = auth.uid()
+    )
     
-    -- Inspector hanya project yang di-assign
+    -- Inspector: Only assigned projects OR inspections
     WHEN 'inspector' THEN EXISTS (
-      SELECT 1 FROM project_assignments pa 
-      WHERE pa.project_id = projects.id AND pa.user_id = auth.uid()
+      SELECT 1 FROM project_teams pt WHERE pt.project_id = projects.id AND pt.user_id = auth.uid()
     ) OR EXISTS (
-      SELECT 1 FROM inspections i 
-      WHERE i.project_id = projects.id AND i.inspector_id = auth.uid()
+      SELECT 1 FROM inspections i WHERE i.project_id = projects.id AND i.inspector_id = auth.uid()
     )
     
-    -- Drafter hanya project yang di-assign
+    -- Admin Team: Assigned projects
+    WHEN 'admin_team' THEN EXISTS (
+      SELECT 1 FROM project_teams pt WHERE pt.project_id = projects.id AND pt.user_id = auth.uid()
+    )
+    
+    -- Drafter: Assigned projects
     WHEN 'drafter' THEN drafter_id = auth.uid() OR EXISTS (
-      SELECT 1 FROM project_assignments pa 
-      WHERE pa.project_id = projects.id AND pa.user_id = auth.uid()
+      SELECT 1 FROM project_teams pt WHERE pt.project_id = projects.id AND pt.user_id = auth.uid()
     )
     
-    -- CLIENT: Bisa lihat project yang dibuat untuk mereka (by client_id)
+    -- Client: Only their own projects
     WHEN 'client' THEN is_client_of_project(auth.uid(), id)
     
     ELSE FALSE
@@ -117,23 +157,36 @@ FOR INSERT WITH CHECK (
   get_user_role(auth.uid()) IN ('superadmin', 'admin_lead')
 );
 
--- UPDATE: Admin bisa update semua, lainnya sesuai assignment
+-- UPDATE: Admin rights
 CREATE POLICY "projects_update_policy" ON projects
 FOR UPDATE USING (
   CASE get_user_role(auth.uid())
+    -- Superadmin: ALL
     WHEN 'superadmin' THEN TRUE
-    WHEN 'admin_lead' THEN TRUE
+    
+    -- Head Consultant: ALL (Review/Approval)
     WHEN 'head_consultant' THEN TRUE
-    WHEN 'admin_team' THEN TRUE
+    
+    -- Admin Lead: Own projects only
+    WHEN 'admin_lead' THEN created_by = auth.uid() OR assigned_to = auth.uid()
+    
+    -- Others: Based on specific logic (usually limited fields, handled by triggers or specialized functions, but generally FALSE for full row update unless team member)
+    -- Allowing Project Lead to update via specialized endpoints or if assigned
     WHEN 'project_lead' THEN project_lead_id = auth.uid()
+    
     ELSE FALSE
   END
 );
 
--- DELETE: Hanya superadmin dan admin_lead
+-- DELETE: Only Superadmin and maybe Admin Lead for their own (if status is draft)
 CREATE POLICY "projects_delete_policy" ON projects
 FOR DELETE USING (
-  get_user_role(auth.uid()) IN ('superadmin', 'admin_lead')
+  CASE get_user_role(auth.uid())
+    WHEN 'superadmin' THEN TRUE
+    -- Admin Lead can delete their OWN projects (e.g. if made by mistake)
+    WHEN 'admin_lead' THEN created_by = auth.uid()
+    ELSE FALSE
+  END
 );
 
 -- =============================================
@@ -160,7 +213,7 @@ FOR SELECT USING (
     WHEN 'inspector' THEN EXISTS (
       SELECT 1 FROM projects p 
       WHERE p.id = documents.project_id AND (
-        EXISTS (SELECT 1 FROM project_assignments pa WHERE pa.project_id = p.id AND pa.user_id = auth.uid())
+        EXISTS (SELECT 1 FROM project_teams pt WHERE pt.project_id = p.id AND pt.user_id = auth.uid())
         OR EXISTS (SELECT 1 FROM inspections i WHERE i.project_id = p.id AND i.inspector_id = auth.uid())
       )
     )
@@ -170,7 +223,7 @@ FOR SELECT USING (
       SELECT 1 FROM projects p 
       WHERE p.id = documents.project_id AND (
         p.drafter_id = auth.uid()
-        OR EXISTS (SELECT 1 FROM project_assignments pa WHERE pa.project_id = p.id AND pa.user_id = auth.uid())
+        OR EXISTS (SELECT 1 FROM project_teams pt WHERE pt.project_id = p.id AND pt.user_id = auth.uid())
       )
     )
     
@@ -249,10 +302,10 @@ DROP POLICY IF EXISTS "notifications_update_policy" ON notifications;
 -- SELECT: User hanya bisa lihat notifikasi untuk mereka
 CREATE POLICY "notifications_select_policy" ON notifications
 FOR SELECT USING (
-  recipient_id = auth.uid() OR sender_id = auth.uid()
+  user_id = auth.uid() -- user_id is the recipient
 );
 
--- INSERT: Semua authenticated user bisa membuat notifikasi
+-- INSERT: Semua authenticated user bisa membuat notifikasi (system or triggers usually, but allowed for now)
 CREATE POLICY "notifications_insert_policy" ON notifications
 FOR INSERT WITH CHECK (
   auth.uid() IS NOT NULL
@@ -261,7 +314,7 @@ FOR INSERT WITH CHECK (
 -- UPDATE: User hanya bisa update notifikasi mereka (mark as read)
 CREATE POLICY "notifications_update_policy" ON notifications
 FOR UPDATE USING (
-  recipient_id = auth.uid()
+  user_id = auth.uid()
 );
 
 -- =============================================
@@ -296,8 +349,8 @@ FOR UPDATE USING (
 GRANT USAGE ON SCHEMA public TO authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
-GRANT EXECUTE ON FUNCTION get_user_role TO authenticated;
-GRANT EXECUTE ON FUNCTION is_client_of_project TO authenticated;
+GRANT EXECUTE ON FUNCTION get_user_role(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION is_client_of_project(uuid, uuid) TO authenticated;
 
 -- =============================================
 -- SELESAI!

@@ -1,4 +1,4 @@
-// FILE: src/components/project-lead/inspections/BulkScheduleInspections.js
+﻿// FILE: src/components/project-lead/inspections/BulkScheduleInspections.js
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -181,7 +181,7 @@ const BulkScheduleInspections = ({
       // Create inspection records for all selected inspectors
       const inspectionPromises = selectedInspectors.map(inspectorId =>
         supabase
-          .from('inspections')
+          .from('vw_inspections_fixed')
           .insert([
             {
               project_id: formData.project_id,
@@ -386,7 +386,7 @@ const BulkScheduleInspections = ({
                       <div className="flex flex-col">
                         <span className="font-medium text-foreground">{inspector.full_name}</span>
                         <span className="text-xs text-muted-foreground">
-                          {inspector.specialization} • {inspector.email}
+                          {inspector.specialization} â€¢ {inspector.email}
                         </span>
                       </div>
                     </Label>

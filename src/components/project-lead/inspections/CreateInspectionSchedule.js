@@ -1,4 +1,4 @@
-// FILE: src/components/project-lead/inspections/CreateInspectionSchedule.js
+﻿// FILE: src/components/project-lead/inspections/CreateInspectionSchedule.js
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -145,7 +145,7 @@ const CreateInspectionSchedule = ({
     try {
       // Create inspection record
       const { data, error } = await supabase
-        .from('inspections')
+        .from('vw_inspections_fixed')
         .insert([
           {
             project_id: formData.project_id,

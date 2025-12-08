@@ -1,9 +1,9 @@
-// FILE: client/src/utils/inspectionAPI.js
+﻿// FILE: client/src/utils/inspectionAPI.js
 import { supabase, logSupabaseError } from './supabaseClient';
 
-// 🧩 Placeholder fallback (mirip seperti di supabaseAPI.js)
+// ðŸ§© Placeholder fallback (mirip seperti di supabaseAPI.js)
 const placeholder = (context) => async (...args) => {
-  console.warn(`[${context}] Supabase client not ready — using mock fallback`);
+  console.warn(`[${context}] Supabase client not ready â€” using mock fallback`);
   if (context.includes('Upload')) return { success: true, photo_url: '/mock-photo.jpg' };
   return [];
 };
@@ -11,14 +11,14 @@ const placeholder = (context) => async (...args) => {
 const isSupabaseValid = supabase && typeof supabase.from === 'function';
 
 // ---------------------------------------------------------
-// 🧱 FETCH INSPECTIONS PER PROJECT
+// ðŸ§± FETCH INSPECTIONS PER PROJECT
 // ---------------------------------------------------------
 export const getInspectionsByProject = isSupabaseValid
   ? async function (projectId) {
       console.log('[DEBUG] Fetching inspections for projectId:', projectId);
       try {
         const { data, error } = await supabase
-          .from('inspections')
+          .from('vw_inspections_fixed')
           .select(`
             id,
             project_id,
@@ -45,7 +45,7 @@ export const getInspectionsByProject = isSupabaseValid
   : placeholder('getInspectionsByProject');
 
 // ---------------------------------------------------------
-// 🧩 FETCH INSPECTORS
+// ðŸ§© FETCH INSPECTORS
 // ---------------------------------------------------------
 export const getInspectors = isSupabaseValid
   ? async function () {
@@ -67,7 +67,7 @@ export const getInspectors = isSupabaseValid
   : placeholder('getInspectors');
 
 // ---------------------------------------------------------
-// 📷 UPLOAD FOTO INSPEKSI KE SUPABASE STORAGE
+// ðŸ“· UPLOAD FOTO INSPEKSI KE SUPABASE STORAGE
 // ---------------------------------------------------------
 export const uploadInspectionPhoto = isSupabaseValid
   ? async function (inspectionId, file) {
@@ -103,3 +103,4 @@ export const uploadInspectionPhoto = isSupabaseValid
       }
     }
   : placeholder('uploadInspectionPhoto');
+

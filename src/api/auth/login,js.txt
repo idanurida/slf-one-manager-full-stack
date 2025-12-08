@@ -1,0 +1,51 @@
+// Di file login API (/api/auth/login atau /pages/api/auth/login.js)
+import { supabase } from '@/utils/supabaseClient';
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { email, password } = req.body;
+
+  try {
+    // Login dengan Supabase
+    const { data: { session }, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (authError) {
+      return res.status(400).json({ error: authError.message });
+    }
+
+    // Dapatkan role menggunakan RPC function (bypass RLS)
+    const { data: roleData, error: roleError } = await supabase.rpc(
+      'slf_get_user_role_fallback',
+      { user_uuid: session.user.id }
+    );
+
+    // Update user metadata dengan role
+    await supabase.auth.updateUser({
+      data: { 
+        role: roleData || 'client'
+      }
+    });
+
+    // Set session di response
+    res.setHeader('Set-Cookie', `sb-access-token=${session.access_token}; Path=/; HttpOnly; Secure; SameSite=Lax`);
+    
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        role: roleData || 'client'
+      }
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}

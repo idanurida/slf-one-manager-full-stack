@@ -1,4 +1,4 @@
-// src/utils/checklistOptimizer.js
+﻿// src/utils/checklistOptimizer.js
 // Optimized checklist operations with batch processing, caching, and parallel execution
 
 import { supabase } from './supabaseClient';
@@ -71,7 +71,7 @@ export const batchFetchInspectionsWithChecklists = async (inspectionIds) => {
   try {
     // Single query to fetch all inspections with related data
     const { data: inspections, error } = await supabase
-      .from('inspections')
+      .from('vw_inspections_fixed')
       .select(`
         id,
         scheduled_date,
@@ -275,7 +275,7 @@ export const fetchInspectionPageData = async (inspectionId, inspectorId) => {
     const [inspectionResult, responsesResult, photosResult] = await Promise.all([
       // 1. Inspection with project and template
       supabase
-        .from('inspections')
+        .from('vw_inspections_fixed')
         .select(`
           *,
           projects (*),
@@ -340,3 +340,4 @@ export default {
   fetchInspectionPageData,
   clearCache,
 };
+

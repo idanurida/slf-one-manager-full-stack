@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/project-lead/schedules.js
+﻿// FILE: src/pages/dashboard/project-lead/schedules.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { format } from 'date-fns';
@@ -153,7 +153,7 @@ export default function ProjectLeadSchedulesPage() {
           .from('schedules')
           .select(`
             *,
-            projects!inner(name)
+            projects(name)
           `)
           .in('project_id', projectIds)
           .order('schedule_date', { ascending: true });

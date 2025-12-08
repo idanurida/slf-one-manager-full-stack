@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
@@ -365,10 +365,10 @@ export default function AdminLeadProjectDetailPage() {
 
       setDocuments(documentsData || []);
 
-      // Fetch inspections
+      // Fetch inspections - PERBAIKAN DI SINI!
       const { data: inspectionsData } = await supabase
-        .from('inspections')
-        .select('*, inspector:profiles(*)')
+        .from('vw_inspections_fixed')  // ✅ GUNAKAN VIEW YANG SUDAH DIBUAT
+        .select('*')                   // ✅ TIDAK PERLU JOIN MANUAL
         .eq('project_id', id)
         .order('scheduled_date', { ascending: false });
 

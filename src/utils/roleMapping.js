@@ -18,7 +18,7 @@ export const DB_ROLES = {
   CLIENT: 'client',
 };
 
-// UI display names (untuk tampilan di frontend)
+// UI display names (untuk tampilan di frontend, digunakan di fungsi dbRoleToUI)
 export const UI_ROLES = {
   SUPERADMIN: 'superadmin',
   HEAD_CONSULTANT: 'head_consultant',
@@ -30,53 +30,60 @@ export const UI_ROLES = {
   CLIENT: 'client',
 };
 
-// Mapping dari database ke UI
+// Mapping dari database ke UI (khusus role yang berbeda display name)
 const DB_TO_UI_ROLE_MAP = {
-  'project_lead': 'team_leader',
+  [DB_ROLES.PROJECT_LEAD]: UI_ROLES.TEAM_LEADER, // 'project_lead' -> 'team_leader'
 };
 
-// Mapping dari UI ke database
+// Mapping dari UI ke database (khusus role yang berbeda display name)
 const UI_TO_DB_ROLE_MAP = {
-  'team_leader': 'project_lead',
+  [UI_ROLES.TEAM_LEADER]: DB_ROLES.PROJECT_LEAD, // 'team_leader' -> 'project_lead'
 };
 
 // Display labels untuk UI (Indonesian)
 export const ROLE_DISPLAY_LABELS = {
-  superadmin: 'Super Admin',
-  head_consultant: 'Head Consultant',
-  admin_lead: 'Admin Lead',
-  admin_team: 'Admin Team',
-  project_lead: 'Team Leader', // Tampilkan sebagai Team Leader
-  team_leader: 'Team Leader',
-  inspector: 'Inspector',
-  drafter: 'Drafter',
-  client: 'Klien',
+  // Gunakan DB_ROLES sebagai key standar
+  [DB_ROLES.SUPERADMIN]: 'Super Admin',
+  [DB_ROLES.HEAD_CONSULTANT]: 'Head Consultant',
+  [DB_ROLES.ADMIN_LEAD]: 'Admin Lead',
+  [DB_ROLES.ADMIN_TEAM]: 'Admin Team',
+  [DB_ROLES.PROJECT_LEAD]: 'Team Leader', // Tampilkan sebagai Team Leader
+  [DB_ROLES.INSPECTOR]: 'Inspector',
+  [DB_ROLES.DRAFTER]: 'Drafter',
+  [DB_ROLES.CLIENT]: 'Klien',
+  
+  // Tambahkan juga UI_ROLES untuk konsistensi di getRoleDisplayLabel
+  [UI_ROLES.TEAM_LEADER]: 'Team Leader', 
 };
 
-// URL path mapping
+// URL path mapping (URL yang digunakan di browser)
 export const ROLE_URL_PATHS = {
-  superadmin: 'superadmin',
-  head_consultant: 'head-consultant',
-  admin_lead: 'admin-lead',
-  admin_team: 'admin-team',
-  project_lead: 'team-leader', // URL menggunakan team-leader
-  team_leader: 'team-leader',
-  inspector: 'inspector',
-  drafter: 'drafter',
-  client: 'client',
+  [DB_ROLES.SUPERADMIN]: 'superadmin',
+  [DB_ROLES.HEAD_CONSULTANT]: 'head-consultant',
+  [DB_ROLES.ADMIN_LEAD]: 'admin-lead',
+  [DB_ROLES.ADMIN_TEAM]: 'admin-team',
+  [DB_ROLES.PROJECT_LEAD]: 'team-leader', // DB project_lead -> URL team-leader
+  [DB_ROLES.INSPECTOR]: 'inspector',
+  [DB_ROLES.DRAFTER]: 'drafter',
+  [DB_ROLES.CLIENT]: 'client',
+  
+  // Tambahkan UI_ROLES.TEAM_LEADER untuk konsistensi
+  [UI_ROLES.TEAM_LEADER]: 'team-leader', 
 };
 
 // Reverse URL path to DB role
 export const URL_PATH_TO_DB_ROLE = {
-  'superadmin': 'superadmin',
-  'head-consultant': 'head_consultant',
-  'admin-lead': 'admin_lead',
-  'admin-team': 'admin_team',
-  'team-leader': 'project_lead', // URL team-leader -> DB project_lead
-  'project-lead': 'project_lead', // Backward compatibility
-  'inspector': 'inspector',
-  'drafter': 'drafter',
-  'client': 'client',
+  'superadmin': DB_ROLES.SUPERADMIN,
+  'head-consultant': DB_ROLES.HEAD_CONSULTANT,
+  'admin-lead': DB_ROLES.ADMIN_LEAD,
+  'admin-team': DB_ROLES.ADMIN_TEAM,
+  'team-leader': DB_ROLES.PROJECT_LEAD, // URL team-leader -> DB project_lead
+  'inspector': DB_ROLES.INSPECTOR,
+  'drafter': DB_ROLES.DRAFTER,
+  'client': DB_ROLES.CLIENT,
+  
+  // Hapus 'project-lead': 'project_lead' untuk menghindari duplikasi URL
+  // Jika ini diperlukan, pastikan URL asli tidak pernah digunakan lagi.
 };
 
 // ============================================================================
@@ -91,7 +98,8 @@ export const URL_PATH_TO_DB_ROLE = {
 export const dbRoleToUI = (dbRole) => {
   if (!dbRole) return null;
   const lowerRole = dbRole.toLowerCase();
-  return DB_TO_UI_ROLE_MAP[lowerRole] || lowerRole;
+  // Menggunakan map jika ada, jika tidak, gunakan nilai DB_ROLE
+  return DB_TO_UI_ROLE_MAP[lowerRole] || lowerRole; 
 };
 
 /**
@@ -102,6 +110,7 @@ export const dbRoleToUI = (dbRole) => {
 export const uiRoleToDB = (uiRole) => {
   if (!uiRole) return null;
   const lowerRole = uiRole.toLowerCase();
+  // Menggunakan map jika ada, jika tidak, gunakan nilai UI_ROLE
   return UI_TO_DB_ROLE_MAP[lowerRole] || lowerRole;
 };
 
@@ -113,6 +122,7 @@ export const uiRoleToDB = (uiRole) => {
 export const getRoleDisplayLabel = (role) => {
   if (!role) return 'N/A';
   const lowerRole = role.toLowerCase();
+  // Cek di ROLE_DISPLAY_LABELS. Jika tidak ada, gunakan default formatting.
   return ROLE_DISPLAY_LABELS[lowerRole] || role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 };
 
@@ -124,6 +134,7 @@ export const getRoleDisplayLabel = (role) => {
 export const getRoleUrlPath = (role) => {
   if (!role) return 'dashboard';
   const lowerRole = role.toLowerCase();
+  // Cek di ROLE_URL_PATHS. Jika tidak ada, gunakan default formatting.
   return ROLE_URL_PATHS[lowerRole] || lowerRole.replace(/_/g, '-');
 };
 
@@ -134,7 +145,9 @@ export const getRoleUrlPath = (role) => {
  */
 export const urlPathToDbRole = (urlPath) => {
   if (!urlPath) return null;
-  return URL_PATH_TO_DB_ROLE[urlPath] || urlPath.replace(/-/g, '_');
+  const lowerPath = urlPath.toLowerCase();
+  // Cek di URL_PATH_TO_DB_ROLE. Jika tidak ada, gunakan default formatting.
+  return URL_PATH_TO_DB_ROLE[lowerPath] || lowerPath.replace(/-/g, '_');
 };
 
 /**
@@ -155,7 +168,7 @@ export const getDashboardPath = (role) => {
 export const isTeamLeaderRole = (role) => {
   if (!role) return false;
   const lowerRole = role.toLowerCase();
-  return lowerRole === 'project_lead' || lowerRole === 'team_leader';
+  return lowerRole === DB_ROLES.PROJECT_LEAD || lowerRole === UI_ROLES.TEAM_LEADER;
 };
 
 // ============================================================================
@@ -165,28 +178,29 @@ export const isTeamLeaderRole = (role) => {
 /**
  * Transform single object dari database ke UI format
  * Mengubah semua field yang mengandung 'project_lead' menjadi 'team_leader'
- * @param {Object} data - Data dari database
- * @returns {Object} - Data untuk UI
+ * @param {Object|Array} data - Data dari database
+ * @returns {Object|Array} - Data untuk UI
  */
 export const toUIDisplay = (data) => {
   if (!data) return data;
   if (Array.isArray(data)) return data.map(toUIDisplay);
-  if (typeof data !== 'object') return data;
+  if (typeof data !== 'object' || data === null) return data;
 
   const transformed = { ...data };
 
   // Transform role field
-  if (transformed.role === 'project_lead') {
-    transformed.role = 'team_leader';
-    transformed._originalRole = 'project_lead'; // Simpan original untuk referensi
+  if (transformed.role === DB_ROLES.PROJECT_LEAD) {
+    transformed.role = UI_ROLES.TEAM_LEADER;
+    transformed._originalRole = DB_ROLES.PROJECT_LEAD; // Simpan original untuk referensi
   }
 
-  // Transform project_lead_id -> team_leader_id (untuk display)
+  // Transform ID fields (project_lead_id -> team_leader_id)
   if ('project_lead_id' in transformed) {
     transformed.team_leader_id = transformed.project_lead_id;
+    // JANGAN hapus project_lead_id di sini, biarkan untuk debugging/backward compatibility
   }
 
-  // Transform project_lead object/name
+  // Transform object/name fields
   if (transformed.project_lead) {
     transformed.team_leader = transformed.project_lead;
   }
@@ -207,32 +221,32 @@ export const toUIDisplay = (data) => {
 /**
  * Transform single object dari UI ke database format
  * Mengubah semua field yang mengandung 'team_leader' menjadi 'project_lead'
- * @param {Object} data - Data dari UI
- * @returns {Object} - Data untuk database
+ * @param {Object|Array} data - Data dari UI
+ * @returns {Object|Array} - Data untuk database
  */
 export const toDatabaseFormat = (data) => {
   if (!data) return data;
   if (Array.isArray(data)) return data.map(toDatabaseFormat);
-  if (typeof data !== 'object') return data;
+  if (typeof data !== 'object' || data === null) return data;
 
   const transformed = { ...data };
 
   // Transform role field
-  if (transformed.role === 'team_leader') {
-    transformed.role = 'project_lead';
+  if (transformed.role === UI_ROLES.TEAM_LEADER) {
+    transformed.role = DB_ROLES.PROJECT_LEAD;
   }
 
-  // Remove _originalRole if exists
+  // Remove helper fields
   delete transformed._originalRole;
 
-  // Transform team_leader_id -> project_lead_id
+  // Transform ID fields (team_leader_id -> project_lead_id)
   if ('team_leader_id' in transformed) {
     transformed.project_lead_id = transformed.team_leader_id;
     delete transformed.team_leader_id;
   }
 
-  // Transform team_leader -> project_lead
-  if ('team_leader' in transformed && !('project_lead' in transformed)) {
+  // Transform object/name fields
+  if ('team_leader' in transformed) {
     transformed.project_lead = transformed.team_leader;
     delete transformed.team_leader;
   }
@@ -257,35 +271,47 @@ export const toDatabaseFormat = (data) => {
 
 /**
  * Get options untuk role select dropdown (dengan label Team Leader)
+ * Ini menghasilkan array {value: DB_ROLE, label: UI_LABEL}
  * @param {boolean} includeClient - Include client role
+ * @param {boolean} includeSuperAdmin - Include superadmin role (default false)
  * @returns {Array} - Array of { value, label }
  */
-export const getRoleSelectOptions = (includeClient = false) => {
-  const options = [
-    { value: 'head_consultant', label: 'Head Consultant' },
-    { value: 'admin_lead', label: 'Admin Lead' },
-    { value: 'admin_team', label: 'Admin Team' },
-    { value: 'project_lead', label: 'Team Leader' }, // Value tetap project_lead, label Team Leader
-    { value: 'inspector', label: 'Inspector' },
-    { value: 'drafter', label: 'Drafter' },
-  ];
+export const getRoleSelectOptions = (includeClient = false, includeSuperAdmin = false) => {
+  const options = [];
 
-  if (includeClient) {
-    options.push({ value: 'client', label: 'Klien' });
+  // PENTING: Value harus menggunakan DB_ROLES, karena inilah yang akan dikirim saat submit form.
+  
+  if (includeSuperAdmin) {
+    options.push({ value: DB_ROLES.SUPERADMIN, label: ROLE_DISPLAY_LABELS.superadmin });
   }
 
-  return options;
+  options.push(
+    { value: DB_ROLES.HEAD_CONSULTANT, label: ROLE_DISPLAY_LABELS.head_consultant },
+    { value: DB_ROLES.ADMIN_LEAD, label: ROLE_DISPLAY_LABELS.admin_lead },
+    { value: DB_ROLES.ADMIN_TEAM, label: ROLE_DISPLAY_LABELS.admin_team },
+    // Value tetap project_lead (DB), label Team Leader (UI)
+    { value: DB_ROLES.PROJECT_LEAD, label: ROLE_DISPLAY_LABELS.project_lead }, 
+    { value: DB_ROLES.INSPECTOR, label: ROLE_DISPLAY_LABELS.inspector },
+    { value: DB_ROLES.DRAFTER, label: ROLE_DISPLAY_LABELS.drafter },
+  );
+
+  if (includeClient) {
+    options.push({ value: DB_ROLES.CLIENT, label: ROLE_DISPLAY_LABELS.client });
+  }
+
+  // Memastikan semua nilai ('value') tidak ada yang string kosong, yang menyebabkan Select.Item error.
+  return options.filter(option => option.value !== '' && option.value !== null);
 };
 
 /**
- * Get options untuk team member role assignment
+ * Get options untuk team member role assignment (hanya untuk peran tim)
  * @returns {Array} - Array of { value, label }
  */
 export const getTeamRoleOptions = () => [
-  { value: 'project_lead', label: 'Team Leader' },
-  { value: 'inspector', label: 'Inspector' },
-  { value: 'drafter', label: 'Drafter' },
-  { value: 'admin_team', label: 'Admin Team' },
+  { value: DB_ROLES.PROJECT_LEAD, label: ROLE_DISPLAY_LABELS.project_lead },
+  { value: DB_ROLES.INSPECTOR, label: ROLE_DISPLAY_LABELS.inspector },
+  { value: DB_ROLES.DRAFTER, label: ROLE_DISPLAY_LABELS.drafter },
+  { value: DB_ROLES.ADMIN_TEAM, label: ROLE_DISPLAY_LABELS.admin_team },
 ];
 
 // ============================================================================
@@ -293,7 +319,7 @@ export const getTeamRoleOptions = () => [
 // ============================================================================
 
 /**
- * Validate apakah role valid
+ * Validate apakah role valid (memeriksa di DB dan UI roles)
  * @param {string} role - Role to validate
  * @returns {boolean}
  */
@@ -301,7 +327,7 @@ export const isValidRole = (role) => {
   if (!role) return false;
   const lowerRole = role.toLowerCase();
   return Object.values(DB_ROLES).includes(lowerRole) || 
-         Object.values(UI_ROLES).includes(lowerRole);
+           Object.values(UI_ROLES).includes(lowerRole);
 };
 
 /**

@@ -340,7 +340,7 @@ export const getUnreadCount = async (userId, projectIds = []) => {
       .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('recipient_id', userId)
-      .eq('read', false)
+      .eq('is_read', false)
       .in('type', NOTIFICATION_MESSAGE_TYPES);
 
     if (projectIds.length > 0) {

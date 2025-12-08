@@ -1,13 +1,19 @@
 // FILE: middleware.js
+
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 
 const ROLE_REDIRECT_MAP = {
   head_consultant: "/dashboard/head-consultant",
   admin_lead: "/dashboard/admin-lead",
-  // ... tambahkan semua peran lain
+  admin_team: "/dashboard/admin-team",
+  project_lead: "/dashboard/project-lead",
+  inspector: "/dashboard/inspector",
+  drafter: "/dashboard/drafter",
+  superadmin: "/dashboard/superadmin",
   client: "/dashboard/client",
 };
+const DEFAULT_FALLBACK_PATH = "/dashboard/client";
 
 export async function middleware(req) {
   const res = NextResponse.next();
@@ -17,13 +23,17 @@ export async function middleware(req) {
   // 1. Ambil Sesi (dari cookies)
   const { data: { session } } = await supabase.auth.getSession();
 
-  // 2. Jika BELUM login, cegah akses ke dashboard
+  // 2. Jika BELUM login:
   if (!session) {
-    if (pathname.startsWith('/dashboard') || pathname === '/') {
+    // Hanya redirect ke /login jika pengguna mencoba mengakses area terproteksi (/dashboard/*)
+    if (pathname.startsWith('/dashboard')) { 
+      console.log(`[Middleware] ❌ Tidak terotentikasi. Memblokir akses ke ${pathname}. Redirect ke /login.`);
       const redirectUrl = req.nextUrl.clone();
       redirectUrl.pathname = '/login';
       return NextResponse.redirect(redirectUrl);
     }
+    
+    // Jika path adalah '/', '/login', '/register', dll., biarkan request berlanjut (return res)
     return res;
   } 
   
@@ -31,7 +41,7 @@ export async function middleware(req) {
   if (session) {
     let userRole = 'client'; // Default
     
-    // NOTE: Ini adalah satu-satunya bagian yang memanggil Supabase DB
+    // NOTE: Ambil role dari Supabase DB
     try {
         const { data: profileData } = await supabase
             .from("profiles")
@@ -46,15 +56,16 @@ export async function middleware(req) {
         console.error("[Middleware] Gagal fetch role:", e);
     }
     
-    const targetPath = ROLE_REDIRECT_MAP[userRole] || ROLE_REDIRECT_MAP['client'];
+    const targetPath = ROLE_REDIRECT_MAP[userRole] || DEFAULT_FALLBACK_PATH;
 
+    // Redirect dari halaman publik (seperti '/') ke dashboard yang benar
     if (pathname === '/' || pathname === '/dashboard') {
       const redirectUrl = req.nextUrl.clone();
       redirectUrl.pathname = targetPath;
       return NextResponse.redirect(redirectUrl);
     }
     
-    // Mencegah akses ke dashboard yang salah (misal client mencoba /dashboard/admin-lead)
+    // Mencegah akses ke dashboard yang salah (Otorisasi)
     if (pathname.startsWith('/dashboard/') && pathname !== targetPath) {
         if (Object.values(ROLE_REDIRECT_MAP).includes(pathname)) {
             const redirectUrl = req.nextUrl.clone();

@@ -1,85 +1,184 @@
-// FILE: src/components/admin-lead/ClientCommunicationList.js
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+// FILE: src/pages/dashboard/admin-lead/ClientCommunicationList.js
+import React, { useState, useEffect } from "react";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import ClientCommunicationList from "@/components/admin-lead/ClientCommunicationList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getStatusColor, getStatusLabel } from "@/pages/dashboard/admin-lead/communication"; // Asumsi helper ada di sana
-import { MessageCircle, Building, User, Clock, Mail } from "lucide-react";
 
-const ClientCommunicationList = ({ projects, loading, unreadOnly, readOnly, onViewThread }) => {
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map(i => (
-          <Card key={i} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Skeleton className="h-10 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-40 bg-slate-300 dark:bg-slate-600" />
-                  <Skeleton className="h-3 w-32 bg-slate-300 dark:bg-slate-600" />
-                </div>
-              </div>
-              <Skeleton className="h-8 w-20 bg-slate-300 dark:bg-slate-600" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (projects.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <Mail className="w-12 h-12 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-          {unreadOnly ? 'Tidak ada pesan belum dibaca' : readOnly ? 'Tidak ada pesan sudah dibaca' : 'Tidak ada komunikasi'}
-        </h3>
-        <p className="text-slate-600 dark:text-slate-400">
-          {unreadOnly ? 'Semua pesan dari client telah Anda baca.' : readOnly ? 'Belum ada pesan yang sudah dibaca.' : 'Belum ada komunikasi dengan client.'}
-        </p>
-      </div>
-    );
-  }
-
+export default function ClientCommunicationListPage() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Simulasi data fetching
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Simulasi API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Data contoh - dalam produksi, ambil dari API
+        const mockData = [
+          {
+            id: "1",
+            name: "Proyek A",
+            client_id: "client1",
+            clients: { name: "Client A" },
+            created_at: "2024-01-15",
+            status: "active",
+            has_unread_messages: true
+          },
+          {
+            id: "2",
+            name: "Proyek B", 
+            client_id: "client2",
+            clients: { name: "Client B" },
+            created_at: "2024-01-10",
+            status: "pending",
+            has_unread_messages: false
+          }
+        ];
+        
+        // Pastikan data selalu array
+        setProjects(Array.isArray(mockData) ? mockData : []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setProjects([]); // Set ke array kosong jika error
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+  
+  const handleViewThread = (projectId, clientId) => {
+    console.log("View thread:", projectId, clientId);
+    // Navigasi ke halaman thread
+    // router.push(`/dashboard/admin-lead/communication/${projectId}?clientId=${clientId}`);
+  };
+  
+  // Filter data berdasarkan tab aktif
+  const filteredProjects = React.useMemo(() => {
+    if (!Array.isArray(projects)) return [];
+    
+    let filtered = [...projects];
+    
+    switch (activeTab) {
+      case "unread":
+        filtered = projects.filter(p => p?.has_unread_messages);
+        break;
+      case "read":
+        filtered = projects.filter(p => !p?.has_unread_messages);
+        break;
+      default:
+        filtered = [...projects];
+    }
+    
+    // Filter berdasarkan pencarian
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p?.name?.toLowerCase().includes(query) ||
+        p?.clients?.name?.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  }, [projects, activeTab, searchQuery]);
+  
   return (
-    <div className="space-y-4">
-      {projects.map((project) => (
-        <Card key={project.id} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
-              onClick={() => onViewThread(project.id, project.client_id)}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                  <Building className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-900 dark:text-slate-100">{project.name}</h4>
-                  <div className="flex items-center text-sm text-slate-600 dark:text-slate-400 space-x-4">
-                    <span className="flex items-center gap-1"><User className="w-3 h-3" /> {project.clients?.name || 'Client Tidak Diketahui'}</span>
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(project.created_at).toLocaleDateString('id-ID')}</span>
-                  </div>
-                  <div className="flex items-center text-xs mt-1">
-                    <Badge className={getStatusColor(project.status)}>
-                      {getStatusLabel(project.status)}
-                    </Badge>
-                    {project.has_unread_messages && (
-                      <Badge variant="destructive" className="ml-2 h-5">Belum Dibaca</Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <Button variant="outline" size="sm">
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Buka
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <DashboardLayout>
+      <div className="space-y-6 p-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Komunikasi Client
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Kelola semua komunikasi dengan client untuk setiap proyek
+          </p>
+        </div>
+        
+        <div className="flex flex-col md:flex-row gap-4 justify-between">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Cari proyek atau client..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          <Button variant="outline">
+            <Filter className="w-4 h-4 mr-2" />
+            Filter
+          </Button>
+        </div>
+        
+        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="all">Semua</TabsTrigger>
+            <TabsTrigger value="unread">Belum Dibaca</TabsTrigger>
+            <TabsTrigger value="read">Sudah Dibaca</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="all" className="mt-6">
+            <ClientCommunicationList
+              projects={filteredProjects}
+              loading={loading}
+              onViewThread={handleViewThread}
+            />
+          </TabsContent>
+          
+          <TabsContent value="unread" className="mt-6">
+            <ClientCommunicationList
+              projects={filteredProjects}
+              loading={loading}
+              unreadOnly={true}
+              onViewThread={handleViewThread}
+            />
+          </TabsContent>
+          
+          <TabsContent value="read" className="mt-6">
+            <ClientCommunicationList
+              projects={filteredProjects}
+              loading={loading}
+              readOnly={true}
+              onViewThread={handleViewThread}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardLayout>
   );
-};
+}
 
-export default ClientCommunicationList;
+// Jika tidak menggunakan server-side rendering, hapus atau comment fungsi di bawah
+/*
+export async function getServerSideProps() {
+  try {
+    // Fetch data dari API
+    // const res = await fetch('https://api.example.com/communications');
+    // const data = await res.json();
+    
+    return {
+      props: {
+        // SELALU pastikan ini array, bukan undefined
+        initialProjects: [] // Ganti dengan data sebenarnya
+      }
+    };
+  } catch (error) {
+    console.error("Error in getServerSideProps:", error);
+    return {
+      props: {
+        initialProjects: [] // Return array kosong jika error
+      }
+    };
+  }
+}
+*/

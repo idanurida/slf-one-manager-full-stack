@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/inspector/checklist.js
+﻿// FILE: src/pages/dashboard/inspector/checklist.js
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
@@ -61,10 +61,10 @@ import { saveInspectionPhoto, getPhotosByInspection } from '@/utils/inspectionPh
 // Utility function untuk class names
 const cn = (...classes) => classes.filter(Boolean).join(' ');
 
-// 🔥 FUNGSI BARU: MEMASTIKAN ITEM ADA DI DATABASE
+// ðŸ”¥ FUNGSI BARU: MEMASTIKAN ITEM ADA DI DATABASE
 const ensureChecklistItemExists = async (itemId, itemData) => {
   try {
-    console.log('🔍 Checking item in database:', itemId);
+    console.log('ðŸ” Checking item in database:', itemId);
     
     // Cek apakah item sudah ada
     const { data: existingItem, error: checkError } = await supabase
@@ -75,12 +75,12 @@ const ensureChecklistItemExists = async (itemId, itemData) => {
 
     // Jika error bukan "no rows", log warning
     if (checkError && checkError.code !== 'PGRST116') {
-      console.warn('⚠️ Check error:', checkError);
+      console.warn('âš ï¸ Check error:', checkError);
     }
 
     // Jika item tidak ada, BUAT SEKARANG
     if (!existingItem) {
-      console.log('🔄 CREATING checklist item:', itemId);
+      console.log('ðŸ”„ CREATING checklist item:', itemId);
       
       const newItemData = {
         id: itemId,
@@ -101,34 +101,34 @@ const ensureChecklistItemExists = async (itemId, itemData) => {
       if (createError) {
         // Jika error duplicate, itu artinya item sudah ada (race condition)
         if (createError.code === '23505') {
-          console.log('✅ Item already created by another process:', itemId);
+          console.log('âœ… Item already created by another process:', itemId);
           return true;
         }
-        console.error('❌ CREATE item failed:', createError);
+        console.error('âŒ CREATE item failed:', createError);
         throw createError;
       }
 
-      console.log('✅ SUCCESS created item:', itemId);
+      console.log('âœ… SUCCESS created item:', itemId);
       return true;
     }
 
-    console.log('✅ Item already exists:', itemId);
+    console.log('âœ… Item already exists:', itemId);
     return true;
     
   } catch (err) {
-    console.error('❌ ensureChecklistItemExists FAILED:', err);
+    console.error('âŒ ensureChecklistItemExists FAILED:', err);
     throw err;
   }
 };
 
-// 🔥 FUNGSI SYNC ALL ITEMS - PASTIKAN SEMUA ITEM ADA DI DB
+// ðŸ”¥ FUNGSI SYNC ALL ITEMS - PASTIKAN SEMUA ITEM ADA DI DB
 const syncAllChecklistItems = async (items, inspectionId, projectId) => {
   try {
-    console.log('🔄 SYNCING all checklist items to database...');
-    console.log('📦 Total items to sync:', items.length);
+    console.log('ðŸ”„ SYNCING all checklist items to database...');
+    console.log('ðŸ“¦ Total items to sync:', items.length);
     
     if (items.length === 0) {
-      console.warn('⚠️ No items to sync');
+      console.warn('âš ï¸ No items to sync');
       return true;
     }
 
@@ -140,21 +140,21 @@ const syncAllChecklistItems = async (items, inspectionId, projectId) => {
         await ensureChecklistItemExists(item.id, item);
         successCount++;
       } catch (err) {
-        console.error(`❌ Failed to sync item ${item.id}:`, err);
+        console.error(`âŒ Failed to sync item ${item.id}:`, err);
         errorCount++;
       }
     }
     
-    console.log(`📊 Sync result: ${successCount} success, ${errorCount} failed`);
+    console.log(`ðŸ“Š Sync result: ${successCount} success, ${errorCount} failed`);
     
     return true;
   } catch (err) {
-    console.error('❌ Sync failed:', err);
+    console.error('âŒ Sync failed:', err);
     return false;
   }
 };
 
-// 🔥 PERBAIKAN FUNGSI: Photogeotag untuk NON-administratif
+// ðŸ”¥ PERBAIKAN FUNGSI: Photogeotag untuk NON-administratif
 const itemRequiresPhotogeotag = (templateId, itemId, category) => {
   // Kategori administratif TIDAK perlu photo geotag
   const noPhotoCategories = [
@@ -195,15 +195,15 @@ const DynamicChecklistForm = ({
   const [savedPhotos, setSavedPhotos] = useState([]);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
   
-  // 🔥 PERBAIKAN: Photogeotag untuk NON-administratif (berdasarkan category)
+  // ðŸ”¥ PERBAIKAN: Photogeotag untuk NON-administratif (berdasarkan category)
   const requiresPhotoGeotag = itemRequiresPhotogeotag(templateId, item.id, item.category);
   
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // 🔥 DEBUG: Tambahkan console log untuk troubleshooting
+  // ðŸ”¥ DEBUG: Tambahkan console log untuk troubleshooting
   useEffect(() => {
-    console.log('🔍 PHOTOGEOTAG DEBUG:', {
+    console.log('ðŸ” PHOTOGEOTAG DEBUG:', {
       templateId,
       itemId: item.id,
       itemName: item.item_name,
@@ -283,7 +283,7 @@ const DynamicChecklistForm = ({
       setShowCamera(false);
       
       toast({
-        title: "✅ Dokumentasi tersimpan",
+        title: "âœ… Dokumentasi tersimpan",
         description: "Foto dan lokasi berhasil disimpan ke database",
         variant: "default",
       });
@@ -437,7 +437,7 @@ const DynamicChecklistForm = ({
         </CardContent>
       </Card>
 
-      {/* 🔥 PERBAIKAN: Photogeotag Section - Tampil untuk NON-administratif */}
+      {/* ðŸ”¥ PERBAIKAN: Photogeotag Section - Tampil untuk NON-administratif */}
       {requiresPhotoGeotag && (
         <Card className="border-border mt-6 border-l-4 border-l-blue-500">
           <CardContent className="p-6">
@@ -521,7 +521,7 @@ const DynamicChecklistForm = ({
                 </Alert>
               )}
 
-              {/* Action Button - 🔥 DIPERBAIKI: Tombol selalu aktif setelah form terisi */}
+              {/* Action Button - ðŸ”¥ DIPERBAIKI: Tombol selalu aktif setelah form terisi */}
               <Button
                 onClick={() => setShowCamera(true)}
                 variant={savedPhotos.length > 0 ? "outline" : "default"}
@@ -565,7 +565,7 @@ const DynamicChecklistForm = ({
             itemName={item.item_name || item.description}
             projectId={projectId}
             onCapture={(capturedPhoto) => {
-              console.log('📸 Photo captured:', capturedPhoto ? 'yes' : 'no');
+              console.log('ðŸ“¸ Photo captured:', capturedPhoto ? 'yes' : 'no');
             }}
             onSave={(savedPhoto) => {
               handlePhotoSaved(savedPhoto);
@@ -676,7 +676,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
         setLoading(true);
 
         let query = supabase
-          .from('inspections')
+          .from('vw_inspections_fixed')
           .select(`
             *,
             projects (
@@ -735,11 +735,11 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
     }
   }, [user, isInspector, inspectionId, toast]);
 
-  // 🔥 SYNC CHECKLIST ITEMS KE DATABASE
+  // ðŸ”¥ SYNC CHECKLIST ITEMS KE DATABASE
   useEffect(() => {
     const syncItems = async () => {
       if (allChecklistItems.length > 0 && user?.id) {
-        console.log('🔄 Starting checklist items sync...');
+        console.log('ðŸ”„ Starting checklist items sync...');
         setSyncStatus('syncing');
         
         const currentInspection = inspections[0];
@@ -753,10 +753,10 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
         
         if (syncSuccess) {
           setSyncStatus('done');
-          console.log('✅ All checklist items synced to database!');
+          console.log('âœ… All checklist items synced to database!');
         } else {
           setSyncStatus('error');
-          console.warn('⚠️ Some items failed to sync');
+          console.warn('âš ï¸ Some items failed to sync');
         }
       }
     };
@@ -779,14 +779,14 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
     return uniqueCategories.filter(cat => cat);
   }, [allChecklistItems]);
 
-  // 🔥 FUNGSI SIMPAN CHECKLIST ITEM - VERSI YANG SUDAH DIPERBAIKI
+  // ðŸ”¥ FUNGSI SIMPAN CHECKLIST ITEM - VERSI YANG SUDAH DIPERBAIKI
   const handleSaveChecklistItem = async (itemId, data) => {
     if (!user) return;
 
     setSavingItems(prev => ({ ...prev, [itemId]: true }));
 
     try {
-      console.log('🚀 STARTING SAVE for item:', itemId);
+      console.log('ðŸš€ STARTING SAVE for item:', itemId);
 
       // 1. CARI DATA ITEM DARI TEMPLATE
       const itemData = allChecklistItems.find(item => item.id === itemId);
@@ -794,10 +794,10 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
         throw new Error(`Item ${itemId} tidak ditemukan dalam daftar checklist`);
       }
 
-      // 2. 🔥 PASTIKAN ITEM ADA DI DATABASE SEBELUM SIMPAN
-      console.log('🛠️ Ensuring item exists in database...');
+      // 2. ðŸ”¥ PASTIKAN ITEM ADA DI DATABASE SEBELUM SIMPAN
+      console.log('ðŸ› ï¸ Ensuring item exists in database...');
       await ensureChecklistItemExists(itemId, itemData);
-      console.log('✅ Item confirmed in database');
+      console.log('âœ… Item confirmed in database');
 
       const responseData = {
         item_id: itemId,
@@ -813,7 +813,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
         responseData.inspection_id = inspectionId;
       }
 
-      console.log('💾 Prepared response data, saving to database...');
+      console.log('ðŸ’¾ Prepared response data, saving to database...');
 
       // 3. DELETE data lama jika ada
       let deleteQuery = supabase
@@ -829,7 +829,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
       const { error: deleteError } = await deleteQuery;
 
       if (deleteError && deleteError.code !== 'PGRST116') {
-        console.warn('⚠️ Delete warning:', deleteError);
+        console.warn('âš ï¸ Delete warning:', deleteError);
       }
 
       // 4. INSERT data baru
@@ -840,11 +840,11 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
         .single();
 
       if (insertError) {
-        console.error('❌ Insert error:', insertError);
+        console.error('âŒ Insert error:', insertError);
         throw insertError;
       }
 
-      console.log('✅ Save successful!');
+      console.log('âœ… Save successful!');
 
       // 5. Update local state
       setChecklistResponses(prev => ({
@@ -852,16 +852,16 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
         [itemId]: data
       }));
 
-      console.log('🎉 SAVE COMPLETED SUCCESSFULLY for item:', itemId);
+      console.log('ðŸŽ‰ SAVE COMPLETED SUCCESSFULLY for item:', itemId);
 
       toast({
-        title: "✅ Checklist tersimpan",
+        title: "âœ… Checklist tersimpan",
         description: "Data berhasil disimpan ke database",
         variant: "default",
       });
 
     } catch (err) {
-      console.error("❌ Save checklist item error:", err);
+      console.error("âŒ Save checklist item error:", err);
       
       let errorMessage = "Gagal menyimpan checklist";
       if (err.code === '23503') {

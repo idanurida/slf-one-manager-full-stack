@@ -1,4 +1,4 @@
-// client/src/components/inspections/InspectionListHybrid.js
+﻿// client/src/components/inspections/InspectionListHybrid.js
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -87,7 +87,7 @@ const Select = ({ value, onValueChange, children, id }) => (
 );
 // Mock helper components for Select
 const SelectTrigger = ({ children, id }) => <div className="hidden">{children}</div>;
-const SelectValue = ({ placeholder }) => <option value="" disabled hidden>{placeholder}</option>;
+const SelectValue = ({ placeholder }) => <option value="null" disabled hidden>{placeholder}</option>;
 const SelectContent = ({ children }) => children;
 const SelectItem = ({ value, children }) => <option value={value}>{children}</option>;
 
@@ -224,29 +224,29 @@ const InspectionListHybrid = ({ projectId = 123 }) => {
   useEffect(() => {
     const loadInspections = async () => {
       if (!projectId) {
-        console.warn("❌ projectId kosong — tidak memuat data.");
+        console.warn("âŒ projectId kosong â€” tidak memuat data.");
         setLoading(false);
         return;
       }
 
       setLoading(true);
       try {
-        console.log("📡 Fetching inspections from Supabase (Mock) for project:", projectId);
+        console.log("ðŸ“¡ Fetching inspections from Supabase (Mock) for project:", projectId);
 
         // Langsung menggunakan klien Supabase untuk fetching data
         const { data, error } = await supabase
-            .from('inspections') // Nama tabel di Supabase
+            .from('vw_inspections_fixed') // Nama tabel di Supabase
             .select('*, inspector:inspector_id(id, name), drafter:drafter_id(id, name)') // Join relasi
             .eq('project_id', projectId)
             .order('scheduled_date', { ascending: false });
 
         if (error) {
-          console.error("❌ Supabase Error:", error);
+          console.error("âŒ Supabase Error:", error);
           throw new Error(error.message || "Gagal memuat data dari Supabase.");
         }
 
         if (data && data.length > 0) {
-          console.log("✅ Supabase inspections loaded:", data);
+          console.log("âœ… Supabase inspections loaded:", data);
           setInspections(data);
           toast({
             title: "Data Inspeksi Dimuat",
@@ -254,7 +254,7 @@ const InspectionListHybrid = ({ projectId = 123 }) => {
             variant: "default",
           });
         } else {
-          console.warn("⚠️ Supabase returned empty data, using mock fallback.");
+          console.warn("âš ï¸ Supabase returned empty data, using mock fallback.");
           // Fallback ke mock data jika Supabase mengembalikan array kosong
           setInspections(mockInspections(projectId));
           toast({
@@ -264,7 +264,7 @@ const InspectionListHybrid = ({ projectId = 123 }) => {
           });
         }
       } catch (error) {
-        console.error("❌ General Error fetching/processing inspections:", error);
+        console.error("âŒ General Error fetching/processing inspections:", error);
         // Fallback ke mock data jika ada error API/network
         setInspections(mockInspections(projectId));
         toast({
@@ -381,7 +381,7 @@ const InspectionListHybrid = ({ projectId = 123 }) => {
                     <SelectValue placeholder="Filter berdasarkan status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Semua Status</SelectItem>
+                    <SelectItem value="null">Semua Status</SelectItem>
                     <SelectItem value="scheduled">Scheduled</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
@@ -485,3 +485,5 @@ const InspectionListHybrid = ({ projectId = 123 }) => {
 };
 
 export default InspectionListHybrid;
+
+

@@ -1,4 +1,4 @@
-// src/components/head-consultant/projects/DocumentList.js
+﻿// src/components/head-consultant/projects/DocumentList.js
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -218,7 +218,7 @@ const DocumentList = ({ projectId }) => {
                   <SelectValue placeholder="Filter Jenis Dokumen" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Jenis</SelectItem>
+                  <SelectItem value="no-option">Semua Jenis</SelectItem>
                   <SelectItem value="slf">SLF</SelectItem>
                   <SelectItem value="imb">IMB</SelectItem>
                   <SelectItem value="laporan_inspeksi">Laporan Inspeksi</SelectItem>

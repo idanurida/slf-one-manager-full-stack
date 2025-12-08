@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/inspector/projects/index.js
+﻿// FILE: src/pages/dashboard/inspector/projects/index.js
 // Halaman Proyek Inspector - Clean tanpa statistik
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
@@ -82,7 +82,7 @@ export default function InspectorProjects() {
 
       // Also get from inspections
       const { data: inspections } = await supabase
-        .from('inspections')
+        .from('vw_inspections_fixed')
         .select(`
           project_id,
           projects(
@@ -299,3 +299,4 @@ export default function InspectorProjects() {
     </DashboardLayout>
   );
 }
+

@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/drafter/documents/[id]/edit.js
+﻿// FILE: src/pages/dashboard/drafter/documents/[id]/edit.js
 // Route: /dashboard/drafter/documents/[id]/edit
 // Contoh: /dashboard/drafter/documents/abc-123-def-456/edit
 

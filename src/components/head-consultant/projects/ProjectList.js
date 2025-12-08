@@ -1,4 +1,4 @@
-// src/components/head-consultant/projects/ProjectList.js
+﻿// src/components/head-consultant/projects/ProjectList.js
 "use client";
 
 import React from 'react';
@@ -90,7 +90,7 @@ const ProjectList = ({ projects, loading, onApprove, onReject, onViewDetail }) =
   const [plLoading, setPlLoading] = React.useState(true);
 
 
-  // ✅ Filter projects logic
+  // âœ… Filter projects logic
   React.useEffect(() => {
     let result = projects;
 
@@ -114,7 +114,7 @@ const ProjectList = ({ projects, loading, onApprove, onReject, onViewDetail }) =
     setFilteredProjects(result);
   }, [searchTerm, selectedStatus, selectedProjectLead, projects]);
 
-  // ✅ Fetch project leads for filter
+  // âœ… Fetch project leads for filter
   React.useEffect(() => {
     const fetchProjectLeads = async () => {
       setPlLoading(true);
@@ -193,7 +193,7 @@ const ProjectList = ({ projects, loading, onApprove, onReject, onViewDetail }) =
                   <SelectValue placeholder="Filter Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Status</SelectItem>
+                  <SelectItem value="no-option">Semua Status</SelectItem>
                   <SelectItem value="project_lead_approved">Project Lead Approved</SelectItem>
                   <SelectItem value="head_consultant_review">Head Consultant Review</SelectItem>
                   <SelectItem value="head_consultant_approved">Head Consultant Approved</SelectItem>
@@ -218,7 +218,7 @@ const ProjectList = ({ projects, loading, onApprove, onReject, onViewDetail }) =
                   )}
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Project Lead</SelectItem>
+                  <SelectItem value="no-option">Semua Project Lead</SelectItem>
                   {projectLeads.map(pl => (
                     <SelectItem key={pl.id} value={pl.id}>
                       {pl.full_name || pl.email}

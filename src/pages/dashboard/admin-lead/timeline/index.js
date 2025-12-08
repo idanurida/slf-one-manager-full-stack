@@ -115,7 +115,7 @@ export default function AdminLeadTimelinePage() {
         .from('project_phases')
         .select('*')
         .eq('project_id', selectedProjectId)
-        .order('phase', { ascending: true });
+        .order('order_index', { ascending: true });
 
       if (error) throw error;
       setPhases(data || []);
@@ -307,7 +307,7 @@ export default function AdminLeadTimelinePage() {
                     </SelectTrigger>
                     <SelectContent>
                       {filteredProjects.length === 0 ? (
-                        <SelectItem value="" disabled>Tidak ada proyek</SelectItem>
+                        <SelectItem value="no-project" disabled>Tidak ada proyek</SelectItem>
                       ) : (
                         filteredProjects.map(project => (
                           <SelectItem key={project.id} value={project.id}>
@@ -607,3 +607,4 @@ export default function AdminLeadTimelinePage() {
     </DashboardLayout>
   );
 }
+

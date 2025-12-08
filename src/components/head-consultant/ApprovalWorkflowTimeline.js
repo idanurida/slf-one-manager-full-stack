@@ -1,4 +1,4 @@
-// src/components/head-consultant/ApprovalWorkflowTimeline.js
+﻿// src/components/head-consultant/ApprovalWorkflowTimeline.js
 import React, { useState, useEffect } from 'react';
 import { FiClock, FiCheck, FiX } from 'react-icons/fi';
 import { supabase } from '@/utils/supabaseClient';
@@ -178,7 +178,7 @@ const ApprovalWorkflowTimeline = () => {
                 </SelectItem>
               ))
             ) : (
-              <SelectItem value="" disabled>Tidak ada laporan</SelectItem>
+              <SelectItem value="disabled-option" disabled>Tidak ada laporan</SelectItem>
             )}
           </SelectContent>
         </Select>
@@ -240,7 +240,7 @@ const ApprovalWorkflowTimeline = () => {
                       {approval && (
                         <>
                           <p className="text-sm text-gray-600">
-                            {approval.profiles?.full_name || '—'}
+                            {approval.profiles?.full_name || 'â€”'}
                           </p>
                           <p className="text-sm text-gray-500">
                             {new Date(approval.approved_at).toLocaleString('id-ID')}

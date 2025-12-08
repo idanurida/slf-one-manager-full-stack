@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/inspector/documents/[id]/index.js
+﻿// FILE: src/pages/dashboard/inspector/documents/[id]/index.js
 // Route: /dashboard/inspector/documents/[id]
 // Contoh: /dashboard/inspector/documents/abc-123-def-456
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+﻿import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/utils/supabaseClient";
 import { batchSaveChecklistResponses, fetchInspectionPageData } from "@/utils/checklistOptimizer";
@@ -40,7 +40,7 @@ const HybridChecklistForm = ({ inspectorId }) => {
       try {
         // Fetch inspections for this inspector
         const { data: inspections, error: inspError } = await supabase
-          .from("inspections")
+          .from('vw_inspections_fixed')
           .select("*, checklist_items(*)")
           .eq("inspector_id", inspectorId);
 

@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/inspector/inspections/[id]/index.js
+﻿// FILE: src/pages/dashboard/inspector/inspections/[id]/index.js
 "use client";
 
 import React, { useState, useEffect } from 'react';

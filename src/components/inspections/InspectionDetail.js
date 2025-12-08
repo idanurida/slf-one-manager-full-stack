@@ -1,4 +1,4 @@
-// FILE: src/components/inspections/InspectionDetail.js
+﻿// FILE: src/components/inspections/InspectionDetail.js
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -27,7 +27,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   FileText, Clock, Activity, CheckCircle, XCircle, Bell, Eye, Search, X,
   CheckSquare, AlertTriangle, Loader2, Info, Calendar, UserCheck, Camera, Plus,
-  Play, Check, ArrowLeft // ✅ Tambahkan icons yang missing
+  Play, Check, ArrowLeft // âœ… Tambahkan icons yang missing
 } from 'lucide-react';
 
 // Other Imports
@@ -136,7 +136,7 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
 
         // 1. Fetch inspection data
         const { data: inspectionData, error: inspectionError } = await supabase
-          .from('inspections')
+          .from('vw_inspections_fixed')
           .select(`
             *,
             projects (
@@ -206,7 +206,7 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
       setSaving(true);
       
       const { error } = await supabase
-        .from('inspections')
+        .from('vw_inspections_fixed')
         .update({ 
           status: 'in_progress',
           started_at: new Date().toISOString()
@@ -243,7 +243,7 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
       setSaving(true);
       
       const { error } = await supabase
-        .from('inspections')
+        .from('vw_inspections_fixed')
         .update({ 
           status: 'completed',
           completed_at: new Date().toISOString()

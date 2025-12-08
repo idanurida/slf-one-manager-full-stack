@@ -1,4 +1,4 @@
-// FILE: client/src/components/inspections/PhotoUpload.js
+﻿// FILE: client/src/components/inspections/PhotoUpload.js
 "use client";
 
 import React, { useRef, useState, useEffect } from 'react';
@@ -104,7 +104,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
   useEffect(() => {
     // Cek dukungan kamera saat komponen mount (hanya di browser)
     if (typeof window !== 'undefined' && navigator.mediaDevices) {
-      navigator.mediaDevices.getUserMedia({ video: true })
+      navigator.mediaDevices.getUserMedia(getMobileCameraConstraints())
         .then(stream => {
           // Jika berhasil, hentikan stream dan set dukungan kamera
           stream.getTracks().forEach(track => track.stop());
@@ -205,7 +205,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
 
     try {
       // Akses kamera
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia(getMobileCameraConstraints());
       const video = document.createElement('video');
       video.srcObject = stream;
       await video.play();

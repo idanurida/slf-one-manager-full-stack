@@ -1,4 +1,4 @@
-// src/components/head-consultant/projects/ActivityLog.js
+﻿// src/components/head-consultant/projects/ActivityLog.js
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -230,7 +230,7 @@ const ActivityLog = ({ projectId }) => {
                   <SelectValue placeholder="Filter Level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Level</SelectItem>
+                  <SelectItem value="no-option">Semua Level</SelectItem>
                   <SelectItem value="info">Info</SelectItem>
                   <SelectItem value="warning">Warning</SelectItem>
                   <SelectItem value="error">Error</SelectItem>

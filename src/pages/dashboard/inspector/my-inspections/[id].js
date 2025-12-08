@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -49,7 +49,7 @@ export default function MyInspectionDetail() {
       setLoading(true);
       try {
         const { data, error } = await supabase
-          .from('inspections')
+          .from('vw_inspections_fixed')
           .select(`
             *,
             projects(

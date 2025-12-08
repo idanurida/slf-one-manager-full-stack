@@ -1,4 +1,4 @@
-// src/components/head-consultant/projects/InspectionList.js
+﻿// src/components/head-consultant/projects/InspectionList.js
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -115,7 +115,7 @@ const InspectionList = ({ projectId }) => {
 
       // 1. Ambil daftar inspeksi untuk proyek ini
       let query = supabase
-        .from('inspections')
+        .from('vw_inspections_fixed')
         .select(`
           id,
           scheduled_date,
@@ -231,7 +231,7 @@ const InspectionList = ({ projectId }) => {
                   <SelectValue placeholder="Filter Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Status</SelectItem>
+                  <SelectItem value="no-option">Semua Status</SelectItem>
                   <SelectItem value="Scheduled">Scheduled</SelectItem>
                   <SelectItem value="In Progress">In Progress</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>
@@ -337,3 +337,4 @@ const InspectionList = ({ projectId }) => {
 };
 
 export default InspectionList;
+

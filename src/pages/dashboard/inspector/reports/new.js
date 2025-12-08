@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -73,7 +73,7 @@ export default function NewInspectionReport() {
 
         // Load inspection detail
         const { data: inspectionData, error: inspectionError } = await supabase
-          .from('inspections')
+          .from('vw_inspections_fixed')
           .select(`
             *,
             projects (
@@ -213,7 +213,7 @@ export default function NewInspectionReport() {
       if (error) throw error;
 
       toast({
-        title: status === 'draft' ? "✅ Draft disimpan" : "✅ Laporan dikirim",
+        title: status === 'draft' ? "âœ… Draft disimpan" : "âœ… Laporan dikirim",
         description: status === 'draft' 
           ? "Laporan berhasil disimpan sebagai draft" 
           : "Laporan berhasil dikirim ke admin team",

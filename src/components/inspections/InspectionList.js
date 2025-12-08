@@ -1,4 +1,4 @@
-// client/src/components/inspections/InspectionList.js
+﻿// client/src/components/inspections/InspectionList.js
 
 // Import utama React
 import React, { useState, useEffect } from 'react';
@@ -85,7 +85,7 @@ const Select = ({ value, onValueChange, children }) => (
 );
 // Karena kita menggunakan tag <select> langsung, komponen-komponen ini hanya menjadi placeholder
 const SelectTrigger = ({ children, id }) => <div className="hidden">{children}</div>;
-const SelectValue = ({ placeholder }) => <option value="" disabled hidden>{placeholder}</option>;
+const SelectValue = ({ placeholder }) => <option value="no-option" disabled hidden>{placeholder}</option>;
 const SelectContent = ({ children }) => children;
 const SelectItem = ({ value, children }) => <option value={value}>{children}</option>;
 
@@ -318,7 +318,7 @@ const InspectionList = ({ projectId = 123 }) => { // Set default projectId agar 
                     <SelectValue placeholder="Filter berdasarkan status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Semua Status</SelectItem>
+                    <SelectItem value="no-option">Semua Status</SelectItem>
                     <SelectItem value="scheduled">Scheduled</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
@@ -421,3 +421,4 @@ const InspectionList = ({ projectId = 123 }) => { // Set default projectId agar 
 };
 
 export default InspectionList;
+

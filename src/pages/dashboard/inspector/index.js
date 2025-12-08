@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/inspector/index.js
+﻿// FILE: src/pages/dashboard/inspector/index.js
 // Dashboard Inspector - Clean & User Friendly
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from 'next/router';
@@ -73,7 +73,7 @@ export default function InspectorDashboard() {
     try {
       // Fetch inspections
       const { data: inspections } = await supabase
-        .from('inspections')
+        .from('vw_inspections_fixed')
         .select(`
           id, scheduled_date, status, created_at,
           projects(id, name, address, city, clients(name))
@@ -186,7 +186,7 @@ export default function InspectorDashboard() {
               Selamat Datang, {profile?.full_name?.split(' ')[0] || 'Inspector'}
             </h1>
             <p className="text-muted-foreground">
-              {profile?.specialization?.replace(/_/g, ' ') || 'Inspector'} • {recentProjects.length} Proyek Aktif
+              {profile?.specialization?.replace(/_/g, ' ') || 'Inspector'} â€¢ {recentProjects.length} Proyek Aktif
             </p>
           </div>
           
@@ -324,7 +324,7 @@ export default function InspectorDashboard() {
                           <p className="font-medium line-clamp-1">{inspection.projects?.name || '-'}</p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
-                            {inspection.projects?.city || '-'} • {formatDate(inspection.scheduled_date)}
+                            {inspection.projects?.city || '-'} â€¢ {formatDate(inspection.scheduled_date)}
                           </p>
                         </div>
                       </div>
@@ -428,7 +428,7 @@ export default function InspectorDashboard() {
                     </div>
                     <p className="font-medium line-clamp-1">{project.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {project.clients?.name || '-'} • {project.city || '-'}
+                      {project.clients?.name || '-'} â€¢ {project.city || '-'}
                     </p>
                   </div>
                 ))}
@@ -441,3 +441,6 @@ export default function InspectorDashboard() {
     </DashboardLayout>
   );
 }
+
+
+

@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/inspector/inspections/[id]/checklist.js
+﻿// FILE: src/pages/dashboard/inspector/inspections/[id]/checklist.js
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
 import { format } from 'date-fns';

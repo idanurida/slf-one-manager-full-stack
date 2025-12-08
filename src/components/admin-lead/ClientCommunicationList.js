@@ -1,4 +1,3 @@
-// FILE: src/components/admin-lead/ClientCommunicationList.js
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle, Building, User, Clock, Mail } from "lucide-react";
 
-// Helper functions with safety checks - move them here to avoid import issues
+// Helper functions with safety checks
 const getStatusColor = (status) => {
   if (!status) return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
   
@@ -41,27 +40,39 @@ const formatDate = (dateString) => {
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return 'Tanggal tidak valid';
-    return date.toLocaleDateString('id-ID');
+    return date.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
   } catch (error) {
     return 'Tanggal tidak valid';
   }
 };
 
 const ClientCommunicationList = ({ 
-  projects = [], // ADD DEFAULT VALUE HERE
+  projects = [], // Default empty array
   loading = false, 
   unreadOnly = false, 
   readOnly = false, 
   onViewThread = () => {} 
 }) => {
   // Ensure projects is always an array
-  const safeProjects = Array.isArray(projects) ? projects : [];
-  
+  const safeProjects = React.useMemo(() => {
+    if (!projects) return [];
+    if (Array.isArray(projects)) return projects;
+    return [];
+  }, [projects]);
+
+  // Loading state
   if (loading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map(i => (
-          <Card key={i} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <Card 
+            key={i} 
+            className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+          >
             <CardContent className="p-4 flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Skeleton className="h-10 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />
@@ -78,7 +89,7 @@ const ClientCommunicationList = ({
     );
   }
 
-  // FIX: Use safeProjects.length instead of projects.length
+  // Empty state - use safeProjects.length instead of projects.length
   if (safeProjects.length === 0) {
     return (
       <div className="text-center py-8">
@@ -93,25 +104,31 @@ const ClientCommunicationList = ({
     );
   }
 
+  // Render projects list
   return (
     <div className="space-y-4">
-      {safeProjects.map((project) => {
-        // Add null check for each project
-        if (!project) return null;
-        
-        const projectId = project.id || '';
+      {safeProjects.map((project, index) => {
+        // Validate project object
+        if (!project || typeof project !== 'object') {
+          return null; // Skip invalid projects
+        }
+
+        const projectId = project.id || `project-${index}`;
         const clientId = project.client_id || '';
         const projectName = project.name || 'Project Tanpa Nama';
-        const clientName = project.clients?.name || 'Client Tidak Diketahui';
+        const clientName = project.clients?.name || project.client_name || 'Client Tidak Diketahui';
         const projectStatus = project.status || '';
-        const hasUnreadMessages = Boolean(project.has_unread_messages);
-        
+        const hasUnreadMessages = Boolean(project.has_unread_messages || project.unread_count > 0);
+        const isValidProject = projectId && clientId;
+
         return (
           <Card 
-            key={projectId || Math.random()} 
-            className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+            key={projectId}
+            className={`border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 transition-colors ${
+              isValidProject ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer' : 'cursor-not-allowed opacity-70'
+            }`}
             onClick={() => {
-              if (projectId && clientId) {
+              if (isValidProject) {
                 onViewThread(projectId, clientId);
               }
             }}
@@ -122,32 +139,51 @@ const ClientCommunicationList = ({
                   <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
                     <Building className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-900 dark:text-slate-100">{projectName}</h4>
-                    <div className="flex items-center text-sm text-slate-600 dark:text-slate-400 space-x-4">
-                      <span className="flex items-center gap-1">
-                        <User className="w-3 h-3" /> {clientName}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
+                      {projectName}
+                    </h4>
+                    
+                    <div className="flex flex-wrap items-center text-sm text-slate-600 dark:text-slate-400 gap-2 mt-1">
+                      <span className="flex items-center gap-1 whitespace-nowrap">
+                        <User className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{clientName}</span>
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {formatDate(project.created_at)}
+                      
+                      <span className="text-slate-400 dark:text-slate-500">•</span>
+                      
+                      <span className="flex items-center gap-1 whitespace-nowrap">
+                        <Clock className="w-3 h-3 flex-shrink-0" />
+                        <span>{formatDate(project.created_at)}</span>
                       </span>
                     </div>
-                    <div className="flex items-center text-xs mt-1">
-                      <Badge className={getStatusColor(projectStatus)}>
+                    
+                    <div className="flex items-center flex-wrap gap-2 mt-2">
+                      <Badge 
+                        className={`${getStatusColor(projectStatus)} text-xs font-medium`}
+                      >
                         {getStatusLabel(projectStatus)}
                       </Badge>
+                      
                       {hasUnreadMessages && (
-                        <Badge variant="destructive" className="ml-2 h-5">Belum Dibaca</Badge>
+                        <Badge 
+                          variant="destructive" 
+                          className="h-5 text-xs font-medium"
+                        >
+                          Belum Dibaca
+                        </Badge>
                       )}
                     </div>
                   </div>
                 </div>
+                
                 <Button 
                   variant="outline" 
                   size="sm"
+                  disabled={!isValidProject}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (projectId && clientId) {
+                    if (isValidProject) {
                       onViewThread(projectId, clientId);
                     }
                   }}
@@ -162,6 +198,15 @@ const ClientCommunicationList = ({
       })}
     </div>
   );
+};
+
+// Default props for extra safety
+ClientCommunicationList.defaultProps = {
+  projects: [],
+  loading: false,
+  unreadOnly: false,
+  readOnly: false,
+  onViewThread: () => {},
 };
 
 export default ClientCommunicationList;

@@ -1,85 +1,52 @@
-// FILE: src/pages/dashboard/admin-lead/ClientCommunicationList.js
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import ClientCommunicationList from "@/components/admin-lead/ClientCommunicationList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Search, Filter } from "lucide-react";
 
 export default function ClientCommunicationListPage() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState([]); // Default empty array
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // Simulasi data fetching
+
+  // Initialize with empty data during build
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // Simulasi API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Data contoh - dalam produksi, ambil dari API
-        const mockData = [
-          {
-            id: "1",
-            name: "Proyek A",
-            client_id: "client1",
-            clients: { name: "Client A" },
-            created_at: "2024-01-15",
-            status: "active",
-            has_unread_messages: true
-          },
-          {
-            id: "2",
-            name: "Proyek B", 
-            client_id: "client2",
-            clients: { name: "Client B" },
-            created_at: "2024-01-10",
-            status: "pending",
-            has_unread_messages: false
-          }
-        ];
-        
-        // Pastikan data selalu array
-        setProjects(Array.isArray(mockData) ? mockData : []);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setProjects([]); // Set ke array kosong jika error
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
+    // For build time, ensure projects is always an array
+    // In production, this would be replaced with actual data fetching
+    setProjects([]);
+    setLoading(false);
   }, []);
-  
+
+  // Handle view thread click
   const handleViewThread = (projectId, clientId) => {
     console.log("View thread:", projectId, clientId);
-    // Navigasi ke halaman thread
-    // router.push(`/dashboard/admin-lead/communication/${projectId}?clientId=${clientId}`);
+    // In production: router.push(`/dashboard/admin-lead/communication/${projectId}?clientId=${clientId}`);
   };
-  
-  // Filter data berdasarkan tab aktif
+
+  // Filter projects based on active tab and search
   const filteredProjects = React.useMemo(() => {
-    if (!Array.isArray(projects)) return [];
+    // Always ensure we're working with an array
+    const safeProjects = Array.isArray(projects) ? projects : [];
     
-    let filtered = [...projects];
+    let filtered = [...safeProjects];
     
+    // Filter by tab
     switch (activeTab) {
       case "unread":
-        filtered = projects.filter(p => p?.has_unread_messages);
+        filtered = safeProjects.filter(p => p?.has_unread_messages);
         break;
       case "read":
-        filtered = projects.filter(p => !p?.has_unread_messages);
+        filtered = safeProjects.filter(p => !p?.has_unread_messages);
         break;
       default:
-        filtered = [...projects];
+        // "all" tab - include all projects
+        filtered = [...safeProjects];
     }
     
-    // Filter berdasarkan pencarian
+    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(p => 
@@ -90,22 +57,24 @@ export default function ClientCommunicationListPage() {
     
     return filtered;
   }, [projects, activeTab, searchQuery]);
-  
+
   return (
     <DashboardLayout>
       <div className="space-y-6 p-6">
+        {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
             Komunikasi Client
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-slate-600 dark:text-slate-400 mt-2">
             Kelola semua komunikasi dengan client untuk setiap proyek
           </p>
         </div>
-        
-        <div className="flex flex-col md:flex-row gap-4 justify-between">
+
+        {/* Search and Filter Bar */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
             <Input
               placeholder="Cari proyek atau client..."
               className="pl-10"
@@ -119,7 +88,8 @@ export default function ClientCommunicationListPage() {
             Filter
           </Button>
         </div>
-        
+
+        {/* Tabs */}
         <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all">Semua</TabsTrigger>
@@ -127,6 +97,7 @@ export default function ClientCommunicationListPage() {
             <TabsTrigger value="read">Sudah Dibaca</TabsTrigger>
           </TabsList>
           
+          {/* All Communications Tab */}
           <TabsContent value="all" className="mt-6">
             <ClientCommunicationList
               projects={filteredProjects}
@@ -135,6 +106,7 @@ export default function ClientCommunicationListPage() {
             />
           </TabsContent>
           
+          {/* Unread Communications Tab */}
           <TabsContent value="unread" className="mt-6">
             <ClientCommunicationList
               projects={filteredProjects}
@@ -144,6 +116,7 @@ export default function ClientCommunicationListPage() {
             />
           </TabsContent>
           
+          {/* Read Communications Tab */}
           <TabsContent value="read" className="mt-6">
             <ClientCommunicationList
               projects={filteredProjects}
@@ -158,26 +131,28 @@ export default function ClientCommunicationListPage() {
   );
 }
 
-// Jika tidak menggunakan server-side rendering, hapus atau comment fungsi di bawah
+// Optional: Add getStaticProps for static generation
+// Remove or comment this if you don't need static generation
 /*
-export async function getServerSideProps() {
+export async function getStaticProps() {
   try {
-    // Fetch data dari API
+    // Example: Fetch data from API
     // const res = await fetch('https://api.example.com/communications');
     // const data = await res.json();
     
     return {
       props: {
-        // SELALU pastikan ini array, bukan undefined
-        initialProjects: [] // Ganti dengan data sebenarnya
-      }
+        // ALWAYS ensure initialData is an array, not undefined
+        initialData: [], // Replace with actual data
+      },
+      revalidate: 60, // Optional: Incremental Static Regeneration
     };
   } catch (error) {
-    console.error("Error in getServerSideProps:", error);
+    console.error("Error in getStaticProps:", error);
     return {
       props: {
-        initialProjects: [] // Return array kosong jika error
-      }
+        initialData: [], // Return empty array on error
+      },
     };
   }
 }

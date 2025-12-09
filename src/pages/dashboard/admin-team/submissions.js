@@ -154,18 +154,23 @@ export default function AdminTeamSubmissionsPage() {
         return;
       }
 
-      // ✅ PERBAIKAN: Ambil proyek + client
+      // ✅ PERBAIKAN: Ambil proyek (client akan di-fetch terpisah)
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
-        .select(`
-          *,
-          clients(name)
-        `)
+        .select(`*`)
         .in('id', projectIds)
         .not('status', 'eq', 'government_submitted')
         .order('created_at', { ascending: false });
 
       if (projectsError) throw projectsError;
+
+      // Batch fetch clients for name enrichment
+      const clientIds = [...new Set((projectsData || []).map(p => p.client_id).filter(Boolean))];
+      let clientsById = {};
+      if (clientIds.length > 0) {
+        const { data: clients } = await supabase.from('clients').select('id, name').in('id', clientIds);
+        clientsById = (clients || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
+      }
 
       const readyProjects = [];
       for (const proj of projectsData || []) {
@@ -185,7 +190,7 @@ export default function AdminTeamSubmissionsPage() {
         if (allVerified) {
           readyProjects.push({
             ...proj,
-            client_name: proj.clients?.name
+            client_name: clientsById[proj.client_id]?.name || null
           });
         }
       }

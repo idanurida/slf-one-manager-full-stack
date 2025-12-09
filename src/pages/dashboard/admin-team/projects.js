@@ -191,12 +191,7 @@ export default function AdminTeamProjectsPage() {
       // Ambil proyek yang saya handle sebagai admin_team
       const { data: assignments, error: assignErr } = await supabase
         .from('project_teams')
-        .select(`
-          project_id,
-          projects!inner(
-            id, name, status, created_at, client_id, clients(name), location, application_type
-          )
-        `)
+        .select(`project_id, projects!inner(id, name, status, created_at, client_id, location, application_type)`)
         .eq('user_id', user.id)
         .eq('role', 'admin_team');
 
@@ -204,10 +199,22 @@ export default function AdminTeamProjectsPage() {
 
       const projectList = (assignments || []).map(a => ({
         ...a.projects,
-        client_name: a.projects.clients?.name || 'Client Tidak Diketahui'
       }));
 
-      setProjects(projectList);
+      // Batch fetch clients to avoid ambiguous PostgREST embeds
+      const clientIds = [...new Set(projectList.map(p => p.client_id).filter(Boolean))];
+      let clientsById = {};
+      if (clientIds.length > 0) {
+        const { data: clients } = await supabase.from('clients').select('id, name').in('id', clientIds);
+        clientsById = (clients || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
+      }
+
+      const enriched = projectList.map(p => ({
+        ...p,
+        client_name: clientsById[p.client_id]?.name || 'Client Tidak Diketahui'
+      }));
+
+      setProjects(enriched);
 
     } catch (err) {
       console.error('Error fetching projects:', err);

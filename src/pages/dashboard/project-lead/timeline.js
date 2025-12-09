@@ -307,7 +307,7 @@ export default function ProjectLeadTimelinePage() {
         .select(`
           project_id,
           projects!inner(
-            id, name, status, created_at, client_id, clients(name), city, address, application_type
+            id, name, status, created_at, client_id, city, address, application_type
           )
         `)
         .eq('user_id', user.id)
@@ -315,9 +315,22 @@ export default function ProjectLeadTimelinePage() {
 
       if (assignErr) throw assignErr;
 
-      const projectList = (assignments || []).map(a => ({
-        ...a.projects,
-        client_name: a.projects.clients?.name || 'Client Tidak Diketahui'
+      const rawProjects = (assignments || []).map(a => a.projects).filter(Boolean);
+
+      // Batch fetch client names
+      const clientIds = [...new Set(rawProjects.map(p => p.client_id).filter(Boolean))];
+      let clientsMap = {};
+      if (clientIds.length > 0) {
+        const { data: clientsData } = await supabase
+          .from('clients')
+          .select('id, name')
+          .in('id', clientIds);
+        (clientsData || []).forEach(c => clientsMap[c.id] = c);
+      }
+
+      const projectList = rawProjects.map(p => ({
+        ...p,
+        client_name: p.client_id ? (clientsMap[p.client_id]?.name || 'Client Tidak Diketahui') : 'Client Tidak Diketahui'
       }));
 
       setAssignedProjects(projectList);

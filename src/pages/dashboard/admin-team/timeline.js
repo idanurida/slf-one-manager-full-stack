@@ -128,24 +128,30 @@ export default function AdminTeamTimeline() {
 
     try {
       // Ambil proyek yang saya handle
-      const {  assignments } = await supabase
+      const { data: assignments, error: assignErr } = await supabase
         .from('project_teams')
-        .select(`
-          project_id,
-          projects!inner(
-            *,
-            clients(name)
-          )
-        `)
+        .select(`project_id, projects!inner(*)`)
         .eq('user_id', user.id)
         .eq('role', 'admin_team');
 
-      const projectList = (assignments || []).map(a => ({
-        ...a.projects,
-        client_name: a.projects.clients?.name
+      if (assignErr) throw assignErr;
+
+      const projectList = (assignments || []).map(a => ({ ...a.projects }));
+
+      // Batch fetch clients
+      const clientIds = [...new Set(projectList.map(p => p.client_id).filter(Boolean))];
+      let clientsById = {};
+      if (clientIds.length > 0) {
+        const { data: clients } = await supabase.from('clients').select('id, name').in('id', clientIds);
+        clientsById = (clients || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
+      }
+
+      const enriched = projectList.map(p => ({
+        ...p,
+        client_name: clientsById[p.client_id]?.name || ''
       }));
 
-      setProjects(projectList);
+      setProjects(enriched);
 
     } catch (err) {
       console.error('Timeline data loading error:', err);

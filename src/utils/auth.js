@@ -169,6 +169,47 @@ export async function signUp(email, password, userData = {}) {
     }
 
     console.log('[Auth] Sign up successful for:', email);
+
+    // If a user object exists, ensure there's a profiles row matching that user
+    if (data?.user) {
+      try {
+        const profileData = {
+          id: data.user.id,
+          email: email.trim().toLowerCase(),
+          full_name: userData.full_name || null,
+          phone_number: userData.phone_number || null,
+          company_name: userData.company_name || null,
+          role: userData.role || null,
+          status: 'pending',
+          is_approved: false,
+          created_at: new Date().toISOString(),
+        };
+
+        // Merge any additional fields passed in userData (e.g., specialization)
+        Object.keys(userData).forEach((k) => {
+          if (!profileData[k] && userData[k] !== undefined) profileData[k] = userData[k];
+        });
+
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert(profileData, { onConflict: 'id' });
+
+        if (profileError) {
+          console.error('[Auth] Profile upsert error:', profileError);
+          // do not block sign-up success for UI — just log
+        }
+      } catch (e) {
+        console.error('[Auth] Unexpected error while upserting profile:', e);
+      }
+
+      // Sign out immediately to avoid unexpected auth state in client UI
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.error('[Auth] signOut after signUp failed:', e);
+      }
+    }
+
     return data;
   } catch (error) {
     console.error('[Auth] signUp catch error:', error);

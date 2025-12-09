@@ -74,7 +74,7 @@ export default function ProjectLeadDashboard() {
         .from('project_teams')
         .select(`
           project_id,
-          projects(id, name, status, created_at, clients(name))
+          projects(id, name, status, created_at, clients!client_id(name))
         `)
         .eq('user_id', user.id)
         .eq('role', 'project_lead');

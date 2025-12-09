@@ -53,15 +53,15 @@ export default function MyInspectionDetail() {
           .select(`
             *,
             projects(
-              name, 
-              address, 
+              name,
+              address,
               city,
               description,
-              clients(name, email, phone)
+              client_id
             ),
             profiles!inspector_id(
-              full_name, 
-              email, 
+              full_name,
+              email,
               specialization
             )
           `)
@@ -71,6 +71,21 @@ export default function MyInspectionDetail() {
 
         if (error) throw error;
         
+        // Enrich project with client data (avoid ambiguous nested clients select)
+        if (data && data.projects && data.projects.client_id) {
+          try {
+            const { data: client } = await supabase
+              .from('clients')
+              .select('id, name, email, phone')
+              .eq('id', data.projects.client_id)
+              .single();
+
+            data.projects.clients = client || null;
+          } catch (e) {
+            data.projects.clients = null;
+          }
+        }
+
         setInspection(data);
         
       } catch (error) {

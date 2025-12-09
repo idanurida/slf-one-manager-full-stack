@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTheme } from 'next-themes';
 import { supabase } from '@/utils/supabaseClient';
+import { signUp as signUpHelper } from '@/utils/auth';
 
 // shadcn/ui Components
 import { Button } from '@/components/ui/button';
@@ -140,52 +141,14 @@ export default function RegisterPage() {
     }
 
     try {
-      // 1. Register user with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            role: formData.role,
-          }
-        }
+      // Use centralized signUp helper that also upserts profile and signs out
+      await signUpHelper(formData.email.trim().toLowerCase(), formData.password, {
+        full_name: formData.fullName,
+        role: formData.role,
+        phone_number: formData.phone || null,
+        company_name: formData.company || null,
+        specialization: formData.specialization || null,
       });
-
-      if (authError) {
-        throw authError;
-      }
-
-      // 2. If user created, also create profile with pending status
-      if (authData.user) {
-        const profileData = {
-          id: authData.user.id,
-          email: formData.email.trim().toLowerCase(),
-          full_name: formData.fullName,
-          phone_number: formData.phone || null,
-          company_name: formData.company || null,
-          role: formData.role,
-          status: 'pending', // ✅ Set status as pending for approval
-          is_approved: false, // ✅ Not approved yet
-          created_at: new Date().toISOString(),
-        };
-        
-        // Add specialization for inspector
-        if (formData.role === 'inspector' && formData.specialization) {
-          profileData.specialization = formData.specialization;
-        }
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert(profileData, { onConflict: 'id' });
-
-        if (profileError) {
-          console.error('[Register] Profile creation error:', profileError);
-        }
-      }
-
-      // ✅ FIXED: Sign out user immediately to prevent AuthProvider redirect conflict
-      await supabase.auth.signOut();
       
       setSuccess(true);
       setError('');

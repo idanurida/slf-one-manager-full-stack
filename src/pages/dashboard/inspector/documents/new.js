@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/inspector/documents/new.js
+// FILE: src/pages/dashboard/inspector/documents/new.js
 // Route: /dashboard/inspector/documents/new
 
 "use client";
@@ -182,17 +182,17 @@ const NewInspectorDocumentPage = () => {
       const { error: dbError } = await supabase
         .from('documents')
         .insert([{
-          name: formData.name.trim(),      // âœ… Kolom sebenarnya: name
-          type: formData.type,             // âœ… Kolom sebenarnya: type
-          url: filePath,                   // âœ… Kolom sebenarnya: url (path storage)
+          name: formData.name.trim(),      // ✅ Kolom sebenarnya: name
+          type: formData.type,             // ✅ Kolom sebenarnya: type
+          url: filePath,                   // ✅ Kolom sebenarnya: url (path storage)
           status: formData.status,
           compliance_status: formData.compliance_status,
-          created_by: user.id,             // âœ… Kolom sebenarnya: created_by
-          project_id: formData.project_id, // âœ… Kolom sebenarnya: project_id
+          created_by: user.id,             // ✅ Kolom sebenarnya: created_by
+          project_id: formData.project_id, // ✅ Kolom sebenarnya: project_id
           // Tambahkan metadata tambahan jika diperlukan
           file_size: selectedFile.size,
           mime_type: selectedFile.type,
-          uploaded_at: new Date().toISOString(), // âœ… Kolom sebenarnya: created_at (dari struktur SQL)
+          uploaded_at: new Date().toISOString(), // ✅ Kolom sebenarnya: created_at (dari struktur SQL)
         }]);
 
       if (dbError) throw dbError;

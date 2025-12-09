@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/project-lead/index.js
+// FILE: src/pages/dashboard/project-lead/index.js
 // Dashboard Project Lead - Clean & User Friendly
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
@@ -359,7 +359,7 @@ export default function ProjectLeadDashboard() {
                         <div>
                           <p className="font-medium line-clamp-1">{report.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {report.projects?.name || '-'} â€¢ {formatDate(report.created_at)}
+                            {report.projects?.name || '-'} • {formatDate(report.created_at)}
                           </p>
                         </div>
                       </div>

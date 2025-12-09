@@ -85,7 +85,7 @@ export default function InspectorReports() {
           *,
           projects(id, name)
         `)
-        .eq('inspector_id', user.id)
+        .eq('assigned_to', user.id)
         .order('created_at', { ascending: false });
 
       // If no inspection_reports table or error, try reports table

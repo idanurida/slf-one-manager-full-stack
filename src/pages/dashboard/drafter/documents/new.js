@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/drafter/documents/new.js
+// FILE: src/pages/dashboard/drafter/documents/new.js
 // Route: /dashboard/drafter/documents/new
 
 "use client";

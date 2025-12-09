@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/drafter/reports/new.js
+// FILE: src/pages/dashboard/drafter/reports/new.js
 // Route: /dashboard/drafter/reports/new
 
 "use client";
@@ -190,12 +190,12 @@ const NewReportPage = () => {
         .from('inspection_reports')
         .insert([{
           inspection_id: null, // Isi jika terkait dengan inspeksi spesifik
-          drafter_id: user.id,          // âœ… Kolom sebenarnya: drafter_id
-          report_status: formData.report_status, // âœ… Kolom sebenarnya: report_status
-          file_url: filePath,           // âœ… Kolom sebenarnya: file_url (path storage)
+          drafter_id: user.id,          // ✅ Kolom sebenarnya: drafter_id
+          report_status: formData.report_status, // ✅ Kolom sebenarnya: report_status
+          file_url: filePath,           // ✅ Kolom sebenarnya: file_url (path storage)
           submitted_to_gov_at: null,    // Diisi nanti saat submit ke pemerintah
-          created_at: new Date().toISOString(), // âœ… Kolom sebenarnya: created_at
-          project_id: formData.project_id,      // âœ… Kolom sebenarnya: project_id
+          created_at: new Date().toISOString(), // ✅ Kolom sebenarnya: created_at
+          project_id: formData.project_id,      // ✅ Kolom sebenarnya: project_id
           // Tambahkan kolom lain jika diperlukan, misal description
           description: formData.file_description.trim() || null // Kolom opsional
         }]);

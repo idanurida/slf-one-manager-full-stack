@@ -195,7 +195,7 @@ const ApprovalWorkflow = ({ user }) => {
       result = result.filter(a => a.status === selectedStatus);
     }
     if (selectedInspector) {
-      result = result.filter(a => a.inspector_id === selectedInspector);
+      result = result.filter(a => a.assigned_to === selectedInspector);
     }
     if (selectedProject) {
       result = result.filter(a => a.project_id === selectedProject);

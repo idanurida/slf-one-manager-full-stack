@@ -1,4 +1,4 @@
-﻿// client/src/utils/checklistAPI.js
+// client/src/utils/checklistAPI.js
 import { supabase, logSupabaseError } from './supabaseClient';
 
 // In-memory cache with TTL

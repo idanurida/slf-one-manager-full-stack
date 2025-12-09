@@ -92,7 +92,7 @@ export const DocumentShape = PropTypes.shape({
 export const InspectionShape = PropTypes.shape({
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   project_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  inspector_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  assigned_to: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   scheduled_date: PropTypes.string,
   status: PropTypes.string,
   notes: PropTypes.string,

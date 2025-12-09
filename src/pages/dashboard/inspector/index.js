@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/inspector/index.js
+// FILE: src/pages/dashboard/inspector/index.js
 // Dashboard Inspector - Clean & User Friendly
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from 'next/router';
@@ -78,7 +78,7 @@ export default function InspectorDashboard() {
           id, scheduled_date, status, created_at,
           projects(id, name, address, city, clients(name))
         `)
-        .eq('inspector_id', user.id)
+        .eq('assigned_to', user.id)
         .order('scheduled_date', { ascending: true });
 
       const inspectionsList = inspections || [];
@@ -186,7 +186,7 @@ export default function InspectorDashboard() {
               Selamat Datang, {profile?.full_name?.split(' ')[0] || 'Inspector'}
             </h1>
             <p className="text-muted-foreground">
-              {profile?.specialization?.replace(/_/g, ' ') || 'Inspector'} â€¢ {recentProjects.length} Proyek Aktif
+              {profile?.specialization?.replace(/_/g, ' ') || 'Inspector'} • {recentProjects.length} Proyek Aktif
             </p>
           </div>
           
@@ -324,7 +324,7 @@ export default function InspectorDashboard() {
                           <p className="font-medium line-clamp-1">{inspection.projects?.name || '-'}</p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
-                            {inspection.projects?.city || '-'} â€¢ {formatDate(inspection.scheduled_date)}
+                            {inspection.projects?.city || '-'} • {formatDate(inspection.scheduled_date)}
                           </p>
                         </div>
                       </div>
@@ -428,7 +428,7 @@ export default function InspectorDashboard() {
                     </div>
                     <p className="font-medium line-clamp-1">{project.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {project.clients?.name || '-'} â€¢ {project.city || '-'}
+                      {project.clients?.name || '-'} • {project.city || '-'}
                     </p>
                   </div>
                 ))}

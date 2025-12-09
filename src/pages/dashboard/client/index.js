@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/client/index.js
+// FILE: src/pages/dashboard/client/index.js
 // Clean Dashboard - Hanya informasi penting, fitur lain di menu navigasi
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
@@ -727,7 +727,7 @@ export default function ClientDashboard() {
                           <p className="font-medium line-clamp-1">{project.name || 'Proyek Tanpa Nama'}</p>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>{project.application_type || 'SLF'}</span>
-                            <span>â€¢</span>
+                            <span>•</span>
                             <span>{formatDate(project.created_at)}</span>
                           </div>
                         </div>
@@ -844,7 +844,7 @@ export default function ClientDashboard() {
                         <p className="font-medium">{schedule.title || 'Jadwal Inspeksi'}</p>
                         <p className="text-sm text-muted-foreground">
                           {schedule.projects?.name || 'Proyek'}
-                          {schedule.description && ` â€¢ ${schedule.description}`}
+                          {schedule.description && ` • ${schedule.description}`}
                         </p>
                       </div>
                     </div>

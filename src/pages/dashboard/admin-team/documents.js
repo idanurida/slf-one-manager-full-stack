@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/admin-team/documents.js
+// FILE: src/pages/dashboard/admin-team/documents.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
@@ -339,7 +339,7 @@ const StatCard = ({ label, value, icon: Icon, color, helpText, loading, trend, o
             </div>
             {trend !== undefined && (
               <div className={`text-sm font-medium ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {trend >= 0 ? 'â†—' : 'â†˜'} {Math.abs(trend)}%
+                {trend >= 0 ? '↗' : '↘'} {Math.abs(trend)}%
               </div>
             )}
           </div>
@@ -362,14 +362,14 @@ export default function AdminTeamDocumentsPage() {
     pendingDocuments: 0,
     verifiedDocuments: 0,
     revisionRequested: 0,
-    totalReports: 0, // âœ… Ditambahkan
-    pendingReports: 0, // âœ… Ditambahkan
-    verifiedReports: 0 // âœ… Ditambahkan
+    totalReports: 0, // ✅ Ditambahkan
+    pendingReports: 0, // ✅ Ditambahkan
+    verifiedReports: 0 // ✅ Ditambahkan
   });
   const [documents, setDocuments] = useState([]);
-  const [reports, setReports] = useState([]); // âœ… Ditambahkan state untuk reports
+  const [reports, setReports] = useState([]); // ✅ Ditambahkan state untuk reports
   const [filterTab, setFilterTab] = useState('pending'); // 'pending', 'verified', 'revision_requested'
-  const [reportFilterTab, setReportFilterTab] = useState('pending'); // âœ… Ditambahkan filter untuk reports
+  const [reportFilterTab, setReportFilterTab] = useState('pending'); // ✅ Ditambahkan filter untuk reports
   const [searchTerm, setSearchTerm] = useState('');
   const [projectFilter, setProjectFilter] = useState('all');
   const [projects, setProjects] = useState([]);
@@ -468,7 +468,7 @@ export default function AdminTeamDocumentsPage() {
       }
 
       setDocuments(docData);
-      setReports(reportData); // âœ… Set state reports
+      setReports(reportData); // ✅ Set state reports
 
       // Hitung stats dokumen
       const pendingDocs = docData.filter(d => d.status === 'pending').length;
@@ -485,9 +485,9 @@ export default function AdminTeamDocumentsPage() {
         pendingDocuments: pendingDocs,
         verifiedDocuments: verifiedDocs,
         revisionRequested: revisionDocs,
-        totalReports: reportData.length, // âœ… Stat baru
-        pendingReports, // âœ… Stat baru
-        verifiedReports // âœ… Stat baru
+        totalReports: reportData.length, // ✅ Stat baru
+        pendingReports, // ✅ Stat baru
+        verifiedReports // ✅ Stat baru
       });
 
     } catch (err) {
@@ -524,7 +524,7 @@ export default function AdminTeamDocumentsPage() {
   });
 
   // Filter reports
-  const filteredReports = reports.filter(rep => { // âœ… Ditambahkan
+  const filteredReports = reports.filter(rep => { // ✅ Ditambahkan
     if (reportFilterTab === 'pending' && rep.status !== 'pending' && rep.status !== 'submitted') return false;
     if (reportFilterTab === 'verified' && rep.status !== 'verified_by_admin_team') return false;
     if (reportFilterTab === 'revision_requested' && rep.status !== 'revision_requested') return false;
@@ -702,7 +702,7 @@ export default function AdminTeamDocumentsPage() {
                 helpText="Laporan dari inspector"
                 loading={loading}
                 trend={3}
-                onClick={() => setReportFilterTab('all')} // âœ… Arahkan ke filter laporan
+                onClick={() => setReportFilterTab('all')} // ✅ Arahkan ke filter laporan
               />
               <StatCard
                 label="Laporan Tertunda"
@@ -712,7 +712,7 @@ export default function AdminTeamDocumentsPage() {
                 helpText="Laporan menunggu verifikasi Anda"
                 loading={loading}
                 trend={stats.pendingReports > 0 ? 15 : -2}
-                onClick={() => setReportFilterTab('pending')} // âœ… Arahkan ke filter laporan
+                onClick={() => setReportFilterTab('pending')} // ✅ Arahkan ke filter laporan
               />
               <StatCard
                 label="Dokumen Diverifikasi"
@@ -732,7 +732,7 @@ export default function AdminTeamDocumentsPage() {
                 helpText="Laporan yang sudah Anda verifikasi"
                 loading={loading}
                 trend={stats.verifiedReports > 0 ? 8 : 0}
-                onClick={() => setReportFilterTab('verified')} // âœ… Arahkan ke filter laporan
+                onClick={() => setReportFilterTab('verified')} // ✅ Arahkan ke filter laporan
               />
             </div>
           </motion.section>
@@ -834,7 +834,7 @@ export default function AdminTeamDocumentsPage() {
                                   <div className="flex-1 min-w-0">
                                     <h4 className="font-medium text-slate-900 dark:text-slate-100 truncate">{doc.name}</h4>
                                     <p className="text-sm text-slate-600 dark:text-slate-400 truncate">
-                                      {doc.project_name} â€¢ oleh {doc.creator_name}
+                                      {doc.project_name} • oleh {doc.creator_name}
                                     </p>
                                   </div>
                                 </div>
@@ -869,7 +869,7 @@ export default function AdminTeamDocumentsPage() {
                                   <div className="flex-1 min-w-0">
                                     <h4 className="font-medium text-slate-900 dark:text-slate-100 truncate">{doc.name}</h4>
                                     <p className="text-sm text-slate-600 dark:text-slate-400 truncate">
-                                      {doc.project_name} â€¢ oleh {doc.creator_name}
+                                      {doc.project_name} • oleh {doc.creator_name}
                                     </p>
                                     {doc.admin_team_feedback && (
                                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 italic">
@@ -986,7 +986,7 @@ export default function AdminTeamDocumentsPage() {
                                     <h4 className="font-medium text-slate-900 dark:text-slate-100 truncate">{rep.name}</h4>
                                     <div className="flex flex-col sm:flex-row sm:items-center text-sm text-slate-600 dark:text-slate-400 space-y-1 sm:space-y-0">
                                       <span className="truncate">{rep.project_name}</span>
-                                      <span className="hidden sm:inline mx-2">â€¢</span>
+                                      <span className="hidden sm:inline mx-2">•</span>
                                       <span className="truncate">oleh {rep.creator_name}</span>
                                       {rep.inspector_specialization && (
                                         <Badge variant="outline" className="ml-2 text-xs capitalize">
@@ -1028,7 +1028,7 @@ export default function AdminTeamDocumentsPage() {
                                     <h4 className="font-medium text-slate-900 dark:text-slate-100 truncate">{rep.name}</h4>
                                     <div className="flex flex-col sm:flex-row sm:items-center text-sm text-slate-600 dark:text-slate-400 space-y-1 sm:space-y-0">
                                       <span className="truncate">{rep.project_name}</span>
-                                      <span className="hidden sm:inline mx-2">â€¢</span>
+                                      <span className="hidden sm:inline mx-2">•</span>
                                       <span className="truncate">oleh {rep.creator_name}</span>
                                       {rep.inspector_specialization && (
                                         <Badge variant="outline" className="ml-2 text-xs capitalize">

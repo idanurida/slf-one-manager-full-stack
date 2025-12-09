@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/team-leader/communication.js
+// FILE: src/pages/dashboard/team-leader/communication.js
 // Note: Database tetap menggunakan 'project_lead', UI menampilkan 'Team Leader'
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
@@ -160,7 +160,7 @@ export default function TeamLeaderCommunicationPage() {
         throw assignErr; // Lempar error untuk ditangkap oleh blok catch
       }
 
-      // âœ… PERBAIKAN: Pastikan assignments tidak null/undefined sebelum .map()
+      // ✅ PERBAIKAN: Pastikan assignments tidak null/undefined sebelum .map()
       const safeAssignments = assignments || []; // Gunakan array kosong jika null/undefined
       const projectIds = safeAssignments.map(a => a.project_id);
 

@@ -1,11 +1,10 @@
 ﻿// FILE: src/pages/dashboard/inspector/documents/[id]/edit.js
 // Route: /dashboard/inspector/documents/[id]/edit
-// Contoh: /dashboard/inspector/documents/abc-123-def-456/edit
 
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation'; // Gunakan useRouter dari next/navigation
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { useToast } from '@/components/ui/use-toast';
@@ -29,9 +28,8 @@ import {
   AlertDescription,
   AlertTitle,
 } from '@/components/ui/alert';
-
-// Lucide Icons
-import { FileText, Save, ArrowLeft, X, Paperclip, Camera, Loader2 } from 'lucide-react';
+// Tambahkan import untuk ikon yang diperlukan
+import { FileText, Save, ArrowLeft, X, Paperclip, Loader2, AlertTriangle } from 'lucide-react';
 
 // Other Imports
 import DashboardLayout from '@/components/layouts/DashboardLayout';
@@ -40,25 +38,40 @@ import { useAuth } from '@/context/AuthContext';
 
 const EditInspectorDocumentPage = () => {
   const router = useRouter();
-  const { id: docId } = useParams(); // Ambil parameter dari URL
   const { toast } = useToast();
   const { user, profile, loading: authLoading, isInspector } = useAuth();
 
-  const [inspector, setInspector] = useState(null); // Gunakan state inspector khusus
+  // Gunakan useRouter untuk mendapatkan params dari URL
+  // Karena ini adalah dynamic route [id], kita perlu mengambil ID dari pathname
+  const [docId, setDocId] = useState('');
+  
+  const [inspector, setInspector] = useState(null);
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-  const [projects, setProjects] = useState([]); // Untuk dropdown proyek
+  const [projects, setProjects] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     type: '',
     status: 'draft',
     compliance_status: 'pending',
-    // Jika file diganti, tambahkan state untuk file baru
+    project_id: '',
     newFile: null,
     newFileName: '',
   });
+
+  // Extract document ID from URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pathSegments = window.location.pathname.split('/');
+      const idIndex = pathSegments.indexOf('documents') + 1;
+      if (idIndex > 0 && idIndex < pathSegments.length) {
+        const id = pathSegments[idIndex];
+        setDocId(id);
+      }
+    }
+  }, []);
 
   // --- Ambil data user, proyek, dan dokumen ---
   useEffect(() => {
@@ -72,17 +85,17 @@ const EditInspectorDocumentPage = () => {
         console.log("[EditInspectorDocumentPage] Fetching document for ID:", docId);
 
         // 1. Ambil user & profile (dari useAuth)
-        if (!user || !profile || profile.role !== 'inspector') { // Periksa role 'inspector'
+        if (!user || !profile || profile.role !== 'inspector') {
           console.warn('[EditInspectorDocumentPage] Bukan inspector atau tidak ada profil.');
           router.push('/login');
           return;
         }
-        setInspector(profile); // Set state inspector
+        setInspector(profile);
 
         // 2. Ambil project_ids yang ditugaskan ke inspector ini
-        const {  teamData, error: teamError } = await supabase
+        const { data: teamData, error: teamError } = await supabase
           .from('project_teams')
-          .select('project_id, projects(name)') // Join untuk nama proyek
+          .select('project_id')
           .eq('user_id', profile.id)
           .eq('role', 'inspector');
 
@@ -96,7 +109,7 @@ const EditInspectorDocumentPage = () => {
         }
 
         // Ambil detail proyek untuk dropdown
-        const {  projData, error: projError } = await supabase
+        const { data: projData, error: projError } = await supabase
           .from('projects')
           .select('id, name')
           .in('id', projectIds)
@@ -105,27 +118,26 @@ const EditInspectorDocumentPage = () => {
         if (projError) throw projError;
         setProjects(projData || []);
 
-        // 3. Ambil detail dokumen dengan id dan filter project yang ditugaskan
-        // --- PERBAIKAN: Gunakan nama kolom sebenarnya dari tabel 'documents' ---
-        const {  docData, error: docError } = await supabase
+        // 3. Ambil detail dokumen
+        const { data: docData, error: docError } = await supabase
           .from('documents')
           .select(`
             id,
-            name,                  // ✅ Kolom sebenarnya: name
-            type,                  // ✅ Kolom sebenarnya: type
-            url,                   // ✅ Kolom sebenarnya: url
+            name,
+            type,
+            url,
             status,
             compliance_status,
-            created_at,            // ✅ Kolom sebenarnya: created_at
-            project_id,            // ✅ Kolom sebenarnya: project_id
-            created_by             // ✅ Kolom sebenarnya: created_by
+            created_at,
+            project_id,
+            created_by
           `)
           .eq('id', docId)
-          .in('project_id', projectIds) // Filter berdasarkan project yang ditugaskan
+          .in('project_id', projectIds)
           .single();
 
         if (docError) {
-          if (docError.code === 'PGRST116') { // Row not found
+          if (docError.code === 'PGRST116') {
             throw new Error('Dokumen tidak ditemukan atau Anda tidak memiliki akses.');
           }
           throw docError;
@@ -147,7 +159,9 @@ const EditInspectorDocumentPage = () => {
           type: docData.type || '',
           status: docData.status || 'draft',
           compliance_status: docData.compliance_status || 'pending',
-          project_id: docData.project_id, // Set default project_id ke proyek asal dokumen
+          project_id: docData.project_id,
+          newFile: null,
+          newFileName: '',
         });
 
       } catch (err) {
@@ -160,16 +174,24 @@ const EditInspectorDocumentPage = () => {
           variant: "destructive",
         });
         setDocument(null);
-        setFormData({ name: '', type: '', status: 'draft', compliance_status: 'pending', project_id: '' });
+        setFormData({ 
+          name: '', 
+          type: '', 
+          status: 'draft', 
+          compliance_status: 'pending', 
+          project_id: '',
+          newFile: null,
+          newFileName: '',
+        });
       } finally {
         setLoading(false);
       }
     };
 
-    if (user && isInspector && docId) { // Muat data hanya jika user, isInspector, dan docId sudah tersedia
+    if (user && isInspector && docId) {
       loadDocumentData();
     }
-  }, [user?.id, isInspector, docId, router, toast]); // Tambahkan dependensi yang relevan
+  }, [user?.id, isInspector, docId, router, toast]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -207,53 +229,51 @@ const EditInspectorDocumentPage = () => {
     setError(null);
 
     try {
-      let filePathToUpdate = document.url; // Default ke path lama
+      let filePathToUpdate = document.url;
 
-      // Jika file baru dipilih, upload file baru dan hapus lama
+      // Jika file baru dipilih
       if (formData.newFile) {
-        // Hapus file lama dari storage (opsional, tergantung kebijakan)
+        // Hapus file lama dari storage
         if (document.url) {
           const { error: deleteError } = await supabase.storage
-            .from('documents') // Ganti dengan nama bucket yang benar jika berbeda
-            .remove([document.url]); // Gunakan path lama untuk menghapus
+            .from('documents')
+            .remove([document.url]);
 
           if (deleteError) {
             console.warn("Gagal menghapus file lama:", deleteError);
-            // Jangan throw error, lanjutkan proses update metadata
           }
         }
 
         // Upload file baru
         const fileExt = formData.newFile.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
-        const newFilePath = `projects/${formData.project_id}/inspector_docs/${fileName}`; // Gunakan project_id dari form
+        const newFilePath = `projects/${formData.project_id}/inspector_docs/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('documents') // Ganti dengan nama bucket yang benar jika berbeda
+          .from('documents')
           .upload(newFilePath, formData.newFile, {
             cacheControl: '3600',
-            upsert: false, // Ganti dengan true jika ingin overwrite file yang sama
+            upsert: false,
           });
 
         if (uploadError) throw uploadError;
 
-        filePathToUpdate = newFilePath; // Gunakan path file baru
+        filePathToUpdate = newFilePath;
       }
 
-      // Update metadata ke tabel documents menggunakan nama kolom sebenarnya
+      // Update metadata
       const { error: dbError } = await supabase
         .from('documents')
         .update({
-          name: formData.name.trim(),              // ✅ Kolom sebenarnya: name
-          type: formData.type,                     // ✅ Kolom sebenarnya: type
-          url: filePathToUpdate,                   // ✅ Kolom sebenarnya: url (storage_path)
+          name: formData.name.trim(),
+          type: formData.type,
+          url: filePathToUpdate,
           status: formData.status,
           compliance_status: formData.compliance_status,
-          project_id: formData.project_id,         // ✅ Kolom sebenarnya: project_id
-          updated_at: new Date().toISOString(),    // Kolom opsional jika ada
-          // created_by dan created_at tidak di-update
+          project_id: formData.project_id,
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', docId); // Filter by ID
+        .eq('id', docId);
 
       if (dbError) throw dbError;
 
@@ -262,7 +282,7 @@ const EditInspectorDocumentPage = () => {
         variant: "default",
       });
 
-      // Redirect ke halaman detail dokumen setelah berhasil
+      // Redirect ke halaman detail dokumen
       router.push(`/dashboard/inspector/documents/${docId}`);
 
     } catch (err) {
@@ -289,30 +309,43 @@ const EditInspectorDocumentPage = () => {
       newFile: null,
       newFileName: '',
     }));
-    // Reset input file
     const fileInput = document.getElementById('file-input');
     if (fileInput) fileInput.value = '';
   };
 
-  // --- Loading State ---
-  if (authLoading || loading) {
+  // --- Loading State untuk build time ---
+  if (typeof window === 'undefined') {
     return (
       <DashboardLayout title="Edit Dokumen" user={user} profile={profile}>
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="mt-4 text-muted-foreground">Memverifikasi sesi dan memuat data dokumen...</p>
+          <p className="mt-4 text-muted-foreground">Memuat halaman edit dokumen...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // --- Loading State untuk client side ---
+  if (authLoading || loading || !docId) {
+    return (
+      <DashboardLayout title="Edit Dokumen" user={user} profile={profile}>
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">
+            {!docId ? "Mengambil ID dokumen..." : "Memverifikasi sesi dan memuat data dokumen..."}
+          </p>
         </div>
       </DashboardLayout>
     );
   }
 
   // --- Auth Check ---
-  if (!user || !inspector) { // Gunakan state inspector untuk pengecekan
+  if (!user || !inspector) {
     return (
       <DashboardLayout title="Edit Dokumen" user={user} profile={profile}>
         <div className="p-4 md:p-6">
           <Alert variant="destructive">
-            <Info className="h-4 w-4" />
+            <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Akses Ditolak</AlertTitle>
             <AlertDescription>
               Hanya inspector yang dapat mengakses halaman ini.
@@ -396,13 +429,13 @@ const EditInspectorDocumentPage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {/* Project Selection (Read Only - atau hanya bisa dipindahkan ke proyek lain yang juga ditugaskan?) */}
+              {/* Project Selection */}
               <div className="space-y-2">
                 <Label htmlFor="project_id">Proyek *</Label>
                 <Select
                   value={formData.project_id}
                   onValueChange={(value) => handleSelectChange('project_id', value)}
-                  disabled={true} // Untuk sementara, disable perpindahan proyek
+                  disabled={true}
                 >
                   <SelectTrigger id="project_id" className="w-full md:w-[300px] bg-background">
                     <SelectValue placeholder="Pilih proyek" />
@@ -497,7 +530,7 @@ const EditInspectorDocumentPage = () => {
                 </p>
               </div>
 
-              {/* File Upload (Optional - untuk mengganti file) */}
+              {/* File Upload */}
               <div className="space-y-2">
                 <Label htmlFor="file-input">Ganti File Dokumen</Label>
                 <Input
@@ -532,7 +565,7 @@ const EditInspectorDocumentPage = () => {
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Pilih file baru untuk mengganti file lama. Biarkan kosong jika tidak ingin mengganti. Format yang didukung: PDF, Word, Excel, JPG, PNG, DWG, DXF (Max 10MB)
+                  Pilih file baru untuk mengganti file lama. Biarkan kosong jika tidak ingin mengganti.
                 </p>
                 {document.url && !formData.newFile && (
                   <p className="text-xs text-muted-foreground">

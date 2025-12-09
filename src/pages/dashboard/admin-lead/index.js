@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/admin-lead/index.js
+// FILE: src/pages/dashboard/admin-lead/index.js
 // Dashboard Admin Lead - Clean & User Friendly
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
@@ -368,7 +368,7 @@ export default function AdminLeadDashboard() {
                         <div>
                           <p className="font-medium line-clamp-1">{project.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {project.application_type || 'SLF'} â€¢ {project.city || '-'} â€¢ {formatDate(project.created_at)}
+                            {project.application_type || 'SLF'} • {project.city || '-'} • {formatDate(project.created_at)}
                           </p>
                         </div>
                       </div>

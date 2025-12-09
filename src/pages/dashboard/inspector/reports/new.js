@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -85,7 +85,7 @@ export default function NewInspectionReport() {
             )
           `)
           .eq('id', inspectionId)
-          .eq('inspector_id', user.id)
+          .eq('assigned_to', user.id)
           .single();
 
         if (inspectionError) throw inspectionError;
@@ -194,7 +194,7 @@ export default function NewInspectionReport() {
       const reportData = {
         inspection_id: inspectionId,
         project_id: inspection?.project_id,
-        inspector_id: user.id,
+        assigned_to: user.id,
         title: formData.title,
         findings: formData.findings,
         recommendations: formData.recommendations,
@@ -213,7 +213,7 @@ export default function NewInspectionReport() {
       if (error) throw error;
 
       toast({
-        title: status === 'draft' ? "âœ… Draft disimpan" : "âœ… Laporan dikirim",
+        title: status === 'draft' ? "✅ Draft disimpan" : "✅ Laporan dikirim",
         description: status === 'draft' 
           ? "Laporan berhasil disimpan sebagai draft" 
           : "Laporan berhasil dikirim ke admin team",

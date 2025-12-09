@@ -1,9 +1,9 @@
-﻿// FILE: client/src/utils/inspectionAPI.js
+// FILE: client/src/utils/inspectionAPI.js
 import { supabase, logSupabaseError } from './supabaseClient';
 
-// ðŸ§© Placeholder fallback (mirip seperti di supabaseAPI.js)
+// 🧩 Placeholder fallback (mirip seperti di supabaseAPI.js)
 const placeholder = (context) => async (...args) => {
-  console.warn(`[${context}] Supabase client not ready â€” using mock fallback`);
+  console.warn(`[${context}] Supabase client not ready — using mock fallback`);
   if (context.includes('Upload')) return { success: true, photo_url: '/mock-photo.jpg' };
   return [];
 };
@@ -11,7 +11,7 @@ const placeholder = (context) => async (...args) => {
 const isSupabaseValid = supabase && typeof supabase.from === 'function';
 
 // ---------------------------------------------------------
-// ðŸ§± FETCH INSPECTIONS PER PROJECT
+// 🧱 FETCH INSPECTIONS PER PROJECT
 // ---------------------------------------------------------
 export const getInspectionsByProject = isSupabaseValid
   ? async function (projectId) {
@@ -22,14 +22,14 @@ export const getInspectionsByProject = isSupabaseValid
           .select(`
             id,
             project_id,
-            inspector_id,
+            assigned_to,
             scheduled_date,
             start_time,
             end_time,
             status,
             report_summary,
             created_at,
-            profiles:inspector_id(full_name)
+            profiles:assigned_to(full_name)
           `)
           .eq('project_id', projectId)
           .order('scheduled_date', { ascending: false });
@@ -45,7 +45,7 @@ export const getInspectionsByProject = isSupabaseValid
   : placeholder('getInspectionsByProject');
 
 // ---------------------------------------------------------
-// ðŸ§© FETCH INSPECTORS
+// 🧩 FETCH INSPECTORS
 // ---------------------------------------------------------
 export const getInspectors = isSupabaseValid
   ? async function () {
@@ -67,7 +67,7 @@ export const getInspectors = isSupabaseValid
   : placeholder('getInspectors');
 
 // ---------------------------------------------------------
-// ðŸ“· UPLOAD FOTO INSPEKSI KE SUPABASE STORAGE
+// 📷 UPLOAD FOTO INSPEKSI KE SUPABASE STORAGE
 // ---------------------------------------------------------
 export const uploadInspectionPhoto = isSupabaseValid
   ? async function (inspectionId, file) {

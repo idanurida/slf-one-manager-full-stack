@@ -49,7 +49,7 @@ const FormControlWrapper = ({ label, isRequired, isInvalid, errorMessage, htmlFo
 const InspectionForm = ({ inspection, projectId, onSave, isEditing = false }) => {
   const [formData, setFormData] = useState({
     scheduled_date: '',
-    inspector_id: '',
+    assigned_to: '',
     drafter_id: '',
     notes: '',
     status: 'scheduled',
@@ -107,8 +107,8 @@ const InspectionForm = ({ inspection, projectId, onSave, isEditing = false }) =>
       newErrors.scheduled_date = 'Tanggal jadwal wajib diisi';
     }
     
-    if (!formData.inspector_id) {
-      newErrors.inspector_id = 'Inspektor wajib dipilih';
+    if (!formData.assigned_to) {
+      newErrors.assigned_to = 'Inspektor wajib dipilih';
     }
     
     if (!formData.drafter_id) {
@@ -306,19 +306,19 @@ const InspectionForm = ({ inspection, projectId, onSave, isEditing = false }) =>
                     <div className="col-span-1">
                       <FormControlWrapper
                         label="Inspektor (Mock)"
-                        htmlFor="inspector_id"
+                        htmlFor="assigned_to"
                         isRequired={true}
-                        isInvalid={!!errors.inspector_id}
-                        errorMessage={errors.inspector_id}
+                        isInvalid={!!errors.assigned_to}
+                        errorMessage={errors.assigned_to}
                       >
                         {/* Select shadcn/ui */}
                         <Select
-                            name="inspector_id"
-                            value={formData.inspector_id}
-                            onValueChange={(v) => handleSelectChange('inspector_id', v)}
+                            name="assigned_to"
+                            value={formData.assigned_to}
+                            onValueChange={(v) => handleSelectChange('assigned_to', v)}
                             disabled={loading}
                         >
-                            <SelectTrigger className={cn(!!errors.inspector_id && "border-destructive focus:ring-destructive ring-offset-destructive")}>
+                            <SelectTrigger className={cn(!!errors.assigned_to && "border-destructive focus:ring-destructive ring-offset-destructive")}>
                                 <SelectValue placeholder="Pilih Inspektor (Mock)" />
                             </SelectTrigger>
                             <SelectContent>

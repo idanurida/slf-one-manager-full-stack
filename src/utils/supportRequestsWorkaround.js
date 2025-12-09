@@ -1,4 +1,4 @@
-﻿// ==================== SUPPORT_REQUESTS WORKAROUND ====================
+// ==================== SUPPORT_REQUESTS WORKAROUND ====================
 // Jika mendapatkan 403 error, coba approach ini:
 
 const fetchSupportRequestsWithRetry = async (userId, maxRetries = 2) => {

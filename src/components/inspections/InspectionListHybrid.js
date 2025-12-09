@@ -1,4 +1,4 @@
-﻿// client/src/components/inspections/InspectionListHybrid.js
+// client/src/components/inspections/InspectionListHybrid.js
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -224,29 +224,29 @@ const InspectionListHybrid = ({ projectId = 123 }) => {
   useEffect(() => {
     const loadInspections = async () => {
       if (!projectId) {
-        console.warn("âŒ projectId kosong â€” tidak memuat data.");
+        console.warn("❌ projectId kosong — tidak memuat data.");
         setLoading(false);
         return;
       }
 
       setLoading(true);
       try {
-        console.log("ðŸ“¡ Fetching inspections from Supabase (Mock) for project:", projectId);
+        console.log("📡 Fetching inspections from Supabase (Mock) for project:", projectId);
 
         // Langsung menggunakan klien Supabase untuk fetching data
         const { data, error } = await supabase
             .from('vw_inspections_fixed') // Nama tabel di Supabase
-            .select('*, inspector:inspector_id(id, name), drafter:drafter_id(id, name)') // Join relasi
+            .select('*, inspector:assigned_to(id, name), drafter:drafter_id(id, name)') // Join relasi
             .eq('project_id', projectId)
             .order('scheduled_date', { ascending: false });
 
         if (error) {
-          console.error("âŒ Supabase Error:", error);
+          console.error("❌ Supabase Error:", error);
           throw new Error(error.message || "Gagal memuat data dari Supabase.");
         }
 
         if (data && data.length > 0) {
-          console.log("âœ… Supabase inspections loaded:", data);
+          console.log("✅ Supabase inspections loaded:", data);
           setInspections(data);
           toast({
             title: "Data Inspeksi Dimuat",
@@ -254,7 +254,7 @@ const InspectionListHybrid = ({ projectId = 123 }) => {
             variant: "default",
           });
         } else {
-          console.warn("âš ï¸ Supabase returned empty data, using mock fallback.");
+          console.warn("⚠️ Supabase returned empty data, using mock fallback.");
           // Fallback ke mock data jika Supabase mengembalikan array kosong
           setInspections(mockInspections(projectId));
           toast({
@@ -264,7 +264,7 @@ const InspectionListHybrid = ({ projectId = 123 }) => {
           });
         }
       } catch (error) {
-        console.error("âŒ General Error fetching/processing inspections:", error);
+        console.error("❌ General Error fetching/processing inspections:", error);
         // Fallback ke mock data jika ada error API/network
         setInspections(mockInspections(projectId));
         toast({

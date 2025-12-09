@@ -1,11 +1,11 @@
-﻿// FILE: src/components/project-lead/InspectionList.js
+// FILE: src/components/project-lead/InspectionList.js
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // âœ… Ganti ke next/navigation
+import { useRouter } from 'next/navigation'; // ✅ Ganti ke next/navigation
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { useToast } from '@/components/ui/use-toast'; // âœ… Gunakan useToast dari shadcn/ui
+import { useToast } from '@/components/ui/use-toast'; // ✅ Gunakan useToast dari shadcn/ui
 
 // shadcn/ui Components
 import { Button } from '@/components/ui/button';
@@ -104,7 +104,7 @@ const getSpecializationText = (specialization) => {
 // --- Main Component ---
 const InspectionList = ({ projectId }) => {
   const router = useRouter();
-  const { toast } = useToast(); // âœ… Gunakan useToast dari shadcn/ui
+  const { toast } = useToast(); // ✅ Gunakan useToast dari shadcn/ui
 
   const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -128,8 +128,8 @@ const InspectionList = ({ projectId }) => {
             end_time,
             status,
             created_at,
-            inspector_id,
-            inspectors:profiles!inspector_id(full_name, email, specialization)
+            assigned_to,
+            inspectors:profiles!assigned_to(full_name, email, specialization)
           `)
           .eq('project_id', projectId)
           .order('scheduled_date', { ascending: false });
@@ -144,7 +144,7 @@ const InspectionList = ({ projectId }) => {
         toast({
           title: 'Gagal memuat data inspeksi.',
           description: errorMessage,
-          variant: "destructive", // âœ… Gunakan variant shadcn/ui
+          variant: "destructive", // ✅ Gunakan variant shadcn/ui
         });
         setInspections([]);
       } finally {
@@ -153,7 +153,7 @@ const InspectionList = ({ projectId }) => {
     };
 
     fetchInspections();
-  }, [projectId, toast]); // âœ… Tambahkan toast ke dependency
+  }, [projectId, toast]); // ✅ Tambahkan toast ke dependency
 
   // --- Loading State ---
   if (loading) {

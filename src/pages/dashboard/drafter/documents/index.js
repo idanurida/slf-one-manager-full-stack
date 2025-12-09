@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/drafter/documents/index.js
+// FILE: src/pages/dashboard/drafter/documents/index.js
 // Route: /dashboard/drafter/documents
 
 "use client";
@@ -598,8 +598,8 @@ export default function DrafterMyDocumentsPage() {
               </CardTitle>
               <CardDescription>
                 Menampilkan {filteredDocuments.length} dari {documents.length} dokumen
-                {selectedProjectId !== 'all' && ` • Proyek: ${projects.find(p => p.id === selectedProjectId)?.name}`}
-                {selectedStatus !== 'all' && ` • Status: ${selectedStatus}`}
+                {selectedProjectId !== 'all' && ` � Proyek: ${projects.find(p => p.id === selectedProjectId)?.name}`}
+                {selectedStatus !== 'all' && ` � Status: ${selectedStatus}`}
               </CardDescription>
             </CardHeader>
             <CardContent>

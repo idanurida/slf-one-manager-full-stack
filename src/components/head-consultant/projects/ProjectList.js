@@ -1,4 +1,4 @@
-﻿// src/components/head-consultant/projects/ProjectList.js
+// src/components/head-consultant/projects/ProjectList.js
 "use client";
 
 import React from 'react';
@@ -90,7 +90,7 @@ const ProjectList = ({ projects, loading, onApprove, onReject, onViewDetail }) =
   const [plLoading, setPlLoading] = React.useState(true);
 
 
-  // âœ… Filter projects logic
+  // ✅ Filter projects logic
   React.useEffect(() => {
     let result = projects;
 
@@ -114,7 +114,7 @@ const ProjectList = ({ projects, loading, onApprove, onReject, onViewDetail }) =
     setFilteredProjects(result);
   }, [searchTerm, selectedStatus, selectedProjectLead, projects]);
 
-  // âœ… Fetch project leads for filter
+  // ✅ Fetch project leads for filter
   React.useEffect(() => {
     const fetchProjectLeads = async () => {
       setPlLoading(true);

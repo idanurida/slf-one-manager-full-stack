@@ -1,4 +1,4 @@
-﻿// FILE: src/components/project-lead/inspections/CreateInspectionSchedule.js
+// FILE: src/components/project-lead/inspections/CreateInspectionSchedule.js
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,7 +35,7 @@ const CreateInspectionSchedule = ({
   // Form state
   const [formData, setFormData] = useState({
     project_id: "",
-    inspector_id: "",
+    assigned_to: "",
     start_date: "",
     end_date: "",
     notes: ""
@@ -75,8 +75,8 @@ const CreateInspectionSchedule = ({
     if (!formData.project_id) {
       newErrors.project_id = 'Pilih proyek terlebih dahulu';
     }
-    if (!formData.inspector_id) {
-      newErrors.inspector_id = 'Pilih inspector terlebih dahulu';
+    if (!formData.assigned_to) {
+      newErrors.assigned_to = 'Pilih inspector terlebih dahulu';
     }
     if (!formData.start_date) {
       newErrors.start_date = 'Pilih tanggal mulai terlebih dahulu';
@@ -122,7 +122,7 @@ const CreateInspectionSchedule = ({
       // Fallback: reset form
       setFormData({
         project_id: "",
-        inspector_id: "",
+        assigned_to: "",
         start_date: "",
         end_date: "",
         notes: ""
@@ -149,7 +149,7 @@ const CreateInspectionSchedule = ({
         .insert([
           {
             project_id: formData.project_id,
-            inspector_id: formData.inspector_id,
+            assigned_to: formData.assigned_to,
             scheduled_date: formData.start_date,
             start_time: `${formData.start_date}T09:00:00`,
             end_time: `${formData.end_date}T17:00:00`,
@@ -182,7 +182,7 @@ const CreateInspectionSchedule = ({
       // Reset form
       setFormData({
         project_id: "",
-        inspector_id: "",
+        assigned_to: "",
         start_date: "",
         end_date: "",
         notes: ""
@@ -207,7 +207,7 @@ const CreateInspectionSchedule = ({
   const selectedProject = projects?.find(p => p.id === formData.project_id) || null;
   
   // Get selected inspector dengan safe access
-  const selectedInspector = inspectors?.find(i => i.id === formData.inspector_id) || null;
+  const selectedInspector = inspectors?.find(i => i.id === formData.assigned_to) || null;
 
   // Jika tidak ada projects, tampilkan pesan
   if (!projects || projects.length === 0) {
@@ -307,13 +307,13 @@ const CreateInspectionSchedule = ({
             <div className="space-y-2">
               <Label htmlFor="inspector" className="text-base font-semibold">Pilih Inspektor *</Label>
               <Select 
-                value={formData.inspector_id} 
-                onValueChange={(value) => handleInputChange('inspector_id', value)}
+                value={formData.assigned_to} 
+                onValueChange={(value) => handleInputChange('assigned_to', value)}
                 disabled={fetchInspectorsLoading}
               >
                 <SelectTrigger className={cn(
                   "bg-white hover:bg-accent/50 transition-colors",
-                  errors.inspector_id && "border-red-500"
+                  errors.assigned_to && "border-red-500"
                 )}>
                   <SelectValue placeholder={
                     fetchInspectorsLoading ? "Memuat inspector..." : "Pilih inspektor"
@@ -335,10 +335,10 @@ const CreateInspectionSchedule = ({
                   ))}
                 </SelectContent>
               </Select>
-              {errors.inspector_id && (
+              {errors.assigned_to && (
                 <p className="text-sm text-red-500 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
-                  {errors.inspector_id}
+                  {errors.assigned_to}
                 </p>
               )}
               {fetchInspectorsLoading && (

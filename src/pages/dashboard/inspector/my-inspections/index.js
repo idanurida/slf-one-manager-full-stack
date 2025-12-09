@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -81,14 +81,14 @@ const InspectorChecklistDashboard = () => {
 
       setLoading(true);
       try {
-        console.log('ðŸ”„ Fetching inspections for user:', user.id);
+        console.log('🔄 Fetching inspections for user:', user.id);
 
         const { data: inspectionData, error: inspectionError } = await supabase
           .from('vw_inspections_fixed')
           .select(`
             id,
             project_id,
-            inspector_id,
+            assigned_to,
             scheduled_date,
             start_time,
             end_time,
@@ -102,25 +102,25 @@ const InspectorChecklistDashboard = () => {
               client_id,
               clients(name)
             ),
-            profiles!inspections_inspector_id_fkey(
+            profiles!inspections_assigned_to_fkey(
               full_name, 
               specialization
             )
           `)
-          .eq('inspector_id', user.id)
+          .eq('assigned_to', user.id)
           .in('status', ['scheduled', 'in_progress'])
           .order('scheduled_date', { ascending: true });
 
         if (inspectionError) {
-          console.error('âŒ Fetch inspections error:', inspectionError);
+          console.error('❌ Fetch inspections error:', inspectionError);
           throw inspectionError;
         }
 
-        console.log('âœ… Inspections loaded:', inspectionData?.length);
+        console.log('✅ Inspections loaded:', inspectionData?.length);
         setInspections(inspectionData || []);
 
       } catch (err) {
-        console.error('âŒ Fetch inspections failed:', err);
+        console.error('❌ Fetch inspections failed:', err);
         toast({
           title: "Gagal memuat data inspeksi",
           description: err.message,
@@ -170,7 +170,7 @@ const InspectorChecklistDashboard = () => {
     return result;
   }, [inspections, searchTerm, selectedStatus]);
 
-  // âœ… FUNGSI BARU: Request camera permission
+  // ✅ FUNGSI BARU: Request camera permission
   const requestCameraPermission = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia(getMobileCameraConstraints());
@@ -183,7 +183,7 @@ const InspectorChecklistDashboard = () => {
     }
   };
 
-  // âœ… FUNGSI BARU: Get current location dengan fallback
+  // ✅ FUNGSI BARU: Get current location dengan fallback
   const getCurrentLocation = async () => {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
@@ -233,7 +233,7 @@ const InspectorChecklistDashboard = () => {
     });
   };
 
-  // âœ… FUNGSI BARU: Start inspection dengan permission flow
+  // ✅ FUNGSI BARU: Start inspection dengan permission flow
   const handleStartInspection = async (inspection) => {
     setCurrentInspection(inspection);
     
@@ -253,7 +253,7 @@ const InspectorChecklistDashboard = () => {
     setLocationDialog(true);
   };
 
-  // âœ… FUNGSI BARU: Process location dengan opsi tanpa GPS
+  // ✅ FUNGSI BARU: Process location dengan opsi tanpa GPS
   const processLocationAndStart = async (withGPS = true) => {
     if (!currentInspection) return;
 
@@ -314,14 +314,14 @@ const InspectorChecklistDashboard = () => {
     }
   };
 
-  // âœ… PERBAIKAN: Fungsi UPSERT yang aman untuk update status inspeksi
+  // ✅ PERBAIKAN: Fungsi UPSERT yang aman untuk update status inspeksi
   const updateInspectionStatus = async (inspectionId, newStatus, locationData = null) => {
     if (!user) return false;
 
     setSavingStates(prev => ({ ...prev, [inspectionId]: true }));
 
     try {
-      console.log(`ðŸ”„ Updating inspection ${inspectionId} to ${newStatus}`);
+      console.log(`🔄 Updating inspection ${inspectionId} to ${newStatus}`);
 
       // 1. Cek apakah inspeksi ada
       const { data: existingInspection, error: checkError } = await supabase
@@ -365,13 +365,13 @@ const InspectorChecklistDashboard = () => {
           .insert([{
             id: inspectionId,
             ...updateData,
-            inspector_id: user.id
+            assigned_to: user.id
           }]);
         error = insertError;
       }
 
       if (error) {
-        console.error('âŒ Update inspection error:', error);
+        console.error('❌ Update inspection error:', error);
         throw error;
       }
 
@@ -389,7 +389,7 @@ const InspectorChecklistDashboard = () => {
       );
 
       toast({
-        title: "âœ… Inspeksi dimulai",
+        title: "✅ Inspeksi dimulai",
         description: `Siap melakukan inspeksi ${currentInspection?.projects?.name}`,
         variant: "default",
       });
@@ -397,9 +397,9 @@ const InspectorChecklistDashboard = () => {
       return true;
 
     } catch (err) {
-      console.error('âŒ Failed to update inspection:', err);
+      console.error('❌ Failed to update inspection:', err);
       toast({
-        title: "âŒ Gagal memulai inspeksi",
+        title: "❌ Gagal memulai inspeksi",
         description: err.message || "Terjadi kesalahan saat menyimpan",
         variant: "destructive",
       });

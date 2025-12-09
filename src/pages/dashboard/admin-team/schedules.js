@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/admin-team/schedules.js
+// FILE: src/pages/dashboard/admin-team/schedules.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { format } from 'date-fns';
@@ -65,7 +65,7 @@ const getScheduleTypeColor = (type) => {
     'inspection': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
     'meeting': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
     'report_review': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
-    'document_verification': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400', // âœ… Ditambahkan
+    'document_verification': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400', // ✅ Ditambahkan
     'internal': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
     'default': 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400'
   };

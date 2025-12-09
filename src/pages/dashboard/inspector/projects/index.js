@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/inspector/projects/index.js
+// FILE: src/pages/dashboard/inspector/projects/index.js
 // Halaman Proyek Inspector - Clean tanpa statistik
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
@@ -90,7 +90,7 @@ export default function InspectorProjects() {
             clients(name)
           )
         `)
-        .eq('inspector_id', user.id);
+        .eq('assigned_to', user.id);
 
       // Combine and deduplicate
       const projectsMap = new Map();

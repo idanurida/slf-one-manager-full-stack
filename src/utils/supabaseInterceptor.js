@@ -1,4 +1,4 @@
-﻿// Interceptor untuk memperbaiki Supabase queries yang error
+// Interceptor untuk memperbaiki Supabase queries yang error
 const fixSupabaseQueries = () => {
   // Simpan fetch asli
   const originalFetch = window.fetch;

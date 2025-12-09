@@ -1,4 +1,4 @@
-﻿// client/src/components/inspections/InspectionList.js
+// client/src/components/inspections/InspectionList.js
 
 // Import utama React
 import React, { useState, useEffect } from 'react';

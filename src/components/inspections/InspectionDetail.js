@@ -1,4 +1,4 @@
-﻿// FILE: src/components/inspections/InspectionDetail.js
+// FILE: src/components/inspections/InspectionDetail.js
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -27,7 +27,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   FileText, Clock, Activity, CheckCircle, XCircle, Bell, Eye, Search, X,
   CheckSquare, AlertTriangle, Loader2, Info, Calendar, UserCheck, Camera, Plus,
-  Play, Check, ArrowLeft // âœ… Tambahkan icons yang missing
+  Play, Check, ArrowLeft // ✅ Tambahkan icons yang missing
 } from 'lucide-react';
 
 // Other Imports
@@ -142,7 +142,7 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
             projects (
               id, name, address, owner_name
             ),
-            inspectors:profiles!inspections_inspector_id_fkey (
+            inspectors:profiles!inspections_assigned_to_fkey (
               id, full_name, email
             ),
             drafters:profiles!inspections_drafter_id_fkey (

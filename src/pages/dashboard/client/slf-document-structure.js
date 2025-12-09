@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/client/slf-document-structure.js
+// FILE: src/pages/dashboard/client/slf-document-structure.js
 
 export const SLF_DOCUMENT_CATEGORIES = {
   data_teknis_tanah: {
@@ -29,12 +29,12 @@ export const SLF_DOCUMENT_CATEGORIES = {
   }
 };
 
-// ✅ DEFAULT EXPORT
+// ? DEFAULT EXPORT
 export default function SLFDocumentStructure() {
   return null;
 }
 
-// ✅ FUNCTIONS YANG DIPERLUKAN
+// ? FUNCTIONS YANG DIPERLUKAN
 export const getStatusColor = (status) => {
   const colors = {
     pending: 'yellow',

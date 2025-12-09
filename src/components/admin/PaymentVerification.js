@@ -1,4 +1,4 @@
-﻿// src/components/admin/PaymentVerification.js
+// src/components/admin/PaymentVerification.js
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';

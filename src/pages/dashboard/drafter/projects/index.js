@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/drafter/index.js
+// FILE: src/pages/dashboard/drafter/index.js
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -83,7 +83,7 @@ const formatDateSafely = (dateString) => {
   }
 };
 
-// ðŸ”¥ PERBAIKAN: Enhanced error handling
+// 🔥 PERBAIKAN: Enhanced error handling
 const getSupabaseErrorMessage = (error) => {
   if (!error) return 'Unknown error occurred';
   
@@ -116,11 +116,11 @@ export default function DrafterDashboard() {
   const [tasks, setTasks] = useState([]);
   const [inspections, setInspections] = useState([]);
 
-  // ðŸ”¥ PERBAIKAN: Enhanced data fetching dengan approach yang sama seperti file kedua
+  // 🔥 PERBAIKAN: Enhanced data fetching dengan approach yang sama seperti file kedua
   useEffect(() => {
     const loadDashboardData = async () => {
       if (!user?.id) {
-        console.log('âŒ User ID tidak tersedia');
+        console.log('❌ User ID tidak tersedia');
         setDebugInfo('User ID tidak tersedia');
         return;
       }
@@ -130,31 +130,31 @@ export default function DrafterDashboard() {
       setDebugInfo('Memulai fetch data...');
 
       try {
-        console.log("ðŸ”„ [DrafterDashboard] Fetching data untuk user:", user.id);
+        console.log("🔄 [DrafterDashboard] Fetching data untuk user:", user.id);
         setDebugInfo(`User ID: ${user.id}, Role: ${profile?.role}`);
 
         // 1. Cek apakah user adalah drafter
         if (!profile || profile.role !== 'drafter') {
           const errorMsg = `User role: ${profile?.role}, expected: drafter`;
-          console.warn('âŒ [DrafterDashboard] Bukan drafter:', errorMsg);
+          console.warn('❌ [DrafterDashboard] Bukan drafter:', errorMsg);
           setDebugInfo(errorMsg);
           setLoading(false);
           return;
         }
 
-        // ðŸ”¥ PERBAIKAN UTAMA: Gunakan MANUAL PROJECT IDs seperti di file kedua
-        console.log("ðŸ“‹ Menggunakan manual project IDs...");
+        // 🔥 PERBAIKAN UTAMA: Gunakan MANUAL PROJECT IDs seperti di file kedua
+        console.log("📋 Menggunakan manual project IDs...");
         const projectIds = [
           '071b487a-3be5-49fa-afd3-6648568c0b78',
           '071b487a-3be5-49fa-afd3-6648568c0b79', 
           '071b487a-3be5-49fa-afd3-6648568c0b80'
         ];
         
-        console.log("ðŸ“Œ Manual Project IDs:", projectIds);
+        console.log("📌 Manual Project IDs:", projectIds);
         setDebugInfo(`Using ${projectIds.length} manual project IDs`);
 
         if (projectIds.length === 0) {
-          console.log("â„¹ï¸ Tidak ada project yang ditugaskan");
+          console.log("ℹ️ Tidak ada project yang ditugaskan");
           setDebugInfo('Tidak ada project yang ditugaskan ke drafter ini');
           setProjects([]);
           setDocuments([]);
@@ -164,8 +164,8 @@ export default function DrafterDashboard() {
           return;
         }
 
-        // ðŸ”¥ PERBAIKAN: Query projects dengan manual IDs
-        console.log("ðŸ—ï¸ Mengambil data projects...");
+        // 🔥 PERBAIKAN: Query projects dengan manual IDs
+        console.log("🏗️ Mengambil data projects...");
         const { data: projData, error: projError } = await supabase
           .from('projects')
           .select(`
@@ -185,16 +185,16 @@ export default function DrafterDashboard() {
           .order('created_at', { ascending: false });
 
         if (projError) {
-          console.error('âŒ Error projects:', projError);
+          console.error('❌ Error projects:', projError);
           throw new Error(`Failed to load projects: ${getSupabaseErrorMessage(projError)}`);
         }
 
-        console.log("âœ… Projects data:", projData);
+        console.log("✅ Projects data:", projData);
         setProjects(projData || []);
         setDebugInfo(prev => prev + ` | Projects: ${projData?.length || 0}`);
 
-        // ðŸ”¥ PERBAIKAN: Query documents dengan manual IDs
-        console.log("ðŸ“„ Mengambil data documents...");
+        // 🔥 PERBAIKAN: Query documents dengan manual IDs
+        console.log("📄 Mengambil data documents...");
         const { data: docData, error: docError } = await supabase
           .from('documents')
           .select(`
@@ -213,17 +213,17 @@ export default function DrafterDashboard() {
           .order('created_at', { ascending: false });
 
         if (docError) {
-          console.error('âŒ Error documents:', docError);
+          console.error('❌ Error documents:', docError);
           console.warn('Documents error, continuing without documents:', getSupabaseErrorMessage(docError));
           setDocuments([]);
         } else {
-          console.log("âœ… Documents data:", docData);
+          console.log("✅ Documents data:", docData);
           setDocuments(docData || []);
           setDebugInfo(prev => prev + ` | Documents: ${docData?.length || 0}`);
         }
 
-        // ðŸ”¥ PERBAIKAN: Query tasks dengan manual IDs
-        console.log("ðŸ“ Mengambil data tasks...");
+        // 🔥 PERBAIKAN: Query tasks dengan manual IDs
+        console.log("📝 Mengambil data tasks...");
         const { data: taskData, error: taskError } = await supabase
           .from('tasks')
           .select(`
@@ -240,34 +240,34 @@ export default function DrafterDashboard() {
             )
           `)
           .eq('assignee_id', user.id)
-          .in('project_id', projectIds) // ðŸ”¥ TAMBAHKAN filter project_ids
+          .in('project_id', projectIds) // 🔥 TAMBAHKAN filter project_ids
           .order('created_at', { ascending: false });
 
         if (taskError) {
-          console.error('âŒ Error tasks:', taskError);
+          console.error('❌ Error tasks:', taskError);
           console.warn('Tasks error, continuing without tasks:', getSupabaseErrorMessage(taskError));
           setTasks([]);
         } else {
-          console.log("âœ… Tasks data:", taskData);
+          console.log("✅ Tasks data:", taskData);
           setTasks(taskData || []);
           setDebugInfo(prev => prev + ` | Tasks: ${taskData?.length || 0}`);
         }
 
-        // ðŸ”¥ PERBAIKAN: Query inspections dengan manual IDs
-        console.log("ðŸ” Mengambil data inspections...");
+        // 🔥 PERBAIKAN: Query inspections dengan manual IDs
+        console.log("🔍 Mengambil data inspections...");
         const { data: inspectionData, error: inspectionError } = await supabase
           .from('vw_inspections_fixed')
           .select(`
             id,
             project_id,
-            inspector_id,
+            assigned_to,
             scheduled_date,
             status,
             created_at,
             projects (
               name
             ),
-            profiles!inspections_inspector_id_fkey (
+            profiles!inspections_assigned_to_fkey (
               full_name
             )
           `)
@@ -275,20 +275,20 @@ export default function DrafterDashboard() {
           .order('scheduled_date', { ascending: false });
 
         if (inspectionError) {
-          console.error('âŒ Error inspections:', inspectionError);
+          console.error('❌ Error inspections:', inspectionError);
           console.warn('Inspections error, continuing without inspections:', getSupabaseErrorMessage(inspectionError));
           setInspections([]);
         } else {
-          console.log("âœ… Inspections data:", inspectionData);
+          console.log("✅ Inspections data:", inspectionData);
           setInspections(inspectionData || []);
           setDebugInfo(prev => prev + ` | Inspections: ${inspectionData?.length || 0}`);
         }
 
-        console.log("ðŸŽ‰ Semua data berhasil di-load");
+        console.log("🎉 Semua data berhasil di-load");
         setDebugInfo('Data berhasil di-load');
 
       } catch (err) {
-        console.error('ðŸ’¥ [DrafterDashboard] Fetch data error:', err);
+        console.error('💥 [DrafterDashboard] Fetch data error:', err);
         const errorMessage = getSupabaseErrorMessage(err);
         setError(errorMessage);
         setDebugInfo(`Error: ${errorMessage}`);
@@ -311,10 +311,10 @@ export default function DrafterDashboard() {
 
     // Hanya load data jika user dan profile sudah tersedia
     if (user && profile) {
-      console.log("ðŸš€ Memulai load dashboard data...");
+      console.log("🚀 Memulai load dashboard data...");
       loadDashboardData();
     } else {
-      console.log("â³ Menunggu user dan profile...", { user, profile });
+      console.log("⏳ Menunggu user dan profile...", { user, profile });
       setDebugInfo('Menunggu user dan profile...');
     }
   }, [user, profile, router, toast]);
@@ -432,7 +432,7 @@ export default function DrafterDashboard() {
           <Badge variant="secondary" className="capitalize text-xs">
             {profile?.specialization?.replace(/_/g, ' ') || 'Drafter'}
             {projectStats.total > 0 && (
-              <span className="ml-1">â€¢ {projectStats.total} Proyek</span>
+              <span className="ml-1">• {projectStats.total} Proyek</span>
             )}
           </Badge>
         </div>

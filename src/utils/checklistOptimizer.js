@@ -1,4 +1,4 @@
-﻿// src/utils/checklistOptimizer.js
+// src/utils/checklistOptimizer.js
 // Optimized checklist operations with batch processing, caching, and parallel execution
 
 import { supabase } from './supabaseClient';
@@ -80,11 +80,11 @@ export const batchFetchInspectionsWithChecklists = async (inspectionIds) => {
         status,
         checklist_template_id,
         project_id,
-        inspector_id,
+        assigned_to,
         created_at,
         updated_at,
         projects (id, name, address, city),
-        inspector:inspector_id (id, full_name, email)
+        inspector:assigned_to (id, full_name, email)
       `)
       .in('id', uncachedIds);
 
@@ -279,7 +279,7 @@ export const fetchInspectionPageData = async (inspectionId, inspectorId) => {
         .select(`
           *,
           projects (*),
-          inspector:inspector_id (id, full_name, email),
+          inspector:assigned_to (id, full_name, email),
           checklist_templates (*)
         `)
         .eq('id', inspectionId)

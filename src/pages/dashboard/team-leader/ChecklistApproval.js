@@ -81,13 +81,13 @@ const ChecklistApproval = ({ projectId }) => {
             inspections!inner(
               id,
               project_id,
-              inspector_id,
+              assigned_to,
               date,
               projects!project_id(
                 name, 
                 client:profiles!client_id(full_name) 
               ),
-              profiles!inspector_id(full_name, email, specialization)
+              profiles!assigned_to(full_name, email, specialization)
             ),
             profiles!responded_by(full_name, email, specialization)
           `)
@@ -142,7 +142,7 @@ const ChecklistApproval = ({ projectId }) => {
     }
 
     if (selectedInspector) {
-      result = result.filter(c => c.inspections?.inspector_id === selectedInspector);
+      result = result.filter(c => c.inspections?.assigned_to === selectedInspector);
     }
 
     setFilteredChecklists(result);
@@ -180,13 +180,13 @@ const ChecklistApproval = ({ projectId }) => {
           inspections!inner(
             id,
             project_id,
-            inspector_id,
+            assigned_to,
             date,
             projects!project_id(
                 name, 
                 client:profiles!client_id(full_name)
             ),
-            profiles!inspector_id(full_name, email, specialization)
+            profiles!assigned_to(full_name, email, specialization)
           ),
           profiles!responded_by(full_name, email, specialization)
         `)
@@ -245,13 +245,13 @@ const ChecklistApproval = ({ projectId }) => {
           inspections!inner(
             id,
             project_id,
-            inspector_id,
+            assigned_to,
             date,
             projects!project_id(
                 name, 
                 client:profiles!client_id(full_name)
             ),
-            profiles!inspector_id(full_name, email, specialization)
+            profiles!assigned_to(full_name, email, specialization)
           ),
           profiles!responded_by(full_name, email, specialization)
         `)

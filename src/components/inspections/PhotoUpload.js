@@ -1,4 +1,4 @@
-﻿// FILE: client/src/components/inspections/PhotoUpload.js
+// FILE: client/src/components/inspections/PhotoUpload.js
 "use client";
 
 import React, { useRef, useState, useEffect } from 'react';
@@ -40,8 +40,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Switch } from '@/components/ui/switch'; // ✅ Tambahkan Switch shadcn/ui
-import { Progress } from '@/components/ui/progress'; // ✅ Tambahkan Progress shadcn/ui
+import { Switch } from '@/components/ui/switch'; // ? Tambahkan Switch shadcn/ui
+import { Progress } from '@/components/ui/progress'; // ? Tambahkan Progress shadcn/ui
 
 // Lucide Icons
 import {
@@ -85,7 +85,7 @@ const getStatusText = (status) => {
 
 // --- Main Component ---
 const PhotoUpload = ({ onUpload, inspectionId }) => {
-  const { toast } = useToast(); // ✅ Gunakan useToast dari shadcn/ui
+  const { toast } = useToast(); // ? Gunakan useToast dari shadcn/ui
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -127,7 +127,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
       toast({
         title: 'Geolocation tidak didukung',
         description: 'Perangkat Anda tidak mendukung geolocation.',
-        variant: "destructive", // ✅ Gunakan variant shadcn/ui
+        variant: "destructive", // ? Gunakan variant shadcn/ui
       });
       // Kembalikan promise yang resolve dengan lokasi null
       return Promise.resolve({ latitude: null, longitude: null });
@@ -148,7 +148,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
           toast({
             title: 'Gagal mendapatkan lokasi',
             description: `Error: ${error.message}. Geotagging akan dilewati.`,
-            variant: "destructive", // ✅ Gunakan variant shadcn/ui
+            variant: "destructive", // ? Gunakan variant shadcn/ui
           });
           // Resolve dengan null jika gagal
           resolve({ latitude: null, longitude: null });
@@ -171,7 +171,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
         toast({
           title: 'File tidak valid',
           description: 'File harus berupa gambar.',
-          variant: "destructive", // ✅ Gunakan variant shadcn/ui
+          variant: "destructive", // ? Gunakan variant shadcn/ui
         });
         return;
       }
@@ -181,7 +181,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
         toast({
           title: 'File terlalu besar',
           description: 'Ukuran file maksimal 10MB.',
-          variant: "destructive", // ✅ Gunakan variant shadcn/ui
+          variant: "destructive", // ? Gunakan variant shadcn/ui
         });
         return;
       }
@@ -198,7 +198,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
       toast({
         title: 'Kamera tidak didukung',
         description: 'Perangkat Anda tidak mendukung akses kamera atau izin ditolak.',
-        variant: "destructive", // ✅ Gunakan variant shadcn/ui
+        variant: "destructive", // ? Gunakan variant shadcn/ui
       });
       return;
     }
@@ -228,7 +228,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
             toast({
               title: 'Error',
               description: 'Gagal membuat foto dari kamera.',
-              variant: "destructive", // ✅ Gunakan variant shadcn/ui
+              variant: "destructive", // ? Gunakan variant shadcn/ui
             });
           }
         }, 'image/jpeg', 0.95);
@@ -241,7 +241,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
       toast({
         title: 'Error',
         description: 'Gagal mengakses kamera. Silakan pilih file dari galeri.',
-        variant: "destructive", // ✅ Gunakan variant shadcn/ui
+        variant: "destructive", // ? Gunakan variant shadcn/ui
       });
     }
   };
@@ -251,7 +251,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
       toast({
         title: 'Tidak ada file',
         description: 'Silakan pilih foto terlebih dahulu.',
-        variant: "warning", // ✅ Gunakan variant shadcn/ui
+        variant: "warning", // ? Gunakan variant shadcn/ui
       });
       return;
     }
@@ -260,7 +260,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
       toast({
         title: 'ID Inspeksi tidak ditemukan',
         description: 'Tidak dapat mengunggah foto tanpa ID inspeksi.',
-        variant: "destructive", // ✅ Gunakan variant shadcn/ui
+        variant: "destructive", // ? Gunakan variant shadcn/ui
       });
       return;
     }
@@ -312,7 +312,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
           description: includeLocation && locationData.latitude && locationData.longitude 
             ? `Foto dengan lokasi (${locationData.latitude.toFixed(6)}, ${locationData.longitude.toFixed(6)}) berhasil diunggah (Mock).`
             : 'Foto telah berhasil diunggah (Mock).',
-          variant: "default", // ✅ Gunakan variant shadcn/ui
+          variant: "default", // ? Gunakan variant shadcn/ui
         });
         
         // Reset form setelah delay kecil untuk menunjukkan progress 100%
@@ -339,7 +339,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
       toast({
         title: 'Upload gagal',
         description: error.message || 'Terjadi kesalahan saat mengunggah foto.',
-        variant: "destructive", // ✅ Gunakan variant shadcn/ui
+        variant: "destructive", // ? Gunakan variant shadcn/ui
       });
     } finally {
       setUploading(false);
@@ -377,21 +377,21 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6" // ✅ Ganti Box dengan div space-y-6
+      className="space-y-6" // ? Ganti Box dengan div space-y-6
     >
-      <Card className="border-border"> {/* ✅ Ganti Card dengan Card shadcn/ui */}
-        <CardContent className="p-6"> {/* ✅ Ganti CardBody dengan CardContent shadcn/ui */}
-          <div className="space-y-4"> {/* ✅ Ganti VStack dengan div space-y-4 */}
-            <div className="space-y-2"> {/* ✅ Ganti FormControl dengan div space-y-2 */}
-              <Label htmlFor="floor-info" className="text-sm font-medium text-foreground"> {/* ✅ Ganti FormLabel dengan Label */}
+      <Card className="border-border"> {/* ? Ganti Card dengan Card shadcn/ui */}
+        <CardContent className="p-6"> {/* ? Ganti CardBody dengan CardContent shadcn/ui */}
+          <div className="space-y-4"> {/* ? Ganti VStack dengan div space-y-4 */}
+            <div className="space-y-2"> {/* ? Ganti FormControl dengan div space-y-2 */}
+              <Label htmlFor="floor-info" className="text-sm font-medium text-foreground"> {/* ? Ganti FormLabel dengan Label */}
                 Lantai
               </Label>
-              <Select value={floorInfo} onValueChange={setFloorInfo}> {/* ✅ Ganti Select Chakra dengan Select shadcn/ui */}
-                <SelectTrigger id="floor-info" className="bg-background"> {/* ✅ Tambahkan id dan class Tailwind */}
+              <Select value={floorInfo} onValueChange={setFloorInfo}> {/* ? Ganti Select Chakra dengan Select shadcn/ui */}
+                <SelectTrigger id="floor-info" className="bg-background"> {/* ? Tambahkan id dan class Tailwind */}
                   <SelectValue placeholder="Pilih lantai" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Lantai 1">Lantai 1</SelectItem> {/* ✅ Ganti option dengan SelectItem shadcn/ui */}
+                  <SelectItem value="Lantai 1">Lantai 1</SelectItem> {/* ? Ganti option dengan SelectItem shadcn/ui */}
                   <SelectItem value="Lantai 2">Lantai 2</SelectItem>
                   <SelectItem value="Lantai 3">Lantai 3</SelectItem>
                   <SelectItem value="Lantai 4">Lantai 4</SelectItem>
@@ -403,8 +403,8 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
               </Select>
             </div>
             
-            <div className="space-y-2"> {/* ✅ Ganti FormControl dengan div space-y-2 */}
-              <Label htmlFor="caption" className="text-sm font-medium text-foreground"> {/* ✅ Ganti FormLabel dengan Label */}
+            <div className="space-y-2"> {/* ? Ganti FormControl dengan div space-y-2 */}
+              <Label htmlFor="caption" className="text-sm font-medium text-foreground"> {/* ? Ganti FormLabel dengan Label */}
                 Caption
               </Label>
               <Input
@@ -412,13 +412,13 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 placeholder="Masukkan caption foto..."
-                className="bg-background" // ✅ Tambahkan class Tailwind
+                className="bg-background" // ? Tambahkan class Tailwind
               />
             </div>
 
             {/* Toggle untuk Geotagging */}
-            <div className="flex items-center space-x-2"> {/* ✅ Ganti FormControl display="flex" alignItems="center" dengan div flex items-center space-x-2 */}
-              <Label htmlFor="geotag-switch" className="text-sm font-medium text-foreground"> {/* ✅ Ganti FormLabel htmlFor="geotag-switch" mb="0" dengan Label htmlFor="geotag-switch" className="text-sm font-medium text-foreground" */}
+            <div className="flex items-center space-x-2"> {/* ? Ganti FormControl display="flex" alignItems="center" dengan div flex items-center space-x-2 */}
+              <Label htmlFor="geotag-switch" className="text-sm font-medium text-foreground"> {/* ? Ganti FormLabel htmlFor="geotag-switch" mb="0" dengan Label htmlFor="geotag-switch" className="text-sm font-medium text-foreground" */}
                 Sertakan Lokasi (Geotagging)
               </Label>
               <Switch
@@ -426,9 +426,9 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
                 checked={includeLocation}
                 onCheckedChange={setIncludeLocation}
                 disabled={locationLoading || uploading}
-                className="bg-background" // ✅ Tambahkan class Tailwind
+                className="bg-background" // ? Tambahkan class Tailwind
               />
-              <span className="text-xs text-muted-foreground ml-2">(Opsional)</span> {/* ✅ Ganti FormHelperText ml={2} dengan span text-xs text-muted-foreground ml-2 */}
+              <span className="text-xs text-muted-foreground ml-2">(Opsional)</span> {/* ? Ganti FormHelperText ml={2} dengan span text-xs text-muted-foreground ml-2 */}
             </div>
 
             <Input
@@ -436,7 +436,7 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
               type="file"
               accept="image/*"
               onChange={handleFileSelect}
-              className="hidden" // ✅ Ganti display="none" dengan class hidden
+              className="hidden" // ? Ganti display="none" dengan class hidden
             />
             
             <Input
@@ -445,99 +445,99 @@ const PhotoUpload = ({ onUpload, inspectionId }) => {
               accept="image/*"
               capture="environment"
               onChange={handleFileSelect}
-              className="hidden" // ✅ Ganti display="none" dengan class hidden
+              className="hidden" // ? Ganti display="none" dengan class hidden
             />
 
-            <div className="flex flex-wrap gap-4"> {/* ✅ Ganti HStack dengan div flex flex-wrap gap-4 */}
+            <div className="flex flex-wrap gap-4"> {/* ? Ganti HStack dengan div flex flex-wrap gap-4 */}
               <Button
                 onClick={() => fileInputRef.current?.click()}
-                variant="outline" // ✅ Ganti colorScheme="blue" dengan variant="outline"
-                className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-800" // ✅ Tambahkan class Tailwind untuk warna biru
-                disabled={uploading} // ✅ Ganti isDisabled dengan disabled
+                variant="outline" // ? Ganti colorScheme="blue" dengan variant="outline"
+                className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-800" // ? Tambahkan class Tailwind untuk warna biru
+                disabled={uploading} // ? Ganti isDisabled dengan disabled
               >
-                <Attachment className="w-4 h-4" /> {/* ✅ Ganti AttachmentIcon dengan Attachment lucide-react */}
+                <Attachment className="w-4 h-4" /> {/* ? Ganti AttachmentIcon dengan Attachment lucide-react */}
                 Pilih Foto
               </Button>
               
               {cameraSupported && (
                 <Button
                   onClick={handleTakePhoto}
-                  variant="outline" // ✅ Ganti colorScheme="green" dengan variant="outline"
-                  className="flex items-center gap-2 bg-green-600 text-white hover:bg-green-700 dark:hover:bg-green-800" // ✅ Tambahkan class Tailwind untuk warna hijau
-                  disabled={uploading} // ✅ Ganti isDisabled dengan disabled
+                  variant="outline" // ? Ganti colorScheme="green" dengan variant="outline"
+                  className="flex items-center gap-2 bg-green-600 text-white hover:bg-green-700 dark:hover:bg-green-800" // ? Tambahkan class Tailwind untuk warna hijau
+                  disabled={uploading} // ? Ganti isDisabled dengan disabled
                 >
-                  <SmallAdd className="w-4 h-4" /> {/* ✅ Ganti SmallAddIcon dengan SmallAdd lucide-react */}
+                  <SmallAdd className="w-4 h-4" /> {/* ? Ganti SmallAddIcon dengan SmallAdd lucide-react */}
                   Ambil Foto
                 </Button>
               )}
             </div>
             
             {error && (
-              <Alert variant="destructive" className="m-4"> {/* ✅ Ganti Alert status="error" dengan Alert variant="destructive" dan tambahkan m-4 */}
-                <AlertTriangle className="h-4 w-4" /> {/* ✅ Ganti AlertIcon dengan AlertTriangle lucide-react */}
-                <AlertTitle>Error!</AlertTitle> {/* ✅ Ganti AlertTitle dengan AlertTitle shadcn/ui */}
-                <AlertDescription>{error}</AlertDescription> {/* ✅ Ganti AlertDescription dengan AlertDescription shadcn/ui */}
+              <Alert variant="destructive" className="m-4"> {/* ? Ganti Alert status="error" dengan Alert variant="destructive" dan tambahkan m-4 */}
+                <AlertTriangle className="h-4 w-4" /> {/* ? Ganti AlertIcon dengan AlertTriangle lucide-react */}
+                <AlertTitle>Error!</AlertTitle> {/* ? Ganti AlertTitle dengan AlertTitle shadcn/ui */}
+                <AlertDescription>{error}</AlertDescription> {/* ? Ganti AlertDescription dengan AlertDescription shadcn/ui */}
               </Alert>
             )}
             
             {previewUrl && (
-              <div className="relative"> {/* ✅ Ganti Box position="relative" dengan div relative */}
+              <div className="relative"> {/* ? Ganti Box position="relative" dengan div relative */}
                 <img
                   src={previewUrl}
                   alt="Preview"
-                  className="max-h-[300px] object-cover rounded-md border border-border" // ✅ Ganti Image dengan img dan tambahkan class Tailwind
+                  className="max-h-[300px] object-cover rounded-md border border-border" // ? Ganti Image dengan img dan tambahkan class Tailwind
                 />
                 <Button
-                  variant="destructive" // ✅ Ganti IconButton icon={<CloseIcon />} size="sm" colorScheme="red" position="absolute" top={2} right={2} dengan Button variant="destructive"
+                  variant="destructive" // ? Ganti IconButton icon={<CloseIcon />} size="sm" colorScheme="red" position="absolute" top={2} right={2} dengan Button variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2 h-8 w-8 p-0 text-white bg-red-600 hover:bg-red-700 dark:hover:bg-red-800 rounded-full" // ✅ Tambahkan class Tailwind untuk posisi absolut dan warna merah
+                  className="absolute top-2 right-2 h-8 w-8 p-0 text-white bg-red-600 hover:bg-red-700 dark:hover:bg-red-800 rounded-full" // ? Tambahkan class Tailwind untuk posisi absolut dan warna merah
                   onClick={handleRemoveFile}
-                  disabled={uploading} // ✅ Ganti isDisabled dengan disabled
+                  disabled={uploading} // ? Ganti isDisabled dengan disabled
                 >
-                  <Close className="w-4 h-4" /> {/* ✅ Ganti CloseIcon dengan Close lucide-react */}
-                  <span className="sr-only">Hapus Foto</span> {/* ✅ Tambahkan sr-only untuk aksesibilitas */}
+                  <Close className="w-4 h-4" /> {/* ? Ganti CloseIcon dengan Close lucide-react */}
+                  <span className="sr-only">Hapus Foto</span> {/* ? Tambahkan sr-only untuk aksesibilitas */}
                 </Button>
               </div>
             )}
             
             {uploading && (
-              <div className="space-y-3 w-full"> {/* ✅ Ganti VStack dengan div space-y-3 w-full */}
-                <p className="text-sm text-blue.600"> {/* ✅ Ganti Text fontSize="sm" color="blue.600" dengan p text-sm text-blue.600 */}
+              <div className="space-y-3 w-full"> {/* ? Ganti VStack dengan div space-y-3 w-full */}
+                <p className="text-sm text-blue.600"> {/* ? Ganti Text fontSize="sm" color="blue.600" dengan p text-sm text-blue.600 */}
                   {locationLoading ? "Mendapatkan lokasi..." : "Mengunggah..."}
                 </p>
                 <Progress 
                   value={locationLoading ? undefined : progress} 
                   size="sm" 
                   colorScheme="blue" 
-                  className="w-full h-2" // ✅ Ganti Progress shadcn/ui dengan class Tailwind
+                  className="w-full h-2" // ? Ganti Progress shadcn/ui dengan class Tailwind
                   hasStripe 
                   isAnimated 
-                  isIndeterminate={locationLoading} // ✅ Tampilkan indikator loading tak tentu saat mendapat lokasi
+                  isIndeterminate={locationLoading} // ? Tampilkan indikator loading tak tentu saat mendapat lokasi
                 />
                 {!locationLoading && (
-                  <p className="text-xs text-muted-foreground"> {/* ✅ Ganti Text fontSize="xs" color="gray.500" dengan p text-xs text-muted-foreground */}
+                  <p className="text-xs text-muted-foreground"> {/* ? Ganti Text fontSize="xs" color="gray.500" dengan p text-xs text-muted-foreground */}
                     {progress}% complete
                   </p>
                 )}
               </div>
             )}
             
-            <div className="flex justify-end pt-4"> {/* ✅ Ganti HStack justifyContent="flex-end" pt={4} dengan div flex justify-end pt-4 */}
+            <div className="flex justify-end pt-4"> {/* ? Ganti HStack justifyContent="flex-end" pt={4} dengan div flex justify-end pt-4 */}
               <Button
-                variant="default" // ✅ Ganti colorScheme="green" dengan variant="default"
+                variant="default" // ? Ganti colorScheme="green" dengan variant="default"
                 size="sm"
                 onClick={handleUpload}
-                disabled={!selectedFile || uploading || locationLoading} // ✅ Ganti isLoading, loadingText, isDisabled dengan disabled
-                className="flex items-center gap-2 bg-green-600 text-white hover:bg-green-700 dark:hover:bg-green-800" // ✅ Tambahkan class Tailwind untuk warna hijau
+                disabled={!selectedFile || uploading || locationLoading} // ? Ganti isLoading, loadingText, isDisabled dengan disabled
+                className="flex items-center gap-2 bg-green-600 text-white hover:bg-green-700 dark:hover:bg-green-800" // ? Tambahkan class Tailwind untuk warna hijau
               >
                 {uploading || locationLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> {/* ✅ Ganti Spinner dengan Loader2 lucide-react dan animate-spin */}
+                    <Loader2 className="w-4 h-4 animate-spin" /> {/* ? Ganti Spinner dengan Loader2 lucide-react dan animate-spin */}
                     {locationLoading ? "Mendapatkan lokasi..." : "Mengunggah..."}
                   </>
                 ) : (
                   <>
-                    <Upload className="w-4 h-4" /> {/* ✅ Ganti FiUpload dengan Upload lucide-react */}
+                    <Upload className="w-4 h-4" /> {/* ? Ganti FiUpload dengan Upload lucide-react */}
                     Unggah Foto
                   </>
                 )}

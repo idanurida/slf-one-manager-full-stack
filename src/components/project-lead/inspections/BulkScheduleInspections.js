@@ -1,4 +1,4 @@
-﻿// FILE: src/components/project-lead/inspections/BulkScheduleInspections.js
+// FILE: src/components/project-lead/inspections/BulkScheduleInspections.js
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -185,7 +185,7 @@ const BulkScheduleInspections = ({
           .insert([
             {
               project_id: formData.project_id,
-              inspector_id: inspectorId,
+              assigned_to: inspectorId,
               scheduled_date: formData.start_date,
               start_time: `${formData.start_date}T09:00:00`,
               end_time: `${formData.end_date}T17:00:00`,
@@ -386,7 +386,7 @@ const BulkScheduleInspections = ({
                       <div className="flex flex-col">
                         <span className="font-medium text-foreground">{inspector.full_name}</span>
                         <span className="text-xs text-muted-foreground">
-                          {inspector.specialization} â€¢ {inspector.email}
+                          {inspector.specialization} • {inspector.email}
                         </span>
                       </div>
                     </Label>

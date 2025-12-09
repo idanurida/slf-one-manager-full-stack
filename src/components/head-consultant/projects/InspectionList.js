@@ -1,4 +1,4 @@
-﻿// src/components/head-consultant/projects/InspectionList.js
+// src/components/head-consultant/projects/InspectionList.js
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -123,8 +123,8 @@ const InspectionList = ({ projectId }) => {
           end_time,
           status,
           created_at,
-          inspector_id,
-          inspectors:profiles!inspector_id(full_name, email, specialization)
+          assigned_to,
+          inspectors:profiles!assigned_to(full_name, email, specialization)
         `)
         .eq('project_id', projectId)
         .order('scheduled_date', { ascending: false });

@@ -1,4 +1,4 @@
-﻿// src/components/head-consultant/projects/ActivityLog.js
+// src/components/head-consultant/projects/ActivityLog.js
 "use client";
 
 import React, { useState, useEffect } from 'react';

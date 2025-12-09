@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/team-leader/index.js
+// FILE: src/pages/dashboard/team-leader/index.js
 // Dashboard Team Leader - Clean & User Friendly
 // Note: Database tetap menggunakan 'project_lead', UI menampilkan 'Team Leader'
 import React, { useState, useEffect, useCallback } from "react";
@@ -365,7 +365,7 @@ export default function TeamLeaderDashboard() {
                         <div>
                           <p className="font-medium line-clamp-1">{report.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {report.projects?.name || '-'} â€¢ {formatDate(report.created_at)}
+                            {report.projects?.name || '-'} • {formatDate(report.created_at)}
                           </p>
                         </div>
                       </div>

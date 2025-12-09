@@ -131,11 +131,11 @@ const SimakForms = ({ userRole, userId, projectId, inspectionId }) => { // ✅ T
             item_id,
             response_value,
             photo_url,
-            inspector_id,
+            assigned_to,
             created_at
           `)
           .eq('inspection_id', inspectionId) // ✅ Filter berdasarkan inspection_id
-          .eq('inspector_id', userId); // ✅ Filter berdasarkan inspector ID
+          .eq('assigned_to', userId); // ✅ Filter berdasarkan inspector ID
 
         if (respErr) throw respErr;
         setSimakResponses(Array.isArray(responses) ? responses : []);
@@ -235,7 +235,7 @@ const SimakForms = ({ userRole, userId, projectId, inspectionId }) => { // ✅ T
             item_id: item.id,
             response_value: responseValue,
             photo_url: photoUrl,
-            inspector_id: userId,
+            assigned_to: userId,
             inspection_id: inspectionId, // ✅ Sertakan inspection_id
             project_id: projectId, // ✅ Sertakan project_id
             created_at: new Date().toISOString(),
@@ -261,11 +261,11 @@ const SimakForms = ({ userRole, userId, projectId, inspectionId }) => { // ✅ T
           item_id,
           response_value,
           photo_url,
-          inspector_id,
+          assigned_to,
           created_at
         `)
         .eq('inspection_id', inspectionId) // ✅ Filter berdasarkan inspection_id
-        .eq('inspector_id', userId); // ✅ Filter berdasarkan inspector ID
+        .eq('assigned_to', userId); // ✅ Filter berdasarkan inspector ID
 
       setSimakResponses(Array.isArray(refreshed) ? refreshed : []);
 
@@ -481,11 +481,11 @@ const SimakForms = ({ userRole, userId, projectId, inspectionId }) => { // ✅ T
                                                   item_id,
                                                   response_value,
                                                   photo_url,
-                                                  inspector_id,
+                                                  assigned_to,
                                                   created_at
                                                 `)
                                                 .eq('inspection_id', inspectionId)
-                                                .eq('inspector_id', userId);
+                                                .eq('assigned_to', userId);
 
                                               setSimakResponses(Array.isArray(refreshed) ? refreshed : []);
                                             } catch (err) {

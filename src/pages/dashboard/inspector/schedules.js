@@ -75,7 +75,7 @@ export default function InspectorSchedules() {
               client_name
             )
           `)
-          .eq('inspector_id', user.id)
+          .eq('assigned_to', user.id)
           .order('scheduled_date', { ascending: true });
 
         if (error) throw error;

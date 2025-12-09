@@ -120,7 +120,7 @@ const RealtimeNotificationCenter = () => {
         if (isMounted) setLoading(true);
 
         // ✅ Ambil notifikasi awal: checklist_responses dengan status 'project_lead_approved'
-        // ✅ Join dengan profiles berdasarkan inspector_id
+        // ✅ Join dengan profiles berdasarkan assigned_to
         const {  responsesData, error: fetchError } = await supabase
           .from('checklist_responses')
           .select(`
@@ -128,8 +128,8 @@ const RealtimeNotificationCenter = () => {
             item_id,
             responded_at,
             status,
-            inspector_id,
-            profiles!inspector_id(full_name, email) // ✅ Gunakan inspector_id
+            assigned_to,
+            profiles!assigned_to(full_name, email) // ✅ Gunakan assigned_to
           `)
           .eq('status', 'project_lead_approved') // ✅ Filter yang benar
           .order('responded_at', { ascending: false })

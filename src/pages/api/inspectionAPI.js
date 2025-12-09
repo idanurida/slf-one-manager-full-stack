@@ -1,4 +1,4 @@
-﻿// FILE: pages/api/inspectionAPI.js
+// FILE: pages/api/inspectionAPI.js
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -16,9 +16,9 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from('vw_inspections_fixed')
         .select(`
-          id, project_id, inspector_id, scheduled_date, start_time, end_time, status, report_summary, created_at,
+          id, project_id, assigned_to, scheduled_date, start_time, end_time, status, report_summary, created_at,
           inspection_photos (id, photo_url, uploaded_at),
-          profiles!inspector_id (full_name, email, specialization)
+          profiles!assigned_to (full_name, email, specialization)
         `)
         .eq("project_id", project_id)
         .order("scheduled_date", { ascending: false });
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Invalid image data" });
       }
 
-      // Convert base64 â†’ Blob
+      // Convert base64 → Blob
       const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");
       const buffer = Buffer.from(base64Data, "base64");
       const fileName = `${inspection_id}/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.jpg`;

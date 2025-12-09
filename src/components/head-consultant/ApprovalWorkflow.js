@@ -139,7 +139,7 @@ const fetchData = useCallback(async () => {
         inspections (
           id,
           project_id,
-          inspector_id,
+          assigned_to,
           projects (
             id,
             name

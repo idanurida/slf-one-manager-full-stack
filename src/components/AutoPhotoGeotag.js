@@ -40,9 +40,39 @@ const AutoPhotoGeotag = ({
   // Refs
   const fileInputRef = useRef(null);
 
+  // Camera/feature detection
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [hasGetUserMedia, setHasGetUserMedia] = useState(false);
+  const [hasVideoInput, setHasVideoInput] = useState(false);
+  const [cameraPermissionState, setCameraPermissionState] = useState(null);
+
   // Get location on mount
   useEffect(() => {
     getCurrentLocation();
+  }, []);
+
+  // Detect mobile and camera features
+  useEffect(() => {
+    try {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      setIsMobileDevice(/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua.toLowerCase()));
+      setHasGetUserMedia(!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices()
+          .then(devices => setHasVideoInput(devices.some(d => d.kind === 'videoinput')))
+          .catch(() => setHasVideoInput(false));
+      }
+
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'camera' }).then((perm) => {
+          setCameraPermissionState(perm.state);
+          perm.onchange = () => setCameraPermissionState(perm.state);
+        }).catch(() => setCameraPermissionState(null));
+      }
+    } catch (e) {
+      console.warn('Feature detection failed', e);
+    }
   }, []);
 
   // Sync existing photos
@@ -273,6 +303,21 @@ const AutoPhotoGeotag = ({
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+
+      {/* Camera / Device Status - helps debug mobile capture issues */}
+      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+        <div className="px-2 py-1 bg-muted rounded">Device: {isMobileDevice ? 'Mobile' : 'Desktop'}</div>
+        <div className={`px-2 py-1 rounded ${hasGetUserMedia ? 'bg-green-100' : 'bg-yellow-100'}`}>
+          getUserMedia: {hasGetUserMedia ? 'yes' : 'no'}
+        </div>
+        <div className={`px-2 py-1 rounded ${hasVideoInput ? 'bg-green-100' : 'bg-yellow-100'}`}>
+          Camera available: {hasVideoInput ? 'yes' : 'no'}
+        </div>
+        <div className="px-2 py-1 bg-muted rounded">Inspection linked: {inspectionId ? 'yes' : 'no'}</div>
+        {cameraPermissionState && (
+          <div className="px-2 py-1 bg-muted rounded">Camera permission: {cameraPermissionState}</div>
+        )}
+      </div>
 
       {/* Photo Grid */}
       {photos.length > 0 && (

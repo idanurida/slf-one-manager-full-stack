@@ -100,7 +100,7 @@ const InspectorChecklistDashboard = () => {
               address, 
               city,
               client_id,
-              clients(name)
+              clients!client_id(name)
             ),
             profiles!inspections_assigned_to_fkey(
               full_name, 

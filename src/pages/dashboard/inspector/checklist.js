@@ -572,6 +572,7 @@ const DynamicChecklistForm = ({
               setShowCamera(false);
             }}
             showSaveButton={true}
+            autoOpen={true}
           />
         </DialogContent>
       </Dialog>

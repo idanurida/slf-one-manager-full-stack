@@ -159,7 +159,7 @@ export default function AdminTeamSubmissionsPage() {
         .from('projects')
         .select(`
           *,
-          clients(name)
+          clients!client_id(name)
         `)
         .in('id', projectIds)
         .not('status', 'eq', 'government_submitted')

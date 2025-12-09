@@ -218,7 +218,7 @@ export default function TeamLeaderProjectDetailPage() {
         .from('projects')
         .select(`
           *,
-          clients(name, email, phone),
+          clients!client_id(name, email, phone),
           project_lead:profiles!project_lead_id(full_name, email, role),
           admin_lead:profiles!admin_lead_id(full_name, email, role)
         `)

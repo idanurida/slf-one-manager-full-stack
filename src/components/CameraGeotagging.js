@@ -40,7 +40,8 @@ const CameraGeotagging = ({
   itemName,
   projectId,
   showSaveButton = true,
-  className = ""
+  className = "",
+  autoOpen = false,
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -58,6 +59,9 @@ const CameraGeotagging = ({
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [stream, setStream] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [hasGetUserMedia, setHasGetUserMedia] = useState(false);
+  const [hasVideoInput, setHasVideoInput] = useState(false);
+  const [cameraPermissionState, setCameraPermissionState] = useState(null);
   
   // Refs
   const fileInputRef = useRef(null);
@@ -72,6 +76,38 @@ const CameraGeotagging = ({
       setIsMobile(isMobileDevice);
     };
     checkMobile();
+  }, []);
+
+  // Feature detection: check for getUserMedia & enumerate devices
+  useEffect(() => {
+    try {
+      setHasGetUserMedia(!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices()
+          .then((devices) => {
+            const hasVideo = devices.some(d => d.kind === 'videoinput');
+            setHasVideoInput(hasVideo);
+          })
+          .catch((err) => {
+            console.warn('enumerateDevices failed:', err);
+            setHasVideoInput(false);
+          });
+      }
+
+      // Try permissions API for camera if available
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'camera' }).then((perm) => {
+          setCameraPermissionState(perm.state);
+          perm.onchange = () => setCameraPermissionState(perm.state);
+        }).catch(() => {
+          // Some browsers don't support 'camera' permission name
+          setCameraPermissionState(null);
+        });
+      }
+    } catch (e) {
+      console.warn('Camera feature detection failed', e);
+    }
   }, []);
 
   // Get location on mount
@@ -91,6 +127,17 @@ const CameraGeotagging = ({
       }
     };
   }, [stream]);
+
+  // Auto-open camera on mount for mobile when requested
+  useEffect(() => {
+    if (autoOpen && isMobile) {
+      // try to open camera immediately (should be within user gesture if dialog triggered by click)
+      openCamera().catch((e) => {
+        console.warn('Auto open camera failed:', e);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpen, isMobile]);
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -362,7 +409,7 @@ const CameraGeotagging = ({
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture={isMobile ? "environment" : undefined}
+        capture="environment"
         onChange={handleFileSelect}
         style={{ display: 'none' }}
       />
@@ -375,6 +422,21 @@ const CameraGeotagging = ({
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+
+      {/* Camera / Device Status - helps debug mobile capture issues */}
+      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+        <div className="px-2 py-1 bg-muted rounded">Device: {isMobile ? 'Mobile' : 'Desktop'}</div>
+        <div className={`px-2 py-1 rounded ${hasGetUserMedia ? 'bg-green-100' : 'bg-yellow-100'}`}>
+          getUserMedia: {hasGetUserMedia ? 'yes' : 'no'}
+        </div>
+        <div className={`px-2 py-1 rounded ${hasVideoInput ? 'bg-green-100' : 'bg-yellow-100'}`}>
+          Camera available: {hasVideoInput ? 'yes' : 'no'}
+        </div>
+        <div className="px-2 py-1 bg-muted rounded">Inspection linked: {inspectionId ? 'yes' : 'no'}</div>
+        {cameraPermissionState && (
+          <div className="px-2 py-1 bg-muted rounded">Camera permission: {cameraPermissionState}</div>
+        )}
+      </div>
 
       {/* Webcam View (Laptop only) */}
       {isCameraOpen && !isMobile && (

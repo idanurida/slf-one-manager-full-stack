@@ -85,7 +85,7 @@ export default function AdminLeadTimelinePage() {
     try {
       const { data, error } = await supabase
         .from('projects')
-        .select('id, name, application_type, status, city, clients(name)')
+        .select('id, name, application_type, status, city, clients!client_id(name)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

@@ -134,7 +134,7 @@ export default function AdminTeamTimeline() {
           project_id,
           projects!inner(
             *,
-            clients(name)
+            clients!client_id(name)
           )
         `)
         .eq('user_id', user.id)

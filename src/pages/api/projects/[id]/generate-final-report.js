@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       .from('projects')
       .select(`
         *,
-        client:clients(name),
+        client:clients!client_id(name),
         region:regions(name, authority_title, department_name)
       `)
       .eq('id', projectId)

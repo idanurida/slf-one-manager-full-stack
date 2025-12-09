@@ -103,7 +103,7 @@ export default async function handler(req, res) {
     try {
       const { data: joinTest, error: joinError } = await supabase
         .from('projects')
-        .select('*, clients(name)')
+        .select('*, clients!client_id(name)')
         .limit(1);
       
       healthCheck.relationships.projectsClients = {

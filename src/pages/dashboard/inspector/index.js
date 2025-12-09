@@ -76,7 +76,7 @@ export default function InspectorDashboard() {
         .from('vw_inspections_fixed')
         .select(`
           id, scheduled_date, status, created_at,
-          projects(id, name, address, city, clients(name))
+          projects(id, name, address, city, clients!client_id(name))
         `)
         .eq('assigned_to', user.id)
         .order('scheduled_date', { ascending: true });
@@ -96,7 +96,7 @@ export default function InspectorDashboard() {
         .from('project_teams')
         .select(`
           project_id,
-          projects(id, name, status, city, clients(name))
+          projects(id, name, status, city, clients!client_id(name))
         `)
         .eq('user_id', user.id)
         .eq('role', 'inspector');

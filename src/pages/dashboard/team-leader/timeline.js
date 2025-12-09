@@ -309,7 +309,7 @@ export default function TeamLeaderTimelinePage() {
         .select(`
           project_id,
           projects!inner(
-            id, name, status, created_at, client_id, clients(name), city, address, application_type
+            id, name, status, created_at, client_id, clients!client_id(name), city, address, application_type
           )
         `)
         .eq('user_id', user.id)

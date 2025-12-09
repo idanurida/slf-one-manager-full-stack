@@ -11,7 +11,7 @@ export const getProjectsWithClients = async (options = {}) => {
     // Try the full query with clients join first
     const { data, error, count } = await supabase
       .from('projects')
-      .select('*, clients(name)', { count: options.count || 'exact' })
+      .select('*, clients!client_id(name)', { count: options.count || 'exact' })
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -91,12 +91,12 @@ export const getInspectorProjects = async (inspectorId, options = {}) => {
   try {
     // Try with clients join
     const { data, error } = await supabase
-      .from('inspections')
-      .select(`
+        .from('inspections')
+        .select(`
         id,
         status,
         scheduled_date,
-        projects(id, name, address, city, clients(name))
+        projects(id, name, address, city, clients!client_id(name))
       `)
       .eq('inspector_id', inspectorId)
       .order('scheduled_date', { ascending: false });

@@ -74,7 +74,7 @@ export default function InspectorProjects() {
           project_id,
           projects(
             id, name, status, city, location, created_at,
-            clients(name)
+            clients!client_id(name)
           )
         `)
         .eq('user_id', user.id)
@@ -87,7 +87,7 @@ export default function InspectorProjects() {
           project_id,
           projects(
             id, name, status, city, location, created_at,
-            clients(name)
+            clients!client_id(name)
           )
         `)
         .eq('assigned_to', user.id);

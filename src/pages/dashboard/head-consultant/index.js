@@ -71,7 +71,7 @@ export default function HeadConsultantDashboard() {
       // Fetch all projects
       const { data: projects } = await supabase
         .from('projects')
-        .select('id, name, status, created_at, clients(name)')
+        .select('id, name, status, created_at, clients!client_id(name)')
         .order('created_at', { ascending: false });
 
       const projectsList = projects || [];

@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // 🚀 Fungsi fetch profile cepat dengan cache
+  // 🚀 Fungsi fetch profile cepat dengan cache dan approval check
   const fetchProfile = useCallback(async (userId) => {
     if (!userId) return null;
     try {
@@ -21,10 +21,32 @@ export const AuthProvider = ({ children }) => {
         .eq("id", userId)
         .single();
       if (error) throw error;
+      
+      // ✅ Check if email is verified first
+      const { data: authUser } = await supabase.auth.getUser();
+      if (authUser.user && !authUser.user.email_confirmed_at) {
+        console.log("📧 Email not verified yet");
+        await supabase.auth.signOut();
+        throw new Error('EMAIL_NOT_VERIFIED');
+      }
+      
+      // ✅ Then check if user is approved by SuperAdmin
+      if (data.status === 'pending' || data.is_approved === false) {
+        console.log("🔒 User account is pending SuperAdmin approval");
+        // Sign out user if not approved
+        await supabase.auth.signOut();
+        throw new Error('ACCOUNT_PENDING_APPROVAL');
+      }
+      
       setProfile(data);
       return data;
     } catch (err) {
       console.error("❌ Fetch profile failed:", err.message);
+      if (err.message === 'ACCOUNT_PENDING_APPROVAL') {
+        setUser(null);
+        setProfile(null);
+        throw err;
+      }
       return null;
     }
   }, []);

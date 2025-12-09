@@ -33,14 +33,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Lucide Icons
 import {
@@ -82,9 +82,18 @@ const getStatusText = (status) => {
 };
 
 // --- Main Component ---
-const PhotoUploadWithGeotag = ({ checklistItem, onSave, userId }) => {
+const PhotoUploadWithGeotag = ({ checklistItem, onSave, userId, checklistFormFilled = false }) => {
   const { toast } = useToast(); // ✅ Gunakan useToast dari shadcn/ui
   const fileInputRef = useRef(null);
+
+  // Debug checklistFormFilled prop
+  useEffect(() => {
+    console.log('📋 PhotoUploadWithGeotag Debug:', {
+      checklistItem: checklistItem?.id,
+      checklistFormFilled,
+      userId
+    });
+  }, [checklistFormFilled, checklistItem?.id, userId]);
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -104,10 +113,16 @@ const PhotoUploadWithGeotag = ({ checklistItem, onSave, userId }) => {
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    console.log('📁 File selected:', file?.name, file?.type);
+    
+    if (!file) {
+      console.log('❌ No file selected');
+      return;
+    }
 
     // Validasi tipe file
     if (!file.type.startsWith('image/')) {
+      console.log('❌ Invalid file type:', file.type);
       toast({
         title: 'Format file tidak valid',
         description: 'Silakan pilih file gambar (JPG, PNG, dll).',
@@ -116,6 +131,7 @@ const PhotoUploadWithGeotag = ({ checklistItem, onSave, userId }) => {
       return;
     }
 
+    console.log('✅ Valid image file selected, creating preview...');
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
   };
@@ -305,26 +321,121 @@ const PhotoUploadWithGeotag = ({ checklistItem, onSave, userId }) => {
             />
           </div>
 
-          {/* File Input (hidden) */}
-          <Input
+          {/* Multiple File Inputs for Mobile Camera Compatibility */}
+          <input
             ref={fileInputRef}
+            type="file"
+            accept="image/*,image/jpeg,image/jpg,image/png"
+            capture="environment" // ✅ Rear camera preference
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
+          
+          {/* Fallback file input without capture */}
+          <input
+            ref={useRef(null)}
             type="file"
             accept="image/*"
             onChange={handleFileSelect}
-            className="hidden" // ✅ Ganti display="none" dengan class hidden
+            style={{ display: 'none' }}
+            id="fallback-file-input"
           />
 
           {/* Preview & Actions */}
           <div className="space-y-4"> {/* ✅ Ganti VStack dengan div space-y-4 */}
-            <Button
-              variant="default" // ✅ Ganti colorScheme="blue" dengan variant="default"
-              size="sm"
-              className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-800" // ✅ Tambahkan class Tailwind untuk warna biru
-              onClick={() => fileInputRef.current.click()}
-            >
-              <Upload className="w-4 h-4" /> {/* ✅ Ganti FiUpload dengan Upload lucide-react */}
-              Pilih Foto
-            </Button>
+            
+            {/* Mobile-Optimized Camera Buttons */}
+            <div className="flex flex-col gap-3">
+              {/* Primary Camera Button */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={checklistFormFilled ? "default" : "secondary"}
+                      size="sm"
+                      className={`flex items-center gap-2 ${
+                        checklistFormFilled 
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-800 cursor-pointer' 
+                          : 'bg-gray-300 text-gray-600 cursor-not-allowed hover:bg-gray-300'
+                      }`}
+                      onClick={() => {
+                        if (checklistFormFilled) {
+                          console.log('📸 Camera button clicked - opening file input');
+                          fileInputRef.current?.click();
+                        } else {
+                          console.log('⚠️ Camera button disabled - checklist not filled');
+                        }
+                      }}
+                      disabled={!checklistFormFilled}
+                    >
+                      <Camera className="w-4 h-4" />
+                      {checklistFormFilled ? 'Ambil Foto' : 'Checklist Diperlukan'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="text-sm">
+                      {checklistFormFilled 
+                        ? 'Klik untuk membuka kamera atau galeri (mobile-optimized)' 
+                        : 'Lengkapi form checklist terlebih dahulu untuk mengaktifkan kamera'
+                      }
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {/* Debug Info for Mobile */}
+              {checklistFormFilled && (
+                <div className="text-xs text-gray-500 text-center space-y-1">
+                  <div>✅ Status: Kamera siap • Tap tombol di atas untuk capture</div>
+                  <div>📱 Mobile: {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'YES' : 'NO'} | 
+                       Touch: {('ontouchstart' in window) ? 'YES' : 'NO'}</div>
+                </div>
+              )}
+              
+              {/* Alternative Access Button untuk Mobile Troubleshooting */}
+              {checklistFormFilled && (
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() => {
+                      console.log('🔄 Alternative: Using fallback file input');
+                      document.getElementById('fallback-file-input')?.click();
+                    }}
+                    className="text-xs px-2 py-1"
+                  >
+                    📷 Alt Camera
+                  </Button>
+                  <Button
+                    variant="outline" 
+                    size="xs"
+                    onClick={() => {
+                      console.log('🔄 Alternative: Using label click method');
+                      const input = fileInputRef.current;
+                      if (input) {
+                        input.setAttribute('accept', 'image/*');
+                        input.setAttribute('capture', 'camera');
+                        input.click();
+                      }
+                    }}
+                    className="text-xs px-2 py-1"
+                  >
+                    📸 Force Cam
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            {/* Pesan validasi yang lebih informatif */}
+            {!checklistFormFilled && (
+              <Alert variant="warning" className="border-amber-200 bg-amber-50 dark:bg-amber-950/10">
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <AlertTitle className="text-amber-800 dark:text-amber-200">Checklist Diperlukan</AlertTitle>
+                <AlertDescription className="text-amber-700 dark:text-amber-300">
+                  Lengkapi form checklist di atas terlebih dahulu sebelum mengambil foto dokumentasi.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {previewUrl && (
               <div className="relative max-w-[200px] mx-auto"> {/* ✅ Ganti Box position="relative" maxW="200px" dengan div relative max-w-[200px] mx-auto */}
@@ -358,25 +469,54 @@ const PhotoUploadWithGeotag = ({ checklistItem, onSave, userId }) => {
                 </Button>
               )}
 
-              <Button
-                variant="default" // ✅ Ganti colorScheme="green" dengan variant="default"
-                size="sm"
-                onClick={handleUpload}
-                disabled={uploading || !selectedFile} // ✅ Ganti isLoading dan isDisabled
-                className="flex items-center gap-2 bg-green-600 text-white hover:bg-green-700 dark:hover:bg-green-800" // ✅ Tambahkan class Tailwind untuk warna hijau
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> {/* ✅ Ganti Spinner size="xs" dengan Loader2 lucide-react dan animate-spin */}
-                    Menyimpan...
-                  </>
-                ) : (
-                  <>
-                    <Camera className="w-4 h-4" /> {/* ✅ Ganti FiUpload dengan Camera lucide-react */}
-                    {manualUploadMode ? 'Upload Manual' : 'Upload dengan Lokasi'}
-                  </>
-                )}
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleUpload}
+                      disabled={uploading || !selectedFile || !checklistFormFilled} // ✅ Tambahan validasi checklistFormFilled
+                      className={`flex items-center gap-2 ${
+                        uploading || !selectedFile || !checklistFormFilled
+                          ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
+                          : 'bg-green-600 text-white hover:bg-green-700 dark:hover:bg-green-800'
+                      }`}
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Menyimpan...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          {!selectedFile 
+                            ? 'Pilih Foto Dulu' 
+                            : !checklistFormFilled 
+                              ? 'Checklist Diperlukan'
+                              : manualUploadMode 
+                                ? 'Upload Manual' 
+                                : 'Upload dengan Lokasi'
+                          }
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="text-sm">
+                      {!checklistFormFilled 
+                        ? 'Lengkapi form checklist terlebih dahulu'
+                        : !selectedFile 
+                          ? 'Pilih foto terlebih dahulu'
+                          : uploading 
+                            ? 'Sedang mengupload foto...'
+                            : 'Klik untuk menyimpan foto dengan informasi geotag'
+                      }
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>

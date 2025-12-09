@@ -1,4 +1,4 @@
-// FILE: src/context/AuthContext.js
+﻿// FILE: src/context/AuthContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/utils/supabaseClient";
@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // 🚀 Fungsi fetch profile cepat dengan cache dan approval check
+  // ðŸš€ Fungsi fetch profile cepat dengan cache dan approval check
   const fetchProfile = useCallback(async (userId) => {
     if (!userId) return null;
     try {
@@ -22,17 +22,17 @@ export const AuthProvider = ({ children }) => {
         .single();
       if (error) throw error;
       
-      // ✅ Check if email is verified first
+      // âœ… Check if email is verified first
       const { data: authUser } = await supabase.auth.getUser();
       if (authUser.user && !authUser.user.email_confirmed_at) {
-        console.log("📧 Email not verified yet");
+        console.log("ðŸ“§ Email not verified yet");
         await supabase.auth.signOut();
         throw new Error('EMAIL_NOT_VERIFIED');
       }
       
-      // ✅ Then check if user is approved by SuperAdmin
+      // âœ… Then check if user is approved by SuperAdmin
       if (data.status === 'pending' || data.is_approved === false) {
-        console.log("🔒 User account is pending SuperAdmin approval");
+        console.log("ðŸ”’ User account is pending SuperAdmin approval");
         // Sign out user if not approved
         await supabase.auth.signOut();
         throw new Error('ACCOUNT_PENDING_APPROVAL');
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
       setProfile(data);
       return data;
     } catch (err) {
-      console.error("❌ Fetch profile failed:", err.message);
+      console.error("âŒ Fetch profile failed:", err.message);
       if (err.message === 'ACCOUNT_PENDING_APPROVAL') {
         setUser(null);
         setProfile(null);
@@ -51,9 +51,9 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // 🔐 Auth init hanya sekali
+  // ðŸ” Auth init hanya sekali
   useEffect(() => {
-    console.log("⚡ Fast AuthContext Init");
+    console.log("âš¡ Fast AuthContext Init");
 
     // Ambil session awal
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -64,17 +64,17 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-    // 🔄 Listener state login/logout
+    // ðŸ”„ Listener state login/logout
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log(`🔁 Auth Event: ${event}`);
+      console.log(`ðŸ” Auth Event: ${event}`);
 
       if (event === "SIGNED_IN" && session?.user) {
         setUser(session.user);
         const data = await fetchProfile(session.user.id);
 
-        // 🚀 Redirect cepat (tanpa reload halaman)
+        // ðŸš€ Redirect cepat (tanpa reload halaman)
         const redirectPaths = {
           admin_team: "/dashboard/admin-team",
           admin_lead: "/dashboard/admin-lead",
@@ -82,7 +82,6 @@ export const AuthProvider = ({ children }) => {
           superadmin: "/dashboard/superadmin",
           project_lead: "/dashboard/project-lead",
           inspector: "/dashboard/inspector",
-          drafter: "/dashboard/drafter",
           client: "/dashboard/client",
         };
 
@@ -101,7 +100,7 @@ export const AuthProvider = ({ children }) => {
 
     return () => {
       subscription.unsubscribe();
-      console.log("🧹 AuthContext listener cleaned up");
+      console.log("ðŸ§¹ AuthContext listener cleaned up");
     };
   }, [fetchProfile, router]);
 
@@ -132,3 +131,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+

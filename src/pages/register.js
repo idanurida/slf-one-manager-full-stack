@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -47,7 +47,6 @@ const AVAILABLE_ROLES = [
   { value: 'admin_team', label: 'Admin Team', description: 'Tim administrasi' },
   { value: 'project_lead', label: 'Team Leader', description: 'Pimpinan tim proyek' },
   { value: 'inspector', label: 'Inspector', description: 'Melakukan inspeksi lapangan' },
-  { value: 'drafter', label: 'Drafter', description: 'Membuat dokumen teknis' },
 ];
 
 // Inspector specializations (3 categories only)
@@ -155,8 +154,8 @@ export default function RegisterPage() {
           phone_number: formData.phone || null,
           company_name: formData.company || null,
           role: formData.role,
-          status: 'pending', // ✅ Set status as pending for approval
-          is_approved: false, // ✅ Not approved yet
+          status: 'pending', // âœ… Set status as pending for approval
+          is_approved: false, // âœ… Not approved yet
           created_at: new Date().toISOString(),
         };
         
@@ -262,9 +261,9 @@ export default function RegisterPage() {
                       <div className="space-y-2">
                         <div className="font-semibold">Registrasi berhasil!</div>
                         <div className="text-sm space-y-1">
-                          <div>📧 <strong>Langkah 1:</strong> Cek email Anda dan klik link konfirmasi untuk verifikasi email.</div>
-                          <div>👨‍💼 <strong>Langkah 2:</strong> Tunggu approval dari SuperAdmin.</div>
-                          <div>✅ Setelah kedua langkah selesai, Anda bisa login ke sistem.</div>
+                          <div>ðŸ“§ <strong>Langkah 1:</strong> Cek email Anda dan klik link konfirmasi untuk verifikasi email.</div>
+                          <div>ðŸ‘¨â€ðŸ’¼ <strong>Langkah 2:</strong> Tunggu approval dari SuperAdmin.</div>
+                          <div>âœ… Setelah kedua langkah selesai, Anda bisa login ke sistem.</div>
                         </div>
                       </div>
                     </AlertDescription>
@@ -508,7 +507,7 @@ export default function RegisterPage() {
                           </div>
                           {formData.confirmPassword && (
                             <p className={`text-xs ${passwordsMatch ? 'text-green-600' : 'text-red-500'}`}>
-                              {passwordsMatch ? '✓ Password cocok' : '✗ Password tidak cocok'}
+                              {passwordsMatch ? 'âœ“ Password cocok' : 'âœ— Password tidak cocok'}
                             </p>
                           )}
                         </div>
@@ -550,10 +549,11 @@ export default function RegisterPage() {
       <footer className="py-6 border-t border-border">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Copyright © 2025 PT. Puri Dimensi - SLF One Management System v1.0
+            Copyright Â© 2025 PT. Puri Dimensi - SLF One Management System v1.0
           </p>
         </div>
       </footer>
     </div>
   );
 }
+

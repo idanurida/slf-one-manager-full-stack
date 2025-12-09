@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -28,7 +28,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [uiReady, setUiReady] = useState(false);
 
-  // ✅ OPTIMIZED: Show UI immediately, don't wait for auth
+  // âœ… OPTIMIZED: Show UI immediately, don't wait for auth
   useEffect(() => {
     const timer = setTimeout(() => {
       setUiReady(true);
@@ -37,10 +37,10 @@ export default function LoginPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // ✅ OPTIMIZED: Redirect jika sudah login
+  // âœ… OPTIMIZED: Redirect jika sudah login
   useEffect(() => {
     if (user && profile) {
-      console.log("✅ Already logged in, redirecting...");
+      console.log("âœ… Already logged in, redirecting...");
       const redirectPaths = {
         'admin_team': '/dashboard/admin-team',
         'admin_lead': '/dashboard/admin-lead',
@@ -48,7 +48,7 @@ export default function LoginPage() {
         'superadmin': '/dashboard/superadmin',
         'project_lead': '/dashboard/project-lead',
         'inspector': '/dashboard/inspector',
-        'drafter': '/dashboard/drafter',
+        // 'drafter': '/dashboard/drafter', // DISABLED
         'client': '/dashboard/client'
       };
       
@@ -75,12 +75,12 @@ export default function LoginPage() {
         throw new Error(result.error);
       }
       
-      console.log("✅ Login successful, redirect will happen automatically");
+      console.log("âœ… Login successful, redirect will happen automatically");
       
     } catch (err) {
       console.error("Login error:", err);
       
-      // ✅ Handle specific authentication errors
+      // âœ… Handle specific authentication errors
       if (err.message === 'EMAIL_NOT_VERIFIED') {
         setError('Email Anda belum diverifikasi. Silakan cek email dan klik link konfirmasi sebelum login.');
       } else if (err.message === 'ACCOUNT_PENDING_APPROVAL') {
@@ -109,7 +109,7 @@ export default function LoginPage() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  // ✅ OPTIMIZED: Show loading hanya jika benar-benar diperlukan
+  // âœ… OPTIMIZED: Show loading hanya jika benar-benar diperlukan
   if (!uiReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -121,7 +121,7 @@ export default function LoginPage() {
     );
   }
 
-  // ✅ OPTIMIZED: Jika sudah login, tampilkan redirect message
+  // âœ… OPTIMIZED: Jika sudah login, tampilkan redirect message
   if (user && profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -133,7 +133,7 @@ export default function LoginPage() {
     );
   }
 
-  // ✅ OPTIMIZED: Main login form - muncul cepat
+  // âœ… OPTIMIZED: Main login form - muncul cepat
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
@@ -272,7 +272,7 @@ export default function LoginPage() {
       <footer className="py-6 border-t border-border">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Copyright © 2025 PT. Puri Dimensi - SLF One Management System v1.0
+            Copyright Â© 2025 PT. Puri Dimensi - SLF One Management System v1.0
           </p>
         </div>
       </footer>

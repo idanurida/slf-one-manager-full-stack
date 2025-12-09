@@ -76,7 +76,7 @@ export default function InspectorDashboard() {
         .from('vw_inspections_fixed')
         .select(`
           id, scheduled_date, status, created_at,
-          projects(id, name, address, city, clients!client_id(name))
+          projects(id, name, address, city, client_id)
         `)
         .eq('assigned_to', user.id)
         .order('scheduled_date', { ascending: true });
@@ -96,13 +96,24 @@ export default function InspectorDashboard() {
         .from('project_teams')
         .select(`
           project_id,
-          projects(id, name, status, city, clients!client_id(name))
+          projects(id, name, status, city, client_id)
         `)
         .eq('user_id', user.id)
         .eq('role', 'inspector');
 
-      const projects = (projectTeams || [])
-        .map(pt => pt.projects)
+      const rawProjects = (projectTeams || []).map(pt => pt.projects).filter(p => p);
+      const clientIds = [...new Set(rawProjects.map(p => p.client_id).filter(Boolean))];
+      let clientsMap = {};
+      if (clientIds.length > 0) {
+        const { data: clientsData } = await supabase
+          .from('clients')
+          .select('id, name')
+          .in('id', clientIds);
+        (clientsData || []).forEach(c => clientsMap[c.id] = c);
+      }
+
+      const projects = rawProjects
+        .map(p => ({ ...p, clients: p.client_id ? (clientsMap[p.client_id] || null) : null }))
         .filter(p => p && p.status !== 'completed' && p.status !== 'cancelled')
         .slice(0, 5);
       setRecentProjects(projects);

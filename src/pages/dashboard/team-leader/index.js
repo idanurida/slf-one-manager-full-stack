@@ -74,20 +74,36 @@ export default function TeamLeaderDashboard() {
     setLoading(true);
 
     try {
-      // Fetch projects where user is project lead
+      // Fetch projects where user is project lead (avoid embedded clients)
       const { data: projectTeams } = await supabase
         .from('project_teams')
         .select(`
           project_id,
-          projects(id, name, status, created_at, clients!client_id(name))
+          projects(id, name, status, created_at, client_id)
         `)
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
 
-      const projects = (projectTeams || [])
+      const rawProjects = (projectTeams || [])
         .map(pt => pt.projects)
         .filter(p => p);
-      
+
+      // Fetch client names for the projects
+      const clientIds = [...new Set(rawProjects.map(p => p.client_id).filter(Boolean))];
+      let clientsMap = {};
+      if (clientIds.length > 0) {
+        const { data: clientsData } = await supabase
+          .from('clients')
+          .select('id, name')
+          .in('id', clientIds);
+        (clientsData || []).forEach(c => clientsMap[c.id] = c);
+      }
+
+      const projects = rawProjects.map(p => ({
+        ...p,
+        client_name: p.client_id ? (clientsMap[p.client_id]?.name || null) : null
+      }));
+
       setMyProjects(projects.slice(0, 5));
 
       // Fetch team members count

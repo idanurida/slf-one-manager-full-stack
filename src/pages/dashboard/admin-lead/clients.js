@@ -239,30 +239,10 @@ export default function AdminLeadClientsPage() {
     try {
       console.log('🔄 Fetching clients from projects created by admin_lead:', user.id);
 
-      // Query utama: Ambil projects berdasarkan admin_lead_id
-      const { data: projectsData, error: projectsErr } = await supabase
+      // Query utama: Ambil projects berdasarkan admin_lead_id (tanpa embedded clients/profiles)
+      const { data: projectsDataRaw, error: projectsErr } = await supabase
         .from('projects')
-        .select(`
-          id,
-          name,
-          status,
-          client_id,
-          created_at,
-          admin_lead_id,
-          project_lead_id,
-          clients!client_id (
-            id,
-            name,
-            email,
-            phone,
-            city,
-            address
-          ),
-          project_lead:profiles!project_lead_id (
-            id,
-            full_name
-          )
-        `)
+        .select('id, name, status, client_id, created_at, admin_lead_id, project_lead_id')
         .eq('admin_lead_id', user.id)  // Filter berdasarkan admin_lead_id
         .not('client_id', 'is', null)
         .order('created_at', { ascending: false });
@@ -272,19 +252,48 @@ export default function AdminLeadClientsPage() {
         throw projectsErr;
       }
 
-      console.log('📋 Projects created by admin_lead:', projectsData);
+      const projectsData = projectsDataRaw || [];
 
-      if (!projectsData || projectsData.length === 0) {
+      if (projectsData.length === 0) {
         console.log('ℹ️ No projects found for this admin_lead');
         setClients([]);
         setLoading(false);
         return;
       }
 
+      // Batch fetch clients and profiles to enrich project data
+      const clientIds = [...new Set(projectsData.map(p => p.client_id).filter(Boolean))];
+      const profileIds = [...new Set(projectsData.flatMap(p => [p.project_lead_id]).filter(Boolean))];
+
+      let clientsById = {};
+      if (clientIds.length > 0) {
+        const { data: clientsFetched } = await supabase
+          .from('clients')
+          .select('id, name, email, phone, city, address')
+          .in('id', clientIds);
+        (clientsFetched || []).forEach(c => clientsById[c.id] = c);
+      }
+
+      let profilesById = {};
+      if (profileIds.length > 0) {
+        const { data: profilesFetched } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', profileIds);
+        (profilesFetched || []).forEach(p => profilesById[p.id] = p);
+      }
+
+      // Attach enriched objects to project entries
+      const enrichedProjects = projectsData.map(p => ({
+        ...p,
+        clients: p.client_id ? (clientsById[p.client_id] || null) : null,
+        project_lead: p.project_lead_id ? (profilesById[p.project_lead_id] || null) : null,
+      }));
+
       // Process: Group clients dari projects
       const clientsMap = new Map();
 
-      projectsData.forEach(project => {
+      enrichedProjects.forEach(project => {
         if (project.clients && project.clients.id) {
           const clientId = project.clients.id;
           

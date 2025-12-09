@@ -85,15 +85,29 @@ export default function AdminLeadTimelinePage() {
     try {
       const { data, error } = await supabase
         .from('projects')
-        .select('id, name, application_type, status, city, clients!client_id(name)')
+        .select('id, name, application_type, status, city, client_id')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProjects(data || []);
+
+      // Batch fetch clients to get names
+      const clientIds = [...new Set((data || []).map(d => d.client_id).filter(Boolean))];
+      let clientsById = {};
+      if (clientIds.length > 0) {
+        const { data: clients } = await supabase.from('clients').select('id, name').in('id', clientIds);
+        clientsById = (clients || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
+      }
+
+      const enriched = (data || []).map(p => ({
+        ...p,
+        client_name: clientsById[p.client_id]?.name || null
+      }));
+
+      setProjects(enriched || []);
 
       // Auto-select first project if available
-      if (data && data.length > 0 && !selectedProjectId) {
-        setSelectedProjectId(data[0].id);
+      if (enriched && enriched.length > 0 && !selectedProjectId) {
+        setSelectedProjectId(enriched[0].id);
       }
     } catch (err) {
       console.error('Error fetching projects:', err);

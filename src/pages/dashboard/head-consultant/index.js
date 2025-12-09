@@ -68,13 +68,24 @@ export default function HeadConsultantDashboard() {
     setLoading(true);
 
     try {
-      // Fetch all projects
+      // Fetch all projects (avoid embedded clients)
       const { data: projects } = await supabase
         .from('projects')
-        .select('id, name, status, created_at, clients!client_id(name)')
+        .select('id, name, status, created_at, client_id')
         .order('created_at', { ascending: false });
 
-      const projectsList = projects || [];
+      const projectsListRaw = projects || [];
+      const clientIds = [...new Set(projectsListRaw.map(p => p.client_id).filter(Boolean))];
+      let clientsMap = {};
+      if (clientIds.length > 0) {
+        const { data: clientsData } = await supabase
+          .from('clients')
+          .select('id, name')
+          .in('id', clientIds);
+        (clientsData || []).forEach(c => clientsMap[c.id] = c);
+      }
+
+      const projectsList = projectsListRaw.map(p => ({ ...p, clients: p.client_id ? (clientsMap[p.client_id] || null) : null }));
       
       // Projects needing review
       const needReview = projectsList.filter(p => p.status === 'head_consultant_review');

@@ -212,17 +212,48 @@ export default function ProjectLeadProjectDetailPage() {
     setError(null);
 
     try {
-      // Fetch project data
-      const { data: projectData, error: projectErr } = await supabase
+      // Fetch project data without ambiguous embedded selects
+      const { data: projectDataRaw, error: projectErr } = await supabase
         .from('projects')
-        .select(`
-          *,
-          clients!client_id(name, email, phone),
-          project_lead:profiles!project_lead_id(full_name, email, role),
-          admin_lead:profiles!admin_lead_id(full_name, email, role)
-        `)
+        .select('*')
         .eq('id', id)
         .single();
+
+      let projectData = projectDataRaw;
+      if (projectData) {
+        // Fetch client
+        let clientObj = null;
+        if (projectData.client_id) {
+          try {
+            const { data: clientData } = await supabase
+              .from('clients')
+              .select('id, name, email, phone')
+              .eq('id', projectData.client_id)
+              .single();
+            clientObj = clientData || null;
+          } catch (e) {
+            console.warn('Failed to fetch client:', e);
+          }
+        }
+
+        // Fetch profiles for project_lead and admin_lead
+        const profileIds = [projectData.project_lead_id, projectData.admin_lead_id].filter(Boolean);
+        let profilesMap = {};
+        if (profileIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, full_name, email, role')
+            .in('id', profileIds);
+          (profilesData || []).forEach(p => profilesMap[p.id] = p);
+        }
+
+        projectData = {
+          ...projectData,
+          clients: clientObj,
+          project_lead: projectData.project_lead_id ? (profilesMap[projectData.project_lead_id] || null) : null,
+          admin_lead: projectData.admin_lead_id ? (profilesMap[projectData.admin_lead_id] || null) : null,
+        };
+      }
 
       if (projectErr) throw projectErr;
 

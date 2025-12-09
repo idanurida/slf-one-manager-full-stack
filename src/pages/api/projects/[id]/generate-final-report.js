@@ -18,14 +18,10 @@ export default async function handler(req, res) {
   const { userId } = req.body;
 
   try {
-    // 1. Ambil data proyek
+    // 1. Ambil data proyek (tanpa embedded client untuk menghindari ambiguitas)
     const { data: project, error: projErr } = await supabase
       .from('projects')
-      .select(`
-        *,
-        client:clients!client_id(name),
-        region:regions(name, authority_title, department_name)
-      `)
+      .select('*, region:regions(name, authority_title, department_name)')
       .eq('id', projectId)
       .single();
 
@@ -76,8 +72,20 @@ export default async function handler(req, res) {
       .select('*')
       .eq('project_id', projectId);
 
-    // 5. Ambil data client (untuk nama pemohon)
-    const clientName = project.client?.name || 'Pemohon';
+    // 5. Ambil data client (untuk nama pemohon) menggunakan client_id pada project
+    let clientName = 'Pemohon';
+    try {
+      if (project?.client_id) {
+        const { data: clientData } = await supabase
+          .from('clients')
+          .select('name')
+          .eq('id', project.client_id)
+          .single();
+        if (clientData && clientData.name) clientName = clientData.name;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch client name:', e);
+    }
 
     // 6. Render PDF
     const pdfBuffer = await renderToBuffer(

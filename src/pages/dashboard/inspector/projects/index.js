@@ -73,8 +73,7 @@ export default function InspectorProjects() {
         .select(`
           project_id,
           projects(
-            id, name, status, city, location, created_at,
-            clients!client_id(name)
+            id, name, status, city, location, created_at, client_id
           )
         `)
         .eq('user_id', user.id)
@@ -86,8 +85,7 @@ export default function InspectorProjects() {
         .select(`
           project_id,
           projects(
-            id, name, status, city, location, created_at,
-            clients!client_id(name)
+            id, name, status, city, location, created_at, client_id
           )
         `)
         .eq('assigned_to', user.id);
@@ -103,7 +101,24 @@ export default function InspectorProjects() {
         if (i.projects) projectsMap.set(i.projects.id, i.projects);
       });
 
-      setProjects(Array.from(projectsMap.values()));
+      // Enrich projects with client names
+      const allProjects = Array.from(projectsMap.values());
+      const clientIds = [...new Set(allProjects.map(p => p.client_id).filter(Boolean))];
+      let clientsMap = {};
+      if (clientIds.length > 0) {
+        const { data: clientsData } = await supabase
+          .from('clients')
+          .select('id, name')
+          .in('id', clientIds);
+        (clientsData || []).forEach(c => clientsMap[c.id] = c);
+      }
+
+      const enriched = allProjects.map(p => ({
+        ...p,
+        clients: p.client_id ? (clientsMap[p.client_id] || null) : null
+      }));
+
+      setProjects(enriched);
 
     } catch (err) {
       console.error('Error loading projects:', err);

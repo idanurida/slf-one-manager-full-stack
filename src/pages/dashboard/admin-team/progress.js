@@ -197,25 +197,29 @@ export default function AdminTeamProgressPage() {
       // Ambil proyek yang saya handle sebagai admin_team
       const { data: assignments, error: assignErr } = await supabase
         .from('project_teams')
-        .select(`
-          project_id,
-          projects!inner(
-            id, name, status, created_at, client_id, clients!client_id(name), location, application_type
-          )
-        `)
+        .select(`project_id, projects!inner(id, name, status, created_at, client_id, location, application_type)`)
         .eq('user_id', user.id)
         .eq('role', 'admin_team');
 
       if (assignErr) throw assignErr;
 
-      const projectList = (assignments || []).map(a => ({
-        ...a.projects,
-        client_name: a.projects.clients?.name || 'Client Tidak Diketahui'
+      const projectList = (assignments || []).map(a => ({ ...a.projects }));
+
+      const clientIds = [...new Set(projectList.map(p => p.client_id).filter(Boolean))];
+      let clientsById = {};
+      if (clientIds.length > 0) {
+        const { data: clients } = await supabase.from('clients').select('id, name').in('id', clientIds);
+        clientsById = (clients || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
+      }
+
+      const enrichedList = projectList.map(p => ({
+        ...p,
+        client_name: clientsById[p.client_id]?.name || 'Client Tidak Diketahui'
       }));
 
       // Ambil dokumen dan jadwal untuk setiap proyek
       const projectsWithDetails = await Promise.all(
-        projectList.map(async (project) => {
+        enrichedList.map(async (project) => {
           const [{ data: docs }, { data: scheds }] = await Promise.all([
             supabase
               .from('documents')

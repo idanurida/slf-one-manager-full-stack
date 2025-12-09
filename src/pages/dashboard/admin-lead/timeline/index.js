@@ -83,13 +83,39 @@ export default function AdminLeadTimelinePage() {
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
+      // Fetch projects without embedded clients to avoid ambiguous PostgREST relationship errors
       const { data, error } = await supabase
         .from('projects')
-        .select('id, name, application_type, status, city, clients!client_id(name)')
+        .select('id, name, application_type, status, city, client_id')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProjects(data || []);
+
+      const projectsData = data || [];
+
+      // Batch fetch client names for the client_ids we found
+      const clientIds = [...new Set(projectsData.map(p => p.client_id).filter(Boolean))];
+      let clientsMap = {};
+      if (clientIds.length > 0) {
+        try {
+          const { data: clientsData } = await supabase
+            .from('clients')
+            .select('id, name')
+            .in('id', clientIds);
+
+          clientsMap = (clientsData || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
+        } catch (e) {
+          console.warn('Failed to fetch client names:', e);
+        }
+      }
+
+      // Attach clients object for backward compatibility with UI
+      const projectsWithClients = projectsData.map(p => ({
+        ...p,
+        clients: p.client_id ? clientsMap[p.client_id] || { name: 'N/A', id: p.client_id } : null
+      }));
+
+      setProjects(projectsWithClients);
 
       // Auto-select first project if available
       if (data && data.length > 0 && !selectedProjectId) {

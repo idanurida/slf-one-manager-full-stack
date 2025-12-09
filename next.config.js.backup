@@ -3,21 +3,14 @@ const path = require('path');
 
 const nextConfig = {
   reactStrictMode: true,
-  
-  // Skip TypeScript errors selama build
   typescript: {
     ignoreBuildErrors: true,
   },
-  
-  // Output configuration
-  output: 'standalone',
-  
-  // Images configuration
-  images: {
-    domains: [],
+  turbopack: {
+    resolveAlias: {
+      '@': './src',
+    },
   },
-  
-  // Webpack configuration for alias
   webpack: (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
@@ -28,4 +21,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig;
+module.exports = nextConfig

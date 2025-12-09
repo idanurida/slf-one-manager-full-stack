@@ -5,7 +5,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { useToast } from '@/components/ui/use-toast';
@@ -32,7 +32,7 @@ import { useAuth } from '@/context/AuthContext';
 
 const InspectorDocumentDetailPage = () => {
   const router = useRouter();
-  const { id: docId } = useParams(); // Ambil parameter dari URL
+  const { id: docId } = useRouter()?.query || {}; // Ambil parameter dari URL
   const { toast } = useToast();
   const { user, profile, loading: authLoading, isInspector } = useAuth();
 

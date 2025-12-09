@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/router';
+import { useRouter, useParams } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -519,7 +519,7 @@ const getStatusBadge = (status) => {
 // Main Component
 export default function InspectionDetailPage() {
   const router = useRouter();
-  const params = useRouter()?.query || {};
+  const params = useParams();
   const { toast } = useToast();
   const { user, isInspector, loading: authLoading } = useAuth();
   

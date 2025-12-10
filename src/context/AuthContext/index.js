@@ -62,116 +62,26 @@ export function AuthProvider({ children }) {
     } catch {}
   };
 
-  // --- Fetch profile menggunakan RPC function untuk bypass RLS ---
-  const fetchUserProfile = async (userId, userObject, useCacheFirst = false) => {
+  // --- Fetch profile ---
+  const fetchUserProfile = async (userId, userObject) => {
     setError(null);
+    if (!userId) return null;
+
     try {
-      if (!userId) return null;
-
-      if (useCacheFirst) {
-        const cachedProfile = loadCachedProfile();
-        if (cachedProfile && cachedProfile.id === userId) {
-          console.log("[AuthContext] ⚡ Loaded profile from cache:", cachedProfile);
-          setProfile(cachedProfile); 
-          return cachedProfile;
-        }
-      }
-
       console.log(`[AuthContext] Fetching profile for user: ${userId}`);
       
-      // METHOD 1: Coba direct query dulu
-      let profileData = null;
-      let profileError = null;
+      const { data: profileData, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
       
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .single();
-        
-        profileData = data;
-        profileError = error;
-      } catch (directError) {
-        console.warn("[AuthContext] Direct query failed:", directError);
-      }
-
-      // METHOD 2: Jika direct query gagal, gunakan RPC function untuk bypass RLS
-      if (profileError) {
-        console.log("[AuthContext] Direct query failed, trying RPC function...");
-        
-        // Coba RPC function pertama
-        const { data: rpcData, error: rpcError } = await supabase.rpc(
-          'slf_get_user_role_fallback',
-          { user_uuid: userId }
-        );
-        
-        if (!rpcError && rpcData) {
-          console.log("[AuthContext] ✅ Got role from RPC slf_get_user_role_fallback:", rpcData);
-          
-          // Buat profile object dari data yang tersedia
-          profileData = {
-            id: userId,
-            email: userObject?.email || '',
-            role: rpcData,
-            full_name: userObject?.email?.split("@")[0] || "User",
-            is_approved: true
-          };
-        } else {
-          // METHOD 3: Coba RPC function kedua
-          console.log("[AuthContext] First RPC failed, trying second RPC...");
-          const { data: rpc2Data, error: rpc2Error } = await supabase.rpc(
-            'slf_get_user_role',
-            { user_id_param: userId }
-          );
-          
-          if (!rpc2Error && rpc2Data) {
-            console.log("[AuthContext] ✅ Got role from RPC slf_get_user_role:", rpc2Data);
-            
-            profileData = {
-              id: userId,
-              email: userObject?.email || '',
-              role: rpc2Data,
-              full_name: userObject?.email?.split("@")[0] || "User",
-              is_approved: true
-            };
-          }
-        }
-      }
-
-      // METHOD 4: Hardcode fallback berdasarkan email
-      if (!profileData) {
-        console.log("[AuthContext] All queries failed, using email-based fallback...");
-        const email = userObject?.email || '';
-        
-        let role = 'client';
-        if (email === 'superadmin2@slf.com') {
-          role = 'superadmin';
-        } else if (email.includes('admin.lead')) {
-          role = 'admin_lead';
-        } else if (email.includes('admin.team')) {
-          role = 'admin_team';
-        } else if (email.includes('head.consultant') || email.includes('head-consultant')) {
-          role = 'head_consultant';
-        } else if (email.includes('project.lead') || email.includes('project-lead')) {
-          role = 'project_lead';
-        } else if (email.includes('inspector')) {
-          role = 'inspector';
-        } else if (email.includes('drafter')) {
-          role = 'drafter';
-        } else if (email.includes('client')) {
-          role = 'client';
-        }
-        
-        profileData = {
-          id: userId,
-          email: email,
-          role: role,
-          full_name: email.split("@")[0] || "User",
-          is_approved: true
-        };
-        
-        console.log(`[AuthContext] 🎯 Hardcoded role based on email: ${role}`);
+      if (error) {
+        console.error(`[AuthContext] ❌ Profile fetch failed for user ${userId}:`, error.message);
+        // If the profile is not found, it's not a critical error, but we should not proceed
+        // with a fake profile. Returning null is the correct approach.
+        setProfile(null);
+        return null;
       }
 
       // Normalize role
@@ -181,28 +91,17 @@ export function AuthProvider({ children }) {
         role: rawRole.trim().toLowerCase().replace(/\s/g, '_'),
       };
 
-      console.log(`[AuthContext] RAW Role: ${profileData.role} | Normalized Role: ${normalizedProfile.role}`);
+      console.log(`[AuthContext] ✅ Profile loaded. RAW Role: ${profileData.role} | Normalized Role: ${normalizedProfile.role}`);
 
       setProfile(normalizedProfile);
       saveProfileToCache(normalizedProfile);
-      console.log("[AuthContext] ✅ Profile loaded:", normalizedProfile);
       return normalizedProfile;
+
     } catch (err) {
-      console.error("[AuthContext] ❌ Profile fetch failed:", err.message);
-      
+      console.error("[AuthContext] ❌ Unexpected error in fetchUserProfile:", err.message);
       setError(err.message);
-      
-      // Ultimate fallback
-      const fallback = {
-        id: userId,
-        email: userObject?.email || '',
-        full_name: userObject?.email?.split("@")[0] || "User",
-        role: "client",
-        is_approved: true,
-        _error: err.message,
-      };
-      setProfile(fallback);
-      return fallback;
+      setProfile(null);
+      return null;
     }
   };
 
@@ -242,19 +141,19 @@ export function AuthProvider({ children }) {
     const isAwaitingApprovalPage = currentPath.startsWith("/awaiting-approval");
 
     // Approval logic
-    if (profileData.is_approved === false && !isAwaitingApprovalPage) {
+    if (profileData.is_active === false && !isAwaitingApprovalPage) {
       console.log("[AuthContext] ⚠️ User not approved. Redirecting to /awaiting-approval.");
       safeRedirect("/awaiting-approval", fromLogin ? 100 : 0);
       return;
     } 
     
-    if (profileData.is_approved === true && isAwaitingApprovalPage) {
+    if (profileData.is_active === true && isAwaitingApprovalPage) {
       console.log("[AuthContext] ✅ User approved. Redirecting away from /awaiting-approval.");
       // Continue to role-based redirect
     } 
     
     // Role-based redirect
-    if (profileData.is_approved === true || !isAwaitingApprovalPage) {
+    if (profileData.is_active === true || !isAwaitingApprovalPage) {
       const redirectPath = REDIRECT_PATHS[role] || UNKNOWN_ROLE_PATH;
       
       if (!REDIRECT_PATHS[role]) {
@@ -379,47 +278,82 @@ export function AuthProvider({ children }) {
   }, []);
 
   // --- Auth actions ---
+  const checkUserApproval = async (user) => {
+    if (!user) return null;
+
+    // 1. Fetch profile directly
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    // Handle case where profile doesn't exist or query fails
+    if (error || !profile) {
+      console.error('[AuthContext] Profile fetch error during login:', error);
+      throw new Error('Gagal mengambil data profil Anda. Akun mungkin belum sepenuhnya siap.');
+    }
+
+    // 2. Check for email verification first
+    if (!user.email_confirmed_at) {
+      console.log(`[AuthContext] Login failed for ${user.email}: email not verified.`);
+      throw new Error('EMAIL_NOT_VERIFIED');
+    }
+
+    // 3. Check for approval status
+    if (profile.is_active === false || profile.status !== 'active') {
+      console.log(`[AuthContext] Login failed for ${user.email}: account pending approval.`);
+      throw new Error('ACCOUNT_PENDING_APPROVAL');
+    }
+
+    // 4. Return the valid, approved profile
+    return profile;
+  };
+
   const login = async (email, password) => {
     try {
       console.log("[AuthContext] 🔐 Login attempt:", email);
       setError(null);
       setLoading(true);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Step 1: Sign in the user
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
       
-      if (error) {
-        console.error("[AuthContext] ❌ Supabase Login Error:", error);
-        throw error;
+      if (signInError) {
+        console.error("[AuthContext] ❌ Supabase Login Error:", signInError);
+        throw signInError;
+      }
+      
+      if (!data.user) {
+        throw new Error("Login failed, no user data returned.");
       }
 
-      // Update user metadata dengan role (optional)
+      // Step 2: Check if the user's profile is approved
       try {
-        const { data: roleData } = await supabase.rpc(
-          'slf_get_user_role_fallback',
-          { user_uuid: data.user.id }
-        );
-        
-        if (roleData) {
-          await supabase.auth.updateUser({
-            data: { role: roleData }
-          });
-        }
-      } catch (metadataError) {
-        console.warn("[AuthContext] Failed to update user metadata:", metadataError);
+        await checkUserApproval(data.user);
+      } catch (approvalError) {
+        // If approval check fails, sign the user out immediately
+        await supabase.auth.signOut();
+        // Re-throw the specific error to be handled by the UI
+        throw approvalError;
       }
-
+      
+      // If approved, the onAuthStateChange listener will handle the rest.
       return { success: true, user: data.user };
+
     } catch (err) {
-      console.error("[AuthContext] ❌ Login error:", err.message);
+      console.error("[AuthContext] ❌ Login flow error:", err.message);
+      // Ensure loading is false and pass up the error
+      setLoading(false);
       setError(err.message);
+      // Return a consistent error format for the login page
       return { success: false, error: err.message };
     } finally {
-      if (!isRedirecting) {
-        setLoading(false);
-      }
+      // The onAuthStateChange listener will eventually set loading to false.
+      // We only set it here on definite failure.
     }
   };
 
@@ -428,12 +362,42 @@ export function AuthProvider({ children }) {
       console.log("[AuthContext] 🚪 Logging out...");
       setError(null);
       setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error("[AuthContext] ❌ Supabase Logout Error:", error);
-        throw error;
+
+      // First, check if a session exists.
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        console.log("[AuthContext] No active session, skipping sign out.");
+        // Ensure state is cleared even if there was no session
+        setUser(null);
+        setProfile(null);
+        clearProfileCache();
+        safeRedirect("/login");
+        return;
       }
+
+      if (error) {
+        // If the session is already missing, it's not a critical error.
+        // We can treat it as a successful logout.
+        if (error.message === 'Auth session missing!') {
+          console.warn("[AuthContext] ⚠️ Logout warning:", error.message);
+        } else {
+          console.error("[AuthContext] ❌ Supabase Logout Error:", error);
+          // For other errors, we still force a local logout and re-throw.
+          setUser(null);
+          setProfile(null);
+          clearProfileCache();
+          safeRedirect("/login");
+          throw error;
+        }
+      }
+
+      // Ensure state is cleared on successful logout
+      setUser(null);
+      setProfile(null);
+      clearProfileCache();
+      safeRedirect("/login");
+
     } catch (err) {
       console.error("[AuthContext] ❌ Logout error:", err.message);
       setError(err.message);
@@ -457,7 +421,7 @@ export function AuthProvider({ children }) {
 
     isAuthenticated: !!user,
     userRole: getNormalizedRole(),
-    isApproved: profile?.is_approved !== false,
+    isApproved: profile?.is_active !== false,
     userName: profile?.full_name || user?.email || "User",
 
     // Role checkers

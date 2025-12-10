@@ -240,6 +240,30 @@ export const getAllProfiles = isSupabaseValid
   : placeholderGetAllProfiles;
 
 /**
+ * Get pending profiles for admin using RPC
+ */
+export const getPendingProfiles = isSupabaseValid
+  ? async function () {
+    try {
+      // FIX: Replace missing RPC with a direct query.
+      // Assumes pending users have is_active = false.
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('is_active', false);
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      logSupabaseError(error, 'getPendingProfiles');
+      console.error("[getPendingProfiles] Error:", error);
+      return [];
+    }
+  }
+: createPlaceholderFunction('getPendingProfiles');
+
+
+/**
  * Get profile by ID
  */
 export const getProfileById = isSupabaseValid
@@ -607,6 +631,42 @@ export const getProjectStats = isSupabaseValid
       }
     }
   : placeholderGetProjectStats;
+
+/**
+ * For getting user statistics
+ */
+export const getUserStats = isSupabaseValid
+  ? async function () {
+      try {
+        const { count: total, error: totalErr } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact' });
+        if (totalErr) throw totalErr;
+
+        const { count: active, error: activeErr } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact' })
+          .eq('is_active', true);
+        if (activeErr) throw activeErr;
+
+        const { count: pending, error: pendingErr } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact' })
+          .eq('is_active', false);
+        if (pendingErr) throw pendingErr;
+
+        return {
+          total: total || 0,
+          active: active || 0,
+          pending: pending || 0,
+        };
+      } catch (error) {
+        logSupabaseError(error, 'getUserStats');
+        console.error("[getUserStats] Error:", error);
+        return { total: 0, active: 0, pending: 0 };
+      }
+    }
+  : createPlaceholderFunction('getUserStats');
 
 // --------------------------- UTILITY FUNCTIONS --------------------------- //
 

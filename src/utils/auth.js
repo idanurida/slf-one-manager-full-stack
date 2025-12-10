@@ -184,12 +184,9 @@ export async function signUp(email, password, userData = {}) {
           id: data.user.id,
           email: email.trim().toLowerCase(),
           full_name: userData.full_name || null,
-          phone_number: userData.phone_number || null,
-          company_name: userData.company_name || null,
-          role: userData.role || null,
-          status: 'pending',
-          is_approved: false,
-          email_confirmed_at: null,
+          phone: userData.phone_number || null, // FIX: Column is 'phone' not 'phone_number'
+          role: userData.role || 'client',
+          is_active: false, // FIX: Set user to inactive by default for approval
           created_at: new Date().toISOString(),
         };
 

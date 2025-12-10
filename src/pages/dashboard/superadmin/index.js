@@ -27,7 +27,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Trash2, RefreshCw, Loader2, Plus, Pencil, Search, UserPlus, UserCheck, UserX, Clock, Shield, AlertCircle } from "lucide-react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
-import { getAllProfiles, deleteProfile } from "@/utils/supabaseAPI";
+import { getAllProfiles, getPendingProfiles, deleteProfile } from "@/utils/supabaseAPI";
+import { supabase } from "@/utils/supabaseClient";
 
 // Role display mapping
 const getRoleLabel = (role) => {
@@ -65,24 +66,31 @@ const UsersPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all'); // ✅ Added status filter
+  const [statusFilter, setStatusFilter] = useState('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [approving, setApproving] = useState(null); // ✅ Track approving user ID
+  const [approving, setApproving] = useState(null);
   const { toast } = useToast();
 
   const fetchProfiles = async () => {
     setLoading(true);
     try {
-      const data = await getAllProfiles();
-      setProfiles(data || []);
+      // Fetch both approved and pending profiles
+      const [allData] = await Promise.all([
+        getAllProfiles()
+      ]);
+      
+      // The API now returns all users, `is_active` determines their state.
+      setProfiles(allData || []);
+
     } catch (error) {
       toast({
         title: "Gagal memuat data pengguna",
         description: error.message,
         variant: "destructive",
       });
+      setProfiles([]);
     } finally {
       setLoading(false);
     }
@@ -90,13 +98,22 @@ const UsersPage = () => {
 
   // Filter profiles
   const filteredProfiles = profiles.filter(profile => {
-    const matchesSearch = 
+    const searchMatch = 
       profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       profile.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === 'all' || profile.role === roleFilter;
-    const matchesStatus = statusFilter === 'all' || profile.status === statusFilter ||
-      (statusFilter === 'approved' && (profile.is_approved || profile.status === 'approved'));
-    return matchesSearch && matchesRole && matchesStatus;
+    
+    const roleMatch = roleFilter === 'all' || profile.role === roleFilter;
+
+    const statusMatch = () => {
+      if (statusFilter === 'all') return true;
+      const isActive = profile.is_active;
+      if (statusFilter === 'approved') return isActive;
+      if (statusFilter === 'pending') return !isActive;
+      // Add other statuses here if they exist in your data
+      return false; 
+    };
+
+    return searchMatch && roleMatch && statusMatch();
   });
 
   // Get unique roles for filter
@@ -140,41 +157,28 @@ const UsersPage = () => {
     router.push('/dashboard/superadmin/users/new');
   };
 
-  // ✅ Handle user approval/rejection
-  const handleUserAction = async (userId, action, reason = '') => {
+  const handleUserAction = async (userId, newStatus) => {
     setApproving(userId);
     try {
-      const response = await fetch('/api/superadmin/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          action,
-          reason,
-        }),
-      });
+       const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: newStatus })
+        .eq('id', userId);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to process user action');
-      }
+      if (error) throw error;
 
       toast({
-        title: `User ${action} berhasil`,
-        description: `User telah ${action === 'approve' ? 'disetujui' : action === 'reject' ? 'ditolak' : 'disuspend'}.`,
+        title: `User ${newStatus ? 'disetujui' : 'dinonaktifkan'}`,
+        description: `Status user telah diperbarui.`,
         variant: "default",
       });
 
-      // Refresh data
       fetchProfiles();
 
     } catch (error) {
       console.error('User action error:', error);
       toast({
-        title: `Gagal ${action} user`,
+        title: `Gagal memperbarui status user`,
         description: error.message,
         variant: "destructive",
       });
@@ -183,49 +187,16 @@ const UsersPage = () => {
     }
   };
 
-  // ✅ Get status badge with email verification info
   const getStatusBadge = (profile) => {
-    const status = profile.status || (profile.is_approved ? 'approved' : 'pending');
-    const isEmailVerified = profile.email_confirmed_at || profile.email_verified_at;
-    
-    // Show email verification status for pending users
-    if (status === 'pending') {
-      return (
-        <div className="flex flex-col gap-1">
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-            <Clock className="w-3 h-3 mr-1" />
-            Pending Approval
-          </Badge>
-          <Badge variant={isEmailVerified ? "default" : "destructive"} className={
-            isEmailVerified 
-              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs" 
-              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs"
-          }>
-            {isEmailVerified ? "📧 Email Verified" : "📧 Email Not Verified"}
-          </Badge>
-        </div>
-      );
-    }
-    
-    switch (status) {
-      case 'approved':
-        return <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+    if (profile.is_active) {
+       return <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
           <UserCheck className="w-3 h-3 mr-1" />
-          Approved
+          Aktif
         </Badge>;
-      case 'rejected':
-        return <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-          <UserX className="w-3 h-3 mr-1" />
-          Rejected
-        </Badge>;
-      case 'suspended':
-        return <Badge variant="outline" className="border-orange-300 text-orange-700 dark:border-orange-600 dark:text-orange-400">
-          <AlertCircle className="w-3 h-3 mr-1" />
-          Suspended
-        </Badge>;
-      default:
-        return <Badge variant="outline">
-          {status || 'Unknown'}
+    } else {
+       return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+          <Clock className="w-3 h-3 mr-1" />
+          Menunggu Persetujuan
         </Badge>;
     }
   };
@@ -274,13 +245,10 @@ const UsersPage = () => {
                 <SelectItem value="all">Semua Status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
-          {/* Action Buttons */}
           <div className="flex gap-2">
             <Button onClick={fetchProfiles} variant="outline" size="sm" disabled={loading}>
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -293,7 +261,6 @@ const UsersPage = () => {
           </div>
         </div>
 
-        {/* Users Table */}
         <Card>
           <CardHeader>
             <CardTitle>Daftar Pengguna</CardTitle>
@@ -305,23 +272,6 @@ const UsersPage = () => {
             {loading ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : filteredProfiles.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  {searchTerm || roleFilter !== 'all' 
-                    ? 'Tidak ada pengguna yang cocok dengan filter.'
-                    : 'Tidak ada data pengguna.'}
-                </p>
-                {(searchTerm || roleFilter !== 'all') && (
-                  <Button 
-                    variant="link" 
-                    onClick={() => { setSearchTerm(''); setRoleFilter('all'); }}
-                    className="mt-2"
-                  >
-                    Reset Filter
-                  </Button>
-                )}
               </div>
             ) : (
               <Table>
@@ -351,7 +301,7 @@ const UsersPage = () => {
                       <TableCell>
                         {getStatusBadge(profile)}
                       </TableCell>
-                      <TableCell>{profile.phone_number || "-"}</TableCell>
+                      <TableCell>{profile.phone || "-"}</TableCell>
                       <TableCell>
                         {profile.created_at 
                           ? new Date(profile.created_at).toLocaleDateString("id-ID")
@@ -360,12 +310,12 @@ const UsersPage = () => {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           {/* Approval Actions for Pending Users */}
-                          {(profile.status === 'pending' || (!profile.is_approved && !profile.status)) && (
+                          {!profile.is_active && (
                             <>
                               <Button
                                 variant="default"
                                 size="sm"
-                                onClick={() => handleUserAction(profile.id, 'approve')}
+                                onClick={() => handleUserAction(profile.id, true)}
                                 disabled={approving === profile.id}
                                 className="bg-green-600 hover:bg-green-700 text-white"
                                 title="Setujui user"
@@ -379,7 +329,7 @@ const UsersPage = () => {
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => handleUserAction(profile.id, 'reject', 'Rejected by admin')}
+                                onClick={() => handleUserAction(profile.id, false)}
                                 disabled={approving === profile.id}
                                 title="Tolak user"
                               >
@@ -419,7 +369,6 @@ const UsersPage = () => {
           </CardContent>
         </Card>
 
-        {/* Delete Confirmation Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>

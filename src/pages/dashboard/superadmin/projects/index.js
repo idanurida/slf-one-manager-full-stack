@@ -149,8 +149,8 @@ export default function SuperadminProjectsPage() {
         })
       );
 
-      setproject_id;
-      setFilteredproject_id;
+      setProjects(enrichedProjects);
+      setFilteredProjects(enrichedProjects);
 
     } catch (err) {
       console.error("❌ Fetch error:", err);
@@ -160,8 +160,8 @@ export default function SuperadminProjectsPage() {
         description: err.message,
         variant: "destructive",
       });
-      setproject_id;
-      setFilteredproject_id;
+      setProjects([]);
+      setFilteredProjects([]);
     } finally {
       setLoading(false);
     }
@@ -223,7 +223,7 @@ export default function SuperadminProjectsPage() {
       result = result.filter((p) => p.project_lead_id === selectedProjectLead);
     }
     
-    setFilteredproject_id;
+    setFilteredProjects(result);
   }, [searchTerm, selectedStatus, selectedProjectLead, projects]);
 
   // === EXPORT ===

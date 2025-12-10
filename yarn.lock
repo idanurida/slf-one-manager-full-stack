@@ -908,7 +908,7 @@
 
 "@radix-ui/react-toast@^1.2.15":
   version "1.2.15"
-  resolved "https://registry.npmjs.org/@radix-ui/react-toast/-/react-toast-1.2.15.tgz"
+  resolved "https://registry.npmjs.org/@radix-ui/react-toast/-/react-toast-1.2.15.tgz#746cf9a81297ddbfba214e5c81245ea3f706f876"
   integrity sha512-3OSz3TacUWy4WtOXV38DggwxoqJK4+eDkNMl5Z/MJZaoUPaP4/9lf81xXMe1I2ReTAptverZUpbPY4wWwWyL5g==
   dependencies:
     "@radix-ui/primitive" "1.1.3"

@@ -104,7 +104,7 @@ export default function TeamLeaderDashboard() {
         client_name: p.client_id ? (clientsMap[p.client_id]?.name || null) : null
       }));
 
-      setMyproject_id);
+      setMyProjects(projects);
 
       // Fetch team members count
       const projectIds = projects.map(p => p.id);
@@ -486,6 +486,7 @@ export default function TeamLeaderDashboard() {
     </DashboardLayout>
   );
 }
+
 
 
 

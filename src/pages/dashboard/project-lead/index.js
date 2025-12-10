@@ -82,8 +82,8 @@ export default function ProjectLeadDashboard() {
       const projects = (projectTeams || [])
         .map(pt => pt.projects)
         .filter(p => p);
-      
-      setMyproject_id);
+
+      setMyProjects(projects);
 
       // Fetch team members count
       const projectIds = projects.map(p => p.id);
@@ -464,6 +464,7 @@ export default function ProjectLeadDashboard() {
     </DashboardLayout>
   );
 }
+
 
 
 

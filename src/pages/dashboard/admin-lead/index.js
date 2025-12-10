@@ -81,7 +81,7 @@ export default function AdminLeadDashboard() {
         .order('created_at', { ascending: false });
 
       const projectsList = projects || [];
-      setRecentproject_id);
+      setRecentProjects((projectsList || []).slice(0, 3));
 
       // Fetch pending documents (tanpa project atau status pending)
       const { data: pendingDocs } = await supabase
@@ -493,5 +493,6 @@ export default function AdminLeadDashboard() {
     </DashboardLayout>
   );
 }
+
 
 

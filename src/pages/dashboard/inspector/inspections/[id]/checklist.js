@@ -634,7 +634,7 @@ export default function InspectorInspectionChecklistPage() {
           {/* Action Buttons */}
           <motion.div variants={itemVariants} className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">
-              Proyek: {project?.name || 'N/A'} • Klien: {client?.name || 'N/A'}
+              Proyek: {project?.name || 'N/A'} - Klien: {client?.name || 'N/A'}
             </span>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>

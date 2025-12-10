@@ -200,7 +200,7 @@ export default function ClientDashboard() {
       }
 
       // Set recent projects (max 3)
-      setRecentproject_id);
+      setRecentProjects((projectsList || []).slice(0, 3));
 
       // 3. Fetch documents untuk projects ini
       let documentsData = [];
@@ -924,5 +924,6 @@ export default function ClientDashboard() {
     </DashboardLayout>
   );
 }
+
 
 

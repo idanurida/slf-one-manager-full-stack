@@ -259,6 +259,11 @@ export default function RegisterPage() {
                     <p className="text-center text-sm text-muted-foreground">
                       Mengarahkan ke halaman login dalam 5 detik...
                     </p>
+                    <div className="mt-2">
+                      <Button onClick={() => router.replace('/login')} size="sm">
+                        Pergi ke Login sekarang
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : (

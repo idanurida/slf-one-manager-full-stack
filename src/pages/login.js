@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 // Lucide Icons
-import { AlertTriangle, Loader2, Eye, EyeOff, Moon, Sun, LogIn } from 'lucide-react';
+import { AlertTriangle, Loader2, Eye, EyeOff, Moon, Sun, LogIn, CheckCircle2 } from 'lucide-react';
 
 export default function LoginPage() {
   const { login, loading: authLoading, user, profile } = useAuth();
@@ -27,6 +27,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [uiReady, setUiReady] = useState(false);
+  const [emailConfirmed, setEmailConfirmed] = useState(false);
+  const [confirmedRole, setConfirmedRole] = useState('');
 
   // âœ… OPTIMIZED: Show UI immediately, don't wait for auth
   useEffect(() => {
@@ -56,6 +58,26 @@ export default function LoginPage() {
       window.location.href = redirectPath;
     }
   }, [user, profile]);
+
+  // Read URL query params to detect email confirmation redirect from Supabase
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const confirmed = params.get('confirmed') || params.get('email_confirmed') || params.get('type') === 'signup';
+    const role = params.get('role') || '';
+    if (confirmed) {
+      setEmailConfirmed(true);
+      if (role) setConfirmedRole(role);
+      // remove query params from URL to avoid repeating the message on reload
+      try {
+        const url = new URL(window.location.href);
+        url.search = '';
+        window.history.replaceState({}, document.title, url.toString());
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -178,6 +200,16 @@ export default function LoginPage() {
             </CardHeader>
             
             <CardContent className="space-y-4">
+              {emailConfirmed && (
+                <Alert className="border-green-500/50 bg-green-500/10">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-700">
+                    Email Anda berhasil dikonfirmasi. {confirmedRole ? `Role permintaan: ${confirmedRole}. ` : ''}
+                    Selanjutnya tunggu approval SuperAdmin jika diperlukan, atau langsung login menggunakan kredensial Anda.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {error && (
                 <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
                   <AlertTriangle className="h-4 w-4 text-destructive" />

@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { 
   Camera, MapPin, Trash2, RefreshCw, 
-  Loader2, AlertTriangle, Upload, X, Check
+  Loader2, AlertTriangle, Upload, X, Check, Video, StopCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/utils/supabaseClient';
@@ -36,9 +36,14 @@ const AutoPhotoGeotag = ({
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
+  const [showCamera, setShowCamera] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
   
   // Refs
   const fileInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   // Camera/feature detection
   const [isMobileDevice, setIsMobileDevice] = useState(false);
@@ -269,6 +274,191 @@ const AutoPhotoGeotag = ({
     fileInputRef.current?.click();
   };
 
+  // Start camera capture for mobile
+  const startCamera = useCallback(async () => {
+    try {
+      setError('');
+      console.log('[Camera] Starting camera...');
+      
+      // Check for camera support
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Browser Anda tidak mendukung akses kamera');
+        return;
+      }
+
+      const constraints = {
+        video: {
+          facingMode: 'environment', // Use back camera on mobile
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setCameraStream(stream);
+        setShowCamera(true);
+        setIsCameraActive(true);
+        console.log('[Camera] ✅ Camera started successfully');
+      }
+    } catch (err) {
+      console.error('[Camera] Error starting camera:', err);
+      
+      let errorMsg = 'Gagal membuka kamera';
+      if (err.name === 'NotAllowedError') {
+        errorMsg = 'Izin akses kamera ditolak. Periksa pengaturan browser Anda.';
+      } else if (err.name === 'NotFoundError') {
+        errorMsg = 'Kamera tidak ditemukan pada perangkat Anda.';
+      } else if (err.name === 'NotReadableError') {
+        errorMsg = 'Kamera sedang digunakan oleh aplikasi lain.';
+      } else if (err.name === 'OverconstrainedError') {
+        errorMsg = 'Spesifikasi kamera tidak didukung. Coba file upload sebagai alternatif.';
+      }
+      
+      setError(errorMsg);
+      toast.error(errorMsg);
+    }
+  }, []);
+
+  // Stop camera
+  const stopCamera = useCallback(() => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+      setShowCamera(false);
+      setIsCameraActive(false);
+      console.log('[Camera] ✅ Camera stopped');
+    }
+  }, [cameraStream]);
+
+  // Capture photo from camera
+  const capturePhoto = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    try {
+      console.log('[Camera] Capturing photo...');
+      setIsUploading(true);
+
+      const context = canvasRef.current.getContext('2d');
+      canvasRef.current.width = videoRef.current.videoWidth;
+      canvasRef.current.height = videoRef.current.videoHeight;
+      context.drawImage(videoRef.current, 0, 0);
+
+      // Convert canvas to blob
+      canvasRef.current.toBlob(async (blob) => {
+        if (!blob) {
+          toast.error('Gagal mengcapture foto');
+          setIsUploading(false);
+          return;
+        }
+
+        // Check max photos limit
+        if (photos.length >= maxPhotos) {
+          toast.error(`Sudah mencapai batas maksimal ${maxPhotos} foto`);
+          setIsUploading(false);
+          return;
+        }
+
+        try {
+          // Create file from blob
+          const fileName = `${projectId || 'unknown'}/${inspectionId || 'temp'}/${checklistItemId || 'item'}_${Date.now()}.jpg`;
+          
+          // Upload to Supabase Storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('inspection_photos')
+            .upload(fileName, blob, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: 'image/jpeg'
+            });
+
+          if (uploadError) {
+            console.error('[Camera] Upload error:', uploadError);
+            toast.error('Gagal mengupload foto');
+            setIsUploading(false);
+            return;
+          }
+
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('inspection_photos')
+            .getPublicUrl(fileName);
+
+          // Create preview
+          const preview = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+
+          const photoData = {
+            id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            url: urlData.publicUrl,
+            file_path: fileName,
+            file_name: `capture_${Date.now()}.jpg`,
+            file_size: blob.size,
+            preview: preview,
+            location: location,
+            timestamp: new Date().toISOString(),
+            inspection_id: inspectionId,
+            checklist_item_id: checklistItemId,
+            item_name: itemName,
+            category: category,
+            uploaded_by: user?.id
+          };
+
+          // Save to database if inspectionId exists
+          if (inspectionId) {
+            const { error: dbError } = await supabase
+              .from('inspection_photos')
+              .insert({
+                inspection_id: inspectionId,
+                checklist_item_id: checklistItemId,
+                item_name: itemName,
+                category: category,
+                photo_url: urlData.publicUrl,
+                file_path: fileName,
+                latitude: location?.latitude,
+                longitude: location?.longitude,
+                accuracy: location?.accuracy,
+                captured_at: new Date().toISOString(),
+                uploaded_by: user?.id
+              });
+
+            if (dbError) {
+              console.error('[Camera] Database error:', dbError);
+            }
+          }
+
+          setPhotos(prev => [...prev, photoData]);
+          
+          // Callbacks
+          if (onCapture) {
+            onCapture(photoData);
+          }
+          if (onPhotoSaved) {
+            onPhotoSaved(photoData);
+          }
+
+          toast.success('Foto berhasil diambil dan diupload');
+          console.log('[Camera] ✅ Photo captured and uploaded successfully');
+        } catch (err) {
+          console.error('[Camera] Capture/upload error:', err);
+          toast.error('Gagal memproses foto');
+        } finally {
+          setIsUploading(false);
+        }
+      }, 'image/jpeg', 0.95);
+    } catch (err) {
+      console.error('[Camera] Capture error:', err);
+      toast.error('Gagal mengcapture foto');
+      setIsUploading(false);
+    }
+  }, [photos.length, maxPhotos, location, inspectionId, checklistItemId, itemName, category, user?.id, onCapture, onPhotoSaved]);
+
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Location Status */}
@@ -352,7 +542,27 @@ const AutoPhotoGeotag = ({
       )}
 
       {/* Upload Button */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-col md:flex-row">
+        {/* Camera Capture Button */}
+        <Button
+          onClick={isCameraActive ? stopCamera : startCamera}
+          disabled={isUploading || photos.length >= maxPhotos}
+          className={`flex-1 ${isCameraActive ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
+        >
+          {isCameraActive ? (
+            <>
+              <StopCircle className="w-4 h-4 mr-2" />
+              Tutup Kamera
+            </>
+          ) : (
+            <>
+              <Video className="w-4 h-4 mr-2" />
+              Buka Kamera
+            </>
+          )}
+        </Button>
+
+        {/* File Input Button */}
         <input
           ref={fileInputRef}
           type="file"
@@ -377,11 +587,64 @@ const AutoPhotoGeotag = ({
           ) : (
             <>
               <Camera className="w-4 h-4 mr-2" />
-              {photos.length > 0 ? 'Tambah Foto' : 'Ambil Foto'}
+              Upload File
             </>
           )}
         </Button>
       </div>
+
+      {/* Camera View Modal */}
+      {showCamera && (
+        <Card className="border-2 border-blue-500 bg-black">
+          <CardContent className="p-0">
+            <div className="space-y-2">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full bg-black rounded"
+                style={{ transform: 'scaleX(-1)' }}
+              />
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
+              
+              <div className="flex gap-2 p-2">
+                <Button
+                  onClick={capturePhoto}
+                  disabled={isUploading}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Mengunggah...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4 mr-2" />
+                      Ambil Foto
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  onClick={stopCamera}
+                  variant="destructive"
+                  className="flex-1"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Batal
+                </Button>
+              </div>
+
+              {/* Camera Status */}
+              <div className="bg-slate-800 text-white p-2 rounded text-xs space-y-1">
+                <p>📍 Lokasi: {location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : 'Mendapatkan lokasi...'}</p>
+                <p>📸 Foto: {photos.length}/{maxPhotos}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Photo Count */}
       <div className="flex items-center justify-between text-xs text-muted-foreground">

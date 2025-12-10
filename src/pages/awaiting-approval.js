@@ -83,15 +83,16 @@ export default function AwaitingApprovalPage() {
             // Jika tidak ada user sama sekali, redirect ke login
             if (!user) {
                 console.log("[AwaitingApproval] Tidak ada user, redirect ke login");
+                setChecking(false);
                 setTimeout(() => router.push('/login'), 100);
                 return;
             }
 
-            // Jika profile belum dimuat, tunggu sebentar
+            // Jika profile belum dimuat, tunggu dengan timeout
             if (!profile) {
                 console.log("[AwaitingApproval] Profile belum dimuat, waiting...");
-                setTimeout(() => setChecking(false), 500);
-                return;
+                // Tunggu lebih lama untuk profile loading, tapi berikan fallback timeout
+                return; // Biarkan effect lain menangani, jangan set checking false di sini
             }
 
             console.log("[AwaitingApproval] Profile data:", {
@@ -135,6 +136,8 @@ export default function AwaitingApprovalPage() {
                 const dashboardPath = getDashboardPath(profile.role);
                 console.log("[AwaitingApproval] Redirecting to:", dashboardPath);
                 
+                // Stop checking spinner saat akan redirect
+                setChecking(false);
                 // Gunakan replace untuk menghindari history stacking
                 setTimeout(() => router.replace(dashboardPath), 100);
                 return;
@@ -149,13 +152,25 @@ export default function AwaitingApprovalPage() {
 
             // Fallback: jika tidak approved dan bukan pending, redirect ke login
             console.log("[AwaitingApproval] Unknown status, redirecting to login");
+            setChecking(false);
             setTimeout(() => router.push('/login'), 100);
         };
 
         // Jalankan check dengan delay untuk menghindari race condition
-        const timer = setTimeout(checkApprovalStatus, 200);
+        const timer = setTimeout(checkApprovalStatus, 300);
         return () => clearTimeout(timer);
     }, [user, profile, authLoading, router]);
+
+    // 🛡️ Safety timeout: jika masih checking setelah 8 detik, tampilkan halaman
+    useEffect(() => {
+        if (checking && mounted) {
+            const safetyTimer = setTimeout(() => {
+                console.warn("[AwaitingApproval] Safety timeout: forcing checking=false");
+                setChecking(false);
+            }, 8000); // 8 second timeout
+            return () => clearTimeout(safetyTimer);
+        }
+    }, [checking, mounted]);
 
     const handleLogout = async () => {
         setIsLoggingOut(true);

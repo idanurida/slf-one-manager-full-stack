@@ -150,15 +150,15 @@ export async function signUp(email, password, userData = {}) {
     
     // Build a role-aware email redirect so the login page can show a confirmation message
     const origin = (typeof window !== 'undefined' && window.location?.origin) || process.env.NEXT_PUBLIC_APP_URL || undefined;
-    const roleParam = userData?.role ? `&role=${encodeURIComponent(userData.role)}` : '';
+    const roleQuery = userData?.role ? `?role=${encodeURIComponent(userData.role)}` : '';
 
     const { data, error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password: password,
       options: {
         data: userData,
-        // Provide a redirect URL which includes a query flag so the app can show a confirmation message
-        emailRedirectTo: origin ? `${origin}/login?confirmed=true${roleParam}` : undefined
+        // Redirect to a dedicated confirmation landing page for clearer UX
+        emailRedirectTo: origin ? `${origin}/email-confirmed${roleQuery}` : undefined
       }
     });
 

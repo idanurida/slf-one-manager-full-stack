@@ -142,6 +142,7 @@ export default function RegisterPage() {
 
     try {
       // Use centralized signUp helper that also upserts profile and signs out
+      console.log('[Register] Signing up with role:', formData.role);
       await signUpHelper(formData.email.trim().toLowerCase(), formData.password, {
         full_name: formData.fullName,
         role: formData.role,
@@ -153,10 +154,11 @@ export default function RegisterPage() {
       setSuccess(true);
       setError('');
       
-      // ✅ FIXED: Use router.replace to prevent back button issues and reduce flickering
+      // ✅ FIXED: Extended timeout to 5 seconds so users have time to read success message and check email
+      console.log('[Register] Registration successful. Redirecting to login in 5 seconds...');
       setTimeout(() => {
         router.replace('/login');
-      }, 3000);
+      }, 5000);
     } catch (err) {
       console.error('[Register] Error:', err);
       
@@ -167,6 +169,8 @@ export default function RegisterPage() {
         userMessage = 'Password terlalu lemah. Gunakan minimal 8 karakter.';
       } else if (err.message.includes('Invalid email')) {
         userMessage = 'Format email tidak valid';
+      } else if (err.message.includes('Email confirmation') || err.message.includes('confirmation')) {
+        userMessage = 'Gagal mengirim email konfirmasi. Periksa email Anda atau coba lagi.';
       }
       
       setError(userMessage);
@@ -236,23 +240,26 @@ export default function RegisterPage() {
                   <Alert className="border-green-500/50 bg-green-500/10">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
                     <AlertDescription className="text-green-600">
-                      <div className="space-y-2">
-                        <div className="font-semibold">Registrasi berhasil!</div>
-                        <div className="text-sm space-y-1">
-                          <div>📧 <strong>Langkah 1:</strong> Cek email Anda dan klik link konfirmasi untuk verifikasi email.</div>
-                          <div>👨‍💼 <strong>Langkah 2:</strong> Tunggu approval dari SuperAdmin.</div>
-                          <div>✅ Setelah kedua langkah selesai, Anda bisa login ke sistem.</div>
+                      <div className="space-y-3">
+                        <div className="font-semibold text-base">✓ Registrasi Berhasil!</div>
+                        <div className="text-sm space-y-2">
+                          <div><strong>📧 Langkah 1:</strong> Periksa email Anda (cek juga folder spam) dan klik link konfirmasi untuk memverifikasi email Anda.</div>
+                          <div><strong>👨‍💼 Langkah 2:</strong> Tunggu approval dari SuperAdmin. Anda akan menerima notifikasi email saat akun Anda disetujui.</div>
+                          <div><strong>✅ Langkah 3:</strong> Setelah kedua langkah selesai, Anda bisa login ke sistem dengan email dan password Anda.</div>
+                        </div>
+                        <div className="mt-4 p-2 bg-white/50 rounded text-xs text-green-700">
+                          💡 <strong>Tip:</strong> Jika tidak menerima email, periksa folder spam atau tunggu beberapa menit.
                         </div>
                       </div>
                     </AlertDescription>
                   </Alert>
                   
-                  <div className="flex justify-center">
+                  <div className="flex flex-col items-center justify-center gap-2">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    <p className="text-center text-sm text-muted-foreground">
+                      Mengarahkan ke halaman login dalam 5 detik...
+                    </p>
                   </div>
-                  <p className="text-center text-sm text-muted-foreground">
-                    Mengarahkan ke halaman login...
-                  </p>
                 </div>
               ) : (
                 <>

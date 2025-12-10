@@ -146,12 +146,15 @@ export async function refreshSession() {
 export async function signUp(email, password, userData = {}) {
   try {
     console.log('[Auth] Attempting sign up for:', email);
+    console.log('[Auth] User data:', { role: userData.role, full_name: userData.full_name });
     
     const { data, error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password: password,
       options: {
-        data: userData
+        data: userData,
+        // Use the configured redirect URL from Supabase
+        emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
       }
     });
 
@@ -182,6 +185,7 @@ export async function signUp(email, password, userData = {}) {
           role: userData.role || null,
           status: 'pending',
           is_approved: false,
+          email_confirmed_at: null,
           created_at: new Date().toISOString(),
         };
 
@@ -189,6 +193,8 @@ export async function signUp(email, password, userData = {}) {
         Object.keys(userData).forEach((k) => {
           if (!profileData[k] && userData[k] !== undefined) profileData[k] = userData[k];
         });
+        
+        console.log('[Auth] Creating profile with role:', profileData.role);
 
         const { error: profileError } = await supabase
           .from('profiles')
@@ -196,23 +202,28 @@ export async function signUp(email, password, userData = {}) {
 
         if (profileError) {
           console.error('[Auth] Profile upsert error:', profileError);
-          // do not block sign-up success for UI — just log
+          throw new Error(`Gagal membuat profil: ${profileError.message}`);
         }
+        
+        console.log('[Auth] ✅ Profile created successfully with role:', userData.role);
       } catch (e) {
         console.error('[Auth] Unexpected error while upserting profile:', e);
       }
 
       // Sign out immediately to avoid unexpected auth state in client UI
       try {
+        console.log('[Auth] Signing out user after registration...');
         await supabase.auth.signOut();
+        console.log('[Auth] ✅ User signed out after registration');
       } catch (e) {
         console.error('[Auth] signOut after signUp failed:', e);
       }
     }
 
+    console.log('[Auth] ✅ Sign up process completed, returning data');
     return data;
   } catch (error) {
-    console.error('[Auth] signUp catch error:', error);
+    console.error('[Auth] signUp catch error:', error.message);
     throw error;
   }
 }

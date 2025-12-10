@@ -151,7 +151,7 @@ export default function AdminTeamTimeline() {
         client_name: clientsById[p.client_id]?.name || ''
       }));
 
-      setProjects(enriched);
+      setproject_id;
 
     } catch (err) {
       console.error('Timeline data loading error:', err);

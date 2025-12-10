@@ -175,7 +175,7 @@ const fetchData = useCallback(async () => {
     );
 
     setInspectors(allInspectors);
-    setProjects(allProjects);
+    setproject_id;
     setApprovals(data);
 
     // Hitung statistik
@@ -195,7 +195,7 @@ const fetchData = useCallback(async () => {
     });
     setApprovals([]);
     setInspectors([]);
-    setProjects([]);
+    setproject_id;
     setStats({ total: 0, pending: 0, approved: 0, rejected: 0 });
   } finally {
     setLoading(false);

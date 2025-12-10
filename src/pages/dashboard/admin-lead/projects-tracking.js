@@ -289,7 +289,7 @@ export default function AdminLeadProjectsTrackingPage() {
           name,
           status,
           created_at,
-          clients!inner(name)
+          client_id
         `)
         .order('created_at', { ascending: false });
 
@@ -429,7 +429,7 @@ export default function AdminLeadProjectsTrackingPage() {
         simbg_uploaded: p.status === 'government_submitted' || p.status === 'slf_issued' || p.status === 'completed'
       }));
 
-      setProjects(processedProjects);
+      setproject_id;
 
       // 8. Hitung statistik
       const totalProjects = processedProjects.length;

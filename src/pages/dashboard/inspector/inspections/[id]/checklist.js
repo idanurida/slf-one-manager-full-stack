@@ -1,4 +1,4 @@
-﻿// FILE: src/pages/dashboard/inspector/inspections/[id]/checklist.js
+// FILE: src/pages/dashboard/inspector/inspections/[id]/checklist.js
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
 import { format } from 'date-fns';
@@ -55,14 +55,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-// Icons - ✅ DIPERBAIKI: Hapus duplikasi, tambah yang missing
+// Icons - ? DIPERBAIKI: Hapus duplikasi, tambah yang missing
 import { 
   FileText, Building, User, MapPin, Calendar, Clock, CheckCircle2, XCircle, Eye, Plus, 
   ArrowRight, TrendingUp, FolderOpen, DollarSign, ClipboardList, FileCheck, UserCheck, 
   RefreshCw, Download, MessageCircle, Search, Filter, ArrowLeft, ExternalLink, AlertCircle, 
   Info, CheckSquare, Radio, Camera, Upload, Globe, Target, ListChecks, Check, X, 
   AlertOctagon, CheckCircle, Send, AlertTriangle, FileSignature, ClipboardCheck, 
-  TrendingDown, FileQuestion, Loader2, Save // ✅ DITAMBAHKAN: Loader2, Save
+  TrendingDown, FileQuestion, Loader2, Save // ? DITAMBAHKAN: Loader2, Save
 } from "lucide-react";
 
 // Utils & Context
@@ -156,7 +156,7 @@ const ChecklistItemForm = ({ item, templateId, inspectionId, projectId, onSave, 
       // Ambil foto yang sudah disimpan sebelumnya
       const fetchSavedPhotos = async () => {
         if (inspectionId && item.id) {
-          const { data: photos, error } = await supabase // ✅ DIPERBAIKI: hapus spasi aneh
+          const { data: photos, error } = await supabase // ? DIPERBAIKI: hapus spasi aneh
             .from('inspection_photos')
             .select('id, photo_url, caption, latitude, longitude, uploaded_at')
             .eq('inspection_id', inspectionId)
@@ -486,14 +486,14 @@ export default function InspectorInspectionChecklistPage() {
     setError(null);
 
     try {
-      // ✅ DIPERBAIKI: hapus spasi aneh sebelum data
+      // ? DIPERBAIKI: hapus spasi aneh sebelum data
       const { data: scheduleData, error: schedErr } = await supabase
         .from('schedules')
         .select(`
           *,
           projects!inner(
             id, name, status, location, city, address, client_id, application_type, building_function,
-            clients!inner(name, email)
+            client_id
           )
         `)
         .eq('id', scheduleId)
@@ -524,7 +524,7 @@ export default function InspectorInspectionChecklistPage() {
       setChecklistTemplate(template);
       setChecklistItems(template.items || []);
 
-      // ✅ DIPERBAIKI: hapus spasi aneh sebelum data
+      // ? DIPERBAIKI: hapus spasi aneh sebelum data
       const { data: responses, error: respErr } = await supabase
         .from('checklist_responses')
         .select('item_id, response, notes, responded_at, status')
@@ -587,7 +587,7 @@ export default function InspectorInspectionChecklistPage() {
       <DashboardLayout title="Isi Checklist Inspeksi">
         <div className="p-4 md:p-6">
           <Alert variant="destructive" className="mb-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <AlertCircle className="h-4 w-4" /> {/* ✅ DIPERBAIKI: pakai AlertCircle langsung */}
+            <AlertCircle className="h-4 w-4" /> {/* ? DIPERBAIKI: pakai AlertCircle langsung */}
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
@@ -634,7 +634,7 @@ export default function InspectorInspectionChecklistPage() {
           {/* Action Buttons */}
           <motion.div variants={itemVariants} className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">
-              Proyek: {project?.name || 'N/A'} • Klien: {client?.name || 'N/A'}
+              Proyek: {project?.name || 'N/A'} � Klien: {client?.name || 'N/A'}
             </span>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>

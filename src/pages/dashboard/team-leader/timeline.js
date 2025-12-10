@@ -335,7 +335,7 @@ export default function TeamLeaderTimelinePage() {
         client_name: p.client_id ? (clientsMap[p.client_id]?.name || 'Client Tidak Diketahui') : 'Client Tidak Diketahui'
       }));
 
-      setAssignedProjects(projectList);
+      setAssignedproject_id;
 
       // Jika ada proyek dan belum ada yang dipilih, pilih yang pertama
       if (projectList.length > 0 && !selectedProjectId) {

@@ -290,7 +290,7 @@ export default function ClientTimeline() {
         })) || []
       }));
 
-      setProjects(processedProjects);
+      setproject_id;
 
       // Auto-select first project if available
       if (processedProjects.length > 0 && !selectedProject) {

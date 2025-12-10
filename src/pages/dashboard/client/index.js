@@ -200,7 +200,7 @@ export default function ClientDashboard() {
       }
 
       // Set recent projects (max 3)
-      setRecentProjects(projectsList.slice(0, 3));
+      setRecentproject_id);
 
       // 3. Fetch documents untuk projects ini
       let documentsData = [];
@@ -351,7 +351,7 @@ export default function ClientDashboard() {
           const { data: schedules } = await safeFetch(() =>
             supabase
               .from('schedules')
-              .select('*, projects(name)')
+              .select('*, project_id')
               .in('project_id', projectIds)
               .gte('schedule_date', new Date().toISOString().split('T')[0])
               .lte('schedule_date', nextWeek.toISOString().split('T')[0])

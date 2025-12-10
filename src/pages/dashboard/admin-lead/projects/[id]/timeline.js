@@ -92,7 +92,7 @@ export default function ProjectTimelinePage() {
       // Fetch project
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
-        .select('*, clients!client_id(name)')
+        .select('*, client_id')
         .eq('id', projectId)
         .single();
 

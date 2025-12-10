@@ -103,7 +103,7 @@ export default function AdminLeadTimelinePage() {
         client_name: clientsById[p.client_id]?.name || null
       }));
 
-      setProjects(enriched || []);
+      setproject_id;
 
       // Auto-select first project if available
       if (enriched && enriched.length > 0 && !selectedProjectId) {

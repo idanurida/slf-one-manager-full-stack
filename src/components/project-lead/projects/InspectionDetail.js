@@ -127,7 +127,7 @@ const InspectionDetail = ({ inspectionId }) => {
             end_time,
             status,
             created_at,
-            projects(name, client_name),
+            project_id,
             inspectors:profiles!assigned_to(full_name, email, specialization)
           `)
           .eq('id', inspectionId)

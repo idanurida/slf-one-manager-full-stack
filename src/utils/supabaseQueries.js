@@ -8,39 +8,20 @@ import { supabase } from './supabaseClient';
  */
 export const getProjectsWithClients = async (options = {}) => {
   try {
-    // Try the full query with clients join first
+    // Safer approach: query projects normally (including FK fields) and enrich results
     const { data, error, count } = await supabase
       .from('projects')
-      .select('*, clients!client_id(name)', { count: options.count || 'exact' })
+      .select('*', { count: options.count || 'exact' })
       .order('created_at', { ascending: false });
-    
+
     if (error) {
-      console.warn('[getProjectsWithClients] Join query failed, trying fallback:', error.message);
-      
-      // Fallback: Query projects without clients join
-      const fallbackResult = await supabase
-        .from('projects') 
-        .select('*', { count: options.count || 'exact' })
-        .order('created_at', { ascending: false });
-        
-      if (fallbackResult.error) {
-        throw fallbackResult.error;
-      }
-      
-      // Add empty clients data to maintain structure
-      const projectsWithEmptyClients = (fallbackResult.data || []).map(project => ({
-        ...project,
-        clients: null // or { name: 'N/A' }
-      }));
-      
-      return {
-        data: projectsWithEmptyClients,
-        count: fallbackResult.count,
-        error: null
-      };
+      console.warn('[getProjectsWithClients] Projects query failed:', error.message);
+      throw error;
     }
-    
-    return { data, count, error: null };
+
+    // Enrich projects with clients/profiles in batch to avoid ambiguous PostgREST embeds
+    const enriched = await enrichProjects(data || []);
+    return { data: enriched, count, error: null };
     
   } catch (error) {
     console.error('[getProjectsWithClients] All queries failed:', error);
@@ -75,20 +56,7 @@ export const getClientById = async (clientId) => {
     
     return { data, error: null };
     
-    // Safer approach: query projects normally (including FK fields) and enrich results
-    const { data, error, count } = await supabase
-      .from('projects')
-      .select('*, client_id, project_lead_id, admin_lead_id', { count: options.count || 'exact' })
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.warn('[getProjectsWithClients] Projects query failed:', error.message);
-      throw error;
-    }
-
-    // Enrich projects with clients/profiles in batch to avoid ambiguous PostgREST embeds
-    const enriched = await enrichProjects(data || []);
-    return { data: enriched, count, error: null };
+  } catch (error) {
     console.error('[getClientById] Query failed:', error);
     return {
       data: { name: 'Error loading client' },
@@ -102,60 +70,17 @@ export const getClientById = async (clientId) => {
  */
 export const getInspectorProjects = async (inspectorId, options = {}) => {
   try {
-    // Try with clients join
-    const { data, error } = await supabase
-        .from('inspections')
-        .select(`
-        id,
-        status,
-        scheduled_date,
-        projects(id, name, address, city, clients!client_id(name))
-      `)
-      .eq('inspector_id', inspectorId)
-      .order('scheduled_date', { ascending: false });
-    
-    if (error) {
-      console.warn('[getInspectorProjects] Join query failed, trying fallback:', error.message);
-      
-      // Fallback without clients join
-      const fallbackResult = await supabase
-        .from('inspections')
-        .select(`
-          id,
-          status, 
-          scheduled_date,
-          projects(id, name, address, city)
-        `)
-        .eq('inspector_id', inspectorId)
-        .order('scheduled_date', { ascending: false });
-      
-      if (fallbackResult.error) {
-        throw fallbackResult.error;
-      }
-      
-      // Add empty clients data
-      const inspectionsWithEmptyClients = (fallbackResult.data || []).map(inspection => ({
-        ...inspection,
-        projects: inspection.projects ? {
-          ...inspection.projects,
-          clients: { name: 'N/A' }
-        } : null
-      }));
-      
-      return { data: inspectionsWithEmptyClients, error: null };
-    }
-    
     // Safer approach: select project fields (including client_id) then enrich
     const { data, error } = await supabase
-        .from('inspections')
-        .select(`
+      .from('inspections')
+      .select(`
         id,
         status,
         scheduled_date,
         projects(id, name, address, city, client_id)
       `)
-        .eq('inspector_id', inspectorId)
-        .order('scheduled_date', { ascending: false });
+      .eq('inspector_id', inspectorId)
+      .order('scheduled_date', { ascending: false });
 
     if (error) {
       console.warn('[getInspectorProjects] Inspections query failed:', error.message);

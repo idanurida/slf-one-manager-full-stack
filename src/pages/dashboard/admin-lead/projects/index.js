@@ -127,8 +127,8 @@ export default function AdminLeadProjectsPage() {
         client_name: clientsData?.find(c => c.id === project.client_id)?.name || '-'
       }));
 
-      setProjects(projectsWithClients);
-      setFilteredProjects(projectsWithClients);
+      setproject_id;
+      setFilteredproject_id;
 
     } catch (err) {
       console.error('Error fetching projects:', err);
@@ -160,7 +160,7 @@ export default function AdminLeadProjectsPage() {
       result = result.filter(p => p.application_type === selectedType);
     }
 
-    setFilteredProjects(result);
+    setFilteredproject_id;
   }, [projects, searchTerm, selectedStatus, selectedType]);
 
   // Reset filters

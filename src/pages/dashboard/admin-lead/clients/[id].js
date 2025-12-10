@@ -226,7 +226,7 @@ export default function AdminLeadClientDetailPage() {
       console.log('📋 Projects data:', projectsData);
 
       setClient(clientData);
-      setProjects(projectsData || []);
+      setproject_id;
 
     } catch (err) {
       console.error('❌ Error fetching client detail:', err);

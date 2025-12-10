@@ -152,7 +152,7 @@ export default function HeadConsultantApprovalsPage() {
         .select('id, name');
 
       if (projectsErr) throw projectsErr;
-      setProjects(projectsData || []);
+      setproject_id;
 
       // 2. Ambil laporan yang perlu approval HC
       const { data: reportsData, error: reportsErr } = await supabase
@@ -196,7 +196,7 @@ export default function HeadConsultantApprovalsPage() {
       console.error('Error fetching reports for HC approval:', err);
       setError('Gagal memuat data laporan untuk approval');
       toast.error('Gagal memuat data laporan');
-      setProjects([]);
+      setproject_id;
       setReports([]);
     } finally {
       setLoading(false);

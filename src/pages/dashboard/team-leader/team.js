@@ -168,7 +168,7 @@ export default function TeamLeaderTeamPage() {
         ...a.projects
       }));
 
-      setProjects(projectList);
+      setproject_id;
 
       // 2. Ambil semua anggota tim dari proyek-proyek tersebut
       const projectIds = projectList.map(p => p.id);

@@ -214,7 +214,7 @@ export default function AdminTeamProjectsPage() {
         client_name: clientsById[p.client_id]?.name || 'Client Tidak Diketahui'
       }));
 
-      setProjects(enriched);
+      setproject_id;
 
     } catch (err) {
       console.error('Error fetching projects:', err);

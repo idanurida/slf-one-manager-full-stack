@@ -98,7 +98,7 @@ export default function ClientMessagesPage() {
 
       const { data, error } = await query;
       if (error) throw error;
-      setProjects(data || []);
+      setproject_id;
       return data || [];
     } catch (err) {
       console.error('Error fetching projects:', err);

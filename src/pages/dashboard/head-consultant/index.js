@@ -94,7 +94,7 @@ export default function HeadConsultantDashboard() {
       // Fetch reports needing approval
       const { data: reports } = await supabase
         .from('documents')
-        .select('id, name, status, created_at, projects(name)')
+        .select('id, name, status, created_at, project_id')
         .eq('document_type', 'REPORT')
         .eq('status', 'approved_by_pl')
         .order('created_at', { ascending: false });

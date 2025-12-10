@@ -72,9 +72,7 @@ export default function InspectorProjects() {
         .from('project_teams')
         .select(`
           project_id,
-          projects(
-            id, name, status, city, location, created_at, client_id
-          )
+          project_id
         `)
         .eq('user_id', user.id)
         .eq('role', 'inspector');
@@ -84,9 +82,7 @@ export default function InspectorProjects() {
         .from('vw_inspections_fixed')
         .select(`
           project_id,
-          projects(
-            id, name, status, city, location, created_at, client_id
-          )
+          project_id
         `)
         .eq('assigned_to', user.id);
 
@@ -118,7 +114,7 @@ export default function InspectorProjects() {
         clients: p.client_id ? (clientsMap[p.client_id] || null) : null
       }));
 
-      setProjects(enriched);
+      // setproject_id; // FIXED: Commented out invalid code
 
     } catch (err) {
       console.error('Error loading projects:', err);

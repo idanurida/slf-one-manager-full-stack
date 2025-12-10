@@ -107,7 +107,7 @@ const ProjectsPage = () => {
       }
 
       try {
-        const data = await fetchProjects(userRole, userId); 
+        const data = await fetchproject_id; 
         if (!data) return []; 
         
         return data;

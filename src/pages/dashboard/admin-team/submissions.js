@@ -149,7 +149,7 @@ export default function AdminTeamSubmissionsPage() {
 
       const projectIds = (assignments || []).map(a => a.project_id);
       if (projectIds.length === 0) {
-        setProjects([]);
+        setproject_id;
         setLoading(false);
         return;
       }
@@ -195,7 +195,7 @@ export default function AdminTeamSubmissionsPage() {
         }
       }
 
-      setProjects(readyProjects);
+      setproject_id;
     } catch (err) {
       console.error('Error fetching projects:', err);
       toast.error('Gagal memuat proyek');

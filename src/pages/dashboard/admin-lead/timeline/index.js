@@ -115,7 +115,7 @@ export default function AdminLeadTimelinePage() {
         clients: p.client_id ? clientsMap[p.client_id] || { name: 'N/A', id: p.client_id } : null
       }));
 
-      setProjects(projectsWithClients);
+      setproject_id;
 
       // Auto-select first project if available
       if (data && data.length > 0 && !selectedProjectId) {

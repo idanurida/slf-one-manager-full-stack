@@ -270,7 +270,7 @@ export default function AdminTeamReportsPage() {
       if (assignErr) throw assignErr;
 
       const projectList = (assignments || []).map(a => a.projects);
-      setProjects(projectList);
+      setproject_id;
 
       // Ambil laporan (dokumen dengan type REPORT atau nama mengandung 'laporan') dari proyek-proyek saya
       const projectIds = projectList.map(p => p.id);
@@ -281,7 +281,7 @@ export default function AdminTeamReportsPage() {
           .select(`
             *,
             profiles!created_by(full_name, specialization),
-            projects(name)
+            project_id
           `)
           .in('project_id', projectIds)
           .eq('document_type', 'REPORT') // Atau gunakan filter nama: .ilike('name', '%laporan%')

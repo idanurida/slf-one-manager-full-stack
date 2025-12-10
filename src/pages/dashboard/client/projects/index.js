@@ -111,7 +111,7 @@ export default function ClientProjectsPage() {
       const { data, error: fetchError } = await query;
 
       if (fetchError) throw fetchError;
-      setProjects(data || []);
+      setproject_id;
 
     } catch (err) {
       console.error('Error fetching projects:', err);

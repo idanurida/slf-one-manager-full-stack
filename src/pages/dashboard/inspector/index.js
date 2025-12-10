@@ -76,7 +76,7 @@ export default function InspectorDashboard() {
         .from('vw_inspections_fixed')
         .select(`
           id, scheduled_date, status, created_at,
-          projects(id, name, address, city, client_id)
+          project_id
         `)
         .eq('assigned_to', user.id)
         .order('scheduled_date', { ascending: true });
@@ -96,7 +96,7 @@ export default function InspectorDashboard() {
         .from('project_teams')
         .select(`
           project_id,
-          projects(id, name, status, city, client_id)
+          project_id
         `)
         .eq('user_id', user.id)
         .eq('role', 'inspector');
@@ -116,12 +116,12 @@ export default function InspectorDashboard() {
         .map(p => ({ ...p, clients: p.client_id ? (clientsMap[p.client_id] || null) : null }))
         .filter(p => p && p.status !== 'completed' && p.status !== 'cancelled')
         .slice(0, 5);
-      setRecentProjects(projects);
+      setRecentproject_id;
 
       // Fetch reports
       const { data: reports } = await supabase
         .from('reports')
-        .select('id, name, status, created_at, projects(name)')
+        .select('id, name, status, created_at, project_id')
         .eq('created_by', user.id)
         .order('created_at', { ascending: false });
 

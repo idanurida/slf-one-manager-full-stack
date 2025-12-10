@@ -314,7 +314,7 @@ export default function AdminLeadSchedulesPage() {
       });
 
       setSchedules(schedulesData || []);
-      setProjects(projectsData || []);
+      setproject_id;
       setUsers(usersData || []);
 
       console.log('✅ Schedules data loaded successfully:', {

@@ -95,13 +95,7 @@ const InspectorChecklistDashboard = () => {
             status,
             created_at,
             updated_at,
-            projects(
-              name, 
-              address, 
-              city,
-              client_id,
-              clients!client_id(name)
-            ),
+            project_id,
             profiles!inspections_assigned_to_fkey(
               full_name, 
               specialization

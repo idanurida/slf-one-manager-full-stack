@@ -153,7 +153,7 @@ export default function ProjectLeadSchedulesPage() {
           .from('schedules')
           .select(`
             *,
-            projects(name)
+            project_id
           `)
           .in('project_id', projectIds)
           .order('schedule_date', { ascending: true });
@@ -176,7 +176,7 @@ export default function ProjectLeadSchedulesPage() {
           .order('name');
 
         if (projsErr) throw projsErr;
-        setProjects(projs || []);
+        setproject_id;
       }
 
       // Fetch users (inspectors, admin_team, project_lead) yang terlibat dalam proyek saya

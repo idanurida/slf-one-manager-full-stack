@@ -52,7 +52,7 @@ export default function ClientPaymentsPage() {
       const { data: projects, error } = await query;
 
       if (error) throw error;
-      setClientProjects(projects || []);
+      setClientproject_id;
 
     } catch (error) {
       console.error('Error fetching client projects:', error);

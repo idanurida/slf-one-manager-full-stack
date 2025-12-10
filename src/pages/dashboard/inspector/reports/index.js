@@ -83,7 +83,7 @@ export default function InspectorReports() {
         .from('inspection_reports')
         .select(`
           *,
-          projects(id, name)
+          project_id
         `)
         .eq('assigned_to', user.id)
         .order('created_at', { ascending: false });
@@ -94,7 +94,7 @@ export default function InspectorReports() {
           .from('reports')
           .select(`
             *,
-            projects(id, name)
+            project_id
           `)
           .eq('created_by', user.id)
           .order('created_at', { ascending: false });

@@ -81,7 +81,7 @@ export default function AdminLeadDashboard() {
         .order('created_at', { ascending: false });
 
       const projectsList = projects || [];
-      setRecentProjects(projectsList.slice(0, 5));
+      setRecentproject_id);
 
       // Fetch pending documents (tanpa project atau status pending)
       const { data: pendingDocs } = await supabase
@@ -114,7 +114,7 @@ export default function AdminLeadDashboard() {
 
       const { data: schedules } = await supabase
         .from('schedules')
-        .select('*, projects(name)')
+        .select('*, project_id')
         .gte('schedule_date', new Date().toISOString())
         .lte('schedule_date', nextWeek.toISOString())
         .order('schedule_date', { ascending: true })

@@ -393,7 +393,7 @@ export default function AdminTeamDocumentsPage() {
 
       const projectIds = (assignments || []).map(a => a.project_id);
       if (projectIds.length === 0) {
-        setProjects([]);
+        setproject_id;
         setDocuments([]);
         setReports([]);
         setStats({
@@ -415,7 +415,7 @@ export default function AdminTeamDocumentsPage() {
         .select('id, name')
         .in('id', projectIds);
       if (projErr) throw projErr;
-      setProjects(allProjects);
+      setproject_id;
 
       // Ambil dokumen dari client (bukan laporan)
       let docData = [];
@@ -426,7 +426,7 @@ export default function AdminTeamDocumentsPage() {
           .select(`
             *,
             profiles!created_by(full_name),
-            projects(name)
+            project_id
           `)
           .in('project_id', projectIds)
           .in('document_type', nonReportTypes) // Hanya dokumen client, bukan laporan
@@ -450,7 +450,7 @@ export default function AdminTeamDocumentsPage() {
           .select(`
             *,
             profiles!created_by(full_name, specialization),
-            projects(name)
+            project_id
           `)
           .in('project_id', projectIds)
           .eq('document_type', 'REPORT') // Hanya laporan

@@ -127,18 +127,23 @@ export default function ProjectLeadProjectsPage() {
     try {
       const { data: projectsData, error: projectsErr } = await supabase
         .from('projects')
-        .select(`
-          *,
-          clients!inner(name)
-        `)
-        .eq('project_lead_id', user.id) // Hanya proyek yang ditangani oleh saya
+        .select(`*`)
+        .eq('project_lead_id', user.id)
         .order('created_at', { ascending: false });
 
       if (projectsErr) throw projectsErr;
 
+      // Batch fetch clients
+      const clientIds = [...new Set((projectsData || []).map(p => p.client_id).filter(Boolean))];
+      let clientsById = {};
+      if (clientIds.length > 0) {
+        const { data: clients } = await supabase.from('clients').select('id, name').in('id', clientIds);
+        clientsById = (clients || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
+      }
+
       const processedProjects = (projectsData || []).map(p => ({
         ...p,
-        client_name: p.clients?.name || 'N/A'
+        client_name: clientsById[p.client_id]?.name || 'N/A'
       }));
 
       setProjects(processedProjects);

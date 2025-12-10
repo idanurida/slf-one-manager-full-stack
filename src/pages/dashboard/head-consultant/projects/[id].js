@@ -124,7 +124,7 @@ export default function HeadConsultantProjectDetailPage() {
         .from('projects')
         .select(`
           *,
-          clients!inner(*),
+          client_id,
           project_teams(
             *,
             profiles!inner(*)

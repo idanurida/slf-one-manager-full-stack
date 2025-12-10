@@ -111,7 +111,7 @@ const ProjectList = ({ projects, loading, onApprove, onReject, onViewDetail }) =
       result = result.filter(p => p.project_lead_id === selectedProjectLead);
     }
 
-    setFilteredProjects(result);
+    setFilteredproject_id;
   }, [searchTerm, selectedStatus, selectedProjectLead, projects]);
 
   // ✅ Fetch project leads for filter

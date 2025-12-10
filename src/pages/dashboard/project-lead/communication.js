@@ -187,7 +187,7 @@ export default function ProjectLeadCommunicationPage() {
             *,
             sender:profiles!sender_id(full_name),
             recipient:profiles!recipient_id(full_name),
-            projects(name)
+            project_id
           `)
           .or(`sender_id.in.(${clientIds.join(',')})`) // Kiriman dari client saya
           .or(`recipient_id.in.(${clientIds.join(',')})`) // Kiriman ke client saya

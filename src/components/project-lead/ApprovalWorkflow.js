@@ -133,7 +133,7 @@ const ApprovalWorkflow = ({ user }) => {
       const { inspectors: inspectorData, projects: projectData, approvals: approvalData } = relatedData;
 
       setInspectors(Array.isArray(inspectorData) ? inspectorData : []);
-      setProjects(Array.isArray(projectData) ? projectData : []);
+      setproject_id ? projectData : []);
       setApprovals(Array.isArray(approvalData) ? approvalData : []);
       setFilteredApprovals(Array.isArray(approvalData) ? approvalData : []);
       
@@ -161,7 +161,7 @@ const ApprovalWorkflow = ({ user }) => {
       setApprovals([]);
       setFilteredApprovals([]);
       setInspectors([]);
-      setProjects([]);
+      setproject_id;
       setStats({
         total: 0,
         pending: 0,

@@ -306,9 +306,7 @@ export default function ProjectLeadTimelinePage() {
         .from('project_teams')
         .select(`
           project_id,
-          projects!inner(
-            id, name, status, created_at, client_id, city, address, application_type
-          )
+          project_id
         `)
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
@@ -333,7 +331,7 @@ export default function ProjectLeadTimelinePage() {
         client_name: p.client_id ? (clientsMap[p.client_id]?.name || 'Client Tidak Diketahui') : 'Client Tidak Diketahui'
       }));
 
-      setAssignedProjects(projectList);
+      setAssignedproject_id;
 
       // Jika ada proyek dan belum ada yang dipilih, pilih yang pertama
       if (projectList.length > 0 && !selectedProjectId) {

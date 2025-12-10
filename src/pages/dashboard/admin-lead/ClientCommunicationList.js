@@ -16,7 +16,7 @@ export default function ClientCommunicationListPage() {
   useEffect(() => {
     // For build time, ensure projects is always an array
     // In production, this would be replaced with actual data fetching
-    setProjects([]);
+    setproject_id;
     setLoading(false);
   }, []);
 

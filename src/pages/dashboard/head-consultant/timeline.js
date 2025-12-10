@@ -186,7 +186,7 @@ export default function HeadConsultantTimelinePage() {
         .order('created_at', { ascending: false });
 
       if (projectsErr) throw projectsErr;
-      setProjects(projectsData || []);
+      setproject_id;
 
       // Ambil jadwal secara terpisah
       const { data: schedsData, error: schedsErr } = await supabase
@@ -278,7 +278,7 @@ export default function HeadConsultantTimelinePage() {
       console.error('Error fetching timeline data for head consultant:', err);
       setError('Gagal memuat data timeline');
       toast.error('Gagal memuat data timeline');
-      setProjects([]);
+      setproject_id;
       setTimelineEvents([]);
     } finally {
       setLoading(false);

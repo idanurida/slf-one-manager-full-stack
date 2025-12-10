@@ -74,7 +74,7 @@ export default function ProjectLeadDashboard() {
         .from('project_teams')
         .select(`
           project_id,
-          projects(id, name, status, created_at, clients!client_id(name))
+          project_id
         `)
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
@@ -83,7 +83,7 @@ export default function ProjectLeadDashboard() {
         .map(pt => pt.projects)
         .filter(p => p);
       
-      setMyProjects(projects.slice(0, 5));
+      setMyproject_id);
 
       // Fetch team members count
       const projectIds = projects.map(p => p.id);
@@ -99,7 +99,7 @@ export default function ProjectLeadDashboard() {
       // Fetch pending reports (need project lead approval)
       const { data: reports } = await supabase
         .from('documents')
-        .select('id, name, status, created_at, projects(name)')
+        .select('id, name, status, created_at, project_id')
         .eq('document_type', 'REPORT')
         .eq('status', 'verified_by_admin_team')
         .order('created_at', { ascending: false });
@@ -110,7 +110,7 @@ export default function ProjectLeadDashboard() {
       const today = new Date().toISOString().split('T')[0];
       const { data: schedules } = await supabase
         .from('vw_inspections_fixed')
-        .select('id, scheduled_date, status, projects(name)')
+        .select('id, scheduled_date, status, project_id')
         .gte('scheduled_date', today)
         .in('status', ['scheduled', 'in_progress'])
         .order('scheduled_date', { ascending: true })

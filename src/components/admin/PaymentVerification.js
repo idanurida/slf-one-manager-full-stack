@@ -151,9 +151,9 @@ const PaymentVerification = () => {
           rejection_reason,
           proof_file_path,
           created_at,
-          projects(name),
+          project_id,
           client_id,
-          clients!inner(name)
+          client_id
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });

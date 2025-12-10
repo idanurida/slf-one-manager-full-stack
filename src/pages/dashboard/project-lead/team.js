@@ -155,7 +155,7 @@ export default function ProjectLeadTeamPage() {
         .from('project_teams')
         .select(`
           project_id,
-          projects!inner(id, name, status)
+          project_id
         `)
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
@@ -166,7 +166,7 @@ export default function ProjectLeadTeamPage() {
         ...a.projects
       }));
 
-      setProjects(projectList);
+      setproject_id;
 
       // 2. Ambil semua anggota tim dari proyek-proyek tersebut
       const projectIds = projectList.map(p => p.id);

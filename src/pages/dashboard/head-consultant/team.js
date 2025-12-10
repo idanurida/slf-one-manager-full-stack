@@ -118,7 +118,7 @@ export default function HeadConsultantTeamPage() {
 
       if (projectsErr) throw projectsErr;
 
-      setProjects(projectsData || []);
+      setproject_id;
 
       // Ambil semua anggota tim dari semua proyek
       const { data: teamData, error: teamErr } = await supabase

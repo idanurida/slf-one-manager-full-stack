@@ -131,7 +131,7 @@ export default function AdminTeamSchedulesPage() {
           .from('schedules')
           .select(`
             *,
-            projects(name)
+            project_id
           `)
           .in('project_id', projectIds) // Jadwal di proyek saya
           .order('schedule_date', { ascending: true });
@@ -154,7 +154,7 @@ export default function AdminTeamSchedulesPage() {
           .order('name');
 
         if (projsErr) throw projsErr;
-        setProjects(projs || []);
+        setproject_id;
       }
 
     } catch (err) {

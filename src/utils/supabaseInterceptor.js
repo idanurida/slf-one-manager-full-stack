@@ -11,11 +11,11 @@ const fixSupabaseQueries = () => {
       
       // Perbaiki nested join pattern
       if (url.includes('projects!inner') && url.includes('clients!inner')) {
-        // Pattern: projects!inner(...,clients!inner(...))
-        // Ganti menjadi: projects!inner(...),clients!inner(...)
+        // Pattern: projects!inner(...,client_id)
+        // Ganti menjadi: projects!inner(...),client_id
         const fixedUrl = url.replace(
           /projects!inner\(([^)]*)clients!inner\(([^)]*)\)([^)]*)\)/,
-          'projects!inner($1$3),clients!inner($2)'
+          'projects!inner($1$3),client_id'
         );
         
         if (fixedUrl !== url) {

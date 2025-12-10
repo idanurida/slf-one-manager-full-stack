@@ -145,7 +145,7 @@ export default function HeadConsultantProjectsPage() {
         .from('projects')
         .select(`
           *,
-          clients!inner(name, email)
+          client_id
         `)
         .order('created_at', { ascending: false });
 
@@ -159,7 +159,7 @@ export default function HeadConsultantProjectsPage() {
       if (clientsErr) throw clientsErr;
 
       // PERBAIKAN: Set dengan data yang benar dan berikan fallback array kosong
-      setProjects(projectsData || []);
+      setproject_id;
       setClients(clientsData || []);
 
     } catch (err) {
@@ -167,7 +167,7 @@ export default function HeadConsultantProjectsPage() {
       setError('Gagal memuat data proyek');
       toast.error('Gagal memuat data proyek');
       // PERBAIKAN: Set ke array kosong jika error
-      setProjects([]);
+      setproject_id;
       setClients([]);
     } finally {
       setLoading(false);

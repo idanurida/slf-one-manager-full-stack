@@ -134,7 +134,7 @@ export default function TeamLeaderReportsPage() {
           .from('documents')
           .select(`
             *,
-            projects(name),
+            project_id,
             profiles!created_by(full_name, specialization)
           `)
           .in('project_id', projectIds)

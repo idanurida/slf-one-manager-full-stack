@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -52,13 +52,7 @@ export default function MyInspectionDetail() {
           .from('vw_inspections_fixed')
           .select(`
             *,
-            projects(
-              name,
-              address,
-              city,
-              description,
-              client_id
-            ),
+            project_id,
             profiles!inspector_id(
               full_name,
               email,

@@ -228,7 +228,7 @@ export default function PendingDocumentsPage() {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setExistingProjects(data || []);
+        setExistingproject_id;
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -412,7 +412,7 @@ export default function PendingDocumentsPage() {
   // Open link to project dialog
   const openLinkToProjectDialog = (clientId) => {
     setSelectedClient(clientId);
-    fetchExistingProjects(clientId);
+    fetchExistingproject_id;
     setSelectedDocuments(groupedByClient[clientId]?.documents.map(d => d.id) || []);
     setLinkToProjectDialog(true);
   };

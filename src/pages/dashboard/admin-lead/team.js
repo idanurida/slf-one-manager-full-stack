@@ -110,7 +110,7 @@ export default function AdminLeadTeamPage() {
         .order('full_name');
 
       setTeamMembers(teamsData || []);
-      setProjects(projectsData || []);
+      setproject_id;
       setAvailableUsers(usersData || []);
 
     } catch (err) {

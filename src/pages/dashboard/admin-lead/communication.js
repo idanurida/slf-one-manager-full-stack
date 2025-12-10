@@ -372,7 +372,7 @@ export default function AdminLeadCommunicationPage() {
         upcomingSchedules: schedulesCount || 0
       });
 
-      setProjects(projectsData || []);
+      setproject_id;
       setClients(clientsData || []);
       setMessages(messagesData || []);
       setNotifications(notificationsData || []);

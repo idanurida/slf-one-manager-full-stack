@@ -129,7 +129,7 @@ export default function UploadDokumenPage() {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setProjects(data || []);
+        setproject_id;
       }
     } catch (error) {
       console.error('Error fetching projects:', error);

@@ -16,9 +16,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 
 // Icons
-import { 
-  ArrowLeft, Save, CheckCircle, XCircle, AlertTriangle, Clock, Calendar, 
-  MapPin, User, Building, Camera, FileText, Download, Send, Eye, Star, 
+import {
+  ArrowLeft, Save, CheckCircle, XCircle, AlertTriangle, Clock, Calendar,
+  MapPin, User, Building, Camera, FileText, Download, Send, Eye, Star,
   ChevronDown, Play, Check, Info, Loader2, Edit, Plus, Trash2, Search,
   Upload, RotateCcw, Activity, UserCheck, Bell, CheckSquare
 } from 'lucide-react';
@@ -32,6 +32,7 @@ import { useAuth } from '@/context/AuthContext';
 import DynamicChecklistForm from '@/components/inspections/DynamicChecklistForm';
 // Import PhotoUploadWithGeotag component
 import PhotoUploadWithGeotag from '@/components/inspections/PhotoUploadWithGeotag';
+import checklistData from '@/data/checklistData.json';
 
 // Utility function untuk class names
 const cn = (...classes) => classes.filter(Boolean).join(' ');
@@ -40,8 +41,8 @@ const cn = (...classes) => classes.filter(Boolean).join(' ');
 const CustomProgress = ({ value, className = "" }) => {
   return (
     <div className={cn("w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700", className)}>
-      <div 
-        className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out" 
+      <div
+        className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
         style={{ width: `${value}%` }}
       ></div>
     </div>
@@ -81,14 +82,14 @@ const CustomAccordionContent = ({ children, isOpen }) => {
 // Custom Tabs Components dengan animation - IMPROVED VERSION
 const CustomTabs = ({ defaultValue, children, className = "" }) => {
   const [activeTab, setActiveTab] = useState(defaultValue);
-  
+
   const childrenWithProps = React.Children.map(children, child => {
     if (React.isValidElement(child)) {
       return React.cloneElement(child, { activeTab, setActiveTab });
     }
     return child;
   });
-  
+
   return (
     <div className={className}>
       {childrenWithProps}
@@ -113,14 +114,14 @@ const CustomTabsList = ({ children, activeTab, setActiveTab, className = "" }) =
 
 const CustomTabsTrigger = ({ value, children, activeTab, setActiveTab, className = "" }) => {
   const isActive = activeTab === value;
-  
+
   return (
     <button
       onClick={() => setActiveTab(value)}
       className={cn(
         "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-        isActive 
-          ? 'bg-background text-foreground shadow' 
+        isActive
+          ? 'bg-background text-foreground shadow'
           : 'text-muted-foreground hover:bg-background/50 hover:text-foreground',
         className
       )}
@@ -161,7 +162,7 @@ const PhotoGallery = ({ photos, onDelete }) => {
         {photos.map((photo, index) => (
           <Card key={index} className="border-border overflow-hidden transition-all hover:shadow-md">
             <CardContent className="p-0">
-              <div 
+              <div
                 className="relative cursor-pointer group"
                 onClick={() => setSelectedPhoto(photo)}
               >
@@ -399,7 +400,7 @@ const getFallbackChecklistData = () => {
     },
     {
       id: 'fallback-2',
-      item_name: 'Kualitas Material Bangunan', 
+      item_name: 'Kualitas Material Bangunan',
       description: 'Rating kualitas material yang digunakan',
       template_id: 'fallback-template',
       template_title: 'Checklist Dasar',
@@ -424,7 +425,7 @@ const getFallbackChecklistData = () => {
       item_name: 'Keselamatan Kerja',
       description: 'Pemeriksaan keselamatan dan kesehatan kerja',
       template_id: 'fallback-template',
-      template_title: 'Checklist Dasar', 
+      template_title: 'Checklist Dasar',
       subsection_title: 'K3',
       category: 'safety',
       columns: [
@@ -522,7 +523,7 @@ export default function InspectionDetailPage() {
   const params = useParams();
   const { toast } = useToast();
   const { user, isInspector, loading: authLoading } = useAuth();
-  
+
   const [inspection, setInspection] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
   const [responses, setResponses] = useState({});
@@ -530,7 +531,7 @@ export default function InspectionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
-  
+
   // State untuk custom accordion dan tabs
   const [openAccordions, setOpenAccordions] = useState({});
   const [activeTab, setActiveTab] = useState('checklist');
@@ -553,7 +554,7 @@ export default function InspectionDetailPage() {
       return;
     }
 
-    const completedItems = items.filter(item => 
+    const completedItems = items.filter(item =>
       responses.some(response => response.item_id === item.id)
     ).length;
 
@@ -571,19 +572,19 @@ export default function InspectionDetailPage() {
 
       // ✅ Validasi lengkap setelah auth selesai
       if (!user?.id || !isInspector || !inspectionId) {
-        console.log('Missing required data after auth:', { 
-          hasUser: !!user?.id, 
-          isInspector, 
+        console.log('Missing required data after auth:', {
+          hasUser: !!user?.id,
+          isInspector,
           inspectionId,
-          authLoading 
+          authLoading
         });
-        
+
         if (!user?.id) {
           console.log('User tidak ditemukan, redirect ke login...');
           router.push('/login');
           return;
         }
-        
+
         if (!isInspector) {
           console.log('User bukan inspector, redirect...');
           toast({
@@ -594,7 +595,7 @@ export default function InspectionDetailPage() {
           router.push('/dashboard');
           return;
         }
-        
+
         return;
       }
 
@@ -630,16 +631,11 @@ export default function InspectionDetailPage() {
         // ✅ 2. Load checklist items
         let checklistItems = [];
         try {
-          const response = await fetch('/data/checklistData.json');
-          if (response.ok) {
-            const checklistData = await response.json();
-            checklistItems = flattenChecklistItems(checklistData.checklist_templates);
-            console.log('Checklist items loaded:', checklistItems.length);
-          } else {
-            throw new Error('Checklist JSON not found');
-          }
-        } catch (jsonError) {
-          console.warn('Using fallback checklist data:', jsonError);
+          // Use the static templates from src/data as the source of truth
+          checklistItems = flattenChecklistItems(checklistData.checklist_templates);
+          console.log('Checklist items loaded from src/data:', checklistItems.length);
+        } catch (templateError) {
+          console.error('Error loading checklist templates:', templateError);
           checklistItems = getFallbackChecklistData();
         }
 
@@ -659,8 +655,8 @@ export default function InspectionDetailPage() {
           const responsesMap = {};
           existingResponses.forEach(response => {
             // Parse response JSON jika perlu
-            const responseData = typeof response.response === 'string' 
-              ? JSON.parse(response.response) 
+            const responseData = typeof response.response === 'string'
+              ? JSON.parse(response.response)
               : response.response;
             responsesMap[response.item_id] = responseData;
           });
@@ -801,12 +797,12 @@ export default function InspectionDetailPage() {
   const handlePhotoUpload = async (itemId, photoData) => {
     try {
       console.log('Uploading photo with geotag for item:', itemId, photoData);
-      
+
       // Simpan ke state lokal
       setPhotos(prev => ({
         ...prev,
-        [itemId]: [...(prev[itemId] || []), { 
-          ...photoData, 
+        [itemId]: [...(prev[itemId] || []), {
+          ...photoData,
           id: Date.now() + Math.random(),
           uploaded_at: new Date().toISOString()
         }]
@@ -814,7 +810,7 @@ export default function InspectionDetailPage() {
 
       toast({
         title: 'Foto berhasil diupload',
-        description: photoData.latitude 
+        description: photoData.latitude
           ? `Foto dengan geotag telah disimpan (${photoData.latitude.toFixed(5)}, ${photoData.longitude.toFixed(5)})`
           : 'Foto manual telah disimpan',
       });
@@ -846,7 +842,7 @@ export default function InspectionDetailPage() {
         updatedPhotos[key] = updatedPhotos[key].filter(photo => photo.id !== photoId);
       });
       setPhotos(updatedPhotos);
-      
+
       toast({
         title: 'Foto dihapus',
         description: 'Foto berhasil dihapus dari database',
@@ -986,7 +982,7 @@ export default function InspectionDetailPage() {
               Silakan login untuk mengakses halaman ini.
             </AlertDescription>
           </Alert>
-          <Button 
+          <Button
             onClick={() => router.push('/login')}
             className="mt-4"
           >
@@ -1008,7 +1004,7 @@ export default function InspectionDetailPage() {
               Hanya inspector yang dapat mengakses halaman ini.
             </AlertDescription>
           </Alert>
-          <Button 
+          <Button
             onClick={() => router.push('/dashboard')}
             className="mt-4"
           >
@@ -1031,7 +1027,7 @@ export default function InspectionDetailPage() {
               Tidak dapat memuat data inspeksi. ID tidak valid atau tidak ditemukan.
             </AlertDescription>
           </Alert>
-          <Button 
+          <Button
             onClick={() => router.push('/dashboard/inspector/inspections')}
             className="mt-4"
           >
@@ -1076,7 +1072,7 @@ export default function InspectionDetailPage() {
               Data inspeksi tidak dapat ditemukan atau Anda tidak memiliki akses.
             </AlertDescription>
           </Alert>
-          <Button 
+          <Button
             onClick={() => router.push('/dashboard/inspector/inspections')}
             className="mt-4"
           >
@@ -1103,16 +1099,16 @@ export default function InspectionDetailPage() {
             <span className="text-sm text-muted-foreground">{inspection.projects?.name}</span>
             {getStatusBadge(inspection.status)}
           </div>
-          
+
           <div className="flex items-center gap-3">
-            
+
             {inspection.status === 'scheduled' && (
               <Button onClick={handleStartInspection} className="flex items-center gap-2">
                 <Play className="w-4 h-4" />
                 Mulai Inspeksi
               </Button>
             )}
-            
+
             {inspection.status === 'in_progress' && (
               <Button
                 onClick={handleSubmitInspection}
@@ -1210,7 +1206,7 @@ export default function InspectionDetailPage() {
                 <CustomAccordion className="space-y-4">
                   {checklistItems.map((item) => (
                     <CustomAccordionItem key={item.id} value={item.id} className="border rounded-lg">
-                      <CustomAccordionTrigger 
+                      <CustomAccordionTrigger
                         onClick={() => toggleAccordion(item.id)}
                         isOpen={openAccordions[item.id]}
                       >
@@ -1244,7 +1240,7 @@ export default function InspectionDetailPage() {
                           checklistItem={item}
                           onSave={handleSaveResponse}
                         />
-                        
+
                         {/* Ganti PhotoUploadSection dengan PhotoUploadWithGeotag */}
                         <PhotoUploadWithGeotag
                           checklistItem={item}
@@ -1388,8 +1384,8 @@ export default function InspectionDetailPage() {
                   </CardContent>
                 </Card>
 
-                <InspectionNotes 
-                  inspection={inspection} 
+                <InspectionNotes
+                  inspection={inspection}
                   onUpdate={handleInspectionUpdate}
                 />
               </div>

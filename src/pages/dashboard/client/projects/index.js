@@ -92,20 +92,16 @@ export default function ClientProjectsPage() {
     setError(null);
 
     try {
-      // Get client_id from profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('client_id')
-        .eq('id', user.id)
-        .single();
+      // Update: Filter based on user.id directly because projects.client_id stores the profile ID (user_id)
+      // based on database inspection.
 
       let query = supabase
         .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (profileData?.client_id) {
-        query = query.eq('client_id', profileData.client_id);
+      if (user?.id) {
+        query = query.eq('client_id', user.id);
       }
 
       const { data, error: fetchError } = await query;
@@ -125,7 +121,7 @@ export default function ClientProjectsPage() {
   // Filter projects
   const filteredProjects = useMemo(() => {
     return projects.filter(project => {
-      const matchesSearch = !searchTerm || 
+      const matchesSearch = !searchTerm ||
         project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.application_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.city?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -237,7 +233,7 @@ export default function ClientProjectsPage() {
                     {projects.length === 0 ? 'Belum Ada Proyek' : 'Tidak Ditemukan'}
                   </h3>
                   <p className="text-muted-foreground mb-4">
-                    {projects.length === 0 
+                    {projects.length === 0
                       ? 'Proyek akan muncul setelah Admin membuat proyek untuk Anda'
                       : 'Tidak ada proyek yang sesuai dengan filter'
                     }

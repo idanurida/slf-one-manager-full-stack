@@ -73,19 +73,21 @@ export default function NewInspectionReport() {
 
         // Load inspection detail
         const { data: inspectionData, error: inspectionError } = await supabase
-          .from('vw_inspections_fixed')
+          .from('inspections')
           .select(`
             *,
             projects (
               id,
               name,
               location,
-              client_name,
+              location,
+              clients(name),
+              description
               description
             )
           `)
           .eq('id', inspectionId)
-          .eq('assigned_to', user.id)
+          .eq('inspector_id', user.id)
           .single();
 
         if (inspectionError) throw inspectionError;
@@ -162,7 +164,7 @@ export default function NewInspectionReport() {
   };
 
   const getFindingsSummary = () => {
-    const selectedItems = checklistData.filter(item => 
+    const selectedItems = checklistData.filter(item =>
       formData.selectedFindings.includes(item.id)
     );
 
@@ -192,15 +194,18 @@ export default function NewInspectionReport() {
 
     try {
       const reportData = {
-        inspection_id: inspectionId,
-        project_id: inspection?.project_id,
-        assigned_to: user.id,
+        project_id: inspection.project_id,
+        inspector_id: user.id, // Corrected from assigned_to/created_by
         title: formData.title,
         findings: formData.findings,
         recommendations: formData.recommendations,
         status: status,
-        findings_summary: getFindingsSummary(),
-        selected_findings_ids: formData.selectedFindings,
+        // findings_summary, and selected_findings_ids might need to be stored in jsonb if schema supports it, 
+        // or omitted if not in schema. Based on schema provided: 
+        // id, project_id, inspector_id, admin_team_id, ..., title, findings, recommendations, status, project_lead_notes
+        // It does NOT show 'findings_summary' or 'selected_findings_ids' columns.
+        // I will omit them to avoid errors, or try to put them in 'findings' if needed. 
+        // For now, let's stick to the schema columns.
         created_at: new Date().toISOString()
       };
 
@@ -214,8 +219,8 @@ export default function NewInspectionReport() {
 
       toast({
         title: status === 'draft' ? "✅ Draft disimpan" : "✅ Laporan dikirim",
-        description: status === 'draft' 
-          ? "Laporan berhasil disimpan sebagai draft" 
+        description: status === 'draft'
+          ? "Laporan berhasil disimpan sebagai draft"
           : "Laporan berhasil dikirim ke admin team",
         variant: "default",
       });
@@ -241,7 +246,7 @@ export default function NewInspectionReport() {
       in_progress: { variant: 'secondary', label: 'Dalam Proses', color: 'bg-orange-100 text-orange-800' },
       scheduled: { variant: 'outline', label: 'Dijadwalkan', color: 'bg-blue-100 text-blue-800' }
     };
-    
+
     const config = statusConfig[status] || { variant: 'outline', label: status, color: '' };
     return <Badge variant={config.variant} className={config.color}>{config.label}</Badge>;
   };
@@ -282,7 +287,7 @@ export default function NewInspectionReport() {
               Silakan pilih inspeksi terlebih dahulu dari halaman jadwal.
             </AlertDescription>
           </Alert>
-          <Button 
+          <Button
             onClick={() => router.push('/dashboard/inspector/schedules')}
             className="mt-4"
           >
@@ -368,7 +373,7 @@ export default function NewInspectionReport() {
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Klien</Label>
-                    <p className="text-foreground">{inspection.projects?.client_name}</p>
+                    <span className="font-medium">{inspection.projects?.clients?.name || '-'}</span>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Lokasi</Label>
@@ -410,7 +415,7 @@ export default function NewInspectionReport() {
                       placeholder="Masukkan judul laporan..."
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="status">Status Laporan</Label>
                     <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
@@ -459,7 +464,7 @@ export default function NewInspectionReport() {
                       rows={6}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="recommendations">Rekomendasi *</Label>
                     <Textarea
@@ -516,13 +521,12 @@ export default function NewInspectionReport() {
 
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {checklistData.map((item) => (
-                        <Card 
+                        <Card
                           key={item.id}
-                          className={`cursor-pointer transition-all ${
-                            formData.selectedFindings.includes(item.id)
-                              ? 'border-primary bg-primary/5'
-                              : 'hover:bg-accent/50'
-                          }`}
+                          className={`cursor-pointer transition-all ${formData.selectedFindings.includes(item.id)
+                            ? 'border-primary bg-primary/5'
+                            : 'hover:bg-accent/50'
+                            }`}
                           onClick={() => toggleFindingSelection(item.id)}
                         >
                           <CardContent className="p-4">
@@ -531,7 +535,7 @@ export default function NewInspectionReport() {
                                 <input
                                   type="checkbox"
                                   checked={formData.selectedFindings.includes(item.id)}
-                                  onChange={() => {}}
+                                  onChange={() => { }}
                                   className="w-4 h-4 text-primary border-border rounded"
                                 />
                               </div>
@@ -678,7 +682,7 @@ export default function NewInspectionReport() {
                     )}
                     Simpan Draft
                   </Button>
-                  
+
                   <Button
                     onClick={() => generateReport('submitted')}
                     disabled={submitting || !formData.title || !formData.findings || !formData.recommendations}

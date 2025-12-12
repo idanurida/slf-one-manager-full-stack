@@ -41,7 +41,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Icons
-import { 
+import {
   HelpCircle, MessageCircle, Phone, Mail, Send, RefreshCw,
   Loader2, AlertTriangle, CheckCircle, Clock, FileText,
   Building, ChevronRight, ExternalLink, BookOpen
@@ -125,7 +125,7 @@ export default function ClientSupportPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('requests');
-  
+
   // Form state
   const [requestType, setRequestType] = useState('general');
   const [subject, setSubject] = useState('');
@@ -154,7 +154,7 @@ export default function ClientSupportPage() {
             .order('created_at', { ascending: false });
 
           if (notifError) throw notifError;
-          
+
           // Transform notifications to support request format
           const transformedData = (notifData || []).map(n => ({
             id: n.id,
@@ -164,7 +164,7 @@ export default function ClientSupportPage() {
             priority: n.metadata?.priority || 'normal',
             created_at: n.created_at,
           }));
-          
+
           setSupportRequests(transformedData);
           return;
         }
@@ -285,7 +285,7 @@ export default function ClientSupportPage() {
   useEffect(() => {
     const loadData = async () => {
       if (!user || authLoading) return;
-      
+
       setLoading(true);
       try {
         await fetchSupportRequests();
@@ -368,9 +368,9 @@ export default function ClientSupportPage() {
                 <Mail className="w-6 h-6 text-green-600" />
               </div>
               <h3 className="font-semibold mb-1">Email</h3>
-              <p className="text-sm text-muted-foreground mb-3">support@slf-system.com</p>
+              <p className="text-sm text-muted-foreground mb-3">supportSLF@puridimensi.id</p>
               <Button variant="outline" size="sm" asChild>
-                <a href="mailto:support@slf-system.com">
+                <a href="mailto:supportSLF@puridimensi.id">
                   Kirim Email
                 </a>
               </Button>
@@ -383,10 +383,10 @@ export default function ClientSupportPage() {
                 <Phone className="w-6 h-6 text-red-600" />
               </div>
               <h3 className="font-semibold mb-1">Telepon</h3>
-              <p className="text-sm text-muted-foreground mb-3">(021) 555-5555</p>
+              <p className="text-sm text-muted-foreground mb-3">+62 815-7540-9309</p>
               <Button variant="outline" size="sm" asChild>
-                <a href="tel:+62215555555">
-                  Hubungi
+                <a href="https://wa.me/6281575409309" target="_blank" rel="noopener noreferrer">
+                  WhatsApp
                 </a>
               </Button>
             </CardContent>

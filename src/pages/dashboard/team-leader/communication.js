@@ -87,8 +87,8 @@ const ProjectLeadCommunicationList = ({ conversations, loading, onOpenChat }) =>
   return (
     <div className="space-y-4">
       {conversations.map((conv) => (
-        <Card 
-          key={conv.id} 
+        <Card
+          key={conv.id}
           className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
           onClick={() => onOpenChat(conv.project_id, conv.client_id)}
         >
@@ -148,26 +148,39 @@ export default function TeamLeaderCommunicationPage() {
     setError(null);
 
     try {
-      // Ambil proyek yang saya handle sebagai project_lead
-      const {  assignments, error: assignErr } = await supabase
+      // 1. Fetch assignments via project_teams
+      const teamQuery = supabase
         .from('project_teams') // Tabel untuk assignment tim
         .select('project_id')
         .eq('user_id', user.id) // Milik saya
         .eq('role', 'project_lead'); // Sebagai project_lead
 
-      if (assignErr) {
-        console.error('[ProjectLeadCommPage] Error fetching assignments:', assignErr);
-        throw assignErr; // Lempar error untuk ditangkap oleh blok catch
+      // 2. Fetch assignments via project_lead_id
+      const legacyQuery = supabase
+        .from('projects')
+        .select('id')
+        .eq('project_lead_id', user.id);
+
+      const [teamRes, legacyRes] = await Promise.all([teamQuery, legacyQuery]);
+
+      if (teamRes.error) {
+        console.error('[ProjectLeadCommPage] Error fetching assignments:', teamRes.error);
+        throw teamRes.error;
+      }
+      if (legacyRes.error) {
+        console.error('[ProjectLeadCommPage] Error fetching legacy assignments:', legacyRes.error);
+        throw legacyRes.error;
       }
 
-      // ✅ PERBAIKAN: Pastikan assignments tidak null/undefined sebelum .map()
-      const safeAssignments = assignments || []; // Gunakan array kosong jika null/undefined
-      const projectIds = safeAssignments.map(a => a.project_id);
+      // Extract and Merge IDs
+      const teamIds = (teamRes.data || []).map(a => a.project_id);
+      const legacyIds = (legacyRes.data || []).map(p => p.id);
+      const projectIds = [...new Set([...teamIds, ...legacyIds])]; // Unique IDs
 
       // Ambil client_ids dari proyek-proyek tersebut
       let clientIds = [];
       if (projectIds.length > 0) {
-        const {  projClients, error: clientsErr } = await supabase
+        const { projClients, error: clientsErr } = await supabase
           .from('projects')
           .select('client_id')
           .in('id', projectIds);
@@ -183,7 +196,7 @@ export default function TeamLeaderCommunicationPage() {
       let convos = [];
       if (clientIds.length > 0) {
         // Contoh dengan notifications (akan berbeda jika menggunakan tabel messages)
-        const {  notifs, error: notifsErr } = await supabase
+        const { notifs, error: notifsErr } = await supabase
           .from('notifications')
           .select(`
             *,
@@ -198,8 +211,8 @@ export default function TeamLeaderCommunicationPage() {
           .order('created_at', { ascending: false });
 
         if (notifsErr) {
-             console.error('[ProjectLeadCommPage] Error fetching notifications:', notifsErr);
-             throw notifsErr;
+          console.error('[ProjectLeadCommPage] Error fetching notifications:', notifsErr);
+          throw notifsErr;
         }
 
         // Proses untuk membuat daftar percakapan unik
@@ -215,25 +228,25 @@ export default function TeamLeaderCommunicationPage() {
 
           // Cek apakah otherPartyId adalah client
           if (clientIds.includes(otherPartyId)) {
-              if (!groupedConversations[key]) {
-                groupedConversations[key] = {
-                  id: key,
-                  client_id: otherPartyId,
-                  project_id: projectId,
-                  client_name: n.sender_id === otherPartyId ? n.sender?.full_name : n.recipient?.full_name,
-                  project_name: n.projects?.name,
-                  last_message_at: n.created_at,
-                  last_message: n.message,
-                  has_unread: !n.read
-                };
-              } else {
-                // Update jika pesan lebih baru
-                if (new Date(n.created_at) > new Date(groupedConversations[key].last_message_at)) {
-                  groupedConversations[key].last_message_at = n.created_at;
-                  groupedConversations[key].last_message = n.message;
-                  groupedConversations[key].has_unread = groupedConversations[key].has_unread || !n.read;
-                }
+            if (!groupedConversations[key]) {
+              groupedConversations[key] = {
+                id: key,
+                client_id: otherPartyId,
+                project_id: projectId,
+                client_name: n.sender_id === otherPartyId ? n.sender?.full_name : n.recipient?.full_name,
+                project_name: n.projects?.name,
+                last_message_at: n.created_at,
+                last_message: n.message,
+                has_unread: !n.read
+              };
+            } else {
+              // Update jika pesan lebih baru
+              if (new Date(n.created_at) > new Date(groupedConversations[key].last_message_at)) {
+                groupedConversations[key].last_message_at = n.created_at;
+                groupedConversations[key].last_message = n.message;
+                groupedConversations[key].has_unread = groupedConversations[key].has_unread || !n.read;
               }
+            }
           }
         });
 

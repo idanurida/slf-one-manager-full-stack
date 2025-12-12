@@ -104,25 +104,10 @@ export default function ClientPaymentsPage() {
         </Card>
 
         {/* Payment Upload Component */}
-        {clientProjects.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Building className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Belum Ada Proyek</h3>
-              <p className="text-muted-foreground mb-4">
-                Proyek akan muncul setelah Admin membuat proyek untuk Anda
-              </p>
-              <Button onClick={() => router.push('/dashboard/client/upload')}>
-                Upload Dokumen Pengajuan
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <PaymentUpload 
-            projects={clientProjects} 
-            onPaymentUpload={handlePaymentUpload}
-          />
-        )}
+        <PaymentUpload
+          projects={clientProjects}
+          onPaymentUpload={handlePaymentUpload}
+        />
 
         {/* Info */}
         <Alert>

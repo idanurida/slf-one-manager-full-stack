@@ -24,8 +24,8 @@ import {
 } from "@/components/ui/alert";
 
 // Icons
-import { 
-  MessageCircle, Search, RefreshCw, Building, Clock, 
+import {
+  MessageCircle, Search, RefreshCw, Building, Clock,
   Send, Loader2, AlertTriangle, CheckCircle, Eye
 } from "lucide-react";
 
@@ -33,11 +33,11 @@ import {
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
-import { 
-  fetchProjectMessages, 
-  fetchConversations as fetchConversationsFromService, 
-  sendMessage as sendMessageService, 
-  markMessagesAsRead 
+import {
+  fetchProjectMessages,
+  fetchConversations as fetchConversationsFromService,
+  sendMessage as sendMessageService,
+  markMessagesAsRead
 } from "@/utils/messageService";
 
 const formatDateSafely = (dateString) => {
@@ -115,7 +115,7 @@ export default function ClientMessagesPage() {
 
     try {
       const projectIds = projectsList.map(p => p.id);
-      
+
       // Gunakan messageService untuk konsistensi
       const { data: convData, error: convError } = await fetchConversationsFromService(user?.id, projectIds);
 
@@ -161,7 +161,7 @@ export default function ClientMessagesPage() {
       const unreadIds = (messagesData || [])
         .filter(m => !m.is_read && m.sender_id !== user?.id)
         .map(m => m.id);
-      
+
       if (unreadIds.length > 0) {
         await markMessagesAsRead(unreadIds, user?.id);
       }
@@ -201,7 +201,7 @@ export default function ClientMessagesPage() {
   useEffect(() => {
     const loadData = async () => {
       if (!user || authLoading) return;
-      
+
       setLoading(true);
       try {
         const projectsList = await fetchProjects();
@@ -278,11 +278,11 @@ export default function ClientMessagesPage() {
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)] min-h-[600px]">
           {/* Conversations List */}
-          <div className="lg:col-span-1 space-y-4">
-            <Card>
-              <CardHeader className="pb-3">
+          <div className="lg:col-span-1 h-full">
+            <Card className="h-full flex flex-col">
+              <CardHeader className="pb-3 border-b">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <MessageCircle className="w-5 h-5" />
                   Percakapan
@@ -299,7 +299,7 @@ export default function ClientMessagesPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="p-0 flex-1 overflow-y-auto">
                 {loading ? (
                   <div className="p-4 space-y-3">
                     {[1, 2, 3].map(i => (
@@ -317,9 +317,8 @@ export default function ClientMessagesPage() {
                       <button
                         key={conv.project.id}
                         onClick={() => setSelectedProject(conv.project)}
-                        className={`w-full p-4 text-left hover:bg-muted/50 transition-colors ${
-                          selectedProject?.id === conv.project.id ? 'bg-muted' : ''
-                        }`}
+                        className={`w-full p-4 text-left hover:bg-muted/50 transition-colors ${selectedProject?.id === conv.project.id ? 'bg-muted' : ''
+                          }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
@@ -352,26 +351,29 @@ export default function ClientMessagesPage() {
           </div>
 
           {/* Message Thread */}
-          <div className="lg:col-span-2">
-            <Card className="h-[600px] flex flex-col">
+          <div className="lg:col-span-3 h-full">
+            <Card className="h-full flex flex-col shadow-md">
               {selectedProject ? (
                 <>
-                  <CardHeader className="border-b pb-3">
+                  <CardHeader className="border-b pb-3 bg-muted/20">
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle className="text-lg">{selectedProject.name}</CardTitle>
-                        <CardDescription>Percakapan dengan Tim SLF</CardDescription>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                          <AlertTriangle className="w-3 h-3 text-yellow-600" />
+                          <span>Percakapan Internal (Client, Admin Lead, Project Lead)</span>
+                        </div>
                       </div>
-                      <Badge variant="outline">{selectedProject.status}</Badge>
+                      <Badge variant="outline" className="h-fit">{selectedProject.status}</Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="flex-1 overflow-y-auto p-4 space-y-3">
+                  <CardContent className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50 dark:bg-slate-900/10">
                     {messages.length === 0 ? (
                       <div className="h-full flex items-center justify-center">
                         <div className="text-center">
                           <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
                           <p className="text-muted-foreground">Belum ada pesan</p>
-                          <p className="text-sm text-muted-foreground">Mulai percakapan dengan mengirim pesan</p>
+                          <p className="text-sm text-muted-foreground">Mulai percakapan dengan mengirim pesan ke Admin/Project Lead</p>
                         </div>
                       </div>
                     ) : (
@@ -380,26 +382,25 @@ export default function ClientMessagesPage() {
                           key={msg.id}
                           className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
                         >
-                          <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
-                              msg.sender_id === user.id
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
-                            }`}
-                          >
-                            <p className="text-sm">{msg.message}</p>
-                            <p className={`text-xs mt-1 ${
-                              msg.sender_id === user.id ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                            }`}>
+                          <div className={`flex flex-col max-w-[70%] ${msg.sender_id === user.id ? 'items-end' : 'items-start'}`}>
+                            <div
+                              className={`rounded-2xl px-4 py-3 shadow-sm ${msg.sender_id === user.id
+                                  ? 'bg-blue-600 text-white rounded-tr-none'
+                                  : 'bg-white dark:bg-gray-800 border rounded-tl-none'
+                                }`}
+                            >
+                              <p className="text-sm leading-relaxed">{msg.message}</p>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground mt-1 px-1">
                               {msg.profiles?.full_name || 'Anda'} • {formatDateSafely(msg.created_at)}
-                            </p>
+                            </span>
                           </div>
                         </div>
                       ))
                     )}
                   </CardContent>
-                  <div className="border-t p-4">
-                    <div className="flex gap-2">
+                  <div className="border-t p-4 bg-background">
+                    <div className="flex gap-3">
                       <Input
                         placeholder="Ketik pesan..."
                         value={newMessage}
@@ -411,6 +412,7 @@ export default function ClientMessagesPage() {
                           }
                         }}
                         disabled={sending}
+                        className="flex-1"
                       />
                       <Button onClick={handleSendMessage} disabled={sending || !newMessage.trim()}>
                         {sending ? (
@@ -423,12 +425,14 @@ export default function ClientMessagesPage() {
                   </div>
                 </>
               ) : (
-                <div className="h-full flex items-center justify-center">
+                <div className="h-full flex items-center justify-center bg-muted/10">
                   <div className="text-center">
-                    <MessageCircle className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Pilih Percakapan</h3>
-                    <p className="text-muted-foreground">
-                      Pilih proyek dari daftar untuk melihat pesan
+                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <MessageCircle className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Pilih Percakapan</h3>
+                    <p className="text-muted-foreground max-w-sm mx-auto">
+                      Pilih proyek dari daftar di sebelah kiri untuk melihat dan mengirim pesan kepada tim proyek.
                     </p>
                   </div>
                 </div>

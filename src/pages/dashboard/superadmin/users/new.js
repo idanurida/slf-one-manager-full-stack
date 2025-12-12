@@ -10,20 +10,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Icons
-import { 
-  Bell, Loader2, Save, XCircle, Shield, AlertTriangle, 
-  User, Mail, Phone, Key 
+import {
+  Bell, Loader2, Save, XCircle, Shield, AlertTriangle,
+  User, Mail, Phone, Key
 } from 'lucide-react';
 
 // Other Imports
@@ -65,27 +65,27 @@ export default function CreateUserPage() {
   // Form validation
   const validateForm = () => {
     const errors = {};
-    
+
     if (!form.full_name.trim()) {
       errors.full_name = 'Nama lengkap wajib diisi';
     }
-    
+
     if (!form.email.trim()) {
       errors.email = 'Email wajib diisi';
     } else if (!/\S+@\S+\.\S+/.test(form.email)) {
       errors.email = 'Format email tidak valid';
     }
-    
+
     if (!form.password) {
       errors.password = 'Password wajib diisi';
     } else if (form.password.length < 6) {
       errors.password = 'Password minimal 6 karakter';
     }
-    
+
     if (!form.role) {
       errors.role = 'Role wajib dipilih';
     }
-    
+
     if (form.role === 'inspector' && !form.specialization) {
       errors.specialization = 'Spesialisasi wajib dipilih untuk inspector';
     }
@@ -104,8 +104,8 @@ export default function CreateUserPage() {
   };
 
   const handleRoleChange = (value) => {
-    setForm(prev => ({ 
-      ...prev, 
+    setForm(prev => ({
+      ...prev,
       role: value,
       specialization: value !== 'inspector' ? '' : prev.specialization
     }));
@@ -125,7 +125,7 @@ export default function CreateUserPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    
+
     if (!validateForm()) {
       toast({
         title: "Form tidak valid",
@@ -139,52 +139,55 @@ export default function CreateUserPage() {
 
     try {
       console.log('[CreateUserPage] Creating user:', form.email);
-      
-      // Try the main method first
-      let result;
-      try {
-        result = await createUserWithPassword(form);
-      } catch (primaryError) {
-        console.warn('[CreateUserPage] Primary method failed, trying fallback:', primaryError.message);
-        // If primary method fails, try fallback
-        result = await createUserBasic(form);
+
+      // Use internal API to create user (Server-side admin client)
+      const response = await fetch('/api/superadmin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create',
+          userData: form
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Gagal membuat pengguna');
       }
 
-      if (result && (result.profile || result.user)) {
-        toast({
-          title: "✅ Berhasil membuat pengguna",
-          description: `Pengguna ${form.full_name} (${form.email}) telah berhasil dibuat dan dapat langsung login.`,
-          variant: "default",
-        });
-        
-        console.log('[CreateUserPage] User created successfully');
-        
-        // Redirect to users list after short delay
-        setTimeout(() => {
-          router.push("/dashboard/superadmin/users");
-        }, 1500);
-      } else {
-        throw new Error('Tidak menerima konfirmasi pembuatan user');
-      }
-      
+      // Success!
+      toast({
+        title: "✅ Berhasil membuat pengguna",
+        description: `Pengguna ${form.full_name} (${form.email}) telah berhasil dibuat dan dapat langsung login.`,
+        variant: "default",
+      });
+
+      console.log('[CreateUserPage] User created successfully');
+
+      // Redirect to users list after short delay
+      setTimeout(() => {
+        router.push("/dashboard/superadmin/users");
+      }, 1500);
+
     } catch (error) {
       console.error('[CreateUserPage] Create user error:', error);
-      
+
       // User-friendly error messages
       let errorMessage = error.message;
-      
-      if (error.message.includes('already registered') || error.message.includes('already exists') || error.message.includes('23505')) {
+
+      if (errorMessage.includes('already registered') || errorMessage.includes('already exists') || errorMessage.includes('23505')) {
         errorMessage = '📧 Email sudah terdaftar. Gunakan alamat email lain.';
-      } else if (error.message.includes('password')) {
+      } else if (errorMessage.includes('password')) {
         errorMessage = '🔒 Password tidak memenuhi kriteria keamanan. Minimal 6 karakter.';
-      } else if (error.message.includes('izin') || error.message.includes('permission') || error.message.includes('42501')) {
+      } else if (errorMessage.includes('izin') || errorMessage.includes('permission') || errorMessage.includes('42501')) {
         errorMessage = '⛔ Tidak memiliki izin untuk membuat pengguna. Pastikan Anda superadmin.';
-      } else if (error.message.includes('Database error') || error.message.includes('database')) {
+      } else if (errorMessage.includes('Database error') || errorMessage.includes('database')) {
         errorMessage = '🗄️ Error database. Periksa koneksi atau hubungi administrator.';
-      } else if (error.message.includes('RLS')) {
+      } else if (errorMessage.includes('RLS')) {
         errorMessage = '🛡️ Error keamanan database. Periksa policy RLS.';
       }
-      
+
       setError(errorMessage);
       toast({
         title: "Gagal membuat pengguna",
@@ -340,8 +343,8 @@ export default function CreateUserPage() {
               {/* Role */}
               <div className="space-y-2">
                 <Label htmlFor="role">Role *</Label>
-                <Select 
-                  value={form.role} 
+                <Select
+                  value={form.role}
                   onValueChange={handleRoleChange}
                   disabled={saving}
                 >
@@ -367,8 +370,8 @@ export default function CreateUserPage() {
               {form.role === 'inspector' && (
                 <div className="space-y-2">
                   <Label htmlFor="specialization">Spesialisasi *</Label>
-                  <Select 
-                    value={form.specialization} 
+                  <Select
+                    value={form.specialization}
                     onValueChange={handleSpecializationChange}
                     disabled={saving}
                   >

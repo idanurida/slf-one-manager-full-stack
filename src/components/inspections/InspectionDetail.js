@@ -136,16 +136,13 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
 
         // 1. Fetch inspection data
         const { data: inspectionData, error: inspectionError } = await supabase
-          .from('vw_inspections_fixed')
+          .from('inspections')
           .select(`
             *,
             projects (
               id, name, address, owner_name
             ),
-            inspectors:profiles!inspections_assigned_to_fkey (
-              id, full_name, email
-            ),
-            drafters:profiles!inspections_drafter_id_fkey (
+            inspectors:profiles!inspections_inspector_id_fkey (
               id, full_name, email
             )
           `)
@@ -204,10 +201,10 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
   const handleStartInspection = async () => {
     try {
       setSaving(true);
-      
+
       const { error } = await supabase
-        .from('vw_inspections_fixed')
-        .update({ 
+        .from('inspections')
+        .update({
           status: 'in_progress',
           started_at: new Date().toISOString()
         })
@@ -241,10 +238,10 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
   const handleCompleteInspection = async () => {
     try {
       setSaving(true);
-      
+
       const { error } = await supabase
-        .from('vw_inspections_fixed')
-        .update({ 
+        .from('inspections')
+        .update({
           status: 'completed',
           completed_at: new Date().toISOString()
         })
@@ -334,7 +331,7 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
     try {
       // Upload logic here (sama seperti di komponen inspector)
       // ... implementation untuk upload photo ke storage
-      
+
       toast({
         title: 'Foto Diunggah',
         description: 'Foto berhasil diunggah',
@@ -466,8 +463,8 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-4">
         {inspection.status === 'scheduled' && (
-          <Button 
-            onClick={handleStartInspection} 
+          <Button
+            onClick={handleStartInspection}
             disabled={saving}
             className="flex items-center gap-2"
           >
@@ -477,7 +474,7 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
         )}
 
         {inspection.status === 'in_progress' && (
-          <Button 
+          <Button
             onClick={handleCompleteInspection}
             disabled={saving}
             className="flex items-center gap-2"
@@ -537,7 +534,7 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
                             </Badge>
                           )}
                         </div>
-                        
+
                         <DynamicChecklistForm
                           item={item}
                           onSave={handleSaveChecklistResponse}

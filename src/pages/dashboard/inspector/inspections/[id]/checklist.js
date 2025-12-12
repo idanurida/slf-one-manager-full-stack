@@ -56,12 +56,12 @@ import {
 } from "@/components/ui/accordion";
 
 // Icons - ✅ DIPERBAIKI: Hapus duplikasi, tambah yang missing
-import { 
-  FileText, Building, User, MapPin, Calendar, Clock, CheckCircle2, XCircle, Eye, Plus, 
-  ArrowRight, TrendingUp, FolderOpen, DollarSign, ClipboardList, FileCheck, UserCheck, 
-  RefreshCw, Download, MessageCircle, Search, Filter, ArrowLeft, ExternalLink, AlertCircle, 
-  Info, CheckSquare, Radio, Camera, Upload, Globe, Target, ListChecks, Check, X, 
-  AlertOctagon, CheckCircle, Send, AlertTriangle, FileSignature, ClipboardCheck, 
+import {
+  FileText, Building, User, MapPin, Calendar, Clock, CheckCircle2, XCircle, Eye, Plus,
+  ArrowRight, TrendingUp, FolderOpen, DollarSign, ClipboardList, FileCheck, UserCheck,
+  RefreshCw, Download, MessageCircle, Search, Filter, ArrowLeft, ExternalLink, AlertCircle,
+  Info, CheckSquare, Radio, Camera, Upload, Globe, Target, ListChecks, Check, X,
+  AlertOctagon, CheckCircle, Send, AlertTriangle, FileSignature, ClipboardCheck,
   TrendingDown, FileQuestion, Loader2, Save // ✅ DITAMBAHKAN: Loader2, Save
 } from "lucide-react";
 
@@ -486,34 +486,56 @@ export default function InspectorInspectionChecklistPage() {
     setError(null);
 
     try {
-      // ✅ DIPERBAIKI: hapus spasi aneh sebelum data
-      const { data: scheduleData, error: schedErr } = await supabase
-        .from('schedules')
+      console.log('🔍 Fetching checklist for:', { scheduleId, userId: user.id });
+
+      // 1. Cek apakah inspeksi ada
+      const { data: inspectionCheck, error: checkErr } = await supabase
+        .from('inspections')
+        .select('id, inspector_id, scheduled_date')
+        .eq('id', scheduleId)
+        .maybeSingle();
+
+      if (checkErr) throw checkErr;
+
+      if (!inspectionCheck) {
+        throw new Error(`Data inspeksi tidak ditemukan. (ID: ${scheduleId})`);
+      }
+
+      // 2. Validasi assignment
+      if (inspectionCheck.inspector_id !== user.id) {
+        throw new Error(`Inspeksi ini ditugaskan ke inspector lain (ID: ${inspectionCheck.inspector_id}), bukan Anda.`);
+      }
+
+      // 3. Ambil data lengkap
+      const { data: inspectionData, error: inspectionErr } = await supabase
+        .from('inspections')
         .select(`
           *,
-          projects!inner(
+          projects (
             id, name, status, location, city, address, client_id, application_type, building_function,
-            clients!inner(name, email)
+            clients (name, email)
           )
         `)
         .eq('id', scheduleId)
-        .eq('assigned_to', user.id)
-        .eq('schedule_type', 'inspection')
         .single();
 
-      if (schedErr) throw schedErr;
+      if (inspectionErr) throw inspectionErr;
 
-      if (!scheduleData) {
-        throw new Error('Jadwal inspeksi tidak ditemukan atau tidak ditugaskan kepada Anda.');
-      }
+      // Normalisasi data untuk state
+      const mappedData = {
+        ...inspectionData,
+        // Mapping kolom agar kompatibel dengan kode yang ada
+        schedule_date: inspectionData.scheduled_date,
+        assigned_to: inspectionData.inspector_id
+      };
 
-      setSchedule(scheduleData);
-      setProject(scheduleData.projects);
-      setClient(scheduleData.projects.clients);
+      setSchedule(mappedData);
+      setProject(mappedData.projects);
+      setClient(mappedData.projects.clients);
 
-      let templateId = scheduleData.template_id;
+      let templateId = mappedData.template_id;
       if (!templateId) {
-        templateId = scheduleData.projects.building_function?.toLowerCase() || 'general';
+        templateId = mappedData.projects.building_function?.toLowerCase() || 'general';
       }
 
       const template = getChecklistTemplate(templateId);
@@ -540,6 +562,7 @@ export default function InspectorInspectionChecklistPage() {
       setChecklistResponses(responseMap);
 
     } catch (err) {
+
       console.error('Error fetching inspection checklist data:', err);
       const errorMessage = err.message || 'Gagal memuat data checklist';
       setError(errorMessage);

@@ -117,16 +117,28 @@ export default function TeamLeaderReportsPage() {
     setError(null);
 
     try {
-      // Ambil project_ids dari proyek yang ditangani oleh saya
-      const { data: assignments, error: assignErr } = await supabase
+      // 1. Fetch assignments via project_teams
+      const teamQuery = supabase
         .from('project_teams')
         .select('project_id')
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
 
-      if (assignErr) throw assignErr;
+      // 2. Fetch assignments via project_lead_id
+      const legacyQuery = supabase
+        .from('projects')
+        .select('id')
+        .eq('project_lead_id', user.id);
 
-      const projectIds = assignments.map(a => a.project_id);
+      const [teamRes, legacyRes] = await Promise.all([teamQuery, legacyQuery]);
+
+      if (teamRes.error) throw teamRes.error;
+      if (legacyRes.error) throw legacyRes.error;
+
+      // Extract and Merge IDs
+      const teamIds = (teamRes.data || []).map(a => a.project_id);
+      const legacyIds = (legacyRes.data || []).map(p => p.id);
+      const projectIds = [...new Set([...teamIds, ...legacyIds])]; // Unique IDs
 
       let reportsData = [];
       if (projectIds.length > 0) {
@@ -134,7 +146,7 @@ export default function TeamLeaderReportsPage() {
           .from('documents')
           .select(`
             *,
-            projects(name),
+            projects!documents_project_id_fkey(name),
             profiles!created_by(full_name, specialization)
           `)
           .in('project_id', projectIds)
@@ -174,9 +186,9 @@ export default function TeamLeaderReportsPage() {
   // Filter reports
   const filteredReports = reports.filter(r => {
     const matchesSearch = r.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         r.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         r.inspector_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      r.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.inspector_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
 
     return matchesSearch && matchesStatus;

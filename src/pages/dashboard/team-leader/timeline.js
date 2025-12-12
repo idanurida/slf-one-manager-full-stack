@@ -49,7 +49,7 @@ import {
 
 // Icons
 import { Calendar, Building, User, MapPin, Clock, CheckCircle2, XCircle, Eye, Search, Filter, RefreshCw, ArrowLeft, ExternalLink, AlertCircle, Info, TrendingUp, FileText, FileQuestion, Send, MessageSquare, Phone, Mail, UserRound, Building2, MapPin as MapPinIcon, CalendarIcon, ClockIcon, CheckSquare, BarChartIcon, ChevronRight, ChevronLeft, AlertTriangle, CheckCircle, X, Plus, Upload, Download, Globe, FileCheck, EyeIcon, ArrowRight, AlertOctagon, Check, FileSignature, ClipboardCheck, FolderOpen, Users, MessageCircle, MailCheck, UserCheck, TrendingDown }
-from "lucide-react";
+  from "lucide-react";
 
 // Utils & Context
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -122,6 +122,16 @@ const getStatusLabel = (status) => {
     'revision_requested': 'Revision Requested',
   };
   return labels[status] || status;
+};
+
+// Helper untuk format tanggal aman
+const formatDateSafely = (dateString) => {
+  if (!dateString) return '-';
+  try {
+    return format(new Date(dateString), 'dd MMM yyyy', { locale: localeId });
+  } catch (e) {
+    return '-';
+  }
 };
 
 // Timeline Item Component (reuse dari file sebelumnya)
@@ -304,7 +314,8 @@ export default function TeamLeaderTimelinePage() {
     setError(null);
 
     try {
-      const {  assignments, error: assignErr } = await supabase
+      // 1. Fetch assignments via project_teams
+      const teamQuery = supabase
         .from('project_teams')
         .select(`
           project_id,
@@ -315,12 +326,37 @@ export default function TeamLeaderTimelinePage() {
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
 
-      if (assignErr) throw assignErr;
+      // 2. Fetch assignments via project_lead_id
+      const legacyQuery = supabase
+        .from('projects')
+        .select(`
+           id, name, status, created_at, client_id, clients(name), city, address, application_type
+        `)
+        .eq('project_lead_id', user.id);
 
-      const projectList = (assignments || []).map(a => ({
+      const [teamRes, legacyRes] = await Promise.all([teamQuery, legacyQuery]);
+
+      if (teamRes.error) throw teamRes.error;
+      if (legacyRes.error) throw legacyRes.error;
+
+      // Process Team Results
+      const teamProjects = (teamRes.data || []).map(a => ({
         ...a.projects,
         client_name: a.projects.clients?.name || 'Client Tidak Diketahui'
       }));
+
+      // Process Legacy Results
+      const legacyProjects = (legacyRes.data || []).map(p => ({
+        ...p,
+        client_name: p.clients?.name || 'Client Tidak Diketahui'
+      }));
+
+      // Merge and Deduplicate by ID
+      const allProjects = [...teamProjects, ...legacyProjects];
+      const projectList = Array.from(new Map(allProjects.map(item => [item.id, item])).values());
+
+      // Sort by created_at desc
+      projectList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
       setAssignedProjects(projectList);
 
@@ -354,27 +390,28 @@ export default function TeamLeaderTimelinePage() {
 
     setTimelineLoading(true);
     try {
-      const {  projectData, error: projErr } = await supabase
+      const { data: projectData, error: projErr } = await supabase
         .from('projects')
-        .select('name, status, created_at, updated_at')
+        .select('id, name, status, created_at, updated_at') // Ensure ID is selected
         .eq('id', projectId)
         .single();
 
       if (projErr) throw projErr;
+      if (!projectData) throw new Error('Project data not found');
 
       // Ambil jadwal
-      const {  scheds, error: schedsErr } = await supabase
+      const { data: scheds, error: schedsErr } = await supabase
         .from('schedules')
-        .select('title, description, schedule_date, status, schedule_type')
+        .select('id, title, description, schedule_date, status, schedule_type')
         .eq('project_id', projectId)
         .order('schedule_date', { ascending: true });
 
       if (schedsErr) throw schedsErr;
 
       // Ambil laporan
-      const {  reps, error: repsErr } = await supabase
+      const { data: reps, error: repsErr } = await supabase
         .from('documents') // Gunakan tabel documents
-        .select('name, status, created_at, updated_at, document_type, profiles!created_by(full_name)')
+        .select('id, name, status, created_at, updated_at, document_type, profiles!created_by(full_name)')
         .eq('project_id', projectId)
         .eq('document_type', 'REPORT') // Hanya laporan
         .order('created_at', { ascending: true });
@@ -394,7 +431,7 @@ export default function TeamLeaderTimelinePage() {
       });
 
       // Event jadwal
-      scheds.forEach(s => {
+      (scheds || []).forEach(s => {
         timelineEvents.push({
           id: `sched-${s.id}`,
           type: 'schedule_event',
@@ -406,7 +443,7 @@ export default function TeamLeaderTimelinePage() {
       });
 
       // Event laporan
-      reps.forEach(r => {
+      (reps || []).forEach(r => {
         timelineEvents.push({
           id: `rep-${r.id}`,
           type: 'report_status_change',
@@ -422,8 +459,11 @@ export default function TeamLeaderTimelinePage() {
 
     } catch (err) {
       console.error('Error fetching project timeline:', err);
-      setError('Gagal memuat timeline proyek');
-      toast.error('Gagal memuat timeline proyek');
+      // Don't show toast on 406 (single() returning 0 rows) if checking just for safety
+      if (err.code !== 'PGRST116') {
+        setError('Gagal memuat timeline proyek');
+        toast.error('Gagal memuat timeline proyek');
+      }
     } finally {
       setTimelineLoading(false);
     }
@@ -438,7 +478,7 @@ export default function TeamLeaderTimelinePage() {
 
     setTeamLoading(true);
     try {
-      const {  teamData, error: teamErr } = await supabase
+      const { data: teamData, error: teamErr } = await supabase
         .from('project_teams')
         .select(`
           user_id,
@@ -451,7 +491,7 @@ export default function TeamLeaderTimelinePage() {
 
       if (teamErr) throw teamErr;
 
-      const teamList = teamData.map(t => ({
+      const teamList = (teamData || []).map(t => ({
         ...t,
         full_name: t.profiles?.full_name,
         email: t.profiles?.email,
@@ -519,9 +559,9 @@ export default function TeamLeaderTimelinePage() {
   // Filter projects
   const filteredProjects = assignedProjects.filter(project => {
     const matchesSearch = project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.city?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      project.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.city?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
 
     return matchesSearch && matchesStatus;
@@ -642,11 +682,10 @@ export default function TeamLeaderTimelinePage() {
                   ) : (
                     <div className="space-y-3">
                       {filteredProjects.map((project) => (
-                        <div 
-                          key={project.id} 
-                          className={`p-3 border rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${
-                            selectedProjectId === project.id ? 'border-primary bg-primary/5 dark:bg-primary/10' : 'border-slate-200 dark:border-slate-700'
-                          }`}
+                        <div
+                          key={project.id}
+                          className={`p-3 border rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${selectedProjectId === project.id ? 'border-primary bg-primary/5 dark:bg-primary/10' : 'border-slate-200 dark:border-slate-700'
+                            }`}
                           onClick={() => handleSelectProject(project.id)}
                         >
                           <div className="flex items-center justify-between">

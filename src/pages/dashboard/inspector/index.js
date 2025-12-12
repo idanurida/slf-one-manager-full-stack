@@ -73,20 +73,20 @@ export default function InspectorDashboard() {
     try {
       // Fetch inspections
       const { data: inspections } = await supabase
-        .from('vw_inspections_fixed')
+        .from('inspections')
         .select(`
           id, scheduled_date, status, created_at,
           projects(id, name, address, city, clients(name))
         `)
-        .eq('assigned_to', user.id)
+        .eq('inspector_id', user.id)
         .order('scheduled_date', { ascending: true });
 
       const inspectionsList = inspections || [];
-      
+
       // Upcoming inspections (scheduled, future date)
       const today = new Date().toISOString().split('T')[0];
-      const upcoming = inspectionsList.filter(i => 
-        i.scheduled_date >= today && 
+      const upcoming = inspectionsList.filter(i =>
+        i.scheduled_date >= today &&
         (i.status === 'scheduled' || i.status === 'in_progress')
       ).slice(0, 5);
       setUpcomingInspections(upcoming);
@@ -109,9 +109,9 @@ export default function InspectorDashboard() {
 
       // Fetch reports
       const { data: reports } = await supabase
-        .from('reports')
-        .select('id, name, status, created_at, projects(name)')
-        .eq('created_by', user.id)
+        .from('inspection_reports')
+        .select('id, title, status, created_at, projects(name)')
+        .eq('inspector_id', user.id)
         .order('created_at', { ascending: false });
 
       const reportsList = reports || [];
@@ -147,7 +147,7 @@ export default function InspectorDashboard() {
         <div className="p-6 space-y-6">
           <Skeleton className="h-8 w-64" />
           <div className="grid gap-4 md:grid-cols-4">
-            {[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
           </div>
           <Skeleton className="h-64" />
         </div>
@@ -171,8 +171,8 @@ export default function InspectorDashboard() {
     );
   }
 
-  const completionRate = stats.totalInspections > 0 
-    ? Math.round((stats.completedInspections / stats.totalInspections) * 100) 
+  const completionRate = stats.totalInspections > 0
+    ? Math.round((stats.completedInspections / stats.totalInspections) * 100)
     : 0;
 
   return (
@@ -189,11 +189,11 @@ export default function InspectorDashboard() {
               {profile?.specialization?.replace(/_/g, ' ') || 'Inspector'} • {recentProjects.length} Proyek Aktif
             </p>
           </div>
-          
+
           <div className="flex gap-2">
             {stats.upcomingSchedules > 0 && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => router.push('/dashboard/inspector/schedules')}
               >
                 <Calendar className="w-4 h-4 mr-2" />
@@ -285,7 +285,7 @@ export default function InspectorDashboard() {
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
-          
+
           {/* Upcoming Inspections */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -293,8 +293,8 @@ export default function InspectorDashboard() {
                 <Calendar className="w-5 h-5" />
                 Jadwal Mendatang
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/inspector/schedules')}
               >
@@ -311,7 +311,7 @@ export default function InspectorDashboard() {
               ) : (
                 <div className="space-y-3">
                   {upcomingInspections.map(inspection => (
-                    <div 
+                    <div
                       key={inspection.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                       onClick={() => router.push(`/dashboard/inspector/inspections/${inspection.id}`)}
@@ -343,8 +343,8 @@ export default function InspectorDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto py-4"
                   onClick={() => router.push('/dashboard/inspector/schedules')}
                 >
@@ -355,8 +355,8 @@ export default function InspectorDashboard() {
                   </div>
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto py-4"
                   onClick={() => router.push('/dashboard/inspector/checklist')}
                 >
@@ -367,8 +367,8 @@ export default function InspectorDashboard() {
                   </div>
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto py-4"
                   onClick={() => router.push('/dashboard/inspector/reports/new')}
                 >
@@ -379,8 +379,8 @@ export default function InspectorDashboard() {
                   </div>
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto py-4"
                   onClick={() => router.push('/dashboard/inspector/projects')}
                 >
@@ -403,8 +403,8 @@ export default function InspectorDashboard() {
                 <Building className="w-5 h-5" />
                 Proyek Aktif
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/inspector/projects')}
               >
@@ -415,7 +415,7 @@ export default function InspectorDashboard() {
             <CardContent>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {recentProjects.map(project => (
-                  <div 
+                  <div
                     key={project.id}
                     className="p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                     onClick={() => router.push(`/dashboard/inspector/projects`)}

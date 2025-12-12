@@ -72,11 +72,11 @@ export default function InspectorSchedules() {
               id,
               name,
               location,
-              client_name
+              clients(name)
             )
           `)
           .eq('assigned_to', user.id)
-          .order('scheduled_date', { ascending: true });
+          .order('schedule_date', { ascending: true });
 
         if (error) throw error;
 
@@ -102,7 +102,8 @@ export default function InspectorSchedules() {
   const filteredSchedules = schedules.filter(schedule => {
     const matchesStatus = filterStatus === 'all' || schedule.status === filterStatus;
     const matchesSearch = schedule.projects?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         schedule.projects?.client_name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      schedule.projects?.clients?.name?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -113,7 +114,7 @@ export default function InspectorSchedules() {
       completed: { variant: 'default', label: 'Selesai' },
       cancelled: { variant: 'destructive', label: 'Dibatalkan' }
     };
-    
+
     const config = statusConfig[status] || { variant: 'outline', label: status };
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
@@ -222,7 +223,7 @@ export default function InspectorSchedules() {
               <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
               <h3 className="text-lg font-semibold text-foreground">Tidak ada jadwal</h3>
               <p className="text-muted-foreground mt-1">
-                {schedules.length === 0 
+                {schedules.length === 0
                   ? "Belum ada jadwal inspeksi yang ditugaskan kepada Anda."
                   : "Tidak ada jadwal yang sesuai dengan filter pencarian."
                 }
@@ -242,7 +243,7 @@ export default function InspectorSchedules() {
                             {schedule.projects?.name || 'Proyek Tanpa Nama'}
                           </h3>
                           <p className="text-muted-foreground">
-                            {schedule.projects?.client_name || 'Klien Tidak Diketahui'}
+                            {schedule.projects?.clients?.name || 'Klien Tidak Diketahui'}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -253,11 +254,11 @@ export default function InspectorSchedules() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Calendar className="h-4 w-4" />
-                          <span>{formatDate(schedule.scheduled_date)}</span>
+                          <span>{formatDate(schedule.schedule_date)}</span>
                         </div>
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Clock className="h-4 w-4" />
-                          <span>{formatTime(schedule.scheduled_date)}</span>
+                          <span>{formatTime(schedule.schedule_date)}</span>
                         </div>
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <MapPin className="h-4 w-4" />

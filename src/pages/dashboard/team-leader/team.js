@@ -152,8 +152,8 @@ export default function TeamLeaderTeamPage() {
     setError(null);
 
     try {
-      // 1. Ambil proyek yang saya handle sebagai project_lead
-      const { data: assignments, error: assignErr } = await supabase
+      // 1. Fetch assignments via project_teams
+      const teamQuery = supabase
         .from('project_teams')
         .select(`
           project_id,
@@ -162,11 +162,26 @@ export default function TeamLeaderTeamPage() {
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
 
-      if (assignErr) throw assignErr;
+      // 2. Fetch assignments via project_lead_id
+      const legacyQuery = supabase
+        .from('projects')
+        .select('id, name, status')
+        .eq('project_lead_id', user.id);
 
-      const projectList = (assignments || []).map(a => ({
-        ...a.projects
-      }));
+      const [teamRes, legacyRes] = await Promise.all([teamQuery, legacyQuery]);
+
+      if (teamRes.error) throw teamRes.error;
+      if (legacyRes.error) throw legacyRes.error;
+
+      // Process Team Results
+      const teamProjects = (teamRes.data || []).map(a => a.projects);
+
+      // Process Legacy Results
+      const legacyProjects = legacyRes.data || [];
+
+      // Merge and Deduplicate by ID
+      const allProjects = [...teamProjects, ...legacyProjects];
+      const projectList = Array.from(new Map(allProjects.map(item => [item.id, item])).values());
 
       setProjects(projectList);
 
@@ -221,10 +236,10 @@ export default function TeamLeaderTeamPage() {
   // Filter team members
   const filteredTeamMembers = teamMembers.filter(member => {
     const matchesSearch = member.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesRole = roleFilter === 'all' || member.role === roleFilter;
     const matchesProject = projectFilter === 'all' || member.project_id === projectFilter;
 
@@ -437,7 +452,7 @@ export default function TeamLeaderTeamPage() {
                               <div className="flex items-center gap-1">
                                 <Building className="w-3 h-3 text-slate-500" />
                                 <span className="text-xs underline hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
-                                      onClick={() => handleViewProject(member.project_id)}>
+                                  onClick={() => handleViewProject(member.project_id)}>
                                   {member.project_name}
                                 </span>
                               </div>

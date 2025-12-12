@@ -52,7 +52,7 @@ import {
 
 // Icons
 import {
-  Calendar, MapPin, Users, FileText, Clock, CheckCircle2, XCircle, Eye, Plus, Search, Filter, 
+  Calendar, MapPin, Users, FileText, Clock, CheckCircle2, XCircle, Eye, Plus, Search, Filter,
   RefreshCw, Send, ArrowLeft, Edit, Trash2, AlertTriangle
 } from "lucide-react";
 
@@ -137,17 +137,28 @@ export default function TeamLeaderSchedulesPage() {
     setError(null);
 
     try {
-      // Ambil project_ids dari proyek yang ditangani oleh saya
-      const { data: assignments, error: assignErr } = await supabase
+      // 1. Fetch assignments via project_teams
+      const teamQuery = supabase
         .from('project_teams')
         .select('project_id')
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
 
-      if (assignErr) throw assignErr;
+      // 2. Fetch assignments via project_lead_id
+      const legacyQuery = supabase
+        .from('projects')
+        .select('id')
+        .eq('project_lead_id', user.id);
 
-      // FIX: Add null check for assignments
-      const projectIds = (assignments || []).map(a => a.project_id);
+      const [teamRes, legacyRes] = await Promise.all([teamQuery, legacyQuery]);
+
+      if (teamRes.error) throw teamRes.error;
+      if (legacyRes.error) throw legacyRes.error;
+
+      // Extract and Merge IDs
+      const teamIds = (teamRes.data || []).map(a => a.project_id);
+      const legacyIds = (legacyRes.data || []).map(p => p.id);
+      const projectIds = [...new Set([...teamIds, ...legacyIds])]; // Unique IDs
 
       let schedulesData = [];
       if (projectIds.length > 0) {
@@ -219,8 +230,8 @@ export default function TeamLeaderSchedulesPage() {
   // Filter schedules
   const filteredSchedules = schedules.filter(s => {
     const matchesSearch = s.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         s.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      s.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesType = typeFilter === 'all' || s.schedule_type === typeFilter;
     const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
 

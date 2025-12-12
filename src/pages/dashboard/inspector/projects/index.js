@@ -80,9 +80,9 @@ export default function InspectorProjects() {
         .eq('user_id', user.id)
         .eq('role', 'inspector');
 
-      // Also get from inspections
+      // Also get from inspections using correct table and column
       const { data: inspections } = await supabase
-        .from('vw_inspections_fixed')
+        .from('inspections')
         .select(`
           project_id,
           projects(
@@ -90,15 +90,15 @@ export default function InspectorProjects() {
             clients(name)
           )
         `)
-        .eq('assigned_to', user.id);
+        .eq('inspector_id', user.id);
 
       // Combine and deduplicate
       const projectsMap = new Map();
-      
+
       (projectTeams || []).forEach(pt => {
         if (pt.projects) projectsMap.set(pt.projects.id, pt.projects);
       });
-      
+
       (inspections || []).forEach(i => {
         if (i.projects) projectsMap.set(i.projects.id, i.projects);
       });
@@ -124,8 +124,8 @@ export default function InspectorProjects() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       if (!project.name?.toLowerCase().includes(term) &&
-          !project.clients?.name?.toLowerCase().includes(term) &&
-          !project.city?.toLowerCase().includes(term)) {
+        !project.clients?.name?.toLowerCase().includes(term) &&
+        !project.city?.toLowerCase().includes(term)) {
         return false;
       }
     }
@@ -214,7 +214,7 @@ export default function InspectorProjects() {
                     {projects.length === 0 ? 'Belum Ada Proyek' : 'Tidak Ditemukan'}
                   </h3>
                   <p className="text-muted-foreground">
-                    {projects.length === 0 
+                    {projects.length === 0
                       ? 'Menunggu penugasan dari Project Lead'
                       : 'Tidak ada proyek yang sesuai dengan filter'
                     }
@@ -223,8 +223,8 @@ export default function InspectorProjects() {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {filteredProjects.map((project) => (
-                    <Card 
-                      key={project.id} 
+                    <Card
+                      key={project.id}
                       className="hover:shadow-md cursor-pointer transition-shadow"
                       onClick={() => router.push(`/dashboard/inspector/projects/${project.id}`)}
                     >
@@ -235,12 +235,12 @@ export default function InspectorProjects() {
                           </div>
                           {getStatusBadge(project.status)}
                         </div>
-                        
+
                         <h3 className="font-semibold line-clamp-1 mb-1">{project.name}</h3>
                         <p className="text-sm text-muted-foreground mb-3">
                           {project.clients?.name || '-'}
                         </p>
-                        
+
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
@@ -255,9 +255,9 @@ export default function InspectorProjects() {
                         <div className="flex gap-2 mt-4">
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 className="flex-1"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -272,8 +272,8 @@ export default function InspectorProjects() {
                           </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();

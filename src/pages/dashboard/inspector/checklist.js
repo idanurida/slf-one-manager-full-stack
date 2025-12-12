@@ -38,7 +38,7 @@ import { Separator } from '@/components/ui/separator';
 // Lucide Icons
 import {
   FileText, Clock, Activity, CheckCircle, XCircle, Eye,
-  CheckSquare, AlertTriangle, Loader2, Info, Camera, 
+  CheckSquare, AlertTriangle, Loader2, Info, Camera,
   Plus, MapPin, TrendingUp, ClipboardList, ListChecks,
   Building, Users, Search, Filter, Download, Upload,
   Save, X, ArrowLeft
@@ -65,7 +65,7 @@ const cn = (...classes) => classes.filter(Boolean).join(' ');
 const ensureChecklistItemExists = async (itemId, itemData) => {
   try {
     console.log('🔍 Checking item in database:', itemId);
-    
+
     // Cek apakah item sudah ada
     const { data: existingItem, error: checkError } = await supabase
       .from('checklist_items')
@@ -81,7 +81,7 @@ const ensureChecklistItemExists = async (itemId, itemData) => {
     // Jika item tidak ada, BUAT SEKARANG
     if (!existingItem) {
       console.log('🔄 CREATING checklist item:', itemId);
-      
+
       const newItemData = {
         id: itemId,
         template_id: itemData.template_id,
@@ -114,7 +114,7 @@ const ensureChecklistItemExists = async (itemId, itemData) => {
 
     console.log('✅ Item already exists:', itemId);
     return true;
-    
+
   } catch (err) {
     console.error('❌ ensureChecklistItemExists FAILED:', err);
     throw err;
@@ -126,7 +126,7 @@ const syncAllChecklistItems = async (items, inspectionId, projectId) => {
   try {
     console.log('🔄 SYNCING all checklist items to database...');
     console.log('📦 Total items to sync:', items.length);
-    
+
     if (items.length === 0) {
       console.warn('⚠️ No items to sync');
       return true;
@@ -134,7 +134,7 @@ const syncAllChecklistItems = async (items, inspectionId, projectId) => {
 
     let successCount = 0;
     let errorCount = 0;
-    
+
     for (const item of items) {
       try {
         await ensureChecklistItemExists(item.id, item);
@@ -144,9 +144,9 @@ const syncAllChecklistItems = async (items, inspectionId, projectId) => {
         errorCount++;
       }
     }
-    
+
     console.log(`📊 Sync result: ${successCount} success, ${errorCount} failed`);
-    
+
     return true;
   } catch (err) {
     console.error('❌ Sync failed:', err);
@@ -160,44 +160,44 @@ const itemRequiresPhotogeotag = (templateId, itemId, category) => {
   const noPhotoCategories = [
     'administrative', 'admin', 'document_review', 'permit_verification', 'paperwork'
   ];
-  
+
   // Cek berdasarkan category (lebih akurat)
   if (category && noPhotoCategories.includes(category.toLowerCase())) {
     return false;
   }
-  
+
   // Fallback: cek berdasarkan templateId
   const noPhotoTemplates = [
     'administrative', 'admin', 'a1', 'a2', 'a3', 'a4', 'a5',
     'document_review', 'permit_verification', 'paperwork'
   ];
-  
+
   if (templateId && noPhotoTemplates.includes(templateId.toLowerCase())) {
     return false;
   }
-  
+
   // Default: perlu photo untuk kategori teknis (tata_bangunan, dll)
   return true;
 };
 
 // Komponen untuk menampilkan form dinamis berdasarkan kolom
-const DynamicChecklistForm = ({ 
-  templateId, 
-  item, 
-  inspectionId, 
-  projectId, 
-  onSave, 
-  existingResponse 
+const DynamicChecklistForm = ({
+  templateId,
+  item,
+  inspectionId,
+  projectId,
+  onSave,
+  existingResponse
 }) => {
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [savedPhotos, setSavedPhotos] = useState([]);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
-  
+
   // 🔥 PERBAIKAN: Photogeotag untuk NON-administratif (berdasarkan category)
   const requiresPhotoGeotag = itemRequiresPhotogeotag(templateId, item.id, item.category);
-  
+
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -236,11 +236,11 @@ const DynamicChecklistForm = ({
 
   const loadExistingPhotos = async () => {
     if (!inspectionId) return;
-    
+
     setLoadingPhotos(true);
     try {
       const photos = await getPhotosByInspection(inspectionId);
-      const itemPhotos = photos.filter(photo => 
+      const itemPhotos = photos.filter(photo =>
         photo.checklist_item_id === item.id
       );
       setSavedPhotos(itemPhotos);
@@ -264,7 +264,7 @@ const DynamicChecklistForm = ({
     setSaving(true);
     try {
       await onSave(item.id, formData);
-      
+
     } catch (err) {
       console.error("Error saving checklist item:", err);
       toast({
@@ -281,7 +281,7 @@ const DynamicChecklistForm = ({
     try {
       setSavedPhotos(prev => [...prev, savedPhoto]);
       setShowCamera(false);
-      
+
       toast({
         title: "✅ Dokumentasi tersimpan",
         description: "Foto dan lokasi berhasil disimpan ke database",
@@ -322,7 +322,7 @@ const DynamicChecklistForm = ({
       case 'radio_with_text':
         const radioValue = value.option || '';
         const radioText = value.text || '';
-        
+
         return (
           <div className="space-y-2">
             <div className="flex flex-wrap gap-4">
@@ -456,7 +456,7 @@ const DynamicChecklistForm = ({
                     </p>
                   </div>
                 </div>
-                
+
                 {savedPhotos.length > 0 ? (
                   <Badge variant="default" className="bg-green-500 text-white">
                     <CheckCircle className="w-3 h-3 mr-1" />
@@ -485,14 +485,14 @@ const DynamicChecklistForm = ({
                       {savedPhotos.length} foto dengan metadata GPS telah disimpan
                     </AlertDescription>
                   </Alert>
-                  
+
                   {savedPhotos.map((photo) => (
                     <Card key={photo.id} className="bg-green-50 border-green-200">
                       <CardContent className="p-3">
                         <div className="flex items-center gap-3">
-                          <img 
-                            src={photo.photo_url} 
-                            alt="Dokumentasi" 
+                          <img
+                            src={photo.photo_url}
+                            alt="Dokumentasi"
                             className="w-12 h-12 object-cover rounded border"
                           />
                           <div className="flex-1">
@@ -558,7 +558,7 @@ const DynamicChecklistForm = ({
               Ambil foto untuk: {item.item_name || item.description}
             </DialogDescription>
           </DialogHeader>
-          
+
           <CameraGeotagging
             inspectionId={inspectionId}
             checklistItemId={item.id}
@@ -649,21 +649,21 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
   // Ambil checklist items berdasarkan spesialisasi inspector (exclude administrative - handled by admin_team)
   useEffect(() => {
     if (!profile?.specialization) return;
-    
+
     // Dapatkan template yang sesuai dengan spesialisasi inspector
     const specializationTemplates = getChecklistsBySpecialization(profile.specialization, 'baru');
-    
+
     // Flatten items dari template yang sesuai (exclude administrative)
     const items = flattenChecklistItems(specializationTemplates)
       .filter(item => item.category !== 'administrative');
-    
+
     setAllChecklistItems(items);
-    
+
     // Set default category berdasarkan spesialisasi
     const defaultCategory = items.length > 0 ? items[0].category : 'keandalan';
     setSelectedCategory(defaultCategory);
     setFilteredItems(items.filter(item => item.category === defaultCategory));
-    
+
     console.log(`[Checklist] Loaded ${items.length} items for specialization: ${profile.specialization}`);
   }, [profile?.specialization]);
 
@@ -676,7 +676,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
         setLoading(true);
 
         let query = supabase
-          .from('vw_inspections_fixed')
+          .from('inspections')
           .select(`
             *,
             projects (
@@ -684,7 +684,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
               id
             )
           `)
-          .eq('assigned_to', user.id);
+          .eq('inspector_id', user.id);
 
         if (inspectionId) {
           query = query.eq('id', inspectionId);
@@ -741,16 +741,16 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
       if (allChecklistItems.length > 0 && user?.id) {
         console.log('🔄 Starting checklist items sync...');
         setSyncStatus('syncing');
-        
+
         const currentInspection = inspections[0];
         const projectId = currentInspection?.project_id || currentInspection?.projects?.id;
-        
+
         const syncSuccess = await syncAllChecklistItems(
-          allChecklistItems, 
-          inspectionId, 
+          allChecklistItems,
+          inspectionId,
           projectId
         );
-        
+
         if (syncSuccess) {
           setSyncStatus('done');
           console.log('✅ All checklist items synced to database!');
@@ -862,7 +862,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
 
     } catch (err) {
       console.error("❌ Save checklist item error:", err);
-      
+
       let errorMessage = "Gagal menyimpan checklist";
       if (err.code === '23503') {
         errorMessage = "Item checklist tidak valid. Silakan refresh halaman.";
@@ -912,7 +912,7 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
               Hanya inspector yang dapat mengakses halaman ini.
             </AlertDescription>
           </Alert>
-          <Button 
+          <Button
             onClick={() => router.push('/dashboard')}
             className="mt-4"
           >
@@ -930,8 +930,8 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="flex items-center gap-3">
             <Badge variant="default" className="capitalize text-xs bg-primary">
-              {INSPECTOR_SPECIALIZATIONS.find(s => s.value === profile?.specialization)?.label || 
-               profile?.specialization?.replace(/_/g, ' ') || 'Inspector'}
+              {INSPECTOR_SPECIALIZATIONS.find(s => s.value === profile?.specialization)?.label ||
+                profile?.specialization?.replace(/_/g, ' ') || 'Inspector'}
             </Badge>
             <span className="text-sm text-muted-foreground">
               {allChecklistItems.length} item checklist
@@ -984,66 +984,66 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
 
         {/* Checklist SIMAK */}
         <div className="space-y-4">
-            {/* Kategori Selector */}
+          {/* Kategori Selector */}
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <Label className="text-sm font-medium text-foreground mb-2 block">
+                Pilih Kategori Checklist SIMAK
+              </Label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="bg-background text-foreground border-border">
+                  <SelectValue placeholder="Pilih kategori..." />
+                </SelectTrigger>
+                <SelectContent className="bg-background text-foreground border-border">
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat} className="cursor-pointer">
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          {/* Checklist Items */}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
+              <p className="text-muted-foreground">Memuat checklist...</p>
+            </div>
+          ) : filteredItems.length === 0 ? (
             <Card className="border-border">
-              <CardContent className="p-4">
-                <Label className="text-sm font-medium text-foreground mb-2 block">
-                  Pilih Kategori Checklist SIMAK
-                </Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="bg-background text-foreground border-border">
-                    <SelectValue placeholder="Pilih kategori..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background text-foreground border-border">
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat} className="cursor-pointer">
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <CardContent className="p-6 text-center">
+                <Info className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+                <p className="text-muted-foreground">
+                  Tidak ada item checklist untuk kategori ini.
+                </p>
               </CardContent>
             </Card>
-
-            {/* Checklist Items */}
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
-                <p className="text-muted-foreground">Memuat checklist...</p>
-              </div>
-            ) : filteredItems.length === 0 ? (
-              <Card className="border-border">
-                <CardContent className="p-6 text-center">
-                  <Info className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">
-                    Tidak ada item checklist untuk kategori ini.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              Object.entries(groupedItems).map(([templateTitle, items]) => (
-                <div key={templateTitle} className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    {templateTitle}
-                  </h3>
-                  <Separator className="my-2 bg-border" />
-                  <div className="space-y-6">
-                    {items.map((item) => (
-                      <DynamicChecklistForm
-                        key={item.id}
-                        templateId={item.template_id}
-                        item={item}
-                        inspectionId={inspectionId}
-                        projectId={projectId}
-                        onSave={handleSaveChecklistItem}
-                        existingResponse={checklistResponses[item.id]}
-                      />
-                    ))}
-                  </div>
+          ) : (
+            Object.entries(groupedItems).map(([templateTitle, items]) => (
+              <div key={templateTitle} className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  {templateTitle}
+                </h3>
+                <Separator className="my-2 bg-border" />
+                <div className="space-y-6">
+                  {items.map((item) => (
+                    <DynamicChecklistForm
+                      key={item.id}
+                      templateId={item.template_id}
+                      item={item}
+                      inspectionId={inspectionId}
+                      projectId={projectId}
+                      onSave={handleSaveChecklistItem}
+                      existingResponse={checklistResponses[item.id]}
+                    />
+                  ))}
                 </div>
-              ))
-            )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </DashboardLayout>

@@ -130,9 +130,8 @@ const ProjectTimelineCard = ({ project, onView, isSelected }) => {
   const progress = calculateProgress(project.status);
 
   return (
-    <Card className={`border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-lg transition-all cursor-pointer ${
-      isSelected ? 'ring-2 ring-blue-500' : ''
-    }`}>
+    <Card className={`border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-lg transition-all cursor-pointer ${isSelected ? 'ring-2 ring-blue-500' : ''
+      }`}>
       <CardContent className="p-6" onClick={() => onView(project)}>
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
@@ -154,7 +153,7 @@ const ProjectTimelineCard = ({ project, onView, isSelected }) => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -182,7 +181,7 @@ const ProjectTimelineCard = ({ project, onView, isSelected }) => {
             <span>{Math.round(progress)}%</span>
           </div>
           <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-            <div 
+            <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
@@ -195,18 +194,18 @@ const ProjectTimelineCard = ({ project, onView, isSelected }) => {
             <div key={phase} className="flex flex-col items-center">
               <div className={`
                 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
-                ${phase <= getPhaseProgress(project.status) 
-                  ? 'bg-blue-600 text-white' 
+                ${phase <= getPhaseProgress(project.status)
+                  ? 'bg-blue-600 text-white'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                 }
               `}>
                 {phase}
               </div>
               <span className="mt-1 text-slate-500 dark:text-slate-400 text-center">
-                {phase === 1 ? 'Prep' : 
-                 phase === 2 ? 'Inspec' : 
-                 phase === 3 ? 'Report' : 
-                 phase === 4 ? 'Approval' : 'Govt'}
+                {phase === 1 ? 'Prep' :
+                  phase === 2 ? 'Inspec' :
+                    phase === 3 ? 'Report' :
+                      phase === 4 ? 'Approval' : 'Govt'}
               </span>
             </div>
           ))}
@@ -222,10 +221,10 @@ const ProjectTimelineCard = ({ project, onView, isSelected }) => {
             <div className="flex flex-wrap gap-1">
               {project.team_members.slice(0, 3).map((member, index) => (
                 <Badge key={index} variant="outline" className="text-xs">
-                  {member.role === 'project_lead' ? 'PL' : 
-                   member.role === 'inspector' ? 'Insp' : 
-                   member.role === 'drafter' ? 'Draft' : 
-                   member.role === 'head_consultant' ? 'HC' : member.role}
+                  {member.role === 'project_lead' ? 'PL' :
+                    member.role === 'inspector' ? 'Insp' :
+                      member.role === 'drafter' ? 'Draft' :
+                        member.role === 'head_consultant' ? 'HC' : member.role}
                 </Badge>
               ))}
               {project.team_members.length > 3 && (
@@ -256,8 +255,8 @@ export default function ClientTimeline() {
 
   // Fetch hanya project milik client ini
   const fetchData = async () => {
-    if (!profile?.client_id) return;
-    
+    if (!user?.id) return;
+
     setLoading(true);
     setError(null);
 
@@ -275,7 +274,7 @@ export default function ClientTimeline() {
             )
           )
         `)
-        .eq('client_id', profile.client_id)
+        .eq('client_id', user.id)
         .order('created_at', { ascending: false });
 
       if (projectsError) throw projectsError;
@@ -330,11 +329,11 @@ export default function ClientTimeline() {
   // Filter projects (hanya milik client ini)
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.location?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      project.location?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    const matchesApplicationType = applicationTypeFilter === 'all' || 
-                                  project.application_type === applicationTypeFilter;
+    const matchesApplicationType = applicationTypeFilter === 'all' ||
+      project.application_type === applicationTypeFilter;
 
     return matchesSearch && matchesStatus && matchesApplicationType;
   });
@@ -375,7 +374,7 @@ export default function ClientTimeline() {
   return (
     <DashboardLayout title="Project Timeline Saya">
       <TooltipProvider>
-        <motion.div 
+        <motion.div
           className="p-6 space-y-6 bg-white dark:bg-slate-900 min-h-screen"
           variants={containerVariants}
           initial="hidden"
@@ -475,7 +474,7 @@ export default function ClientTimeline() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="w-full sm:w-48">
                     <Label htmlFor="status-filter" className="sr-only">Filter Status</Label>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -553,7 +552,7 @@ export default function ClientTimeline() {
                       </h3>
                       <p className="text-slate-600 dark:text-slate-400 mb-4">
                         {searchTerm || statusFilter !== 'all' || applicationTypeFilter !== 'all'
-                          ? 'Tidak ada projects yang sesuai dengan filter' 
+                          ? 'Tidak ada projects yang sesuai dengan filter'
                           : 'Belum ada projects yang dibuat'}
                       </p>
                       <Button onClick={() => router.push('/dashboard/client/projects/new')}>
@@ -591,7 +590,7 @@ export default function ClientTimeline() {
                 </CardHeader>
                 <CardContent>
                   {selectedProject ? (
-                    <ProjectTimeline 
+                    <ProjectTimeline
                       projectId={selectedProject.id}
                       viewMode="client_view"
                       showActions={false}

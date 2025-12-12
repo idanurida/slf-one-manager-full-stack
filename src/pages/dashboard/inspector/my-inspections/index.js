@@ -42,8 +42,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 // Lucide Icons
-import { 
-  FileText, Clock, Activity, CheckCircle, MapPin, Camera, 
+import {
+  FileText, Clock, Activity, CheckCircle, MapPin, Camera,
   Play, Eye, Calendar, Building, User, AlertTriangle,
   CheckSquare, ListChecks, ArrowRight, Search, Loader2,
   Navigation, WifiOff, Home, Target, ClipboardCheck
@@ -62,7 +62,7 @@ const InspectorChecklistDashboard = () => {
   const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingStates, setSavingStates] = useState({});
-  
+
   // State untuk permission dan location
   const [permissionDialog, setPermissionDialog] = useState(false);
   const [locationDialog, setLocationDialog] = useState(false);
@@ -84,11 +84,11 @@ const InspectorChecklistDashboard = () => {
         console.log('🔄 Fetching inspections for user:', user.id);
 
         const { data: inspectionData, error: inspectionError } = await supabase
-          .from('vw_inspections_fixed')
+          .from('inspections')
           .select(`
             id,
             project_id,
-            assigned_to,
+            inspector_id,
             scheduled_date,
             start_time,
             end_time,
@@ -102,12 +102,12 @@ const InspectorChecklistDashboard = () => {
               client_id,
               clients(name)
             ),
-            profiles!inspections_assigned_to_fkey(
+            profiles!inspections_inspector_id_fkey(
               full_name, 
               specialization
             )
           `)
-          .eq('assigned_to', user.id)
+          .eq('inspector_id', user.id)
           .in('status', ['scheduled', 'in_progress'])
           .order('scheduled_date', { ascending: true });
 
@@ -209,8 +209,8 @@ const InspectorChecklistDashboard = () => {
         (error) => {
           setIsGettingLocation(false);
           let errorMessage = 'Gagal mendapatkan lokasi';
-          
-          switch(error.code) {
+
+          switch (error.code) {
             case error.PERMISSION_DENIED:
               errorMessage = 'Izin lokasi ditolak';
               break;
@@ -221,7 +221,7 @@ const InspectorChecklistDashboard = () => {
               errorMessage = 'Waktu permintaan lokasi habis';
               break;
           }
-          
+
           resolve({ success: false, error: errorMessage });
         },
         {
@@ -236,10 +236,10 @@ const InspectorChecklistDashboard = () => {
   // ✅ FUNGSI BARU: Start inspection dengan permission flow
   const handleStartInspection = async (inspection) => {
     setCurrentInspection(inspection);
-    
+
     // 1. Request camera permission dulu
     const cameraGranted = await requestCameraPermission();
-    
+
     if (!cameraGranted) {
       toast({
         title: "Izin kamera diperlukan",
@@ -262,7 +262,7 @@ const InspectorChecklistDashboard = () => {
     if (withGPS) {
       // Coba dapatkan lokasi GPS
       const locationResult = await getCurrentLocation();
-      
+
       if (locationResult.success) {
         locationData = {
           type: 'gps',
@@ -298,7 +298,7 @@ const InspectorChecklistDashboard = () => {
 
     // Update status inspeksi dan simpan data lokasi
     const success = await updateInspectionStatus(
-      currentInspection.id, 
+      currentInspection.id,
       'in_progress',
       locationData
     );
@@ -306,7 +306,7 @@ const InspectorChecklistDashboard = () => {
     if (success) {
       setLocationDialog(false);
       setLocationNote('');
-      
+
       // Redirect ke halaman checklist
       setTimeout(() => {
         router.push(`/dashboard/inspector/inspections/${currentInspection.id}/checklist`);
@@ -325,7 +325,7 @@ const InspectorChecklistDashboard = () => {
 
       // 1. Cek apakah inspeksi ada
       const { data: existingInspection, error: checkError } = await supabase
-        .from('vw_inspections_fixed')
+        .from('inspections')
         .select('id, status')
         .eq('id', inspectionId)
         .single();
@@ -354,18 +354,18 @@ const InspectorChecklistDashboard = () => {
       if (existingInspection) {
         // 2. Jika ada, UPDATE
         const { error: updateError } = await supabase
-          .from('vw_inspections_fixed')
+          .from('inspections')
           .update(updateData)
           .eq('id', inspectionId);
         error = updateError;
       } else {
         // 3. Jika tidak ada (seharusnya tidak terjadi), INSERT
         const { error: insertError } = await supabase
-          .from('vw_inspections_fixed')
+          .from('inspections')
           .insert([{
             id: inspectionId,
             ...updateData,
-            assigned_to: user.id
+            inspector_id: user.id
           }]);
         error = insertError;
       }
@@ -376,14 +376,14 @@ const InspectorChecklistDashboard = () => {
       }
 
       // Update local state
-      setInspections(prev => 
-        prev.map(inspection => 
-          inspection.id === inspectionId 
-            ? { 
-                ...inspection, 
-                status: newStatus,
-                ...updateData
-              }
+      setInspections(prev =>
+        prev.map(inspection =>
+          inspection.id === inspectionId
+            ? {
+              ...inspection,
+              status: newStatus,
+              ...updateData
+            }
             : inspection
         )
       );
@@ -786,7 +786,7 @@ const InspectorChecklistDashboard = () => {
                   <FileText className="h-4 w-4" />
                   <AlertTitle className="text-foreground">Tidak ada inspeksi</AlertTitle>
                   <AlertDescription className="text-muted-foreground">
-                    {inspections.length === 0 
+                    {inspections.length === 0
                       ? "Belum ada inspeksi yang ditugaskan kepada Anda."
                       : "Tidak ditemukan inspeksi yang sesuai dengan filter."
                     }

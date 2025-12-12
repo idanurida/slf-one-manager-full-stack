@@ -12,8 +12,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lucide Icons
-import { 
-  ArrowLeft, Calendar, MapPin, Building, User, 
+import {
+  ArrowLeft, Calendar, MapPin, Building, User,
   Clock, CheckCircle, AlertTriangle, FileText,
   Home, Navigation, Camera
 } from 'lucide-react';
@@ -27,7 +27,7 @@ export default function MyInspectionDetail() {
   const router = useRouter();
   const { toast } = useToast();
   const { user, isInspector } = useAuth();
-  
+
   const [inspection, setInspection] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -49,7 +49,7 @@ export default function MyInspectionDetail() {
       setLoading(true);
       try {
         const { data, error } = await supabase
-          .from('vw_inspections_fixed')
+          .from('inspections')
           .select(`
             *,
             projects(
@@ -59,7 +59,7 @@ export default function MyInspectionDetail() {
               description,
               clients(name, email, phone)
             ),
-            profiles!inspector_id(
+            profiles!inspections_inspector_id_fkey(
               full_name, 
               email, 
               specialization
@@ -70,9 +70,9 @@ export default function MyInspectionDetail() {
           .single();
 
         if (error) throw error;
-        
+
         setInspection(data);
-        
+
       } catch (error) {
         console.error('Error fetching inspection:', error);
         toast({
@@ -142,7 +142,7 @@ export default function MyInspectionDetail() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali
           </Button>
-          
+
           <Card>
             <CardContent className="p-6">
               <div className="space-y-4">
@@ -173,7 +173,7 @@ export default function MyInspectionDetail() {
               Data inspeksi tidak ditemukan atau Anda tidak memiliki akses.
             </AlertDescription>
           </Alert>
-          <Button 
+          <Button
             onClick={() => router.push('/dashboard/inspector/checklist')}
             className="mt-4"
           >
@@ -215,7 +215,7 @@ export default function MyInspectionDetail() {
                     </p>
                   </div>
                 </div>
-                
+
                 {inspection.projects?.description && (
                   <p className="text-blue-800 text-sm max-w-2xl">
                     {inspection.projects.description}
@@ -339,8 +339,8 @@ export default function MyInspectionDetail() {
                   <p className="text-sm font-medium text-muted-foreground">Aksi</p>
                   <div className="space-y-2 mt-2">
                     {inspection.status === 'scheduled' && (
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="w-full bg-green-600 hover:bg-green-700"
                         onClick={() => router.push(`/dashboard/inspector/inspections/${inspection.id}/checklist`)}
                       >
@@ -349,8 +349,8 @@ export default function MyInspectionDetail() {
                       </Button>
                     )}
                     {inspection.status === 'in_progress' && (
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="w-full bg-orange-600 hover:bg-orange-700"
                         onClick={() => router.push(`/dashboard/inspector/inspections/${inspection.id}/checklist`)}
                       >
@@ -359,8 +359,8 @@ export default function MyInspectionDetail() {
                       </Button>
                     )}
                     {inspection.status === 'completed' && (
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         className="w-full"
                         onClick={() => router.push(`/dashboard/inspector/inspections/${inspection.id}/checklist`)}

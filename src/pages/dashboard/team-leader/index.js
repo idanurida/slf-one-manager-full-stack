@@ -53,7 +53,7 @@ const getStatusBadge = (status) => {
 export default function TeamLeaderDashboard() {
   const router = useRouter();
   const { user, profile, loading: authLoading, isProjectLead, isTeamLeader } = useAuth();
-  
+
   // isTeamLeader adalah alias untuk isProjectLead
   const hasAccess = isProjectLead || isTeamLeader;
 
@@ -74,8 +74,8 @@ export default function TeamLeaderDashboard() {
     setLoading(true);
 
     try {
-      // Fetch projects where user is project lead
-      const { data: projectTeams } = await supabase
+      // 1. Fetch projects via project_teams (New Method)
+      const teamQuery = supabase
         .from('project_teams')
         .select(`
           project_id,
@@ -84,14 +84,32 @@ export default function TeamLeaderDashboard() {
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
 
-      const projects = (projectTeams || [])
+      // 2. Fetch projects via project_lead_id (Legacy Method)
+      const legacyQuery = supabase
+        .from('projects')
+        .select(`
+          id, name, status, created_at, clients(name)
+        `)
+        .eq('project_lead_id', user.id);
+
+      // Execute in parallel
+      const [teamRes, legacyRes] = await Promise.all([teamQuery, legacyQuery]);
+
+      const teamProjects = (teamRes.data || [])
         .map(pt => pt.projects)
         .filter(p => p);
-      
-      setMyProjects(projects.slice(0, 5));
+
+      const legacyProjects = legacyRes.data || [];
+
+      // Merge and Deduplicate
+      const allProjects = [...teamProjects, ...legacyProjects];
+      const uniqueProjects = Array.from(new Map(allProjects.map(item => [item.id, item])).values());
+      const projectIds = uniqueProjects.map(p => p.id);
+
+      // Set My Projects (Limited to 5)
+      setMyProjects(uniqueProjects.slice(0, 5));
 
       // Fetch team members count
-      const projectIds = projects.map(p => p.id);
       let teamCount = 0;
       if (projectIds.length > 0) {
         const { count } = await supabase
@@ -102,34 +120,46 @@ export default function TeamLeaderDashboard() {
       }
 
       // Fetch pending reports (need project lead approval)
-      const { data: reports } = await supabase
-        .from('documents')
-        .select('id, name, status, created_at, projects(name)')
-        .eq('document_type', 'REPORT')
-        .eq('status', 'verified_by_admin_team')
-        .order('created_at', { ascending: false });
+      // Only fetch reports if we have managed projects
+      let reports = [];
+      if (projectIds.length > 0) {
+        const { data: fetchedReports } = await supabase
+          .from('documents')
+          .select('id, name, status, created_at, projects!documents_project_id_fkey(name)')
+          .eq('document_type', 'REPORT')
+          .eq('status', 'verified_by_admin_team')
+          .in('project_id', projectIds) // Filter by managed projects
+          .order('created_at', { ascending: false });
+        reports = fetchedReports || [];
+      }
 
-      setPendingReports((reports || []).slice(0, 5));
+      setPendingReports(reports.slice(0, 5));
 
       // Fetch upcoming schedules
+      // Only fetch schedules for managed projects
       const today = new Date().toISOString().split('T')[0];
-      const { data: schedules } = await supabase
-        .from('vw_inspections_fixed')
-        .select('id, scheduled_date, status, projects(name)')
-        .gte('scheduled_date', today)
-        .in('status', ['scheduled', 'in_progress'])
-        .order('scheduled_date', { ascending: true })
-        .limit(5);
+      let schedules = [];
+      if (projectIds.length > 0) {
+        const { data: fetchedSchedules } = await supabase
+          .from('vw_inspections_fixed')
+          .select('id, scheduled_date, status, projects(name)')
+          .gte('scheduled_date', today)
+          .in('status', ['scheduled', 'in_progress'])
+          .in('project_id', projectIds) // Filter by managed projects
+          .order('scheduled_date', { ascending: true })
+          .limit(5);
+        schedules = fetchedSchedules || [];
+      }
 
-      setUpcomingSchedules(schedules || []);
+      setUpcomingSchedules(schedules);
 
       // Calculate stats
       setStats({
-        totalProjects: projects.length,
-        activeProjects: projects.filter(p => 
+        totalProjects: uniqueProjects.length,
+        activeProjects: uniqueProjects.filter(p =>
           p.status === 'active' || p.status === 'inspection_scheduled' || p.status === 'inspection_in_progress'
         ).length,
-        pendingReports: (reports || []).length,
+        pendingReports: reports.length,
         teamMembers: teamCount
       });
 
@@ -155,7 +185,7 @@ export default function TeamLeaderDashboard() {
         <div className="p-6 space-y-6">
           <Skeleton className="h-8 w-64" />
           <div className="grid gap-4 md:grid-cols-4">
-            {[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
           </div>
           <Skeleton className="h-64" />
         </div>
@@ -193,7 +223,7 @@ export default function TeamLeaderDashboard() {
               Kelola proyek dan tim Anda
             </p>
           </div>
-          
+
           <div className="flex gap-2">
             {stats.pendingReports > 0 && (
               <Button onClick={() => router.push('/dashboard/team-leader/reports')}>
@@ -278,7 +308,7 @@ export default function TeamLeaderDashboard() {
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
-          
+
           {/* My Projects */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -286,8 +316,8 @@ export default function TeamLeaderDashboard() {
                 <Building className="w-5 h-5" />
                 Proyek Saya
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/team-leader/projects')}
               >
@@ -304,7 +334,7 @@ export default function TeamLeaderDashboard() {
               ) : (
                 <div className="space-y-3">
                   {myProjects.map(project => (
-                    <div 
+                    <div
                       key={project.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                       onClick={() => router.push(`/dashboard/team-leader/projects/${project.id}`)}
@@ -335,8 +365,8 @@ export default function TeamLeaderDashboard() {
                 <FileText className="w-5 h-5" />
                 Laporan Perlu Approval
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/team-leader/reports')}
               >
@@ -353,7 +383,7 @@ export default function TeamLeaderDashboard() {
               ) : (
                 <div className="space-y-3">
                   {pendingReports.map(report => (
-                    <div 
+                    <div
                       key={report.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                       onClick={() => router.push('/dashboard/team-leader/reports')}
@@ -389,8 +419,8 @@ export default function TeamLeaderDashboard() {
                 <Calendar className="w-5 h-5" />
                 Jadwal Inspeksi Mendatang
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/team-leader/schedules')}
               >
@@ -401,7 +431,7 @@ export default function TeamLeaderDashboard() {
             <CardContent>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {upcomingSchedules.map(schedule => (
-                  <div 
+                  <div
                     key={schedule.id}
                     className="p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                   >
@@ -427,8 +457,8 @@ export default function TeamLeaderDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="justify-start h-auto py-4"
                 onClick={() => router.push('/dashboard/team-leader/team')}
               >
@@ -439,8 +469,8 @@ export default function TeamLeaderDashboard() {
                 </div>
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="justify-start h-auto py-4"
                 onClick={() => router.push('/dashboard/team-leader/timeline')}
               >
@@ -451,8 +481,8 @@ export default function TeamLeaderDashboard() {
                 </div>
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="justify-start h-auto py-4"
                 onClick={() => router.push('/dashboard/team-leader/schedules')}
               >

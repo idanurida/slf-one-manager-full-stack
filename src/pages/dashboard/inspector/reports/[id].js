@@ -64,7 +64,9 @@ export default function ReportDetail() {
                 id,
                 name,
                 location,
-                client_name,
+                location,
+                clients(name),
+                description
                 description
               )
             ),
@@ -72,7 +74,9 @@ export default function ReportDetail() {
               id,
               name,
               location,
-              client_name,
+              location,
+              clients(name),
+              description
               description
             )
           `)
@@ -138,10 +142,10 @@ export default function ReportDetail() {
       approved: { variant: 'default', label: 'Approved', icon: CheckCircle, color: 'bg-green-100 text-green-800' },
       rejected: { variant: 'destructive', label: 'Rejected', icon: AlertTriangle, color: 'bg-red-100 text-red-800' }
     };
-    
+
     const config = statusConfig[status] || { variant: 'outline', label: status, icon: FileText, color: '' };
     const IconComponent = config.icon;
-    
+
     return (
       <Badge variant={config.variant} className={`flex items-center gap-1 ${config.color}`}>
         <IconComponent className="h-3 w-3" />
@@ -230,7 +234,7 @@ export default function ReportDetail() {
               Laporan yang diminta tidak ditemukan atau Anda tidak memiliki akses.
             </AlertDescription>
           </Alert>
-          <Button 
+          <Button
             onClick={() => router.push('/dashboard/inspector/reports')}
             className="mt-4"
           >
@@ -242,6 +246,8 @@ export default function ReportDetail() {
   }
 
   const project = report.inspections?.projects || report.projects;
+  // Handle nested clients object from query
+  const clientName = project?.clients?.name || project?.client_name;
   const findingsSummary = report.findings_summary || {};
 
   return (
@@ -327,7 +333,7 @@ export default function ReportDetail() {
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Klien</Label>
-                    <p className="text-foreground">{project?.client_name}</p>
+                    <p className="text-foreground">{clientName}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Lokasi</Label>
@@ -493,8 +499,8 @@ export default function ReportDetail() {
                               <Badge
                                 variant={item.status === 'completed' ? 'default' : 'outline'}
                                 className={
-                                  item.status === 'completed' 
-                                    ? 'bg-green-100 text-green-800' 
+                                  item.status === 'completed'
+                                    ? 'bg-green-100 text-green-800'
                                     : 'bg-yellow-100 text-yellow-800'
                                 }
                               >
@@ -625,9 +631,8 @@ export default function ReportDetail() {
 
                     {(report.status === 'approved' || report.status === 'rejected') && (
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${
-                          report.status === 'approved' ? 'bg-green-500' : 'bg-red-500'
-                        }`}></div>
+                        <div className={`w-2 h-2 rounded-full ${report.status === 'approved' ? 'bg-green-500' : 'bg-red-500'
+                          }`}></div>
                         <div className="flex-1">
                           <p className="text-sm font-medium">
                             {report.status === 'approved' ? 'Approved' : 'Rejected'}

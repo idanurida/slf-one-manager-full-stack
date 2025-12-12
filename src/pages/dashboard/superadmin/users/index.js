@@ -1,12 +1,15 @@
 // FILE: src/pages/dashboard/superadmin/users/index.js
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { useAuth } from "@/context/AuthContext";
+import { getAllProfiles } from "@/utils/supabaseAPI";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -25,11 +28,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Trash2, RefreshCw, Loader2, Plus, Pencil, Search, UserPlus, UserCheck, UserX, Clock, Shield, AlertCircle } from "lucide-react";
-import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { useAuth } from "@/context/AuthContext";
-import { getAllProfiles, deleteProfile } from "@/utils/supabaseAPI";
-
-// Role display mapping
 const getRoleLabel = (role) => {
   const labels = {
     superadmin: 'Super Admin',
@@ -75,14 +73,40 @@ const UsersPage = () => {
   const fetchProfiles = async () => {
     setLoading(true);
     try {
-      const data = await getAllProfiles();
-      setProfiles(data || []);
-    } catch (error) {
-      toast({
-        title: "Gagal memuat data pengguna",
-        description: error.message,
-        variant: "destructive",
-      });
+      // 1. Try internal API first (bypasses RLS, most reliable)
+      const response = await fetch('/api/superadmin/users');
+
+      if (response.ok) {
+        const result = await response.json();
+        setProfiles(result.users || []);
+        return;
+      }
+
+      // 2. If API fails, throw to trigger fallback
+      const errorResult = await response.json().catch(() => ({}));
+      throw new Error(errorResult.error || `API Error ${response.status}`);
+
+    } catch (apiError) {
+      console.warn('[UsersPage] API Fetch failed, falling back to client-side fetch:', apiError);
+
+      try {
+        // 3. Fallback: Client-side fetch (relies on RLS)
+        const data = await getAllProfiles();
+        setProfiles(data || []);
+
+        toast({
+          title: "Mode Terbatas",
+          description: "Gagal terhubung ke API Admin. Menampilkan data menggunakan akses client.",
+          variant: "default",
+          className: "bg-yellow-100 border-yellow-200 text-yellow-800"
+        });
+      } catch (clientError) {
+        toast({
+          title: "Gagal memuat data pengguna",
+          description: "Gagal mengambil data dari API maupun Client.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -90,7 +114,7 @@ const UsersPage = () => {
 
   // Filter profiles
   const filteredProfiles = profiles.filter(profile => {
-    const matchesSearch = 
+    const matchesSearch =
       profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       profile.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || profile.role === roleFilter;
@@ -109,14 +133,22 @@ const UsersPage = () => {
 
   const handleDeleteConfirm = async () => {
     if (!userToDelete) return;
-    
+
     setDeleting(true);
     try {
-      await deleteProfile(userToDelete.id);
-      toast({ 
+      // Use API to delete
+      const response = await fetch(`/api/superadmin/users?id=${userToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) throw new Error(result.error || 'Failed to delete user');
+
+      toast({
         title: "User berhasil dihapus",
         description: `${userToDelete.full_name || userToDelete.email} telah dihapus dari sistem.`,
-        variant: "default" 
+        variant: "default"
       });
       fetchProfiles();
     } catch (error) {
@@ -133,6 +165,7 @@ const UsersPage = () => {
   };
 
   const handleEdit = (userId) => {
+
     router.push(`/dashboard/superadmin/users/${userId}`);
   };
 
@@ -187,7 +220,7 @@ const UsersPage = () => {
   const getStatusBadge = (profile) => {
     const status = profile.status || (profile.is_approved ? 'approved' : 'pending');
     const isEmailVerified = profile.email_confirmed_at || profile.email_verified_at;
-    
+
     // Show email verification status for pending users
     if (status === 'pending') {
       return (
@@ -197,8 +230,8 @@ const UsersPage = () => {
             Pending Approval
           </Badge>
           <Badge variant={isEmailVerified ? "default" : "destructive"} className={
-            isEmailVerified 
-              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs" 
+            isEmailVerified
+              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs"
               : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs"
           }>
             {isEmailVerified ? "📧 Email Verified" : "📧 Email Not Verified"}
@@ -206,7 +239,7 @@ const UsersPage = () => {
         </div>
       );
     }
-    
+
     switch (status) {
       case 'approved':
         return <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
@@ -264,7 +297,7 @@ const UsersPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            
+
             {/* Status Filter */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[180px]">
@@ -279,7 +312,7 @@ const UsersPage = () => {
               </SelectContent>
             </Select>
           </div>
-          
+
           {/* Action Buttons */}
           <div className="flex gap-2">
             <Button onClick={fetchProfiles} variant="outline" size="sm" disabled={loading}>
@@ -309,13 +342,13 @@ const UsersPage = () => {
             ) : filteredProfiles.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">
-                  {searchTerm || roleFilter !== 'all' 
+                  {searchTerm || roleFilter !== 'all'
                     ? 'Tidak ada pengguna yang cocok dengan filter.'
                     : 'Tidak ada data pengguna.'}
                 </p>
                 {(searchTerm || roleFilter !== 'all') && (
-                  <Button 
-                    variant="link" 
+                  <Button
+                    variant="link"
                     onClick={() => { setSearchTerm(''); setRoleFilter('all'); }}
                     className="mt-2"
                   >
@@ -353,7 +386,7 @@ const UsersPage = () => {
                       </TableCell>
                       <TableCell>{profile.phone_number || "-"}</TableCell>
                       <TableCell>
-                        {profile.created_at 
+                        {profile.created_at
                           ? new Date(profile.created_at).toLocaleDateString("id-ID")
                           : "-"}
                       </TableCell>
@@ -391,7 +424,7 @@ const UsersPage = () => {
                               </Button>
                             </>
                           )}
-                          
+
                           {/* Standard Actions */}
                           <Button
                             variant="outline"
@@ -425,13 +458,13 @@ const UsersPage = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Hapus Pengguna?</AlertDialogTitle>
               <AlertDialogDescription>
-                Anda akan menghapus <strong>{userToDelete?.full_name || userToDelete?.email}</strong>. 
+                Anda akan menghapus <strong>{userToDelete?.full_name || userToDelete?.email}</strong>.
                 Tindakan ini tidak dapat dibatalkan dan semua data terkait user ini akan dihapus.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={deleting}>Batal</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogAction
                 onClick={handleDeleteConfirm}
                 disabled={deleting}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

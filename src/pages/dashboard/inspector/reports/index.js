@@ -78,30 +78,17 @@ export default function InspectorReports() {
     setLoading(true);
 
     try {
-      // Try inspection_reports first
-      let { data: reportsData, error } = await supabase
+      // Use 'inspection_reports' as it contains inspector_id and findings columns
+      const { data: reportsData, error } = await supabase
         .from('inspection_reports')
         .select(`
           *,
           projects(id, name)
         `)
-        .eq('assigned_to', user.id)
+        .eq('inspector_id', user.id)
         .order('created_at', { ascending: false });
 
-      // If no inspection_reports table or error, try reports table
-      if (error || !reportsData) {
-        const { data: altReports } = await supabase
-          .from('reports')
-          .select(`
-            *,
-            projects(id, name)
-          `)
-          .eq('created_by', user.id)
-          .order('created_at', { ascending: false });
-        
-        reportsData = altReports || [];
-      }
-
+      if (error) throw error;
       setReports(reportsData || []);
 
     } catch (err) {
@@ -123,8 +110,8 @@ export default function InspectorReports() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       if (!report.title?.toLowerCase().includes(term) &&
-          !report.name?.toLowerCase().includes(term) &&
-          !report.projects?.name?.toLowerCase().includes(term)) {
+        !report.name?.toLowerCase().includes(term) &&
+        !report.projects?.name?.toLowerCase().includes(term)) {
         return false;
       }
     }
@@ -238,7 +225,7 @@ export default function InspectorReports() {
                     {reports.length === 0 ? 'Belum Ada Laporan' : 'Tidak Ditemukan'}
                   </h3>
                   <p className="text-muted-foreground mb-4">
-                    {reports.length === 0 
+                    {reports.length === 0
                       ? 'Buat laporan hasil inspeksi Anda'
                       : 'Tidak ada laporan yang sesuai dengan filter'
                     }

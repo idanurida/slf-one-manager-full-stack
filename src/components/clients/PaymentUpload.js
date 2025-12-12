@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select";
 
 // Lucide Icons
-import { Upload, FileText, CheckCircle, XCircle, Clock, Eye, Building, User } from "lucide-react";
+import { Upload, FileText, CheckCircle, XCircle, Clock, Eye, Building, User, FolderOpen } from "lucide-react";
 
 // Supabase
 import { supabase } from "@/utils/supabaseClient";
@@ -59,7 +59,7 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
         .from('payments')
         .select(`
           *,
-          projects!inner(
+          projects (
             id,
             name,
             application_type,
@@ -70,7 +70,9 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
         .order('created_at', { ascending: false });
 
       // Filter by project if specified
-      if (projectId) {
+      if (projectId === 'new' || (!projectId && selectedProject === 'new')) {
+        query = query.is('project_id', null);
+      } else if (projectId) {
         query = query.eq('project_id', projectId);
       } else if (selectedProject) {
         query = query.eq('project_id', selectedProject);
@@ -80,6 +82,10 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
           query = query.eq('project_id', firstProjectId);
           setSelectedProject(firstProjectId);
         }
+      } else {
+        // Default catch-all: if no projects and no specific selection, maybe show nothing or new?
+        // But useEffect handles the default to 'new', so we should rely on that or default to null check
+        query = query.is('project_id', null);
       }
 
       const { data, error } = await query;
@@ -101,6 +107,7 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
 
   // Get current project details
   const getCurrentProject = () => {
+    if (selectedProject === 'new') return { name: 'Pengajuan Baru', application_type: 'New Application' };
     return projects.find(project => project.id === selectedProject) || projects[0];
   };
 
@@ -164,12 +171,11 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
         .from('documents')
         .getPublicUrl(fileName);
 
-      // Create payment record - REVISED TO MATCH ADMIN STRUCTURE
       const { data: paymentData, error: paymentError } = await supabase
         .from('payments')
         .insert([
           {
-            project_id: selectedProject,
+            project_id: selectedProject === 'new' ? null : selectedProject,
             amount: parseFloat(amount),
             payment_date: paymentDate,
             proof_url: urlData.publicUrl,
@@ -179,7 +185,7 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
         ])
         .select(`
           *,
-          projects!inner(
+          projects (
             id,
             name,
             application_type
@@ -194,9 +200,9 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
 
       // Create notification for admin_lead
       await createNotification(
-        selectedProject,
+        selectedProject === 'new' ? null : selectedProject,
         'payment_uploaded',
-        `Bukti pembayaran sebesar Rp ${parseFloat(amount).toLocaleString('id-ID')} telah diupload untuk proyek ${getCurrentProject()?.name}`,
+        `Bukti pembayaran sebesar Rp ${parseFloat(amount).toLocaleString('id-ID')} telah diupload untuk ${selectedProject === 'new' ? 'Pengajuan Baru' : getCurrentProject()?.name}`,
         user?.id
       );
 
@@ -259,21 +265,21 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
   // Get status badge - MATCH ADMIN LEAD STYLING
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { 
-        variant: 'secondary', 
-        icon: Clock, 
+      pending: {
+        variant: 'secondary',
+        icon: Clock,
         text: 'Menunggu',
         color: 'text-yellow-600'
       },
-      verified: { 
-        variant: 'default', 
-        icon: CheckCircle, 
+      verified: {
+        variant: 'default',
+        icon: CheckCircle,
         text: 'Terverifikasi',
         color: 'text-green-600'
       },
-      rejected: { 
-        variant: 'destructive', 
-        icon: XCircle, 
+      rejected: {
+        variant: 'destructive',
+        icon: XCircle,
         text: 'Ditolak',
         color: 'text-red-600'
       }
@@ -334,12 +340,21 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
   };
 
   // Load payments on component mount and when projects change
+  // Load payments on component mount and when projects change
   useEffect(() => {
     if (projects.length > 0) {
-      if (!selectedProject) {
-        setSelectedProject(projects[0]?.id);
+      // If we have projects, prioritize the selected one or the first one
+      if (!selectedProject || selectedProject === 'new') {
+        const firstId = projects[0]?.id;
+        setSelectedProject(firstId);
+        fetchPayments(firstId);
       }
-      fetchPayments(selectedProject || projects[0]?.id);
+    } else {
+      // If no projects, default to 'new' (Application)
+      if (selectedProject !== 'new') {
+        setSelectedProject('new');
+        fetchPayments('new');
+      }
     }
   }, [projects]);
 
@@ -358,7 +373,7 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        
+
         {/* Project Selection */}
         <div className="space-y-4">
           <Label>Pilih Proyek</Label>
@@ -367,6 +382,13 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
               <SelectValue placeholder="Pilih proyek..." />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="new">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 text-blue-500" />
+                  {/* Using generic div or imported icon if available, FolderOpen is better */}
+                  <span>Pengajuan Baru (Pending)</span>
+                </div>
+              </SelectItem>
               {projects.map((project) => (
                 <SelectItem key={project.id} value={project.id}>
                   <div className="flex items-center gap-2">
@@ -425,7 +447,7 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
                   Lengkapi informasi pembayaran untuk proyek {currentProject?.name}
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-4">
                 {/* Project Info */}
                 {currentProject && (
@@ -485,8 +507,8 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
                 </div>
 
                 {/* Upload Button */}
-                <Button 
-                  onClick={handlePaymentUpload} 
+                <Button
+                  onClick={handlePaymentUpload}
                   disabled={uploading || !selectedProject}
                   className="w-full"
                 >
@@ -512,7 +534,7 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
           <h3 className="font-semibold">
             Riwayat Pembayaran - {currentProject?.name || 'Pilih Proyek'}
           </h3>
-          
+
           {loading ? (
             <div className="text-center py-8">
               <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />

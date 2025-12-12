@@ -127,23 +127,54 @@ export default function ProjectLeadProjectsPage() {
     setError(null);
 
     try {
-      const { data: projectsData, error: projectsErr } = await supabase
+      // 1. Fetch assignments via project_teams (New Method)
+      const teamQuery = supabase
+        .from('project_teams')
+        .select(`
+          project_id,
+          projects!inner(
+            *,
+            clients(name)
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('role', 'project_lead');
+
+      // 2. Fetch assignments via project_lead_id (Legacy Method)
+      const legacyQuery = supabase
         .from('projects')
         .select(`
           *,
-          clients!inner(name)
+          clients(name)
         `)
-        .eq('project_lead_id', user.id) // Hanya proyek yang ditangani oleh saya
-        .order('created_at', { ascending: false });
+        .eq('project_lead_id', user.id);
 
-      if (projectsErr) throw projectsErr;
+      // Execute both in parallel
+      const [teamRes, legacyRes] = await Promise.all([teamQuery, legacyQuery]);
 
-      const processedProjects = (projectsData || []).map(p => ({
+      if (teamRes.error) throw teamRes.error;
+      if (legacyRes.error) throw legacyRes.error;
+
+      // Process Team Results
+      const teamProjects = (teamRes.data || []).map(a => ({
+        ...a.projects,
+        client_name: a.projects.clients?.name || 'N/A'
+      }));
+
+      // Process Legacy Results
+      const legacyProjects = (legacyRes.data || []).map(p => ({
         ...p,
         client_name: p.clients?.name || 'N/A'
       }));
 
-      setProjects(processedProjects);
+      // Merge and Deduplicate by ID
+      const allProjects = [...teamProjects, ...legacyProjects];
+      const uniqueProjects = Array.from(new Map(allProjects.map(item => [item.id, item])).values());
+
+      // Sort by created_at desc
+      uniqueProjects.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      setProjects(uniqueProjects);
 
     } catch (err) {
       console.error('Error fetching projects for lead:', err);
@@ -165,9 +196,9 @@ export default function ProjectLeadProjectsPage() {
   // Filter projects
   const filteredProjects = projects.filter(p => {
     const matchesSearch = p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         p.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         p.client_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      p.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.client_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
 
     return matchesSearch && matchesStatus;

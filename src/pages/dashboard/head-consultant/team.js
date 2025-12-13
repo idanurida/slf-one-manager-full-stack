@@ -40,7 +40,7 @@ import {
 
 // Icons
 import { Users, Building, User, Mail, Phone, MapPin, Calendar, FileText, Clock, CheckCircle2, TrendingUp, RefreshCw, Download, MessageCircle, Search, Filter, ArrowLeft, AlertCircle, ExternalLink, UserCheck, UserRound, UserRoundCheck, MessageSquare, PhoneIcon, Building2, MapPinIcon, Info }
-from "lucide-react";
+  from "lucide-react";
 
 // Utils & Context
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -164,10 +164,10 @@ export default function HeadConsultantTeamPage() {
   // Filter team members
   const filteredTeamMembers = teamMembers.filter(member => {
     const matchesSearch = member.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesProject = projectFilter === 'all' || member.project_id === projectFilter;
     const matchesRole = roleFilter === 'all' || member.role === roleFilter; // Gunakan role dari project_teams
 
@@ -367,7 +367,7 @@ export default function HeadConsultantTeamPage() {
                       </TableHeader>
                       <TableBody>
                         {filteredTeamMembers.map((member) => (
-                          <TableRow key={`${member.project_id}-${member.user_id}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-700">
+                          <TableRow key={member.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-700">
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-3">
                                 <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-full">
@@ -388,7 +388,7 @@ export default function HeadConsultantTeamPage() {
                               <div className="flex items-center gap-1">
                                 <Building className="w-3 h-3 text-slate-500" />
                                 <span className="text-xs underline hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
-                                      onClick={() => router.push(`/dashboard/head-consultant/projects/${member.project_id}`)}>
+                                  onClick={() => router.push(`/dashboard/head-consultant/projects/${member.project_id}`)}>
                                   {member.project_name}
                                 </span>
                               </div>

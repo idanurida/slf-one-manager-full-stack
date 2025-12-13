@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 // Menggunakan 'next/router' sesuai file Anda
-import { useRouter } from "next/router"; 
+import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { useTheme } from 'next-themes'; // Gunakan next-themes untuk Dark Mode yang lebih baik
@@ -41,7 +41,7 @@ import {
   ChevronRight, ChevronLeft,
   Eye, TrendingUp, AlertCircle, FileQuestion, Upload, Download,
   CreditCard, MessageCircle, User, Camera, Database,
-  MapPin, ListChecks, ClipboardCheck, CameraIcon, FolderOpen, Loader2 
+  MapPin, ListChecks, ClipboardCheck, CameraIcon, FolderOpen, Loader2
 } from "lucide-react";
 
 // === Supabase ===
@@ -128,7 +128,8 @@ const getSidebarItems = (userRole) => {
     superadmin: [
       { name: "Pengguna", path: "/dashboard/superadmin/users", icon: Users },
       { name: "Proyek", path: "/dashboard/superadmin/projects", icon: Building },
-      { name: "Recovery", path: "/dashboard/superadmin/recovery-center", icon: Database },
+      { name: "Recovery Center", path: "/dashboard/superadmin/recovery-center", icon: Database },
+      { name: "System Logs", path: "/dashboard/superadmin/logs", icon: AlertCircle },
     ],
     inspector: [
       { name: "Jadwal", path: "/dashboard/inspector/schedules", icon: Calendar },
@@ -235,7 +236,7 @@ const isMainDashboard = (pathname, userRole) => {
 // Helper untuk memeriksa apakah rute saat ini adalah rute yang terproteksi
 // Semua rute di bawah DashboardLayout diasumsikan terproteksi kecuali /awaiting-approval
 const isProtectedRoute = (pathname) => {
-    return pathname.startsWith('/dashboard') || pathname === '/awaiting-approval';
+  return pathname.startsWith('/dashboard') || pathname === '/awaiting-approval';
 };
 
 
@@ -256,7 +257,7 @@ const DashboardLayout = ({
   const router = useRouter();
   const { toast } = useToast();
   // Menggunakan next-themes
-  const { theme, setTheme } = useTheme(); 
+  const { theme, setTheme } = useTheme();
 
   // Mengambil state dari AuthContext
   const { user: authUser, profile: authProfile, loading: authLoading, logout, isRedirecting } = useAuth();
@@ -271,7 +272,7 @@ const DashboardLayout = ({
   const [loadingNotifications, setLoadingNotifications] = useState(false);
 
   // Ganti state local darkMode
-  const darkMode = theme === 'dark'; 
+  const darkMode = theme === 'dark';
 
   // Gunakan fungsi dynamic title
   const pageTitle = title || getPageTitleFromPath(router.pathname, profile?.role);
@@ -288,52 +289,52 @@ const DashboardLayout = ({
   useEffect(() => {
     // 1. Loading Awal (Tunggu user dan profile dimuat)
     if (authLoading) {
-        return; 
+      return;
     }
 
-    const currentPath = router.pathname; 
+    const currentPath = router.pathname;
 
     // 2. Jika Tidak Login -> Redirect ke Login
     if (!user) {
       if (isProtectedRoute(currentPath)) {
-          console.log("🔒 Not logged in, redirecting to /login");
-          // Gunakan replace untuk menghindari halaman waiting di history browser
-          router.replace('/login');
-          return;
+        console.log("🔒 Not logged in, redirecting to /login");
+        // Gunakan replace untuk menghindari halaman waiting di history browser
+        router.replace('/login');
+        return;
       }
     }
-    
+
     // 3. Login, Profile Ditemukan
     if (user && profile) {
-        // A. Belum Disetujui (is_approved = false)
-        if (profile.is_approved === false) {
-            // Jika user berada di rute terproteksi (selain waiting page), arahkan ke waiting page
-            if (currentPath !== '/awaiting-approval') {
-                console.log("⚠️ Awaiting approval, blocking access and redirecting to /awaiting-approval");
-                router.replace('/awaiting-approval');
-            }
-            return; // Penting: Hentikan eksekusi logic selanjutnya
+      // A. Belum Disetujui (is_approved = false)
+      if (profile.is_approved === false) {
+        // Jika user berada di rute terproteksi (selain waiting page), arahkan ke waiting page
+        if (currentPath !== '/awaiting-approval') {
+          console.log("⚠️ Awaiting approval, blocking access and redirecting to /awaiting-approval");
+          router.replace('/awaiting-approval');
         }
+        return; // Penting: Hentikan eksekusi logic selanjutnya
+      }
 
-        // B. Sudah Disetujui (is_approved = true)
-        if (profile.is_approved === true) {
-            // Jika user sudah di-approve tetapi sedang berada di halaman tunggu (/awaiting-approval)
-            if (currentPath === '/awaiting-approval') {
-                const dashboardPath = getDashboardPath(profile.role);
-                console.log(`✅ Approved, redirecting from waiting page to ${dashboardPath}`);
-                router.replace(dashboardPath);
-            }
-            // Cek Role Access (Opsional: jika user mengakses dashboard role lain)
-            const expectedPath = getDashboardPath(profile.role);
-            if (currentPath !== expectedPath && currentPath.startsWith('/dashboard') && !currentPath.includes('/settings')) {
-                 // Hanya lakukan redirect jika path tidak dimulai dengan path role yang benar
-                 // Ini mencegah user role A masuk ke dashboard role B
-                 if (!currentPath.startsWith(expectedPath)) {
-                    // router.replace(expectedPath); 
-                    // Logika ini mungkin terlalu agresif, lebih baik ditangani di level halaman
-                 }
-            }
+      // B. Sudah Disetujui (is_approved = true)
+      if (profile.is_approved === true) {
+        // Jika user sudah di-approve tetapi sedang berada di halaman tunggu (/awaiting-approval)
+        if (currentPath === '/awaiting-approval') {
+          const dashboardPath = getDashboardPath(profile.role);
+          console.log(`✅ Approved, redirecting from waiting page to ${dashboardPath}`);
+          router.replace(dashboardPath);
         }
+        // Cek Role Access (Opsional: jika user mengakses dashboard role lain)
+        const expectedPath = getDashboardPath(profile.role);
+        if (currentPath !== expectedPath && currentPath.startsWith('/dashboard') && !currentPath.includes('/settings')) {
+          // Hanya lakukan redirect jika path tidak dimulai dengan path role yang benar
+          // Ini mencegah user role A masuk ke dashboard role B
+          if (!currentPath.startsWith(expectedPath)) {
+            // router.replace(expectedPath); 
+            // Logika ini mungkin terlalu agresif, lebih baik ditangani di level halaman
+          }
+        }
+      }
     }
   }, [user, profile, authLoading, router]); // Tambahkan profile ke dependency array
 
@@ -440,13 +441,13 @@ const DashboardLayout = ({
   if (!user || !profile) {
     return null;
   }
-  
+
   // Jika user sudah login tapi belum disetujui (is_approved=false), dan kita tidak di awaiting-approval page,
   // seharusnya useEffect sudah me-redirect. Kita cek lagi di sini.
   if (profile.is_approved === false && router.pathname !== '/awaiting-approval') {
-      return null;
+    return null;
   }
-  
+
   // Jika semua pemeriksaan lolos atau user berada di /awaiting-approval, lanjutkan rendering.
   return (
     <div className="flex min-h-screen bg-background text-foreground font-roboto">

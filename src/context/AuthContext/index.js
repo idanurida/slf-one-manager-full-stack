@@ -8,176 +8,339 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mobileMode, setMobileMode] = useState(false);
   const router = useRouter();
 
-  // 🚀 Fungsi fetch profile dengan auto-approve untuk existing users
+  // 🚀 Detect mobile on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      setMobileMode(isMobile);
+      console.log(`📱 Device: ${isMobile ? 'Mobile' : 'Desktop'}`, navigator.userAgent);
+    }
+  }, []);
+
+  // 🚀 OPTIMIZED: Fetch profile untuk mobile
   const fetchProfile = useCallback(async (userId) => {
     if (!userId) return null;
+
     try {
+      // ✅ OPTIMIZE 1: Minimal query - hanya field yang diperlukan
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, email, role, status, is_approved, full_name, company_name, specialization, phone_number, client_id")
         .eq("id", userId)
         .single();
-      if (error) throw error;
-      
-      // ✅ Check if email is verified first
-      const { data: authUser } = await supabase.auth.getUser();
-      if (authUser.user && !authUser.user.email_confirmed_at) {
-        console.log("📧 Email not verified yet");
-        await supabase.auth.signOut();
-        router.push('/awaiting-approval?reason=email-not-verified');
-        throw new Error('EMAIL_NOT_VERIFIED');
+
+      if (error) {
+        console.error("❌ Profile fetch error:", error.message);
+        // Return minimal data untuk mencegah crash
+        return { id: userId, status: 'error', email: 'unknown' };
       }
-      
-      // ✅ Check user approval status
-      // AUTO-APPROVE SEMUA EXISTING USERS (NULL values = legacy users)
-      const hasNullStatus = data.status === null || data.status === undefined;
-      const hasNullApproved = data.is_approved === null || data.is_approved === undefined;
-      const isExistingUser = hasNullStatus && hasNullApproved;
-      
-      // Existing users dengan NULL values dianggap approved
-      const isApproved = data.is_approved === true || 
-                        data.status === 'approved' || 
-                        isExistingUser;
-      
-      // Hanya new users dengan status eksplisit 'pending' yang ditolak
-      if (!isApproved) {
-        if (data.status === 'pending' || data.is_approved === false) {
-          console.log("⏳ New user account requires SuperAdmin approval");
-          await supabase.auth.signOut();
+
+      if (!data) {
+        console.warn("⚠️ No profile data found for user:", userId);
+        return null;
+      }
+
+      // ✅ OPTIMIZE 2: Skip heavy checks untuk mobile
+      if (mobileMode) {
+        console.log("📱 Mobile mode: Skipping heavy checks for speed");
+
+        // Cepat cek status utama saja
+        const status = data.status || 'pending';
+        const isApproved = data.is_approved === true;
+
+        // Critical status saja yang di-handle
+        if (status === 'suspended' || status === 'rejected') {
+          setTimeout(() => {
+            router.push(`/awaiting-approval?reason=${status}`);
+          }, 300);
+          return { ...data, blocked: true };
+        }
+
+        // Pending users (non-superadmin)
+        if (status === 'pending' && !isApproved && data.role !== 'superadmin') {
+          setTimeout(() => {
+            router.push('/awaiting-approval?reason=pending-approval');
+          }, 300);
+          return { ...data, pending: true };
+        }
+
+        // Approved users - langsung lanjut
+        setProfile(data);
+        return data;
+      }
+
+      // ✅ DESKTOP MODE: Full checks (termasuk email verification)
+      const { data: authUser, error: authError } = await supabase.auth.getUser();
+
+      if (authError) {
+        console.error("❌ Auth user error:", authError.message);
+      } else if (authUser.user && !authUser.user.email_confirmed_at) {
+        console.log("📧 Email not verified");
+        setTimeout(() => {
+          router.push('/awaiting-approval?reason=email-not-verified');
+        }, 300);
+        return { ...data, emailNotVerified: true };
+      }
+
+      // Desktop: Full status check
+      const status = data.status || 'pending';
+      const isApproved = data.is_approved === true;
+
+      if (status === 'suspended' || status === 'rejected') {
+        setTimeout(() => {
+          router.push(`/awaiting-approval?reason=${status}`);
+        }, 300);
+        return { ...data, blocked: true };
+      }
+
+      if (status === 'pending' && !isApproved && data.role !== 'superadmin') {
+        setTimeout(() => {
           router.push('/awaiting-approval?reason=pending-approval');
-          throw new Error('ACCOUNT_PENDING_APPROVAL');
-        }
+        }, 300);
+        return { ...data, pending: true };
       }
 
-      // ✅ Auto-update legacy users di database (optional)
-      if (isExistingUser) {
-        console.log("👴 Legacy user detected, updating database...");
-        try {
-          await supabase
-            .from('profiles')
-            .update({ 
-              status: 'approved', 
-              is_approved: true,
-              approved_at: new Date().toISOString()
-            })
-            .eq('id', userId);
-          
-          // Update local data
-          data.status = 'approved';
-          data.is_approved = true;
-          data.approved_at = new Date().toISOString();
-        } catch (updateError) {
-          console.log("⚠️ Could not update legacy user, but continuing:", updateError.message);
-        }
+      // Legacy users - background update
+      if ((data.status === null || data.is_approved === null) && !mobileMode) {
+        setTimeout(() => updateLegacyUser(userId), 10000); // 10 detik kemudian
       }
 
-      console.log("✅ User approved/legacy:", { 
-        email: data.email, 
-        role: data.role, 
-        status: data.status || 'legacy',
-        is_approved: data.is_approved || 'legacy',
-        isExistingUser: isExistingUser
-      });
-      
       setProfile(data);
       return data;
+
     } catch (err) {
       console.error("❌ Fetch profile failed:", err.message);
-      if (err.message.includes('ACCOUNT_') || err.message.includes('EMAIL_')) {
-        setUser(null);
-        setProfile(null);
-        throw err;
-      }
       return null;
     }
-  }, [router]);
+  }, [router, mobileMode]);
 
-  // 🔐 Auth init hanya sekali
+  // 🔄 Background task untuk legacy users (non-blocking)
+  const updateLegacyUser = async (userId) => {
+    try {
+      console.log("🔄 Background: Updating legacy user...");
+      await supabase
+        .from('profiles')
+        .update({
+          status: 'approved',
+          is_approved: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+      console.log("✅ Legacy user updated in background");
+    } catch (error) {
+      console.log("⚠️ Background update failed (non-critical):", error.message);
+    }
+  };
+
+  // 🔐 Optimized auth initialization dengan timeout
   useEffect(() => {
-    console.log("⚡ Fast AuthContext Init");
+    console.log("⚡ AuthContext Initializing - Mobile Optimized");
 
-    // Ambil session awal
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-      }
-      setLoading(false);
-    });
+    let mounted = true;
+    let initTimeout;
+    let authChangeTimeout;
 
-    // 🔄 Listener state login/logout
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log(`🔁 Auth Event: ${event}`);
-
-      if (event === "SIGNED_IN" && session?.user) {
-        setUser(session.user);
-        
-        try {
-          const data = await fetchProfile(session.user.id);
-          
-          // ✅ Hanya redirect jika profile berhasil di-fetch
-          if (data) {
-            const redirectPaths = {
-              admin_team: "/dashboard/admin-team",
-              admin_lead: "/dashboard/admin-lead",
-              head_consultant: "/dashboard/head-consultant",
-              superadmin: "/dashboard/superadmin",
-              project_lead: "/dashboard/project-lead",
-              inspector: "/dashboard/inspector",
-              client: "/dashboard/client",
-            };
-
-            const redirectPath = redirectPaths[data?.role] || "/dashboard";
-            if (router.pathname !== redirectPath) {
-              router.replace(redirectPath);
-            }
+    const initAuth = async () => {
+      try {
+        // Timeout safety untuk mobile
+        initTimeout = setTimeout(() => {
+          if (mounted) {
+            console.log("⚠️ Auth init timeout - forcing ready state");
+            setLoading(false);
           }
-        } catch (error) {
-          // Error sudah di-handle di fetchProfile dengan redirect
-          console.log("Auth state change error handled:", error.message);
+        }, 5000); // 5 detik timeout
+
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error("❌ Session error:", sessionError.message);
+          return;
+        }
+
+        if (mounted && session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error("❌ Auth init error:", error.message);
+      } finally {
+        if (mounted) {
+          clearTimeout(initTimeout);
+          setLoading(false);
+          console.log("✅ Auth initialization complete");
         }
       }
+    };
 
-      if (event === "SIGNED_OUT") {
-        setUser(null);
-        setProfile(null);
-        router.replace("/login");
-      }
+    initAuth();
+
+    // 🔄 Debounced auth state change (critical for mobile)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      clearTimeout(authChangeTimeout);
+
+      authChangeTimeout = setTimeout(async () => {
+        if (!mounted) return;
+
+        console.log(`🔁 Auth Event: ${event} (debounced)`);
+
+        if (event === "SIGNED_IN" && session?.user) {
+          setUser(session.user);
+
+          // 🚀 HYPER-OPTIMIZATION: Hydrate from metadata for instant UI feedback
+          if (session.user.user_metadata?.role && !profile) {
+            console.log("⚡ Hydrating profile from metadata for speed");
+            const meta = session.user.user_metadata;
+            // Set temporary profile based on metadata to unblock redirect
+            setProfile({
+              id: session.user.id,
+              email: session.user.email,
+              role: meta.role,
+              full_name: meta.full_name,
+              status: 'approved', // Optimistic assumption
+              is_approved: true // Optimistic assumption
+            });
+          }
+
+          try {
+            // Background validation (still runs to get real DB status)
+            const data = await fetchProfile(session.user.id);
+
+            if (data && !data.blocked && !data.pending && !data.emailNotVerified) {
+              // Redirect paths
+              const redirectPaths = {
+                superadmin: "/dashboard/superadmin",
+                admin_lead: "/dashboard/admin-lead",
+                admin_team: "/dashboard/admin-team",
+                head_consultant: "/dashboard/head-consultant",
+                project_lead: "/dashboard/project-lead",
+                inspector: "/dashboard/inspector",
+                client: "/dashboard/client",
+                drafter: "/dashboard/drafter",
+              };
+
+              const userRole = data.role || session.user.user_metadata?.role;
+              const redirectPath = redirectPaths[userRole] || "/dashboard";
+
+              // Cek jika perlu redirect
+              const currentPath = router.pathname;
+              const noRedirectPaths = [
+                '/login', '/register', '/awaiting-approval',
+                '/auth', '/forgot-password', '/reset-password'
+              ];
+
+              const shouldRedirect =
+                !noRedirectPaths.some(path => currentPath.startsWith(path)) &&
+                currentPath !== redirectPath;
+
+              if (shouldRedirect) {
+                console.log(`🔄 Redirecting to: ${redirectPath}`);
+                setTimeout(() => router.replace(redirectPath), 50); // Faster redirect
+              }
+            }
+          } catch (error) {
+            console.log("⚠️ Auth state error (non-critical):", error.message);
+          }
+        }
+
+        if (event === "SIGNED_OUT") {
+          setUser(null);
+          setProfile(null);
+
+          // Jangan redirect jika sudah di login page
+          if (!router.pathname.startsWith('/login') &&
+            !router.pathname.startsWith('/awaiting-approval')) {
+            console.log("🔄 Redirecting to login after signout");
+            setTimeout(() => router.replace("/login"), 100);
+          }
+        }
+      }, mobileMode ? 50 : 50); // Aggressive debounce for responsiveness
     });
 
     return () => {
+      mounted = false;
+      clearTimeout(initTimeout);
+      clearTimeout(authChangeTimeout);
       subscription.unsubscribe();
-      console.log("🧹 AuthContext listener cleaned up");
+      console.log("🧹 AuthContext cleanup");
     };
-  }, [fetchProfile, router]);
+  }, [fetchProfile, router, mobileMode]);
 
+  // 🔑 Login function dengan mobile optimization
   const login = useCallback(async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Pre-check untuk mobile
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new Error('📶 Tidak ada koneksi internet. Coba WiFi.');
+    }
+
+    // Mobile timeout protection
+    const loginPromise = supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
     });
-    if (error) throw error;
-    return data.user;
+
+    // Timeout untuk mobile network - increased to 30 seconds
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('⏱️ Waktu login habis. Silakan cek koneksi internet dan coba lagi.')), 30000)
+    );
+
+    try {
+      const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
+
+      if (error) {
+        // Mobile-friendly errors
+        const errorMessages = {
+          'Invalid login credentials': '❌ Email atau password salah',
+          'Email not confirmed': '📧 Email belum diverifikasi. Cek inbox Anda.',
+          'Too many requests': '🔄 Terlalu banyak percobaan. Coba lagi nanti.',
+          'Network error': '📶 Koneksi bermasalah. Coba WiFi atau refresh.',
+          'Auth session missing': '🔐 Sesi habis, silakan login ulang.',
+        };
+
+        throw new Error(errorMessages[error.message] || `❌ Login gagal: ${error.message}`);
+      }
+
+      // Return success object
+      console.log('✅ [AuthContext] Login successful');
+      return { success: true, user: data.user };
+
+    } catch (err) {
+      console.error("❌ Login error:", err.message);
+      return { success: false, error: err.message };
+    }
   }, []);
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+      console.log("✅ Logout successful");
+    } catch (error) {
+      console.error("❌ Logout error:", error.message);
+    }
   }, []);
 
+  // 📊 Context value dengan optimizations
   const value = {
+    // State
     user,
     profile,
     loading,
+    isMobile: mobileMode,
+
+    // Methods
     login,
     logout,
+
+    // Status checks
     isAuthenticated: !!user,
-    userRole: profile?.role || null,
-    
-    // 🔴 TAMBAHKAN INI untuk dashboard superadmin
+    isApproved: profile?.status === 'approved' || profile?.is_approved === true,
+    isPending: profile?.status === 'pending',
+    isSuspended: profile?.status === 'suspended',
+    isRejected: profile?.status === 'rejected',
+
+    // Role helpers
     isSuperadmin: profile?.role === 'superadmin',
     isAdminLead: profile?.role === 'admin_lead',
     isAdminTeam: profile?.role === 'admin_team',
@@ -185,13 +348,24 @@ export const AuthProvider = ({ children }) => {
     isProjectLead: profile?.role === 'project_lead',
     isInspector: profile?.role === 'inspector',
     isClient: profile?.role === 'client',
-    
-    // Status checkers
-    isApproved: profile?.is_approved === true,
-    isPending: profile?.status === 'pending',
+    isDrafter: profile?.role === 'drafter',
+
+    // Mobile helpers
+    hasRole: (role) => profile?.role === role,
+    hasAnyRole: (roles) => roles.includes(profile?.role),
+    getUserRole: () => profile?.role,
+    getUserEmail: () => user?.email || profile?.email,
+    getFullName: () => profile?.full_name,
+    getUserId: () => user?.id,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("❌ useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

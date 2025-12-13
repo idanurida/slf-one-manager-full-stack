@@ -86,8 +86,8 @@ const getStatusLabel = (status) => {
 const StatCard = ({ label, value, icon: Icon, color, helpText, loading, trend, onClick }) => (
   <TooltipProvider>
     <div>
-      <Card 
-        className={`cursor-pointer hover:shadow-md transition-shadow ${onClick ? 'hover:border-primary/50' : ''}`} 
+      <Card
+        className={`cursor-pointer hover:shadow-md transition-shadow ${onClick ? 'hover:border-primary/50' : ''}`}
         onClick={onClick}
       >
         <CardContent className="p-4">
@@ -98,9 +98,9 @@ const StatCard = ({ label, value, icon: Icon, color, helpText, loading, trend, o
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                <p className="text-2xl font-bold">
+                <div className="text-2xl font-bold">
                   {loading ? <Skeleton className="h-8 w-12" /> : value}
-                </p>
+                </div>
               </div>
             </div>
             {trend !== undefined && (
@@ -149,9 +149,8 @@ const ScheduleCard = ({ schedule, onEdit, onDelete, loading }) => {
   const isToday = new Date(schedule.schedule_date).toDateString() === new Date().toDateString();
 
   return (
-    <Card className={`border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-shadow ${
-      isToday ? 'ring-2 ring-yellow-400' : ''
-    }`}>
+    <Card className={`border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-shadow ${isToday ? 'ring-2 ring-yellow-400' : ''
+      }`}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
@@ -172,25 +171,25 @@ const ScheduleCard = ({ schedule, onEdit, onDelete, loading }) => {
                   </Badge>
                 </div>
               </div>
-              
+
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 flex items-center">
                 <Clock className="w-3 h-3 mr-1" />
                 {formatScheduleDate(schedule.schedule_date)}
               </p>
-              
+
               {schedule.location && (
                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 flex items-center">
                   <MapPin className="w-3 h-3 mr-1" />
                   {schedule.location}
                 </p>
               )}
-              
+
               {schedule.description && (
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
                   {schedule.description}
                 </p>
               )}
-              
+
               <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center space-x-2">
                   <Building className="w-3 h-3 text-slate-400" />
@@ -298,7 +297,7 @@ export default function AdminLeadSchedulesPage() {
 
       // Hitung stats
       const totalSchedules = schedulesData?.length || 0;
-      const upcomingSchedules = schedulesData?.filter(s => 
+      const upcomingSchedules = schedulesData?.filter(s =>
         new Date(s.schedule_date) > new Date() && s.status !== 'completed'
       ).length || 0;
       const completedSchedules = schedulesData?.filter(s => s.status === 'completed').length || 0;
@@ -343,10 +342,10 @@ export default function AdminLeadSchedulesPage() {
   // Filter schedules berdasarkan tab dan filter
   const filteredSchedules = schedules.filter(schedule => {
     const matchesSearch = schedule.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         schedule.projects?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      schedule.projects?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === 'all' || schedule.schedule_type === typeFilter;
     const matchesStatus = statusFilter === 'all' || schedule.status === statusFilter;
-    
+
     let matchesDate = true;
     if (dateFilter === 'today') {
       matchesDate = new Date(schedule.schedule_date).toDateString() === new Date().toDateString();
@@ -421,7 +420,7 @@ export default function AdminLeadSchedulesPage() {
 
   const handleSubmitSchedule = async (e) => {
     e.preventDefault();
-    
+
     try {
       const scheduleData = {
         ...formData,
@@ -627,7 +626,7 @@ export default function AdminLeadSchedulesPage() {
                 <TabsTrigger value="completed">Selesai</TabsTrigger>
                 <TabsTrigger value="all">Semua Jadwal</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="upcoming" className="mt-4">
                 <div className="grid grid-cols-1 gap-4">
                   {filteredSchedules.map((schedule) => (
@@ -715,7 +714,7 @@ export default function AdminLeadSchedulesPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="col-span-2">
                     <Label htmlFor="title" className="text-slate-700 dark:text-slate-300">Judul</Label>
                     <Input
@@ -725,7 +724,7 @@ export default function AdminLeadSchedulesPage() {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="schedule_type" className="text-slate-700 dark:text-slate-300">Tipe</Label>
                     <Select value={formData.schedule_type} onValueChange={(v) => setFormData(prev => ({ ...prev, schedule_type: v }))}>
@@ -740,7 +739,7 @@ export default function AdminLeadSchedulesPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="status" className="text-slate-700 dark:text-slate-300">Status</Label>
                     <Select value={formData.status} onValueChange={(v) => setFormData(prev => ({ ...prev, status: v }))}>
@@ -755,7 +754,7 @@ export default function AdminLeadSchedulesPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="col-span-2">
                     <Label htmlFor="schedule_date" className="text-slate-700 dark:text-slate-300">Tanggal & Waktu</Label>
                     <Input
@@ -766,7 +765,7 @@ export default function AdminLeadSchedulesPage() {
                       required
                     />
                   </div>
-                  
+
                   <div className="col-span-2">
                     <Label htmlFor="location" className="text-slate-700 dark:text-slate-300">Lokasi</Label>
                     <Input
@@ -776,7 +775,7 @@ export default function AdminLeadSchedulesPage() {
                       placeholder="Lokasi meeting/inspeksi"
                     />
                   </div>
-                  
+
                   <div className="col-span-2">
                     <Label htmlFor="assigned_to" className="text-slate-700 dark:text-slate-300">Ditugaskan Kepada</Label>
                     <Select value={formData.assigned_to} onValueChange={(v) => setFormData(prev => ({ ...prev, assigned_to: v }))}>
@@ -792,7 +791,7 @@ export default function AdminLeadSchedulesPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="col-span-2">
                     <Label htmlFor="description" className="text-slate-700 dark:text-slate-300">Deskripsi</Label>
                     <Textarea

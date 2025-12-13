@@ -659,7 +659,7 @@ export default function TeamLeaderTimelinePage() {
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column: Project List */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1 space-y-6 min-w-0">
               <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -714,7 +714,7 @@ export default function TeamLeaderTimelinePage() {
             </div>
 
             {/* Right Column: Timeline & Team Management */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-6 min-w-0">
               <Tabs defaultValue="timeline" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="timeline">Timeline Proyek</TabsTrigger>

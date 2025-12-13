@@ -648,23 +648,34 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
 
   // Ambil checklist items berdasarkan spesialisasi inspector (exclude administrative - handled by admin_team)
   useEffect(() => {
-    if (!profile?.specialization) return;
+    console.log('[Checklist] Profile specialization:', profile?.specialization);
+
+    if (!profile?.specialization) {
+      console.warn('[Checklist] No specialization found in profile');
+      return;
+    }
 
     // Dapatkan template yang sesuai dengan spesialisasi inspector
+    console.log(`[Checklist] Getting templates for specialization: ${profile.specialization}`);
     const specializationTemplates = getChecklistsBySpecialization(profile.specialization, 'baru');
+    console.log(`[Checklist] Found ${specializationTemplates.length} templates`);
 
     // Flatten items dari template yang sesuai (exclude administrative)
     const items = flattenChecklistItems(specializationTemplates)
       .filter(item => item.category !== 'administrative');
 
+    console.log(`[Checklist] Flattened to ${items.length} items (excluding administrative)`);
+
     setAllChecklistItems(items);
 
     // Set default category berdasarkan spesialisasi
     const defaultCategory = items.length > 0 ? items[0].category : 'keandalan';
+    console.log(`[Checklist] Default category: ${defaultCategory}`);
+
     setSelectedCategory(defaultCategory);
     setFilteredItems(items.filter(item => item.category === defaultCategory));
 
-    console.log(`[Checklist] Loaded ${items.length} items for specialization: ${profile.specialization}`);
+    console.log(`[Checklist] ✅ Loaded ${items.length} items for specialization: ${profile.specialization}`);
   }, [profile?.specialization]);
 
   // Ambil data user & inspeksi dengan filter inspectionId
@@ -980,6 +991,18 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Warning if no specialization */}
+        {!profile?.specialization && (
+          <Alert variant="destructive" className="bg-red-50 border-red-200">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <AlertTitle className="text-red-800">Spesialisasi Belum Diatur</AlertTitle>
+            <AlertDescription className="text-red-700">
+              Akun Anda belum memiliki spesialisasi (Struktur/Arsitektur/MEP).
+              Checklist tidak dapat dimuat. Silakan hubungi Administrator untuk update profil Anda.
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Checklist SIMAK */}

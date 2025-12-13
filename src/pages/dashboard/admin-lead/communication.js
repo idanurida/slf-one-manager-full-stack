@@ -67,8 +67,8 @@ export const getStatusLabel = (status) => {
 const StatCard = ({ label, value, icon: Icon, color, helpText, loading, trend, onClick }) => (
   <TooltipProvider>
     <div>
-      <Card 
-        className={`cursor-pointer hover:shadow-md transition-shadow ${onClick ? 'hover:border-primary/50' : ''}`} 
+      <Card
+        className={`cursor-pointer hover:shadow-md transition-shadow ${onClick ? 'hover:border-primary/50' : ''}`}
         onClick={onClick}
       >
         <CardContent className="p-4">
@@ -139,18 +139,16 @@ const MessageThread = ({ messages, onSendMessage, loading, currentUser }) => {
           ) : (
             messages.map((message) => (
               <div key={message.id} className={`flex ${message.sender_id === currentUser.id ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  message.sender_id === currentUser.id 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
-                }`}>
-                  <p className="text-sm">{message.content}</p>
-                  <p className={`text-xs mt-1 ${
-                    message.sender_id === currentUser.id ? 'text-blue-100' : 'text-slate-500'
+                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.sender_id === currentUser.id
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
                   }`}>
-                    {new Date(message.created_at).toLocaleTimeString('id-ID', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
+                  <p className="text-sm">{message.message}</p>
+                  <p className={`text-xs mt-1 ${message.sender_id === currentUser.id ? 'text-blue-100' : 'text-slate-500'
+                    }`}>
+                    {new Date(message.created_at).toLocaleTimeString('id-ID', {
+                      hour: '2-digit',
+                      minute: '2-digit'
                     })}
                   </p>
                 </div>
@@ -158,7 +156,7 @@ const MessageThread = ({ messages, onSendMessage, loading, currentUser }) => {
             ))
           )}
         </div>
-        
+
         <div className="flex space-x-2">
           <Textarea
             value={newMessage}
@@ -222,19 +220,19 @@ const ClientCommunicationCard = ({ project, client, unreadCount, lastMessage, on
                 <User className="w-3 h-3 mr-1" />
                 {client?.name || 'Client'}
               </p>
-              
+
               {lastMessage && (
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 truncate">
-                  {lastMessage.content}
+                  {lastMessage.message}
                 </p>
               )}
-              
+
               <div className="flex items-center space-x-2 mt-2">
                 <Badge className={getStatusColor(project.status)}>
                   {getStatusLabel(project.status)}
                 </Badge>
                 <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {lastMessage 
+                  {lastMessage
                     ? new Date(lastMessage.created_at).toLocaleDateString('id-ID')
                     : new Date(project.created_at).toLocaleDateString('id-ID')
                   }
@@ -329,12 +327,12 @@ export default function AdminLeadCommunicationPage() {
       }
 
       // 5. Hitung unread messages
-      const unreadMessagesCount = messagesData?.filter(msg => 
+      const unreadMessagesCount = messagesData?.filter(msg =>
         msg.recipient_id === user.id && !msg.is_read
       ).length || 0;
 
       // 6. Hitung unread notifications
-      const unreadNotificationsCount = notificationsData?.filter(notif => 
+      const unreadNotificationsCount = notificationsData?.filter(notif =>
         !notif.is_read
       ).length || 0;
 
@@ -407,11 +405,9 @@ export default function AdminLeadCommunicationPage() {
       const { error } = await supabase
         .from('messages')
         .insert([{
-          content,
+          message: content,
           project_id: projectId,
           sender_id: user.id,
-          recipient_id: recipientId,
-          is_read: false
         }]);
 
       if (error) throw error;
@@ -452,7 +448,7 @@ export default function AdminLeadCommunicationPage() {
           toast.error('Email client tidak tersedia');
         }
         break;
-      
+
       case 'whatsapp':
         if (client?.phone) {
           const message = `Halo, ini update untuk proyek *${project.name}*. Status saat ini: *${getStatusLabel(project.status)}*. Ada yang bisa saya bantu?`;
@@ -461,11 +457,11 @@ export default function AdminLeadCommunicationPage() {
           toast.error('Nomor WhatsApp client tidak tersedia');
         }
         break;
-      
+
       case 'meeting':
         router.push(`/dashboard/admin-lead/schedules?project=${project.id}&client=${client.id}`);
         break;
-      
+
       default:
         break;
     }
@@ -483,7 +479,7 @@ export default function AdminLeadCommunicationPage() {
   // Filter projects
   const filteredProjects = projects.filter(p => {
     const matchesSearch = p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          p.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      p.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
     const matchesClient = clientFilter === 'all' || p.client_id === clientFilter;
 
@@ -492,15 +488,15 @@ export default function AdminLeadCommunicationPage() {
 
   // ✅ PERBAIKAN: Group messages by project and client
   const getProjectMessages = (projectId, clientId) => {
-    return messages.filter(msg => 
-      msg.project_id === projectId && 
+    return messages.filter(msg =>
+      msg.project_id === projectId &&
       (msg.sender_id === user.id || msg.recipient_id === user.id)
     );
   };
 
   // Get unread count for project-client thread
   const getUnreadCount = (projectId, clientId) => {
-    return messages.filter(msg => 
+    return messages.filter(msg =>
       msg.project_id === projectId &&
       msg.recipient_id === user.id &&
       !msg.is_read

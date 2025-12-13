@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from 'next-themes';
 
@@ -16,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { AlertTriangle, Loader2, Eye, EyeOff, Moon, Sun, LogIn } from 'lucide-react';
 
 export default function LoginPage() {
+  const router = useRouter();
   const { login, loading: authLoading, user, profile } = useAuth();
   const { theme, setTheme } = useTheme();
 
@@ -28,34 +30,34 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [uiReady, setUiReady] = useState(false);
 
-  // âœ… OPTIMIZED: Show UI immediately, don't wait for auth
+  // ✅ OPTIMIZED: Show UI immediately, don't wait for auth
   useEffect(() => {
     const timer = setTimeout(() => {
       setUiReady(true);
     }, 300); // Show UI after 300ms regardless of auth status
-    
+
     return () => clearTimeout(timer);
   }, []);
 
-  // âœ… OPTIMIZED: Redirect jika sudah login
+  // ✅ OPTIMIZED: Redirect jika sudah login
   useEffect(() => {
     if (user && profile) {
-      console.log("âœ… Already logged in, redirecting...");
+      console.log("✅ Already logged in, redirecting...");
       const redirectPaths = {
         'admin_team': '/dashboard/admin-team',
         'admin_lead': '/dashboard/admin-lead',
-        'head_consultant': '/dashboard/head-consultant', 
+        'head_consultant': '/dashboard/head-consultant',
         'superadmin': '/dashboard/superadmin',
         'project_lead': '/dashboard/project-lead',
         'inspector': '/dashboard/inspector',
         // 'drafter': '/dashboard/drafter', // DISABLED
         'client': '/dashboard/client'
       };
-      
+
       const redirectPath = redirectPaths[profile.role] || '/dashboard';
-      window.location.href = redirectPath;
+      router.replace(redirectPath);
     }
-  }, [user, profile]);
+  }, [user, profile, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,17 +72,17 @@ export default function LoginPage() {
 
     try {
       const result = await login(formData.email, formData.password);
-      
-      if (!result.success) {
-        throw new Error(result.error);
+
+      if (!result || !result.success) {
+        throw new Error(result?.error || 'Login gagal. Silakan coba lagi.');
       }
-      
-      console.log("âœ… Login successful, redirect will happen automatically");
-      
+
+      console.log("✅ Login successful, redirect will happen automatically");
+
     } catch (err) {
       console.error("Login error:", err);
-      
-      // âœ… Handle specific authentication errors
+
+      // ✅ Handle specific authentication errors
       if (err.message === 'EMAIL_NOT_VERIFIED') {
         setError('Email Anda belum diverifikasi. Silakan cek email dan klik link konfirmasi sebelum login.');
       } else if (err.message === 'ACCOUNT_PENDING_APPROVAL') {
@@ -92,7 +94,7 @@ export default function LoginPage() {
       } else {
         setError(err.message || 'Gagal masuk. Silakan coba lagi.');
       }
-      
+
       setLoading(false);
     }
   };
@@ -155,9 +157,9 @@ export default function LoginPage() {
             <CardHeader className="text-center space-y-4 pb-4">
               {/* Logo inside form */}
               <div className="flex justify-center">
-                <img 
-                  src="/leaflet/images/logo-puri-dimensi.png" 
-                  alt="PT. Puri Dimensi" 
+                <img
+                  src="/leaflet/images/logo-puri-dimensi.png"
+                  alt="PT. Puri Dimensi"
                   className="h-20 md:h-16 w-auto object-contain dark:brightness-110 dark:contrast-110"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -176,7 +178,7 @@ export default function LoginPage() {
                 <p className="text-sm text-muted-foreground mt-1">Gunakan kredensial perusahaan Anda</p>
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               {error && (
                 <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
@@ -188,9 +190,9 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Alamat Email</Label>
-                  <Input 
+                  <Input
                     id="email"
-                    type="email" 
+                    type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
@@ -199,19 +201,19 @@ export default function LoginPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Kata Sandi</Label>
-                    <Link 
-                      href="/forgot-password" 
+                    <Link
+                      href="/forgot-password"
                       className="text-xs text-primary hover:underline"
                     >
                       Lupa password?
                     </Link>
                   </div>
                   <div className="relative">
-                    <Input 
+                    <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       name="password"
@@ -234,8 +236,8 @@ export default function LoginPage() {
                     </Button>
                   </div>
                 </div>
-                
-                <Button 
+
+                <Button
                   type="submit"
                   disabled={loading || !formData.email || !formData.password}
                   className="w-full mt-2"
@@ -254,7 +256,7 @@ export default function LoginPage() {
                   )}
                 </Button>
               </form>
-              
+
               {/* Register Link */}
               <div className="pt-4 border-t text-center">
                 <p className="text-sm text-muted-foreground">

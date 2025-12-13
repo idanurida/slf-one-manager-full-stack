@@ -1,4 +1,5 @@
-﻿"use client";
+﻿// FILE: src/pages/register.js
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -15,10 +16,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Lucide Icons
-import { 
-  AlertTriangle, Loader2, Moon, Sun, Eye, EyeOff, 
-  UserPlus, CheckCircle2, ArrowLeft, Building2, Phone 
+import {
+  AlertTriangle, Loader2, Moon, Sun, Eye, EyeOff,
+  UserPlus, CheckCircle2, ArrowLeft, Building2, Phone
 } from 'lucide-react';
+
+// Constants - Import from shared file
+import {
+  AVAILABLE_ROLES,
+  INSPECTOR_SPECIALIZATIONS
+} from '@/constants/userRoles';
 
 // Password strength checker
 const checkPasswordStrength = (password) => {
@@ -28,9 +35,9 @@ const checkPasswordStrength = (password) => {
     lowercase: /[a-z]/.test(password),
     number: /[0-9]/.test(password),
   };
-  
+
   const score = Object.values(checks).filter(Boolean).length;
-  
+
   return {
     checks,
     score,
@@ -39,63 +46,43 @@ const checkPasswordStrength = (password) => {
   };
 };
 
-// Available roles for registration
-const AVAILABLE_ROLES = [
-  { value: 'client', label: 'Klien', description: 'Pemilik proyek' },
-  { value: 'head_consultant', label: 'Head Consultant', description: 'Kepala konsultan' },
-  { value: 'admin_lead', label: 'Admin Lead', description: 'Pimpinan administrasi' },
-  { value: 'admin_team', label: 'Admin Team', description: 'Tim administrasi' },
-  { value: 'project_lead', label: 'Team Leader', description: 'Pimpinan tim proyek' },
-  { value: 'inspector', label: 'Inspector', description: 'Melakukan inspeksi lapangan' },
-  { value: 'drafter', label: 'Drafter', description: 'Membuat dokumen teknis' },
-];
-
-// Inspector specializations (3 categories only)
-const INSPECTOR_SPECIALIZATIONS = [
-  { value: 'architectural', label: 'Arsitektur' },
-  { value: 'structural', label: 'Struktur' },
-  { value: 'mep', label: 'MEP (Mekanikal, Elektrikal, Plumbing)' },
-];
-
 export default function RegisterPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  
+
   const [formData, setFormData] = useState({
-    fullName: '',
+    full_name: '', // ← UBAH: fullName → full_name (snake_case)
     email: '',
     password: '',
     confirmPassword: '',
-    phone: '',
-    company: '',
+    phone_number: '', // ← UBAH: phone → phone_number
+    company_name: '', // ← UBAH: company → company_name
     role: '',
-    specialization: '', // For inspector only
+    specialization: '',
   });
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [step, setStep] = useState(1); // 2-step registration
-  const [redirecting, setRedirecting] = useState(false); // ✅ Track redirect state
+  const [step, setStep] = useState(1);
+  const [redirecting, setRedirecting] = useState(false);
 
   const passwordStrength = checkPasswordStrength(formData.password);
   const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword !== '';
 
-  // ✅ FIXED: Prevent AuthProvider conflicts during success state
   useEffect(() => {
     if (success) {
       setRedirecting(true);
-      // Disable any auth state changes during redirect
       console.log('📝 Registration success - preparing redirect');
     }
   }, [success]);
 
   // Validation for step 1
-  const isStep1Valid = formData.fullName && formData.email && formData.role && 
-    (formData.role !== 'inspector' || formData.specialization); // Inspector must have specialization
-  
+  const isStep1Valid = formData.full_name && formData.email && formData.role &&
+    (formData.role !== 'inspector' || formData.specialization);
+
   // Validation for step 2
   const isStep2Valid = formData.password && formData.confirmPassword && passwordsMatch && formData.password.length >= 8;
 
@@ -108,7 +95,6 @@ export default function RegisterPage() {
   const handleSelectChange = (name, value) => {
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
-      // Reset specialization if role changes to non-inspector
       if (name === 'role' && value !== 'inspector') {
         newData.specialization = '';
       }
@@ -119,7 +105,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (step === 1) {
       if (!isStep1Valid) {
         setError('Silakan lengkapi semua field yang wajib diisi');
@@ -140,63 +126,74 @@ export default function RegisterPage() {
     }
 
     try {
+      console.log('📝 Starting registration for:', formData.email);
+
       // 1. Register user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
         options: {
           data: {
-            full_name: formData.fullName,
+            full_name: formData.full_name, // ← Kirim ke auth metadata
             role: formData.role,
           }
         }
       });
 
       if (authError) {
+        console.error('❌ Auth error:', authError);
         throw authError;
       }
 
-      // 2. If user created, also create profile with pending status
+      // 2. If user created, also create profile with correct field names
       if (authData.user) {
         const profileData = {
           id: authData.user.id,
           email: formData.email.trim().toLowerCase(),
-          full_name: formData.fullName,
-          phone_number: formData.phone || null,
-          company_name: formData.company || null,
+          full_name: formData.full_name, // ← SNAKE_CASE sesuai database
+          phone_number: formData.phone_number || null, // ← SNAKE_CASE
+          company_name: formData.company_name || null, // ← SNAKE_CASE
           role: formData.role,
-          status: 'pending', // ✅ Set status as pending for approval
-          is_approved: false, // ✅ Not approved yet
+          status: 'pending',
+          is_approved: false,
           created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         };
-        
+
         // Add specialization for inspector
         if (formData.role === 'inspector' && formData.specialization) {
           profileData.specialization = formData.specialization;
         }
 
-        const { error: profileError } = await supabase
+        console.log('💾 Profile data to save:', profileData);
+
+        const { data: savedProfile, error: profileError } = await supabase
           .from('profiles')
-          .upsert(profileData, { onConflict: 'id' });
+          .upsert(profileData)
+          .select()
+          .single();
 
         if (profileError) {
-          console.error('[Register] Profile creation error:', profileError);
+          console.error('❌ Profile creation error:', profileError);
+          throw profileError;
         }
+
+        console.log('✅ Profile saved:', savedProfile);
       }
 
-      // ✅ FIXED: Sign out user immediately to prevent AuthProvider redirect conflict
+      // ✅ Sign out user immediately
       await supabase.auth.signOut();
-      
+
       setSuccess(true);
       setError('');
-      
-      // ✅ FIXED: Use router.replace to prevent back button issues and reduce flickering
+
+      // Redirect to login
       setTimeout(() => {
         router.replace('/login');
       }, 3000);
     } catch (err) {
       console.error('[Register] Error:', err);
-      
+
       let userMessage = 'Registrasi gagal';
       if (err.message.includes('already registered') || err.message.includes('already exists')) {
         userMessage = 'Email sudah terdaftar. Silakan gunakan email lain atau login.';
@@ -205,7 +202,7 @@ export default function RegisterPage() {
       } else if (err.message.includes('Invalid email')) {
         userMessage = 'Format email tidak valid';
       }
-      
+
       setError(userMessage);
     } finally {
       setLoading(false);
@@ -235,11 +232,11 @@ export default function RegisterPage() {
         <div className="w-full max-w-md">
           <Card className="border-border shadow-lg">
             <CardHeader className="text-center space-y-4 pb-4">
-              {/* Logo inside form */}
+              {/* Logo */}
               <div className="flex justify-center">
-                <img 
-                  src="/leaflet/images/logo-puri-dimensi.png" 
-                  alt="PT. Puri Dimensi" 
+                <img
+                  src="/leaflet/images/logo-puri-dimensi.png"
+                  alt="PT. Puri Dimensi"
                   className="h-20 md:h-16 w-auto object-contain dark:brightness-110 dark:contrast-110"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -259,14 +256,14 @@ export default function RegisterPage() {
                   {step === 1 ? 'Langkah 1: Informasi Dasar' : 'Langkah 2: Buat Password'}
                 </CardDescription>
               </div>
-              
+
               {/* Progress Indicator */}
               <div className="flex justify-center gap-2">
                 <div className={`h-2 w-16 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`} />
                 <div className={`h-2 w-16 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               {success ? (
                 <div className="space-y-4">
@@ -283,7 +280,7 @@ export default function RegisterPage() {
                       </div>
                     </AlertDescription>
                   </Alert>
-                  
+
                   <div className="flex justify-center">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
@@ -305,11 +302,11 @@ export default function RegisterPage() {
                       <>
                         {/* Full Name */}
                         <div className="space-y-2">
-                          <Label htmlFor="fullName">Nama Lengkap *</Label>
-                          <Input 
-                            id="fullName"
-                            name="fullName"
-                            value={formData.fullName}
+                          <Label htmlFor="full_name">Nama Lengkap *</Label> {/* ← UBAH ID */}
+                          <Input
+                            id="full_name"
+                            name="full_name"
+                            value={formData.full_name}
                             onChange={handleChange}
                             placeholder="Masukkan nama lengkap"
                             disabled={loading}
@@ -320,7 +317,7 @@ export default function RegisterPage() {
                         {/* Email */}
                         <div className="space-y-2">
                           <Label htmlFor="email">Email *</Label>
-                          <Input 
+                          <Input
                             id="email"
                             type="email"
                             name="email"
@@ -348,16 +345,12 @@ export default function RegisterPage() {
                                 <SelectItem key={role.value} value={role.value}>
                                   <div className="flex flex-col">
                                     <span>{role.label}</span>
+                                    <span className="text-xs text-muted-foreground">{role.description}</span>
                                   </div>
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          {formData.role && (
-                            <p className="text-xs text-muted-foreground">
-                              {AVAILABLE_ROLES.find(r => r.value === formData.role)?.description}
-                            </p>
-                          )}
                         </div>
 
                         {/* Specialization - Only for Inspector */}
@@ -385,13 +378,13 @@ export default function RegisterPage() {
 
                         {/* Phone (Optional) */}
                         <div className="space-y-2">
-                          <Label htmlFor="phone">Nomor Telepon</Label>
+                          <Label htmlFor="phone_number">Nomor Telepon</Label> {/* ← UBAH ID */}
                           <div className="relative">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              id="phone"
-                              name="phone"
-                              value={formData.phone}
+                            <Input
+                              id="phone_number"
+                              name="phone_number"
+                              value={formData.phone_number}
                               onChange={handleChange}
                               placeholder="08xxxxxxxxxx"
                               className="pl-10"
@@ -402,13 +395,13 @@ export default function RegisterPage() {
 
                         {/* Company (Optional) */}
                         <div className="space-y-2">
-                          <Label htmlFor="company">Nama Perusahaan</Label>
+                          <Label htmlFor="company_name">Nama Perusahaan</Label> {/* ← UBAH ID */}
                           <div className="relative">
                             <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              id="company"
-                              name="company"
-                              value={formData.company}
+                            <Input
+                              id="company_name"
+                              name="company_name"
+                              value={formData.company_name}
                               onChange={handleChange}
                               placeholder="PT. Nama Perusahaan"
                               className="pl-10"
@@ -417,7 +410,7 @@ export default function RegisterPage() {
                           </div>
                         </div>
 
-                        <Button 
+                        <Button
                           type="submit"
                           disabled={!isStep1Valid}
                           className="w-full"
@@ -429,7 +422,7 @@ export default function RegisterPage() {
                     ) : (
                       <>
                         {/* Back Button */}
-                        <Button 
+                        <Button
                           type="button"
                           variant="ghost"
                           onClick={() => setStep(1)}
@@ -444,7 +437,7 @@ export default function RegisterPage() {
                         <div className="space-y-2">
                           <Label htmlFor="password">Password *</Label>
                           <div className="relative">
-                            <Input 
+                            <Input
                               id="password"
                               type={showPassword ? "text" : "password"}
                               name="password"
@@ -466,7 +459,7 @@ export default function RegisterPage() {
                               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                           </div>
-                          
+
                           {/* Password Strength */}
                           {formData.password && (
                             <div className="space-y-2">
@@ -478,15 +471,14 @@ export default function RegisterPage() {
                                 {[1, 2, 3, 4].map((i) => (
                                   <div
                                     key={i}
-                                    className={`h-1 rounded ${
-                                      i <= passwordStrength.score
-                                        ? passwordStrength.score <= 1
-                                          ? 'bg-red-500'
-                                          : passwordStrength.score <= 2
+                                    className={`h-1 rounded ${i <= passwordStrength.score
+                                      ? passwordStrength.score <= 1
+                                        ? 'bg-red-500'
+                                        : passwordStrength.score <= 2
                                           ? 'bg-yellow-500'
                                           : 'bg-green-500'
-                                        : 'bg-muted'
-                                    }`}
+                                      : 'bg-muted'
+                                      }`}
                                   />
                                 ))}
                               </div>
@@ -498,7 +490,7 @@ export default function RegisterPage() {
                         <div className="space-y-2">
                           <Label htmlFor="confirmPassword">Konfirmasi Password *</Label>
                           <div className="relative">
-                            <Input 
+                            <Input
                               id="confirmPassword"
                               type={showConfirmPassword ? "text" : "password"}
                               name="confirmPassword"
@@ -526,8 +518,8 @@ export default function RegisterPage() {
                             </p>
                           )}
                         </div>
-                        
-                        <Button 
+
+                        <Button
                           type="submit"
                           disabled={loading || !isStep2Valid}
                           className="w-full"

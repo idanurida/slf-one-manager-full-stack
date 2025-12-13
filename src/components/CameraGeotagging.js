@@ -9,8 +9,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Camera, MapPin, Trash2, RefreshCw, 
+import {
+  Camera, MapPin, Trash2, RefreshCw,
   Loader2, AlertTriangle, Upload, Building, ImagePlus, X, Video
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -20,7 +20,7 @@ import { useAuth } from '@/context/AuthContext';
 // Dynamic import untuk Leaflet (SSR fix)
 const MapWithNoSSR = dynamic(
   () => import('./MapComponent'),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded flex items-center justify-center">
@@ -30,10 +30,10 @@ const MapWithNoSSR = dynamic(
   }
 );
 
-const CameraGeotagging = ({ 
-  onCapture, 
+const CameraGeotagging = ({
+  onCapture,
   onSave,
-  initialPhoto = null, 
+  initialPhoto = null,
   initialLocation = null,
   inspectionId,
   checklistItemId,
@@ -44,7 +44,7 @@ const CameraGeotagging = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   // Photo & Location states
   const [photo, setPhoto] = useState(initialPhoto);
   const [location, setLocation] = useState(initialLocation);
@@ -53,316 +53,52 @@ const CameraGeotagging = ({
   const [error, setError] = useState('');
   const [caption, setCaption] = useState('');
   const [floorInfo, setFloorInfo] = useState('');
-  
+
   // Camera states
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [stream, setStream] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // Refs
   const fileInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Detect mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-      setIsMobile(isMobileDevice);
-    };
-    checkMobile();
-  }, []);
-
-  // Get location on mount
-  useEffect(() => {
-    if (initialLocation) {
-      setLocation(initialLocation);
-    } else {
-      getCurrentLocation();
-    }
-  }, [initialLocation]);
-
-  // Cleanup camera stream on unmount
-  useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [stream]);
-
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setError('Geolocation tidak didukung oleh browser Anda');
-      return;
-    }
-
-    setIsLoadingLocation(true);
-    setError('');
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          timestamp: new Date().toLocaleString('id-ID'),
-        });
-        setIsLoadingLocation(false);
-      },
-      (err) => {
-        console.warn('Geolocation error:', err);
-        setIsLoadingLocation(false);
-        setLocation({
-          lat: -6.2088,
-          lng: 106.8456,
-          accuracy: 10000,
-          timestamp: new Date().toLocaleString('id-ID'),
-          isDefault: true
-        });
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  };
+  // ... (existing code)
 
   // Open camera (webcam for laptop, native for mobile)
   const openCamera = async () => {
     if (isMobile) {
-      // Mobile: use native file input with capture
+      // Mobile: use native file input with capture="environment"
       fileInputRef.current?.click();
       return;
     }
-
-    // Laptop: use getUserMedia for webcam
-    try {
-      setError('');
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      });
-      
-      setStream(mediaStream);
-      setIsCameraOpen(true);
-      
-      // Wait for video element to be ready
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-          videoRef.current.play().catch(console.error);
-        }
-      }, 100);
-      
-    } catch (err) {
-      console.error('Camera error:', err);
-      if (err.name === 'NotAllowedError') {
-        setError('Izin kamera ditolak. Silakan aktifkan di pengaturan browser.');
-      } else if (err.name === 'NotFoundError') {
-        setError('Kamera tidak ditemukan. Gunakan pilih dari galeri.');
-      } else {
-        setError(`Gagal membuka kamera: ${err.message}`);
-      }
-    }
+    // ... (rest of function)
   };
 
-  // Close camera
-  const closeCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
-    setIsCameraOpen(false);
-  }, [stream]);
-
-  // Capture photo from webcam
-  const captureFromWebcam = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
-    
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-    
-    setPhoto({
-      dataUrl,
-      timestamp: new Date().toISOString(),
-      location: location,
-      dimensions: { width: canvas.width, height: canvas.height },
-      fileName: `capture_${Date.now()}.jpg`
-    });
-    
-    setCaption(`Dokumentasi ${itemName || 'Inspeksi'}`);
-    closeCamera();
-    
-    if (onCapture) {
-      onCapture({ dataUrl, location });
-    }
-  };
-
-  // Handle file selection (from gallery or mobile camera)
-  const handleFileSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setError('Pilih file gambar (JPG, PNG)');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        setPhoto({
-          dataUrl: event.target.result,
-          timestamp: new Date().toISOString(),
-          location: location,
-          dimensions: { width: img.width, height: img.height },
-          fileName: file.name
-        });
-        setCaption(`Dokumentasi ${itemName || 'Inspeksi'}`);
-        setError('');
-        
-        if (onCapture) {
-          onCapture({ dataUrl: event.target.result, location });
-        }
-      };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
-    
-    // Reset input
-    e.target.value = '';
-  };
-
-  const removePhoto = () => {
-    setPhoto(null);
-    setCaption('');
-    setFloorInfo('');
-    if (onCapture) {
-      onCapture(null);
-    }
-  };
-
-  const handleSaveToDatabase = async () => {
-    if (!photo || !user?.id) {
-      toast({
-        title: "Data tidak lengkap",
-        description: "Pastikan foto sudah dipilih dan Anda sudah login.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSaving(true);
-
-    try {
-      // Convert base64 to blob
-      const base64Data = photo.dataUrl.split(',');
-      if (base64Data.length < 2) throw new Error('Format foto tidak valid');
-
-      const byteCharacters = atob(base64Data[1]);
-      const byteArrays = [];
-      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-        const slice = byteCharacters.slice(offset, offset + 512);
-        const byteNumbers = new Array(slice.length);
-        for (let i = 0; i < slice.length; i++) {
-          byteNumbers[i] = slice.charCodeAt(i);
-        }
-        byteArrays.push(new Uint8Array(byteNumbers));
-      }
-      const file = new Blob(byteArrays, { type: 'image/jpeg' });
-
-      // Upload to Supabase Storage (bucket: inspection_photos)
-      const fileName = `${inspectionId || 'general'}/${checklistItemId || 'item'}/${Date.now()}.jpeg`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('inspection_photos')
-        .upload(fileName, file, { cacheControl: '3600', upsert: false });
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        if (uploadError.message?.includes('bucket') || uploadError.statusCode === '404') {
-          throw new Error('Bucket "inspection_photos" belum dibuat di Supabase Storage. Silakan buat bucket terlebih dahulu.');
-        }
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('inspection_photos')
-        .getPublicUrl(fileName);
-
-      if (!publicUrlData?.publicUrl) throw new Error('Gagal mendapatkan URL foto');
-
-      // Save metadata to database
-      const photoMetadata = {
-        inspection_id: inspectionId,
-        checklist_item_id: checklistItemId,
-        photo_url: publicUrlData.publicUrl,
-        caption: caption || '',
-        floor_info: floorInfo || '',
-        latitude: location?.lat || null,
-        longitude: location?.lng || null,
-        accuracy: location?.accuracy || null,
-        uploaded_by: user.id,
-        project_id: projectId,
-        created_at: new Date().toISOString()
-      };
-
-      const { data: insertedData, error: dbError } = await supabase
-        .from('inspection_photos')
-        .insert([photoMetadata])
-        .select()
-        .single();
-
-      if (dbError) throw dbError;
-
-      toast({
-        title: "Foto berhasil disimpan!",
-        description: location?.lat 
-          ? `GPS: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`
-          : "Disimpan tanpa GPS",
-      });
-
-      if (onSave) {
-        onSave({ ...photoMetadata, id: insertedData?.id, photo_url: publicUrlData.publicUrl });
-      }
-
-      // Reset
-      setPhoto(null);
-      setCaption('');
-      setFloorInfo('');
-
-    } catch (error) {
-      console.error('Save photo error:', error);
-      toast({
-        title: "Gagal menyimpan foto",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
+  // Open gallery
+  const openGallery = () => {
+    galleryInputRef.current?.click();
   };
 
   return (
     <div className={`w-full space-y-4 ${className}`}>
       {/* Hidden elements */}
+      {/* Input khusus Kamera (Mobile Only mostly) */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture={isMobile ? "environment" : undefined}
+        capture="environment"
+        onChange={handleFileSelect}
+        style={{ display: 'none' }}
+      />
+      {/* Input khusus Gallery (Mobile & Desktop) */}
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
         onChange={handleFileSelect}
         style={{ display: 'none' }}
       />
@@ -389,7 +125,7 @@ const CameraGeotagging = ({
                 className="w-full"
                 style={{ maxHeight: '400px', objectFit: 'contain' }}
               />
-              
+
               {/* GPS overlay */}
               <div className="absolute top-2 left-2">
                 <Badge variant={location ? "default" : "secondary"} className="text-xs bg-black/50">
@@ -398,7 +134,7 @@ const CameraGeotagging = ({
                 </Badge>
               </div>
             </div>
-            
+
             {/* Control bar */}
             <div className="bg-slate-900 p-4 rounded-b-lg">
               <div className="flex justify-center items-center gap-4">
@@ -410,7 +146,7 @@ const CameraGeotagging = ({
                 >
                   <X className="w-6 h-6" />
                 </Button>
-                
+
                 {/* Capture Button */}
                 <button
                   onClick={captureFromWebcam}
@@ -419,7 +155,7 @@ const CameraGeotagging = ({
                 >
                   <div className="w-12 h-12 bg-red-500 rounded-full" />
                 </button>
-                
+
                 <Button
                   onClick={getCurrentLocation}
                   variant="ghost"
@@ -486,24 +222,24 @@ const CameraGeotagging = ({
                   {isMobile ? 'Ambil foto dengan kamera' : 'Pilih metode pengambilan foto'}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
+                  <Button
                     onClick={openCamera}
                     size="lg"
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                   >
                     <Camera className="w-5 h-5 mr-2" />
-                    {isMobile ? 'Ambil Foto' : 'Buka Webcam'}
+                    {isMobile ? 'Buka Kamera' : 'Buka Webcam'}
                   </Button>
-                  {!isMobile && (
-                    <Button 
-                      onClick={() => fileInputRef.current?.click()}
-                      size="lg"
-                      variant="outline"
-                    >
-                      <ImagePlus className="w-5 h-5 mr-2" />
-                      Pilih dari File
-                    </Button>
-                  )}
+
+                  <Button
+                    onClick={openGallery}
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
+                    <ImagePlus className="w-5 h-5 mr-2" />
+                    {isMobile ? 'Galeri / File' : 'Upload File'}
+                  </Button>
                 </div>
               </div>
             )}
@@ -544,7 +280,7 @@ const CameraGeotagging = ({
                   </div>
                 </div>
               </div>
-              
+
               {/* Mini Map */}
               <div className="h-48 rounded-lg overflow-hidden border">
                 <MapWithNoSSR lat={location.lat} lng={location.lng} />

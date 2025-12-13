@@ -69,7 +69,7 @@ export default function ProjectTimelinePage() {
   const [error, setError] = useState(null);
   const [project, setProject] = useState(null);
   const [phases, setPhases] = useState([]);
-  
+
   // Edit dialog
   const [editDialog, setEditDialog] = useState({ open: false, phase: null });
   const [editForm, setEditForm] = useState({
@@ -104,7 +104,7 @@ export default function ProjectTimelinePage() {
         .from('project_phases')
         .select('*')
         .eq('project_id', projectId)
-        .order('phase', { ascending: true });
+        .order('order_index', { ascending: true });
 
       if (phasesError) throw phasesError;
       setPhases(phasesData || []);
@@ -207,12 +207,12 @@ export default function ProjectTimelinePage() {
 
       // If completing a phase, start the next one
       if (action === 'complete') {
-        const nextPhase = phases.find(p => p.phase === phase.phase + 1);
+        const nextPhase = phases.find(p => p.order_index === phase.order_index + 1);
         if (nextPhase) {
           await supabase
             .from('project_phases')
-            .update({ 
-              status: 'in_progress', 
+            .update({
+              status: 'in_progress',
               start_date: new Date().toISOString().split('T')[0],
               started_at: new Date().toISOString()
             })
@@ -333,23 +333,21 @@ export default function ProjectTimelinePage() {
                 const isPending = phase.status === 'pending';
 
                 return (
-                  <Card 
-                    key={phase.id} 
-                    className={`border-l-4 ${
-                      isCompleted ? 'border-l-green-500' :
+                  <Card
+                    key={phase.id}
+                    className={`border-l-4 ${isCompleted ? 'border-l-green-500' :
                       isActive ? 'border-l-blue-500' :
-                      'border-l-muted'
-                    }`}
+                        'border-l-muted'
+                      }`}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between gap-4">
                         {/* Phase Info */}
                         <div className="flex items-start gap-4 flex-1">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isCompleted ? 'bg-green-100 text-green-600' :
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCompleted ? 'bg-green-100 text-green-600' :
                             isActive ? 'bg-blue-100 text-blue-600' :
-                            'bg-muted text-muted-foreground'
-                          }`}>
+                              'bg-muted text-muted-foreground'
+                            }`}>
                             {isCompleted ? (
                               <CheckCircle2 className="w-5 h-5" />
                             ) : isActive ? (
@@ -362,7 +360,7 @@ export default function ProjectTimelinePage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="font-semibold">
-                                Fase {phase.phase}: {phase.phase_name}
+                                Fase {phase.order_index}: {phase.phase_name}
                               </h3>
                               {getStatusBadge(phase.status)}
                             </div>
@@ -453,7 +451,7 @@ export default function ProjectTimelinePage() {
           <Dialog open={editDialog.open} onOpenChange={(open) => !saving && setEditDialog({ open, phase: open ? editDialog.phase : null })}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Edit Fase {editDialog.phase?.phase}</DialogTitle>
+                <DialogTitle>Edit Fase {editDialog.phase?.order_index}</DialogTitle>
                 <DialogDescription>
                   Ubah detail fase {editDialog.phase?.phase_name}
                 </DialogDescription>

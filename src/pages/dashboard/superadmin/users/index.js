@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { getAllProfiles } from "@/utils/supabaseAPI";
+import { supabase } from "@/utils/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -73,8 +74,19 @@ const UsersPage = () => {
   const fetchProfiles = async () => {
     setLoading(true);
     try {
-      // 1. Try internal API first (bypasses RLS, most reliable)
-      const response = await fetch('/api/superadmin/users');
+      // Get current session to get access token
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error('No active session');
+      }
+
+      // 1. Try internal API first with Authorization header
+      const response = await fetch('/api/superadmin/users', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
 
       if (response.ok) {
         const result = await response.json();
@@ -136,9 +148,17 @@ const UsersPage = () => {
 
     setDeleting(true);
     try {
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔍 [Client] Session found:', !!session);
+      console.log('🔍 [Client] Token present:', !!session?.access_token);
+
       // Use API to delete
       const response = await fetch(`/api/superadmin/users?id=${userToDelete.id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
       });
 
       const result = await response.json();
@@ -177,10 +197,15 @@ const UsersPage = () => {
   const handleUserAction = async (userId, action, reason = '') => {
     setApproving(userId);
     try {
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔍 [Client] Action Session found:', !!session);
+
       const response = await fetch('/api/superadmin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
           userId,
@@ -363,6 +388,7 @@ const UsersPage = () => {
                     <TableHead>Nama Lengkap</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Spesialisasi</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>No. Telepon</TableHead>
                     <TableHead>Dibuat</TableHead>
@@ -380,6 +406,16 @@ const UsersPage = () => {
                         <Badge variant={getRoleBadgeVariant(profile.role)}>
                           {getRoleLabel(profile.role)}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {profile.role === 'inspector' && profile.specialization ? (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                            {profile.specialization === 'struktur' ? 'Struktur' :
+                              profile.specialization === 'arsitektur' ? 'Arsitektur' :
+                                profile.specialization === 'mep' ? 'MEP' :
+                                  profile.specialization}
+                          </Badge>
+                        ) : '-'}
                       </TableCell>
                       <TableCell>
                         {getStatusBadge(profile)}

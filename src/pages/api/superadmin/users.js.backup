@@ -1,0 +1,151 @@
+// Di API /api/superadmin/users.js, tambahkan lebih banyak logging:
+
+async function handlePost(req, res) {
+  try {
+    const { userId, action, reason, userData } = req.body;
+
+    console.log('[API] POST Request:', { userId, action, userData: userData ? 'exists' : 'null' });
+
+    // Handle Create User
+    if (action === 'create') {
+      if (!userData || !userData.email || !userData.password) {
+        return res.status(400).json({ 
+          error: 'Missing required fields',
+          message: 'Email, password, and user data are required'
+        });
+      }
+
+      console.log('[API] Creating new user:', {
+        email: userData.email,
+        role: userData.role,
+        full_name: userData.full_name
+      });
+
+      // ✅ PERBAIKAN: Gunakan createUser (bukan admin.createUser untuk auto-confirm)
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: userData.email,
+        password: userData.password,
+        email_confirm: true, // Auto-confirm email
+        user_metadata: {
+          full_name: userData.full_name,
+          role: userData.role
+        }
+      });
+
+      if (authError) {
+        console.error('[API] Auth create error:', authError);
+        throw authError;
+      }
+
+      console.log('[API] Auth user created:', authData.user.id);
+
+      // 2. Create profile - PASTIKAN field sesuai database
+      const profileData = {
+        id: authData.user.id,
+        email: userData.email.toLowerCase().trim(),
+        full_name: userData.full_name || '',
+        phone_number: userData.phone_number || null,
+        company_name: userData.company_name || null,
+        role: userData.role,
+        specialization: userData.role === 'inspector' ? userData.specialization : null,
+        status: 'approved',
+        is_approved: true,
+        approved_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('[API] Profile data:', profileData);
+
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .insert(profileData)
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error('[API] Profile insert error:', profileError);
+        // Cleanup auth user if profile fails
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+        throw profileError;
+      }
+
+      console.log('[API] Profile created:', profile.email);
+
+      return res.status(201).json({
+        success: true,
+        message: 'User created successfully',
+        user: profile
+      });
+    }
+
+    // Handle existing user actions (approve/reject/suspend)
+    if (!userId || !action) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    console.log(`[API] Processing user action: ${action} for user ${userId}`);
+
+    let updateData = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (action === 'approve') {
+      updateData = {
+        ...updateData,
+        is_approved: true,
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        rejected_at: null,
+        suspended_at: null
+      };
+    } else if (action === 'reject') {
+      updateData = {
+        ...updateData,
+        is_approved: false,
+        status: 'rejected',
+        rejected_at: new Date().toISOString(),
+        approved_at: null,
+        suspended_at: null,
+        rejection_reason: reason || 'Rejected by admin'
+      };
+    } else if (action === 'suspend') {
+      updateData = {
+        ...updateData,
+        is_approved: false,
+        status: 'suspended',
+        suspended_at: new Date().toISOString(),
+        approved_at: null,
+        rejected_at: null,
+        suspension_reason: reason || 'Suspended by admin'
+      };
+    } else {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .update(updateData)
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[API] Update error:', error);
+      throw error;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `User ${action} successful`,
+      data
+    });
+
+  } catch (error) {
+    console.error('[API] Handle post error:', error);
+    return res.status(500).json({ 
+      error: error.message || 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+}

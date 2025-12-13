@@ -7,15 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Camera, MapPin, Trash2, RefreshCw, 
+import {
+  Camera, MapPin, Trash2, RefreshCw,
   Loader2, AlertTriangle, Upload, X, Check
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 
-const AutoPhotoGeotag = ({ 
+const AutoPhotoGeotag = ({
   onCapture,
   onPhotoSaved,
   inspectionId,
@@ -29,14 +29,14 @@ const AutoPhotoGeotag = ({
   className = ""
 }) => {
   const { user } = useAuth();
-  
+
   // States
   const [photos, setPhotos] = useState(existingPhotos || []);
   const [location, setLocation] = useState(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
-  
+
   // Refs
   const fileInputRef = useRef(null);
 
@@ -113,10 +113,10 @@ const AutoPhotoGeotag = ({
 
         // Create preview
         const preview = await createImagePreview(file);
-        
+
         // Upload to Supabase Storage
         const fileName = `${projectId || 'unknown'}/${inspectionId || 'temp'}/${checklistItemId || 'item'}_${Date.now()}_${file.name}`;
-        
+
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('inspection_photos')
           .upload(fileName, file, {
@@ -135,6 +135,18 @@ const AutoPhotoGeotag = ({
           .from('inspection_photos')
           .getPublicUrl(fileName);
 
+        // 🔥 SINKRONISASI: Prepare photo data sesuai schema database
+        const capturedTime = new Date().toISOString();
+
+        // Determine GPS quality based on accuracy
+        let gpsQuality = null;
+        if (location?.accuracy) {
+          if (location.accuracy <= 10) gpsQuality = 'excellent';
+          else if (location.accuracy <= 50) gpsQuality = 'good';
+          else if (location.accuracy <= 100) gpsQuality = 'fair';
+          else gpsQuality = 'poor';
+        }
+
         const photoData = {
           id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           url: urlData.publicUrl,
@@ -143,12 +155,13 @@ const AutoPhotoGeotag = ({
           file_size: file.size,
           preview: preview,
           location: location,
-          timestamp: new Date().toISOString(),
+          timestamp: capturedTime,
           inspection_id: inspectionId,
           checklist_item_id: checklistItemId,
           item_name: itemName,
           category: category,
-          uploaded_by: user?.id
+          uploaded_by: user?.id,
+          gps_quality: gpsQuality
         };
 
         // Save to database if inspectionId exists
@@ -156,17 +169,34 @@ const AutoPhotoGeotag = ({
           const { error: dbError } = await supabase
             .from('inspection_photos')
             .insert({
+              // Foreign keys
               inspection_id: inspectionId,
               checklist_item_id: checklistItemId,
-              item_name: itemName,
-              category: category,
+              project_id: projectId || null,
+              uploaded_by: user?.id,
+
+              // Photo metadata
               photo_url: urlData.publicUrl,
+              caption: null, // Will be added later if needed
+              floor_info: null,
+              item_name: itemName || null,
+              category: category || null,
+
+              // File information
               file_path: fileName,
-              latitude: location?.latitude,
-              longitude: location?.longitude,
-              accuracy: location?.accuracy,
-              captured_at: new Date().toISOString(),
-              uploaded_by: user?.id
+              file_name: file.name,
+
+              // GPS data
+              latitude: location?.latitude || null,
+              longitude: location?.longitude || null,
+              accuracy: location?.accuracy || null,
+              altitude: null,
+              gps_quality: gpsQuality,
+
+              // Timestamps
+              captured_at: capturedTime,
+              created_at: capturedTime,
+              updated_at: capturedTime
             });
 
           if (dbError) {
@@ -175,7 +205,7 @@ const AutoPhotoGeotag = ({
         }
 
         setPhotos(prev => [...prev, photoData]);
-        
+
         // Callback
         if (onCapture) {
           onCapture(photoData);
@@ -293,8 +323,8 @@ const AutoPhotoGeotag = ({
                 <X className="w-3 h-3" />
               </Button>
               {photo.location && (
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className="absolute bottom-1 left-1 text-xs"
                 >
                   <MapPin className="w-2 h-2 mr-1" />
@@ -317,7 +347,7 @@ const AutoPhotoGeotag = ({
           onChange={handleFileSelect}
           className="hidden"
         />
-        
+
         <Button
           variant="outline"
           onClick={triggerFileInput}

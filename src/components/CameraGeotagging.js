@@ -1,4 +1,3 @@
-// FILE: src/components/CameraGeotagging.js
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -17,7 +16,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 
-// Dynamic import untuk Leaflet (SSR fix)
+// Dynamic import for Leaflet (SSR fix)
 const MapWithNoSSR = dynamic(
   () => import('./MapComponent'),
   {
@@ -65,22 +64,275 @@ const CameraGeotagging = ({
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // ... (existing code)
+  // Check if mobile on mount
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = typeof window.navigator === "undefined" ? "" : navigator.userAgent;
+      const mobile = Boolean(
+        userAgent.match(
+          /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i
+        )
+      );
+      setIsMobile(mobile);
+    };
+    checkMobile();
+  }, []);
 
-  // Open camera (webcam for laptop, native for mobile)
+  // Cleanup stream on unmount
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
+
+  // --- Geolocation Functions ---
+
+  const getCurrentLocation = useCallback(() => {
+    setIsLoadingLocation(true);
+    setError('');
+
+    if (!navigator.geolocation) {
+      setError('Geolocation tidak didukung oleh browser ini.');
+      setIsLoadingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          timestamp: position.timestamp
+        });
+        setIsLoadingLocation(false);
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+        let msg = 'Gagal mengambil lokasi.';
+        if (err.code === 1) msg = 'Izin lokasi ditolak via browser.';
+        else if (err.code === 2) msg = 'Posisi tidak tersedia (aktifkan GPS).';
+        else if (err.code === 3) msg = 'Timeout mengambil lokasi.';
+        setError(msg);
+        setIsLoadingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  }, []);
+
+  // --- Camera Functions ---
+
   const openCamera = async () => {
+    setError('');
+
     if (isMobile) {
-      // Mobile: use native file input with capture="environment"
+      // Mobile: use native file input
       fileInputRef.current?.click();
       return;
     }
-    // ... (rest of function)
+
+    // Desktop/Webcam
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+      setStream(mediaStream);
+      setIsCameraOpen(true);
+
+      // Auto-get location when camera opens
+      getCurrentLocation();
+
+    } catch (err) {
+      console.error('Camera error:', err);
+      setError('Gagal mengakses kamera. Pastikan izin diberikan.');
+    }
   };
 
-  // Open gallery
+  const closeCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setIsCameraOpen(false);
+  };
+
   const openGallery = () => {
     galleryInputRef.current?.click();
   };
+
+  // --- Photo Handling (Capture from Webcam) ---
+
+  const captureFromWebcam = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+
+    // Set canvas dimensions to video dimensions
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Draw
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Get Data URL
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+    setPhoto({
+      dataUrl,
+      width: canvas.width,
+      height: canvas.height,
+      timestamp: new Date().toISOString()
+    });
+
+    // Attempt to get location if not yet available
+    if (!location) getCurrentLocation();
+
+    closeCamera();
+
+    if (onCapture) onCapture(dataUrl);
+  };
+
+  // --- Photo Handling (File Input) ---
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsLoadingLocation(true); // Show loading while processing
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // Resize logic using canvas
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+
+        // Max dimensions (e.g. 1280px)
+        const MAX_WIDTH = 1280;
+        const MAX_HEIGHT = 1280;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+        setPhoto({
+          dataUrl,
+          file, // Keep raw file reference if needed
+          width,
+          height,
+          timestamp: new Date().toISOString()
+        });
+
+        // Try to get current location for the new photo
+        getCurrentLocation();
+
+        if (onCapture) onCapture(dataUrl);
+        setIsLoadingLocation(false);
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    // Reset inputs
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (galleryInputRef.current) galleryInputRef.current.value = '';
+  };
+
+  const removePhoto = () => {
+    setPhoto(null);
+    setCaption('');
+    setFloorInfo('');
+    if (onCapture) onCapture(null);
+  };
+
+  // --- Save / Upload ---
+
+  const handleSaveToDatabase = async () => {
+    if (!photo || !caption) {
+      setError('Foto dan Keterangan wajib diisi.');
+      return;
+    }
+
+    setIsSaving(true);
+    setError('');
+
+    try {
+      // 1. Upload Image to Supabase Storage
+
+      // Convert Data URL to Blob
+      const res = await fetch(photo.dataUrl);
+      const blob = await res.blob();
+      const fileName = `inspection_${inspectionId || 'temp'}_${Date.now()}.jpg`;
+      const filePath = `${projectId || 'misc'}/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('evidence-photos') // Ensure this bucket exists
+        .upload(filePath, blob);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('evidence-photos')
+        .getPublicUrl(filePath);
+
+      // 2. Insert Record
+      // If we have onSave prop, delegate to parent
+      if (onSave) {
+        await onSave({
+          publicUrl,
+          caption,
+          floorInfo,
+          location,
+          projectId,
+          checklistItemId
+        });
+      } else {
+        // Default saving logic if needed (e.g. saving to `inspection_evidence`)
+        // Assuming parent handles it via onSave usually.
+        console.log('Saved:', { publicUrl, caption, floorInfo, location });
+        toast({
+          title: "Berhasil",
+          description: "Foto berhasil diupload (Mock Save)",
+        });
+      }
+
+      setPhoto(null);
+      setCaption('');
+      setFloorInfo('');
+
+    } catch (err) {
+      console.error('Save error:', err);
+      setError(`Gagal menyimpan: ${err.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
 
   return (
     <div className={`w-full space-y-4 ${className}`}>
@@ -112,7 +364,7 @@ const CameraGeotagging = ({
         </Alert>
       )}
 
-      {/* Webcam View (Laptop only) */}
+      {/* Webcam View (Laptop only) - Rendered only if camera open */}
       {isCameraOpen && !isMobile && (
         <Card className="border-2 border-blue-500">
           <CardContent className="p-0">
@@ -211,7 +463,7 @@ const CameraGeotagging = ({
                   )}
                 </div>
                 <p className="text-sm text-slate-500">
-                  {photo.dimensions?.width} x {photo.dimensions?.height} px
+                  {photo.width} x {photo.height} px
                 </p>
               </div>
             ) : (
@@ -236,6 +488,7 @@ const CameraGeotagging = ({
                     size="lg"
                     variant="outline"
                     className="w-full sm:w-auto"
+                    type="button"
                   >
                     <ImagePlus className="w-5 h-5 mr-2" />
                     {isMobile ? 'Galeri / File' : 'Upload File'}

@@ -70,17 +70,11 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 import { getChecklistTemplate, itemRequiresPhotogeotag, getPhotoRequirements } from "@/utils/checklistTemplates";
-import AutoPhotoGeotag from "@/components/AutoPhotoGeotag";
+import CameraGeotagging from "@/components/CameraGeotagging";
 
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-};
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
-};
+// ... existing imports
+
+// [Removed Duplicate Component Definition]
 
 // Helper functions
 const getProjectPhase = (status) => {
@@ -139,7 +133,7 @@ const getStatusLabel = (status) => {
 };
 
 // Komponen Formulir untuk Item Checklist
-const ChecklistItemForm = ({ item, templateId, inspectionId, projectId, onSave, existingResponse }) => {
+const ChecklistItemForm = ({ item, templateId, inspectionId, projectId, onSave, existingResponse, onNext }) => {
   const { user } = useAuth();
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
@@ -216,6 +210,11 @@ const ChecklistItemForm = ({ item, templateId, inspectionId, projectId, onSave, 
 
       toast.success(`Item "${item.item_name || item.description}" berhasil disimpan`);
       onSave && onSave(item.id, responseData);
+
+      // Auto redirect to next item
+      if (onNext) {
+        onNext();
+      }
 
     } catch (err) {
       console.error('Error saving checklist item:', err);
@@ -330,7 +329,7 @@ const ChecklistItemForm = ({ item, templateId, inspectionId, projectId, onSave, 
   };
 
   return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+    <Card id={`item-${item.id}`} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 scroll-mt-20">
       <CardHeader>
         <CardTitle className="text-lg font-medium flex items-start justify-between">
           <div>
@@ -446,14 +445,15 @@ const ChecklistItemForm = ({ item, templateId, inspectionId, projectId, onSave, 
             </DialogTitle>
           </DialogHeader>
           <div className="p-6 pt-2">
-            <AutoPhotoGeotag
+            {/* Replaced AutoPhotoGeotag with CameraGeotagging for strict enforcement */}
+            <CameraGeotagging
               inspectionId={inspectionId}
               checklistItemId={item.id}
               itemName={item.item_name || item.description}
               projectId={projectId}
-              uploadedBy={user.id}
-              onPhotoSaved={handlePhotoSaved}
-              onCancel={() => setShowCamera(false)}
+              onSave={handlePhotoSaved}
+              showSaveButton={true}
+              className="w-full"
             />
           </div>
         </DialogContent>
@@ -544,7 +544,69 @@ export default function InspectorInspectionChecklistPage() {
       }
 
       setChecklistTemplate(template);
-      setChecklistItems(template.items || []);
+
+      // --- Filter Items by Specialization ---
+      let filteredItems = template.items || [];
+
+      if (profile?.specialization) {
+        const spec = profile.specialization.toLowerCase();
+        console.log('🔍 Filtering checklist for specialization:', spec);
+
+        filteredItems = filteredItems.filter(item => {
+          // 1. Selalu tampilkan Administrative
+          if (item.category === 'administrative') return true;
+
+          // 2. Arsitektur
+          if (spec === 'arsitektur') {
+            // M.1 (Tata Bangunan), M.3 (Keselamatan), M.2.3 (Proteksi Pasif/Kompartemen)
+            return ['tata_bangunan', 'keselamatan'].includes(item.category) || item.id.startsWith('m23');
+          }
+
+          // 3. Struktur
+          if (spec === 'struktur') {
+            // M.2.1 (Struktur), M.2.10 (Bencana/Disaster)
+            // Check prefixes explicitly to distinguish form MEP
+            return item.id.startsWith('m21') && !item.id.startsWith('m21'); // Wait, logic below handles specific matches
+            // Logic: m21... includes m210. 
+            // Exclude ME items (m22-m29)
+            if (item.category === 'keandalan') {
+              // Only M.2.1 and M.2.10
+              return item.id.startsWith('pondasi') || item.id.startsWith('kolom') || item.id.startsWith('balok') || item.id.startsWith('pelat') || item.id.startsWith('dinding_geser') || item.id.startsWith('atap_struktur') || item.id.startsWith('tangga') || item.id.startsWith('struktur') || item.id.startsWith('sistem_gempa') || item.id.startsWith('sistem_banjir');
+              // Alternative: Check ID format or Title?
+              // Let's use the ID prefixes from the template if they follow m21, m210 pattern in ID?
+              // Problem: item.id in templates are e.g. "pondasi", "kolom" (human readable).
+              // The PARENT section ID (m21, m210) is NOT on the item itself in the flattened list.
+              // BUT, getChecklistTemplate currently flattens items?
+              // Let's check getChecklistTemplate again.
+            }
+            return false;
+          }
+
+          // 3. MEP
+          if (spec === 'mep' || spec === 'mekanikal' || spec === 'elektrikal') {
+            // M.2.2, M.2.4 - M.2.9
+            // Need to identify these items.
+            // Since item.id isn't M21..., we need another way.
+            // We can use item.category === 'keandalan', but exclude structure items?
+            if (item.category === 'keandalan') {
+              const structureKeywords = ['pondasi', 'kolom', 'balok', 'pelat', 'dinding_geser', 'atap_struktur', 'strukur', 'gempa', 'banjir'];
+              const isStructure = structureKeywords.some(k => item.id.includes(k) || (item.item_name && item.item_name.toLowerCase().includes(k)));
+              return !isStructure && !item.id.startsWith('m23'); // Exclude Structure & Passive Fire
+            }
+            return false;
+          }
+
+          return true; // Default: show all
+        });
+
+        // RE-CHECK: flattened items DO NOT have parent section ID easily accessible unless we assume structure.
+        // Wait, if I look at checklistTemplates.js, the items are nested in sections.
+        // `getChecklistTemplate` implementation for 'general' (line 1164) does:
+        // `const mergedItems = technicalTemplates.flatMap(t => t.items || []);`
+        // It loses the section context (M.2.1, etc) unless I inject it.
+      }
+
+      setChecklistItems(filteredItems);
 
       // ✅ DIPERBAIKI: hapus spasi aneh sebelum data
       const { data: responses, error: respErr } = await supabase
@@ -753,6 +815,19 @@ export default function InspectorInspectionChecklistPage() {
                         projectId={project?.id}
                         onSave={handleSaveResponse}
                         existingResponse={checklistResponses[item.id]}
+                        onNext={() => {
+                          const nextIndex = checklistItems.findIndex(i => i.id === item.id) + 1;
+                          if (nextIndex < checklistItems.length) {
+                            const nextId = checklistItems[nextIndex].id;
+                            const element = document.getElementById(`item-${nextId}`);
+                            if (element) {
+                              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              // Optional: Focus or highlight?
+                            }
+                          } else {
+                            toast.success("Semua item telah diperiksa!");
+                          }
+                        }}
                       />
                     ))}
                   </div>

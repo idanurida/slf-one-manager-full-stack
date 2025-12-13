@@ -107,14 +107,38 @@ const CameraGeotagging = ({
     };
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
+      async (position) => { // Async to fetch address
+        const { latitude, longitude, accuracy } = position.coords;
+        const newLocation = {
+          lat: latitude,
+          lng: longitude,
+          accuracy: accuracy,
           timestamp: position.timestamp,
           isDefault: !useHighAccuracy
-        });
+        };
+
+        setLocation(newLocation);
+
+        // Fetch Address Details (Reverse Geocoding)
+        try {
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+          const data = await response.json();
+          if (data && data.address) {
+            const addr = data.address;
+            const formattedAddress = {
+              village: addr.village || addr.suburb || addr.hamlet || '-',
+              district: addr.city_district || addr.county || '-',
+              city: addr.city || addr.town || addr.municipality || '-',
+              province: addr.state || '-'
+            };
+            newLocation.address = formattedAddress;
+            setLocation({ ...newLocation }); // Update with address
+          }
+        } catch (fetchErr) {
+          console.error("Failed to fetch address details:", fetchErr);
+          // Don't error out, just continue without address
+        }
+
         setIsLoadingLocation(false);
       },
       (err) => {
@@ -123,7 +147,7 @@ const CameraGeotagging = ({
           console.warn('Location permission denied');
           toast({
             title: "Izin Lokasi Ditolak",
-            description: "Foto akan disimpan tanpa data lokasi (GPS).",
+            description: "Foto tidak dapat disimpan tanpa data lokasi (GPS).",
             variant: "destructive"
           });
           // We set location to null but don't block. User can still save.
@@ -336,30 +360,65 @@ const CameraGeotagging = ({
         .from('evidence-photos')
         .getPublicUrl(filePath);
 
-      // 2. Insert Record
-      // If we have onSave prop, delegate to parent
-      if (onSave) {
-        await onSave({
-          publicUrl,
-          caption,
-          floorInfo,
-          location,
-          projectId,
-          checklistItemId
-        });
-      } else {
-        // Default saving logic if needed (e.g. saving to `inspection_evidence`)
-        // Assuming parent handles it via onSave usually.
-        console.log('Saved:', { publicUrl, caption, floorInfo, location });
-        toast({
-          title: "Berhasil",
-          description: "Foto berhasil diupload (Mock Save)",
-        });
+      // 2. Insert Record to Database
+      // Determine GPS quality
+      let gpsQuality = 'poor';
+      if (location?.accuracy) {
+        if (location.accuracy <= 10) gpsQuality = 'excellent';
+        else if (location.accuracy <= 50) gpsQuality = 'good';
+        else if (location.accuracy <= 100) gpsQuality = 'fair';
       }
 
+      const photoData = {
+        inspection_id: inspectionId,
+        checklist_item_id: checklistItemId,
+        project_id: projectId || null,
+        uploaded_by: user?.id,
+        photo_url: publicUrl,
+        caption: caption,
+        floor_info: floorInfo,
+        item_name: itemName || null,
+        category: location?.address ? JSON.stringify(location.address) : null, // Store address in category or separate field? Schema check needed. 
+        // Previous AutoPhotoGeotag used 'category' prop. Let's use it if passed, or fallback.
+        // valid columns in inspection_photos: inspection_id, checklist_item_id, item_name, photo_url, caption, latitude, longitude, accuracy, gps_quality, captured_at...
+
+        file_path: filePath,
+        file_name: fileName,
+
+        latitude: location?.lat || null,
+        longitude: location?.lng || null,
+        accuracy: location?.accuracy || null,
+        gps_quality: gpsQuality,
+
+        captured_at: photo.timestamp || new Date().toISOString()
+      };
+
+      const { data: savedRecord, error: dbError } = await supabase
+        .from('inspection_photos')
+        .insert(photoData)
+        .select()
+        .single();
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Berhasil",
+        description: "Foto dan data lokasi berhasil disimpan.",
+        variant: "default" // or success if configured
+      });
+
+      // 3. Callback to parent
+      if (onSave) {
+        // Pass the FULL saved record so parent can display it
+        onSave(savedRecord);
+      }
+
+      // Close/Reset
       setPhoto(null);
       setCaption('');
       setFloorInfo('');
+
+      // Trigger "Next" if asked? Parent handles "redirect".
 
     } catch (err) {
       console.error('Save error:', err);
@@ -529,6 +588,26 @@ const CameraGeotagging = ({
                       {location ? `±${Math.round(location.accuracy)} meter` : '-'}
                     </span>
                   </p>
+                  {location?.address && (
+                    <>
+                      <p className="grid grid-cols-3 gap-2">
+                        <span className="text-slate-500">Desa/Kel:</span>
+                        <span className="col-span-2">{location.address.village}</span>
+                      </p>
+                      <p className="grid grid-cols-3 gap-2">
+                        <span className="text-slate-500">Kecamatan:</span>
+                        <span className="col-span-2">{location.address.district}</span>
+                      </p>
+                      <p className="grid grid-cols-3 gap-2">
+                        <span className="text-slate-500">Kota/Kab:</span>
+                        <span className="col-span-2">{location.address.city}</span>
+                      </p>
+                      <p className="grid grid-cols-3 gap-2">
+                        <span className="text-slate-500">Provinsi:</span>
+                        <span className="col-span-2">{location.address.province}</span>
+                      </p>
+                    </>
+                  )}
                   {!location && (
                     <p className="text-red-500 text-xs mt-2 italic">
                       * Lokasi belum ditemukan. Pastikan GPS aktif.

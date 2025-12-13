@@ -68,11 +68,9 @@ const CameraGeotagging = ({
   useEffect(() => {
     const checkMobile = () => {
       const userAgent = typeof window.navigator === "undefined" ? "" : navigator.userAgent;
-      const mobile = Boolean(
-        userAgent.match(
-          /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i
-        )
-      );
+      const isTouch = typeof navigator !== "undefined" && (navigator.maxTouchPoints > 0);
+      const mobileRegex = /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i;
+      const mobile = Boolean(userAgent.match(mobileRegex)) || isTouch;
       setIsMobile(mobile);
     };
     checkMobile();
@@ -89,7 +87,7 @@ const CameraGeotagging = ({
 
   // --- Geolocation Functions ---
 
-  const getCurrentLocation = useCallback(() => {
+  const getCurrentLocation = useCallback((useHighAccuracy = true) => {
     setIsLoadingLocation(true);
     setError('');
 
@@ -99,30 +97,40 @@ const CameraGeotagging = ({
       return;
     }
 
+    const options = {
+      enableHighAccuracy: useHighAccuracy,
+      timeout: useHighAccuracy ? 5000 : 10000, // 5s for high acc, 10s for low
+      maximumAge: 30000 // Accept positions up to 30s old
+    };
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
           accuracy: position.coords.accuracy,
-          timestamp: position.timestamp
+          timestamp: position.timestamp,
+          isDefault: !useHighAccuracy // Mark if low accuracy source
         });
         setIsLoadingLocation(false);
       },
       (err) => {
+        // If high accuracy failed/timed out, try low accuracy
+        if (useHighAccuracy) {
+          console.log('High accuracy GPS timed out/failed, trying low accuracy...');
+          getCurrentLocation(false);
+          return;
+        }
+
         console.error('Geolocation error:', err);
         let msg = 'Gagal mengambil lokasi.';
         if (err.code === 1) msg = 'Izin lokasi ditolak via browser.';
         else if (err.code === 2) msg = 'Posisi tidak tersedia (aktifkan GPS).';
-        else if (err.code === 3) msg = 'Timeout mengambil lokasi.';
+        else if (err.code === 3) msg = 'Timeout mengambil lokasi (GPS lemah).';
         setError(msg);
         setIsLoadingLocation(false);
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
+      options
     );
   }, []);
 

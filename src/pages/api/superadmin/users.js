@@ -41,13 +41,8 @@ export default async function handler(req, res) {
     const token = authHeader.replace('Bearer ', '');
     console.log('🔍 [API] Token length:', token.length);
 
-    // Verify token using anon key client
-    const anonClient = createClient(
-      supabaseUrl,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
-
-    const { data: { user }, error: userError } = await anonClient.auth.getUser(token);
+    // Verify token using auth.getUser
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
       console.warn('❌ [API] Token verification failed:', userError?.message);
@@ -101,7 +96,7 @@ export default async function handler(req, res) {
 }
 
 // GET - Fetch users
-async function handleGet(req, res, supabase) {
+async function handleGet(req, res, supabase) { // supabase here is the service role client
   try {
     const { id } = req.query;
 
@@ -118,6 +113,7 @@ async function handleGet(req, res, supabase) {
 
       return res.status(200).json(data);
     } else {
+      // Use service role to bypass RLS and fetch ALL profiles
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -130,8 +126,8 @@ async function handleGet(req, res, supabase) {
 
       return res.status(200).json({
         success: true,
-        users: data,
-        count: data.length
+        users: data || [],
+        count: data?.length || 0
       });
     }
   } catch (error) {

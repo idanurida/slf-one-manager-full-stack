@@ -70,7 +70,10 @@ const CameraGeotagging = ({
       const userAgent = typeof window.navigator === "undefined" ? "" : navigator.userAgent;
       const isTouch = typeof navigator !== "undefined" && (navigator.maxTouchPoints > 0);
       const mobileRegex = /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i;
-      const mobile = Boolean(userAgent.match(mobileRegex)) || isTouch;
+      // Fallback: Check screen width just in case userAgent fails
+      const isSmallScreen = typeof window !== "undefined" && window.innerWidth <= 768;
+
+      const mobile = Boolean(userAgent.match(mobileRegex)) || (isTouch && isSmallScreen);
       setIsMobile(mobile);
     };
     checkMobile();
@@ -99,8 +102,8 @@ const CameraGeotagging = ({
 
     const options = {
       enableHighAccuracy: useHighAccuracy,
-      timeout: useHighAccuracy ? 5000 : 10000, // 5s for high acc, 10s for low
-      maximumAge: 30000 // Accept positions up to 30s old
+      timeout: useHighAccuracy ? 5000 : 10000,
+      maximumAge: 30000
     };
 
     navigator.geolocation.getCurrentPosition(
@@ -110,12 +113,25 @@ const CameraGeotagging = ({
           lng: position.coords.longitude,
           accuracy: position.coords.accuracy,
           timestamp: position.timestamp,
-          isDefault: !useHighAccuracy // Mark if low accuracy source
+          isDefault: !useHighAccuracy
         });
         setIsLoadingLocation(false);
       },
       (err) => {
-        // If high accuracy failed/timed out, try low accuracy
+        // PERMISSION DENIED (Code 1) - Don't retry, just warn
+        if (err.code === 1) {
+          console.warn('Location permission denied');
+          toast({
+            title: "Izin Lokasi Ditolak",
+            description: "Foto akan disimpan tanpa data lokasi (GPS).",
+            variant: "destructive"
+          });
+          // We set location to null but don't block. User can still save.
+          setIsLoadingLocation(false);
+          return;
+        }
+
+        // TIME OUT (Code 3) or UNAVAILABLE (Code 2) - Retry with low accuracy
         if (useHighAccuracy) {
           console.log('High accuracy GPS timed out/failed, trying low accuracy...');
           getCurrentLocation(false);
@@ -124,15 +140,16 @@ const CameraGeotagging = ({
 
         console.error('Geolocation error:', err);
         let msg = 'Gagal mengambil lokasi.';
-        if (err.code === 1) msg = 'Izin lokasi ditolak via browser.';
-        else if (err.code === 2) msg = 'Posisi tidak tersedia (aktifkan GPS).';
+        if (err.code === 2) msg = 'Posisi tidak tersedia (aktifkan GPS).';
         else if (err.code === 3) msg = 'Timeout mengambil lokasi (GPS lemah).';
+
+        // Show as warning but continue
         setError(msg);
         setIsLoadingLocation(false);
       },
       options
     );
-  }, []);
+  }, [toast]);
 
   // --- Camera Functions ---
 
@@ -281,6 +298,17 @@ const CameraGeotagging = ({
   // --- Save / Upload ---
 
   const handleSaveToDatabase = async () => {
+    // 1. Strict Validation: Location is mandatory
+    if (!location) {
+      toast({
+        title: "Lokasi Wajib",
+        description: "Foto tidak dapat disimpan tanpa data lokasi (GPS). Pastikan GPS aktif.",
+        variant: "destructive"
+      });
+      setError('Lokasi (GPS) wajib aktif untuk menyimpan foto.');
+      return;
+    }
+
     if (!photo || !caption) {
       setError('Foto dan Keterangan wajib diisi.');
       return;
@@ -463,16 +491,50 @@ const CameraGeotagging = ({
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
-                  {location?.lat && (
+
+                  {/* Status Badge */}
+                  {location ? (
                     <Badge className="absolute bottom-2 left-2 bg-green-600">
                       <MapPin className="w-3 h-3 mr-1" />
-                      GPS OK
+                      GPS Terkunci
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive" className="absolute bottom-2 left-2">
+                      <AlertTriangle className="w-3 h-3 mr-1" />
+                      Lokasi Wajib
                     </Badge>
                   )}
                 </div>
-                <p className="text-sm text-slate-500">
-                  {photo.width} x {photo.height} px
-                </p>
+
+                {/* Metadata Preview */}
+                <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg text-sm space-y-1 border">
+                  <p className="font-semibold text-slate-700 dark:text-slate-300 border-b pb-1 mb-1">
+                    Metadata Foto
+                  </p>
+                  <p className="grid grid-cols-3 gap-2">
+                    <span className="text-slate-500">Waktu:</span>
+                    <span className="col-span-2 font-mono">
+                      {photo.timestamp ? new Date(photo.timestamp).toLocaleString('id-ID') : '-'}
+                    </span>
+                  </p>
+                  <p className="grid grid-cols-3 gap-2">
+                    <span className="text-slate-500">Koordinat:</span>
+                    <span className="col-span-2 font-mono">
+                      {location ? `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}` : 'Menunggu GPS...'}
+                    </span>
+                  </p>
+                  <p className="grid grid-cols-3 gap-2">
+                    <span className="text-slate-500">Akurasi:</span>
+                    <span className="col-span-2">
+                      {location ? `±${Math.round(location.accuracy)} meter` : '-'}
+                    </span>
+                  </p>
+                  {!location && (
+                    <p className="text-red-500 text-xs mt-2 italic">
+                      * Lokasi belum ditemukan. Pastikan GPS aktif.
+                    </p>
+                  )}
+                </div>
               </div>
             ) : (
               // Capture Buttons

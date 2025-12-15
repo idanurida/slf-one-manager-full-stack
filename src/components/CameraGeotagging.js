@@ -454,6 +454,19 @@ const CameraGeotagging = ({
               Menunggu sinyal GPS untuk mengaktifkan tombol...
             </p>
           )}
+
+          {/* Mini Map */}
+          {location && (
+            <div className="h-32 w-full rounded-md overflow-hidden opacity-90 border border-slate-700 mt-2">
+              <MapWithNoSSR
+                position={[location.lat, location.lng]}
+                zoom={16}
+                dragging={false}
+                scrollWheelZoom={false}
+                interactive={false} // Static preview
+              />
+            </div>
+          )}
         </div>
       </div>
     );

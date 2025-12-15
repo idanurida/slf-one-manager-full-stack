@@ -151,18 +151,34 @@ const CameraGeotagging = ({
 
         // Reverse Geocoding for "Metadata sesuai data administrasi"
         try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
-          const data = await response.json();
-          if (data && data.address) {
-            newLocation.address = {
-              village: data.address.village || data.address.suburb || '-',
-              district: data.address.city_district || data.address.county || '-',
-              city: data.address.city || data.address.town || '-',
-              province: data.address.state || '-'
-            };
+          // Add timeout and headers to satisfy Nominatim usage policy
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`, {
+            headers: {
+              'User-Agent': 'SLF-One-Manager/1.0',
+              'Referer': 'https://slf-one-manager.vercel.app'
+            },
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.address) {
+              newLocation.address = {
+                village: data.address.village || data.address.suburb || data.address.neighbourhood || '-',
+                district: data.address.city_district || data.address.county || data.address.district || '-',
+                city: data.address.city || data.address.town || data.address.municipality || data.address.regency || '-',
+                province: data.address.state || '-'
+              };
+            }
           }
         } catch (e) {
-          console.error("Geocoding failed", e);
+          console.error("Geocoding failed/timeout", e);
+          // Keep address as undefined, will show only coords
         }
 
         setLocation(newLocation);
@@ -171,11 +187,9 @@ const CameraGeotagging = ({
       (err) => {
         console.warn('GPS Error:', err);
         if (useHighAccuracy) {
-          // Retry with lower accuracy
           getCurrentLocation(false);
         } else {
           setIsLoadingLocation(false);
-          // Don't set global error yet, just toast, as user might want to manual upload
           toast({
             title: "Sinyal GPS Lemah",
             description: "Gagal mendapatkan lokasi akurat. Coba geser posisi atau gunakan upload manual.",
@@ -192,7 +206,6 @@ const CameraGeotagging = ({
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
-    // Check GPS lock requirement
     if (!location) {
       toast({
         title: "Menunggu GPS",
@@ -205,17 +218,12 @@ const CameraGeotagging = ({
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    // Set Dimensions
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
     const ctx = canvas.getContext('2d');
-
-    // Draw Video Frame
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Draw Metadata Overlay (Watermark)
-    // "Berikan metadata lokasi sesuai data administrasi serta titik kordinat..."
     drawWatermark(ctx, canvas.width, canvas.height, location);
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
@@ -230,16 +238,13 @@ const CameraGeotagging = ({
   };
 
   const drawWatermark = (ctx, width, height, loc) => {
-    // Semi-transparent background at bottom
     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    const barHeight = height * 0.18; // Slightly larger for better readability
+    const barHeight = height * 0.18;
     ctx.fillRect(0, height - barHeight, width, barHeight);
 
-    // Text settings
     ctx.fillStyle = 'white';
     ctx.textBaseline = 'middle';
 
-    // Font size relative to image
     const fontSize = Math.max(14, width * 0.03);
     ctx.font = `bold ${fontSize}px sans-serif`;
 
@@ -247,62 +252,45 @@ const CameraGeotagging = ({
     let currentY = height - barHeight + padding + (fontSize / 2);
     const lineHeight = fontSize * 1.4;
 
-    // Line 1: Date & Time
     const dateStr = new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'medium' });
     ctx.fillText(`📅 ${dateStr}`, padding, currentY);
 
-    // Line 2: Coords
     currentY += lineHeight;
     ctx.fillText(`📍 ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)} (±${Math.round(loc.accuracy)}m)`, padding, currentY);
 
-    // Line 3: Address (if available)
     if (loc.address) {
       currentY += lineHeight;
-      // Truncate address if too long
-      const addrStr = `🏠 ${loc.address.city}, ${loc.address.district}`;
+      const addrStr = `🏠 ${loc.address.city}, ${loc.address.district}, ${loc.address.village}`;
       ctx.fillText(addrStr, padding, currentY);
     }
   };
-
-  // --- Manual Upload Handlers ---
 
   const handleManualFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Process file
     const reader = new FileReader();
     reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        // Create a canvas to resize if needed and add watermark (manual upload watermark?)
-        // Ideally manual upload just keeps the photo. Let's not resize for now to keep it simple.
-        setPhoto({
-          dataUrl: event.target.result,
-          timestamp: new Date().toISOString(),
-          location: null, // Manual upload has no verified location
-          isManual: true
-        });
-        setMode('preview');
-      };
-      img.src = event.target.result;
+      setPhoto({
+        dataUrl: event.target.result,
+        timestamp: new Date().toISOString(),
+        location: null,
+        isManual: true
+      });
+      setMode('preview');
     };
     reader.readAsDataURL(file);
   };
 
-  // --- Save / Retake ---
-
   const handleRetake = () => {
     setPhoto(null);
     setMode('camera');
-    // Re-check GPS just in case
     getCurrentLocation();
   };
 
   const handleSaveConfirmed = async () => {
     if (!photo) return;
 
-    // Validation
     if (!photo.isManual && !photo.location) {
       toast({ title: "Error", description: "Data lokasi hilang saat menyimpan.", variant: "destructive" });
       return;
@@ -311,7 +299,6 @@ const CameraGeotagging = ({
     setIsSaving(true);
 
     try {
-      // 1. Upload to Supabase
       const res = await fetch(photo.dataUrl);
       const blob = await res.blob();
       const fileName = `insp_${inspectionId || '0'}_item_${checklistItemId || '0'}_${Date.now()}.jpg`;
@@ -321,7 +308,14 @@ const CameraGeotagging = ({
         .from('inspection_photos')
         .upload(filePath, blob);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload Error Details:", uploadError);
+        // Special handling for missing bucket/RLS
+        if (uploadError.message.includes("Bucket not found") || uploadError.statusCode === '404') {
+          throw new Error("Storage Bucket 'inspection_photos' tidak ditemukan di Supabase. Hubungi Admin.");
+        }
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('inspection_photos')

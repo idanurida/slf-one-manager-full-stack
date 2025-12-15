@@ -1,5 +1,5 @@
 // FILE: src/pages/api/superadmin/users/update.js
-import { createClient } from '@/utils/supabase-server';
+import { createSupabaseClient } from '@/utils/supabase-server';
 import { checkSuperAdmin } from '@/utils/auth-check';
 
 export default async function handler(req, res) {
@@ -9,20 +9,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const supabase = createClient();
+    const supabase = createSupabaseClient(req);
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    
+
     const isSuperAdmin = await checkSuperAdmin(session.user.email);
     if (!isSuperAdmin) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
     const { id, ...updateData } = req.body;
-    
+
     if (!id) {
       return res.status(400).json({ error: 'User ID is required' });
     }

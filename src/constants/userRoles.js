@@ -38,6 +38,18 @@ export const AVAILABLE_ROLES = [
   // SUPERADMIN TIDAK DITAMPILKAN DI DROPDOWN - HANYA BISA DIBUAT OLEH superadmin2@slf.com
 ];
 
+export const ROLE_LABELS = AVAILABLE_ROLES.reduce((acc, role) => {
+  acc[role.value] = role.label;
+  return acc;
+}, { superadmin: 'Superadmin' }); // Add superadmin manually
+
+export const STATUS_LABELS = {
+  pending: 'Pending',
+  approved: 'Approved',
+  rejected: 'Rejected',
+  suspended: 'Suspended'
+};
+
 export const ROLE_DESCRIPTIONS = {
   inspector: 'Melakukan inspeksi dan pemeriksaan teknis',
   client: 'Melihat laporan dan mengelola aset',

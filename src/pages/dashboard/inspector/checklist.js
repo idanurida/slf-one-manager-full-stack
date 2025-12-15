@@ -1,6 +1,6 @@
 // FILE: src/pages/dashboard/inspector/checklist.js
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useToast } from '@/components/ui/use-toast';
 

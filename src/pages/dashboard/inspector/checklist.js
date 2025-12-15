@@ -187,7 +187,6 @@ const DynamicChecklistForm = ({
   inspectionId,
   projectId,
   onSave,
-  onSave,
   existingResponse,
   onNext // Prop baru untuk auto-advance
 }) => {

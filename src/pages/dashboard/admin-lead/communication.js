@@ -553,7 +553,6 @@ export default function AdminLeadCommunicationPage() {
   }
 
   return (
-  return (
     <DashboardLayout title="Komunikasi & Pesan">
       <div className="h-[calc(100vh-8rem)] bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden flex">
 

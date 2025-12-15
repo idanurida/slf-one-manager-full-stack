@@ -187,7 +187,9 @@ const DynamicChecklistForm = ({
   inspectionId,
   projectId,
   onSave,
-  existingResponse
+  onSave,
+  existingResponse,
+  onNext // Prop baru untuk auto-advance
 }) => {
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
@@ -280,13 +282,12 @@ const DynamicChecklistForm = ({
   const handlePhotoSaved = async (savedPhoto) => {
     try {
       setSavedPhotos(prev => [...prev, savedPhoto]);
-      setShowCamera(false);
 
-      toast({
-        title: "✅ Dokumentasi tersimpan",
-        description: "Foto dan lokasi berhasil disimpan ke database",
-        variant: "default",
-      });
+      // Removed immediate close to allow CameraGeotagging to handle the delay/success flow
+      // setShowCamera(false); 
+
+      // Removed duplicate toast (CameraGeotagging already shows one)
+      // toast({ ... });
 
       // Reload photos untuk memastikan data terbaru
       await loadExistingPhotos();
@@ -499,8 +500,23 @@ const DynamicChecklistForm = ({
                             <p className="text-sm font-medium text-green-800">
                               {photo.caption || 'Dokumentasi'}
                             </p>
+                            {/* Display Address if available (stored in category) */}
+                            {(() => {
+                              try {
+                                if (photo.category && photo.category.startsWith('{')) {
+                                  const addr = JSON.parse(photo.category);
+                                  return (
+                                    <p className="text-xs text-green-700 flex items-start gap-1 mt-1">
+                                      <Building className="w-3 h-3 mt-0.5 shrink-0" />
+                                      {addr.city}, {addr.district}, {addr.village}
+                                    </p>
+                                  );
+                                }
+                                return null;
+                              } catch (e) { return null; }
+                            })()}
                             {photo.latitude && (
-                              <p className="text-xs text-green-600 flex items-center gap-1">
+                              <p className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
                                 <MapPin className="w-3 h-3" />
                                 GPS: {photo.latitude.toFixed(6)}, {photo.longitude.toFixed(6)}
                               </p>
@@ -569,7 +585,11 @@ const DynamicChecklistForm = ({
             }}
             onSave={(savedPhoto) => {
               handlePhotoSaved(savedPhoto);
+              // Note: onNext will be called by CameraGeotagging after a delay
+            }}
+            onNext={() => {
               setShowCamera(false);
+              if (onNext) onNext();
             }}
             showSaveButton={true}
           />
@@ -643,6 +663,42 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [checklistResponses, setChecklistResponses] = useState({});
+
+  // Refs untuk scrolling
+  const itemRefs = useRef({});
+
+  // Fungsi untuk pindah ke item selanjutnya
+  const handleNextItem = (currentItemId) => {
+    // Cari index item saat ini dalam filteredItems
+    const currentIndex = filteredItems.findIndex(i => i.id === currentItemId);
+
+    // Jika ada item selanjutnya
+    if (currentIndex !== -1 && currentIndex < filteredItems.length - 1) {
+      const nextItem = filteredItems[currentIndex + 1];
+      const nextEl = itemRefs.current[nextItem.id];
+
+      if (nextEl) {
+        // Scroll ke view dengan smooth behavior
+        nextEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Optional: Highlight efek
+        nextEl.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+        setTimeout(() => {
+          nextEl.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
+        }, 2000);
+
+        toast({
+          title: "Lanjut ke item berikutnya",
+          description: `Item: ${nextItem.item_name || 'Checklist Item'}`,
+        });
+      }
+    } else {
+      toast({
+        title: "Kategori Selesai",
+        description: "Anda telah mencapai akhir daftar checklist kategori ini.",
+      });
+    }
+  };
 
 
 
@@ -1053,15 +1109,17 @@ export default function InspectorChecklistDashboard({ inspectionId }) {
                 <Separator className="my-2 bg-border" />
                 <div className="space-y-6">
                   {items.map((item) => (
-                    <DynamicChecklistForm
-                      key={item.id}
-                      templateId={item.template_id}
-                      item={item}
-                      inspectionId={inspectionId}
-                      projectId={projectId}
-                      onSave={handleSaveChecklistItem}
-                      existingResponse={checklistResponses[item.id]}
-                    />
+                    <div key={item.id} ref={el => itemRefs.current[item.id] = el} className="scroll-mt-24 transition-all duration-300 rounded-lg">
+                      <DynamicChecklistForm
+                        templateId={item.template_id}
+                        item={item}
+                        inspectionId={inspectionId}
+                        projectId={projectId}
+                        onSave={handleSaveChecklistItem}
+                        existingResponse={checklistResponses[item.id]}
+                        onNext={() => handleNextItem(item.id)}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>

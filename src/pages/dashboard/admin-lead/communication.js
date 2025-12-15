@@ -97,8 +97,18 @@ const StatCard = ({ label, value, icon: Icon, color, helpText, loading, trend, o
 );
 
 // Message Thread Component
-const MessageThread = ({ messages, onSendMessage, loading, currentUser }) => {
+// Modern Chat Thread Component
+const MessageThread = ({ messages, onSendMessage, loading, currentUser, project, client }) => {
   const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = React.useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSend = () => {
     if (newMessage.trim()) {
@@ -109,140 +119,161 @@ const MessageThread = ({ messages, onSendMessage, loading, currentUser }) => {
 
   if (loading) {
     return (
-      <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-        <CardContent className="p-4">
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="flex space-x-3">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-16 w-full" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center h-full bg-slate-50 dark:bg-slate-900/50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="text-sm text-muted-foreground">Memuat obrolan...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-      <CardContent className="p-4">
-        <div className="h-96 overflow-y-auto space-y-4 mb-4">
-          {messages.length === 0 ? (
-            <div className="text-center py-8">
-              <MessageCircle className="w-12 h-12 mx-auto text-slate-400 mb-3" />
-              <p className="text-slate-500">Belum ada pesan</p>
-            </div>
-          ) : (
-            messages.map((message) => (
-              <div key={message.id} className={`flex ${message.sender_id === currentUser.id ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.sender_id === currentUser.id
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
-                  }`}>
-                  <p className="text-sm">{message.message}</p>
-                  <p className={`text-xs mt-1 ${message.sender_id === currentUser.id ? 'text-blue-100' : 'text-slate-500'
-                    }`}>
-                    {new Date(message.created_at).toLocaleTimeString('id-ID', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-              </div>
-            ))
-          )}
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900/50">
+      {/* Chat Header */}
+      <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shadow-sm z-10">
+        <div>
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            {project?.name}
+            {project && <Badge className={getStatusColor(project.status)}>{getStatusLabel(project.status)}</Badge>}
+          </h3>
+          <p className="text-sm text-slate-500 flex items-center gap-1">
+            <User className="w-3 h-3" />
+            {client?.name || 'Client'}
+          </p>
         </div>
+      </div>
 
-        <div className="flex space-x-2">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-slate-400">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+              <MessageCircle className="w-8 h-8" />
+            </div>
+            <p>Belum ada pesan di proyek ini</p>
+            <p className="text-sm">Mulai percakapan dengan mengirim pesan pertama.</p>
+          </div>
+        ) : (
+          messages.map((message, index) => {
+            const isMe = message.sender_id === currentUser.id;
+            const showTime = index === 0 || new Date(message.created_at) - new Date(messages[index - 1].created_at) > 300000;
+
+            return (
+              <div key={message.id || index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                {showTime && (
+                  <div className="w-full flex justify-center mb-4">
+                    <span className="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
+                      {new Date(message.created_at).toLocaleDateString('id-ID', { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                )}
+
+                <div className={`flex max-w-[80%] ${isMe ? 'flex-row-reverse' : 'flex-row'} items-end gap-2`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shrink-0 
+                     ${isMe ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>
+                    {isMe ? 'You' : (client?.name?.[0] || 'C')}
+                  </div>
+
+                  <div
+                    className={`px-4 py-3 rounded-2xl text-sm shadow-sm
+                       ${isMe
+                        ? 'bg-blue-600 text-white rounded-tr-none'
+                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-700 rounded-tl-none'
+                      }`}
+                  >
+                    {message.message}
+                  </div>
+                </div>
+                <span className="text-[10px] text-slate-400 mt-1 px-12">
+                  {new Date(message.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            );
+          })
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex gap-2 items-end max-w-4xl mx-auto">
           <Textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Ketik pesan..."
-            className="flex-1"
-            onKeyPress={(e) => {
+            placeholder="Ketik pesan anda..."
+            className="min-h-[50px] max-h-[150px] resize-none border-slate-200 dark:border-slate-700 focus:ring-blue-500 rounded-xl"
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSend();
               }
             }}
           />
-          <Button onClick={handleSend} disabled={!newMessage.trim()}>
-            <Send className="w-4 h-4" />
+          <Button
+            onClick={handleSend}
+            disabled={!newMessage.trim()}
+            className="h-[50px] w-[50px] rounded-xl bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+          >
+            <Send className="w-5 h-5" />
           </Button>
         </div>
-      </CardContent>
-    </Card>
+        <div className="text-center mt-2">
+          <span className="text-xs text-slate-400">Tekan Enter untuk mengirim, Shift + Enter untuk baris baru</span>
+        </div>
+      </div>
+    </div>
   );
 };
 
 // Client Communication Card Component
-const ClientCommunicationCard = ({ project, client, unreadCount, lastMessage, onViewThread, onContact, loading }) => {
-  if (loading) {
-    return (
-      <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-        <CardContent className="p-4">
-          <div className="flex items-center space-x-3">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2 flex-1">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-1/2" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+// Chat Sidebar Item
+const ChatSidebarItem = ({ project, client, unreadCount, lastMessage, isActive, onClick }) => {
   return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-shadow cursor-pointer">
-      <CardContent className="p-4" onClick={() => onViewThread(project.id, project.client_id)}>
-        <div className="flex items-start justify-between">
-          <div className="flex items-start space-x-3 flex-1">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Building className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between">
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
-                  {project.name}
-                </h3>
-                {unreadCount > 0 && (
-                  <Badge variant="destructive" className="ml-2">
-                    {unreadCount}
-                  </Badge>
-                )}
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 flex items-center">
-                <User className="w-3 h-3 mr-1" />
-                {client?.name || 'Client'}
-              </p>
+    <div
+      onClick={() => onClick(project.id, project.client_id)}
+      className={`
+        w-full p-4 flex items-start space-x-3 cursor-pointer transition-all duration-200 border-b border-slate-100 dark:border-slate-800
+        ${isActive
+          ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-600'
+          : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border-l-4 border-l-transparent'
+        }
+      `}
+    >
+      <div className={`p-2 rounded-lg shrink-0 ${isActive ? 'bg-blue-200 dark:bg-blue-800' : 'bg-slate-100 dark:bg-slate-800'}`}>
+        <Building className={`w-5 h-5 ${isActive ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'}`} />
+      </div>
 
-              {lastMessage && (
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 truncate">
-                  {lastMessage.message}
-                </p>
-              )}
-
-              <div className="flex items-center space-x-2 mt-2">
-                <Badge className={getStatusColor(project.status)}>
-                  {getStatusLabel(project.status)}
-                </Badge>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {lastMessage
-                    ? new Date(lastMessage.created_at).toLocaleDateString('id-ID')
-                    : new Date(project.created_at).toLocaleDateString('id-ID')
-                  }
-                </span>
-              </div>
-            </div>
-          </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-start mb-1">
+          <h4 className={`font-semibold text-sm truncate pr-2 ${isActive ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-slate-100'}`}>
+            {project.name}
+          </h4>
+          <span className="text-[10px] text-slate-400 shrink-0">
+            {lastMessage
+              ? new Date(lastMessage.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+              : new Date(project.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+            }
+          </span>
         </div>
-      </CardContent>
-    </Card>
+
+        <p className="text-xs text-slate-500 mb-1 flex items-center">
+          <User className="w-3 h-3 mr-1" />
+          {client?.name || 'Client'}
+        </p>
+
+        <div className="flex justify-between items-center">
+          <p className={`text-xs truncate max-w-[140px] ${unreadCount > 0 ? 'font-bold text-slate-800 dark:text-slate-200' : 'text-slate-500'}`}>
+            {lastMessage ? lastMessage.message : 'Belum ada pesan'}
+          </p>
+          {unreadCount > 0 && (
+            <span className="h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow-sm">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -291,6 +322,7 @@ export default function AdminLeadCommunicationPage() {
             phone
           )
         `)
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
         .order('created_at', { ascending: false });
 
       if (projectsError) throw projectsError;
@@ -360,12 +392,14 @@ export default function AdminLeadCommunicationPage() {
       const activeProjects = projectsData?.filter(p => !['completed', 'cancelled'].includes(p.status)).length || 0;
       const completedProjects = projectsData?.filter(p => p.status === 'completed').length || 0;
 
+      const unreadMsgCount = (messagesData || []).filter(m => !m.read_at && m.sender_id !== user.id).length;
+
       setStats({
         totalProjects,
         activeProjects,
         completedProjects,
         clients: clientsData?.length || 0,
-        unreadMessages: unreadMessagesCount + unreadNotificationsCount,
+        unreadMessages: unreadMsgCount + unreadNotificationsCount,
         pendingDocuments: pendingDocsCount || 0,
         upcomingSchedules: schedulesCount || 0
       });
@@ -408,6 +442,7 @@ export default function AdminLeadCommunicationPage() {
           message: content,
           project_id: projectId,
           sender_id: user.id,
+          message_type: 'message_to_client' // Or dynamic based on sender
         }]);
 
       if (error) throw error;
@@ -486,27 +521,24 @@ export default function AdminLeadCommunicationPage() {
     return matchesSearch && matchesStatus && matchesClient;
   });
 
-  // ✅ PERBAIKAN: Group messages by project and client
-  const getProjectMessages = (projectId, clientId) => {
-    return messages.filter(msg =>
-      msg.project_id === projectId &&
-      (msg.sender_id === user.id || msg.recipient_id === user.id)
-    );
+  // ✅ PERBAIKAN: Group messages by project (Simplified without recipient_id)
+  const getProjectMessages = (projectId) => {
+    return messages.filter(msg => msg.project_id === projectId);
   };
 
-  // Get unread count for project-client thread
-  const getUnreadCount = (projectId, clientId) => {
+  // Get unread count for project thread
+  const getUnreadCount = (projectId) => {
     return messages.filter(msg =>
       msg.project_id === projectId &&
-      msg.recipient_id === user.id &&
-      !msg.is_read
+      !msg.read_at &&
+      msg.sender_id !== user.id
     ).length;
   };
 
-  // Get last message for project-client thread
-  const getLastMessage = (projectId, clientId) => {
-    const threadMessages = getProjectMessages(projectId, clientId);
-    return threadMessages.length > 0 ? threadMessages[0] : null;
+  // Get last message for project thread
+  const getLastMessage = (projectId) => {
+    const threadMessages = getProjectMessages(projectId);
+    return threadMessages.length > 0 ? threadMessages[threadMessages.length - 1] : null;
   };
 
   if (authLoading || (user && !isAdminLead)) {
@@ -521,191 +553,101 @@ export default function AdminLeadCommunicationPage() {
   }
 
   return (
-    <DashboardLayout title="Komunikasi dengan Client">
-      <TooltipProvider>
-        <motion.div
-          className="p-6 space-y-8 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Header Actions */}
-          <motion.div variants={itemVariants} className="flex justify-between items-center">
-            <p className="text-slate-600 dark:text-slate-400">
-              Kelola pesan dan notifikasi dari client terkait proyek SLF.
-            </p>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
+  return (
+    <DashboardLayout title="Komunikasi & Pesan">
+      <div className="h-[calc(100vh-8rem)] bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden flex">
+
+        {/* Left Sidebar - Chat List */}
+        <div className="w-1/3 min-w-[320px] max-w-[400px] border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900">
+
+          {/* Sidebar Header */}
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Pesan</h2>
+              <Button size="icon" variant="ghost" onClick={handleRefresh} disabled={loading}>
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => router.push('/dashboard/admin-lead')}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Kembali ke Dashboard
               </Button>
             </div>
-          </motion.div>
 
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
-
-          {/* Stats Overview */}
-          <motion.section variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">
-              Ringkasan
-            </h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-6">
-              <StatCard
-                label="Total Proyek"
-                value={stats.totalProjects}
-                icon={Building}
-                color="text-blue-600 dark:text-blue-400"
-                helpText="Jumlah total proyek dalam sistem"
-                loading={loading}
-                trend={2}
-              />
-              <StatCard
-                label="Proyek Aktif"
-                value={stats.activeProjects}
-                icon={Clock}
-                color="text-orange-600 dark:text-orange-400"
-                helpText="Proyek yang sedang dikerjakan"
-                loading={loading}
-                trend={5}
-              />
-              <StatCard
-                label="Client"
-                value={stats.clients}
-                icon={Users}
-                color="text-cyan-600 dark:text-cyan-400"
-                helpText="Jumlah client terdaftar"
-                loading={loading}
-                trend={1}
-              />
-              <StatCard
-                label="Pesan Belum Dibaca"
-                value={stats.unreadMessages}
-                icon={Mail}
-                color="text-red-600 dark:text-red-400"
-                helpText="Pesan dan notifikasi baru"
-                loading={loading}
-                trend={stats.unreadMessages > 0 ? 20 : 0}
-              />
-              <StatCard
-                label="Dokumen Tertunda"
-                value={stats.pendingDocuments}
-                icon={AlertCircle}
-                color="text-yellow-600 dark:text-yellow-400"
-                helpText="Dokumen menunggu verifikasi"
-                loading={loading}
-                trend={stats.pendingDocuments > 0 ? 15 : 0}
-              />
-              <StatCard
-                label="Jadwal Mendatang"
-                value={stats.upcomingSchedules}
-                icon={Calendar}
-                color="text-purple-600 dark:text-purple-400"
-                helpText="Jadwal dalam 7 hari ke depan"
-                loading={loading}
-                trend={8}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Cari project atau client..."
+                className="pl-9 bg-slate-50 dark:bg-slate-800 border-none"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-          </motion.section>
 
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
-
-          {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Project List */}
-            <div className="lg:col-span-1 space-y-4">
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building className="w-5 h-5" />
-                    Daftar Proyek & Client
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {/* Search & Filter */}
-                    <div className="space-y-3">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <Input
-                          placeholder="Cari proyek atau client..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10"
-                        />
-                      </div>
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2"
-                      >
-                        <option value="all">Semua Status</option>
-                        <option value="active">Aktif</option>
-                        <option value="completed">Selesai</option>
-                        <option value="cancelled">Dibatalkan</option>
-                      </select>
-                    </div>
-
-                    {/* Project List */}
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {filteredProjects.map((project) => (
-                        <ClientCommunicationCard
-                          key={project.id}
-                          project={project}
-                          client={project.clients}
-                          unreadCount={getUnreadCount(project.id, project.client_id)}
-                          lastMessage={getLastMessage(project.id, project.client_id)}
-                          onViewThread={handleViewThread}
-                          onContact={handleContactClient}
-                          loading={loading}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Message Thread */}
-            <div className="lg:col-span-2">
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5" />
-                    {selectedThread ? 'Percakapan' : 'Pilih Proyek untuk Melihat Percakapan'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {selectedThread ? (
-                    <MessageThread
-                      messages={getProjectMessages(selectedThread.projectId, selectedThread.clientId)}
-                      onSendMessage={(content) => handleSendMessage(content, selectedThread.projectId, selectedThread.clientId)}
-                      loading={loading}
-                      currentUser={user}
-                    />
-                  ) : (
-                    <div className="text-center py-12">
-                      <MessageCircle className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                      <p className="text-slate-500">Pilih proyek untuk memulai percakapan</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+            {/* Filter Tabs - Optional, keep simple for now or use Select */}
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar">
+              {['all', 'active', 'completed'].map(status => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors
+                      ${statusFilter === status
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200'
+                    }`}
+                >
+                  {status === 'all' ? 'Semua' : (status === 'active' ? 'Aktif' : 'Selesai')}
+                </button>
+              ))}
             </div>
           </div>
-        </motion.div>
-      </TooltipProvider>
+
+          {/* Chat List */}
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <div className="p-4 space-y-4">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
+              </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="p-8 text-center text-slate-500">
+                <p>Tidak ada proyek ditemukan</p>
+              </div>
+            ) : (
+              filteredProjects.map((project) => (
+                <ChatSidebarItem
+                  key={project.id}
+                  project={project}
+                  client={project.clients}
+                  unreadCount={getUnreadCount(project.id)}
+                  lastMessage={getLastMessage(project.id)}
+                  isActive={selectedThread?.projectId === project.id}
+                  onClick={handleViewThread}
+                />
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Right Content - Chat Window */}
+        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900/50 relative">
+          {selectedThread ? (
+            <MessageThread
+              messages={getProjectMessages(selectedThread.projectId)}
+              onSendMessage={(content) => handleSendMessage(content, selectedThread.projectId, selectedThread.clientId)}
+              loading={loading}
+              currentUser={user}
+              project={projects.find(p => p.id === selectedThread.projectId)}
+              client={projects.find(p => p.id === selectedThread.projectId)?.clients}
+            />
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+              <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                <MessageCircle className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">Selamat Datang di Pesan</h3>
+              <p className="text-slate-500 max-w-md text-center">
+                Pilih salah satu proyek dari daftar di sebelah kiri untuk mulai berkomunikasi dengan Client.
+              </p>
+            </div>
+          )}
+        </div>
+
+      </div>
     </DashboardLayout>
   );
 }

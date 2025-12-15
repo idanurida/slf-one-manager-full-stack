@@ -29,6 +29,17 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [uiReady, setUiReady] = useState(false);
+  const [showRegistrationSuccess, setShowRegistrationSuccess] = useState(false);
+
+  // Check for registration success query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('registered') === 'true') {
+      setShowRegistrationSuccess(true);
+      // Remove the query param from URL without reload
+      window.history.replaceState({}, '', '/login');
+    }
+  }, []);
 
   // ✅ OPTIMIZED: Show UI immediately, don't wait for auth
   useEffect(() => {
@@ -180,6 +191,15 @@ export default function LoginPage() {
             </CardHeader>
 
             <CardContent className="space-y-4">
+              {showRegistrationSuccess && (
+                <Alert className="bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-100">
+                  <AlertDescription className="text-sm">
+                    <strong>✅ Registrasi Berhasil!</strong><br />
+                    Silakan konfirmasi email Anda terlebih dahulu, kemudian tunggu approval dari Superadmin sebelum dapat login.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {error && (
                 <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
                   <AlertTriangle className="h-4 w-4 text-destructive" />

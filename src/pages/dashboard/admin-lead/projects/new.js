@@ -48,7 +48,7 @@ const JENIS_PERMOHONAN = {
 // Fase Timeline berdasarkan jenis
 const getDefaultPhases = (applicationType) => {
   const isSLF = applicationType?.startsWith('SLF');
-  
+
   if (isSLF) {
     return [
       { phase: 1, name: 'Persiapan Dokumen', duration: 7, description: 'Pengumpulan dan verifikasi dokumen persyaratan' },
@@ -156,7 +156,7 @@ export default function NewProjectPage() {
   const handlePhaseChange = (index, duration) => {
     setFormData(prev => ({
       ...prev,
-      phases: prev.phases.map((p, i) => 
+      phases: prev.phases.map((p, i) =>
         i === index ? { ...p, duration: parseInt(duration) || 1 } : p
       )
     }));
@@ -319,7 +319,7 @@ export default function NewProjectPage() {
                 <Badge variant="outline">{Math.round(progress)}%</Badge>
               </div>
               <Progress value={progress} className="h-2" />
-              
+
               {/* Step indicators */}
               <div className="flex justify-between mt-4">
                 {FORM_STEPS.map((step, index) => (
@@ -497,7 +497,7 @@ export default function NewProjectPage() {
                       {errors.client_id && <p className="text-sm text-destructive">{errors.client_id}</p>}
                     </div>
 
-                    <Button type="button" variant="outline" size="sm" onClick={() => router.push('/dashboard/admin-lead/clients')}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => router.push('/dashboard/admin-lead/clients/new?returnUrl=/dashboard/admin-lead/projects/new')}>
                       <Plus className="w-4 h-4 mr-2" />
                       Tambah Klien Baru
                     </Button>

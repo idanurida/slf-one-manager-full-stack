@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Camera, MapPin, Trash2, RefreshCw,
-  Loader2, AlertTriangle, Upload, Building, ImagePlus, X, Video
+  Loader2, AlertTriangle, Upload,
+  X, CheckCircle, Navigation, Repeat
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/utils/supabaseClient';
@@ -32,6 +33,7 @@ const MapWithNoSSR = dynamic(
 const CameraGeotagging = ({
   onCapture,
   onSave,
+  onNext, // New prop for auto-advance
   initialPhoto = null,
   initialLocation = null,
   inspectionId,
@@ -44,6 +46,9 @@ const CameraGeotagging = ({
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Mode: 'camera' | 'preview' | 'manual'
+  const [mode, setMode] = useState('camera');
+
   // Photo & Location states
   const [photo, setPhoto] = useState(initialPhoto);
   const [location, setLocation] = useState(initialLocation);
@@ -51,706 +56,504 @@ const CameraGeotagging = ({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [caption, setCaption] = useState('');
-  const [floorInfo, setFloorInfo] = useState('');
 
   // Camera states
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [stream, setStream] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
 
   // Refs
-  const fileInputRef = useRef(null);
-  const galleryInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-  // Check if mobile on mount
+  // Initialize: Request Permissions & Start Camera + GPS
   useEffect(() => {
-    const checkMobile = () => {
-      const userAgent = typeof window.navigator === "undefined" ? "" : navigator.userAgent;
-      const isTouch = typeof navigator !== "undefined" && (navigator.maxTouchPoints > 0);
-      const mobileRegex = /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i;
-      // Fallback: Check screen width just in case userAgent fails
-      const isSmallScreen = typeof window !== "undefined" && window.innerWidth <= 768;
+    startCameraAndGPS();
 
-      const mobile = Boolean(userAgent.match(mobileRegex)) || (isTouch && isSmallScreen);
-      setIsMobile(mobile);
+    return () => {
+      stopCamera();
     };
-    checkMobile();
   }, []);
 
-  // Cleanup stream on unmount
-  useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [stream]);
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+  };
 
-  // --- Geolocation Functions ---
+  const startCameraAndGPS = async () => {
+    setError('');
+    setIsCameraReady(false);
+
+    try {
+      // 1. Start GPS
+      getCurrentLocation();
+
+      // 2. Start Camera
+      // Note: 'environment' is the back camera, which is standard for inspections
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
+        audio: false
+      });
+
+      setStream(mediaStream);
+      setIsCameraReady(true);
+
+    } catch (err) {
+      console.error("Camera Init Error:", err);
+      // Fallback message, but we stay in camera mode to allow "Manual Upload" switch
+      if (err.name === 'NotAllowedError') {
+        setError('Akses kamera ditolak. Mohon izinkan akses kamera.');
+      } else {
+        setError('Gagal mengakses kamera: ' + err.message);
+      }
+    }
+  };
+
+  // Attach stream to video element
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream, mode]);
+
+  // --- Geolocation ---
 
   const getCurrentLocation = useCallback((useHighAccuracy = true) => {
     setIsLoadingLocation(true);
-    setError('');
 
     if (!navigator.geolocation) {
-      setError('Geolocation tidak didukung oleh browser ini.');
+      setError('Geolocation tidak didukung browser ini.');
       setIsLoadingLocation(false);
       return;
     }
 
     const options = {
       enableHighAccuracy: useHighAccuracy,
-      timeout: useHighAccuracy ? 5000 : 10000,
-      maximumAge: 30000
+      timeout: useHighAccuracy ? 10000 : 15000,
+      maximumAge: 5000
     };
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => { // Async to fetch address
+      async (position) => {
         const { latitude, longitude, accuracy } = position.coords;
         const newLocation = {
           lat: latitude,
           lng: longitude,
           accuracy: accuracy,
           timestamp: position.timestamp,
-          isDefault: !useHighAccuracy
         };
 
-        setLocation(newLocation);
-
-        // Fetch Address Details (Reverse Geocoding)
+        // Reverse Geocoding for "Metadata sesuai data administrasi"
         try {
           const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
           const data = await response.json();
           if (data && data.address) {
-            const addr = data.address;
-            const formattedAddress = {
-              village: addr.village || addr.suburb || addr.hamlet || '-',
-              district: addr.city_district || addr.county || '-',
-              city: addr.city || addr.town || addr.municipality || '-',
-              province: addr.state || '-'
+            newLocation.address = {
+              village: data.address.village || data.address.suburb || '-',
+              district: data.address.city_district || data.address.county || '-',
+              city: data.address.city || data.address.town || '-',
+              province: data.address.state || '-'
             };
-            newLocation.address = formattedAddress;
-            setLocation({ ...newLocation }); // Update with address
           }
-        } catch (fetchErr) {
-          console.error("Failed to fetch address details:", fetchErr);
-          // Don't error out, just continue without address
+        } catch (e) {
+          console.error("Geocoding failed", e);
         }
 
+        setLocation(newLocation);
         setIsLoadingLocation(false);
       },
       (err) => {
-        // PERMISSION DENIED (Code 1) - Don't retry, just warn
-        if (err.code === 1) {
-          console.warn('Location permission denied');
+        console.warn('GPS Error:', err);
+        if (useHighAccuracy) {
+          // Retry with lower accuracy
+          getCurrentLocation(false);
+        } else {
+          setIsLoadingLocation(false);
+          // Don't set global error yet, just toast, as user might want to manual upload
           toast({
-            title: "Izin Lokasi Ditolak",
-            description: "Foto tidak dapat disimpan tanpa data lokasi (GPS).",
+            title: "Sinyal GPS Lemah",
+            description: "Gagal mendapatkan lokasi akurat. Coba geser posisi atau gunakan upload manual.",
             variant: "destructive"
           });
-          // We set location to null but don't block. User can still save.
-          setIsLoadingLocation(false);
-          return;
         }
-
-        // TIME OUT (Code 3) or UNAVAILABLE (Code 2) - Retry with low accuracy
-        if (useHighAccuracy) {
-          console.log('High accuracy GPS timed out/failed, trying low accuracy...');
-          getCurrentLocation(false);
-          return;
-        }
-
-        console.error('Geolocation error:', err);
-        let msg = 'Gagal mengambil lokasi.';
-        if (err.code === 2) msg = 'Posisi tidak tersedia (aktifkan GPS).';
-        else if (err.code === 3) msg = 'Timeout mengambil lokasi (GPS lemah).';
-
-        // Show as warning but continue
-        setError(msg);
-        setIsLoadingLocation(false);
       },
       options
     );
   }, [toast]);
 
-  // --- Camera Functions ---
+  // --- Capture ---
 
-  const openCamera = async () => {
-    setError('');
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
 
-    if (isMobile) {
-      // Mobile: use native file input
-      fileInputRef.current?.click();
+    // Check GPS lock requirement
+    if (!location) {
+      toast({
+        title: "Menunggu GPS",
+        description: "Lokasi belum terdeteksi. Mohon tunggu sebentar.",
+        variant: "destructive"
+      });
       return;
     }
-
-    // Desktop/Webcam
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      });
-      setStream(mediaStream);
-      setIsCameraOpen(true);
-
-      // Auto-get location when camera opens
-      getCurrentLocation();
-
-    } catch (err) {
-      console.error('Camera error:', err);
-      setError('Gagal mengakses kamera. Pastikan izin diberikan.');
-    }
-  };
-
-  const closeCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
-    setIsCameraOpen(false);
-  };
-
-  const openGallery = () => {
-    galleryInputRef.current?.click();
-  };
-
-  // --- Photo Handling (Capture from Webcam) ---
-
-  const captureFromWebcam = () => {
-    if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    // Set canvas dimensions to video dimensions
+    // Set Dimensions
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Draw
-    const context = canvas.getContext('2d');
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext('2d');
 
-    // Get Data URL
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    // Draw Video Frame
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Draw Metadata Overlay (Watermark)
+    // "Berikan metadata lokasi sesuai data administrasi serta titik kordinat..."
+    drawWatermark(ctx, canvas.width, canvas.height, location);
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
     setPhoto({
       dataUrl,
-      width: canvas.width,
-      height: canvas.height,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      location: location
     });
 
-    // Attempt to get location if not yet available
-    if (!location) getCurrentLocation();
-
-    closeCamera();
-
-    if (onCapture) onCapture(dataUrl);
+    setMode('preview');
   };
 
-  // --- Photo Handling (File Input) ---
+  const drawWatermark = (ctx, width, height, loc) => {
+    // Semi-transparent background at bottom
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    const barHeight = height * 0.18; // Slightly larger for better readability
+    ctx.fillRect(0, height - barHeight, width, barHeight);
 
-  const handleFileSelect = (e) => {
+    // Text settings
+    ctx.fillStyle = 'white';
+    ctx.textBaseline = 'middle';
+
+    // Font size relative to image
+    const fontSize = Math.max(14, width * 0.03);
+    ctx.font = `bold ${fontSize}px sans-serif`;
+
+    const padding = width * 0.03;
+    let currentY = height - barHeight + padding + (fontSize / 2);
+    const lineHeight = fontSize * 1.4;
+
+    // Line 1: Date & Time
+    const dateStr = new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'medium' });
+    ctx.fillText(`📅 ${dateStr}`, padding, currentY);
+
+    // Line 2: Coords
+    currentY += lineHeight;
+    ctx.fillText(`📍 ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)} (±${Math.round(loc.accuracy)}m)`, padding, currentY);
+
+    // Line 3: Address (if available)
+    if (loc.address) {
+      currentY += lineHeight;
+      // Truncate address if too long
+      const addrStr = `🏠 ${loc.address.city}, ${loc.address.district}`;
+      ctx.fillText(addrStr, padding, currentY);
+    }
+  };
+
+  // --- Manual Upload Handlers ---
+
+  const handleManualFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsLoadingLocation(true); // Show loading while processing
-
+    // Process file
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        // Resize logic using canvas
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-
-        // Max dimensions (e.g. 1280px)
-        const MAX_WIDTH = 1280;
-        const MAX_HEIGHT = 1280;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-
+        // Create a canvas to resize if needed and add watermark (manual upload watermark?)
+        // Ideally manual upload just keeps the photo. Let's not resize for now to keep it simple.
         setPhoto({
-          dataUrl,
-          file, // Keep raw file reference if needed
-          width,
-          height,
-          timestamp: new Date().toISOString()
+          dataUrl: event.target.result,
+          timestamp: new Date().toISOString(),
+          location: null, // Manual upload has no verified location
+          isManual: true
         });
-
-        // Try to get current location for the new photo
-        getCurrentLocation();
-
-        if (onCapture) onCapture(dataUrl);
-        setIsLoadingLocation(false);
+        setMode('preview');
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
-
-    // Reset inputs
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    if (galleryInputRef.current) galleryInputRef.current.value = '';
   };
 
-  const removePhoto = () => {
+  // --- Save / Retake ---
+
+  const handleRetake = () => {
     setPhoto(null);
-    setCaption('');
-    setFloorInfo('');
-    if (onCapture) onCapture(null);
+    setMode('camera');
+    // Re-check GPS just in case
+    getCurrentLocation();
   };
 
-  // --- Save / Upload ---
+  const handleSaveConfirmed = async () => {
+    if (!photo) return;
 
-  const handleSaveToDatabase = async () => {
-    // 1. Strict Validation: Location is mandatory
-    if (!location) {
-      toast({
-        title: "Lokasi Wajib",
-        description: "Foto tidak dapat disimpan tanpa data lokasi (GPS). Pastikan GPS aktif.",
-        variant: "destructive"
-      });
-      setError('Lokasi (GPS) wajib aktif untuk menyimpan foto.');
-      return;
-    }
-
-    if (!photo || !caption) {
-      setError('Foto dan Keterangan wajib diisi.');
+    // Validation
+    if (!photo.isManual && !photo.location) {
+      toast({ title: "Error", description: "Data lokasi hilang saat menyimpan.", variant: "destructive" });
       return;
     }
 
     setIsSaving(true);
-    setError('');
 
     try {
-      // 1. Upload Image to Supabase Storage
-
-      // Convert Data URL to Blob
+      // 1. Upload to Supabase
       const res = await fetch(photo.dataUrl);
       const blob = await res.blob();
-      const fileName = `inspection_${inspectionId || 'temp'}_${Date.now()}.jpg`;
+      const fileName = `insp_${inspectionId || '0'}_item_${checklistItemId || '0'}_${Date.now()}.jpg`;
       const filePath = `${projectId || 'misc'}/${fileName}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('evidence-photos') // Ensure this bucket exists
+      const { error: uploadError } = await supabase.storage
+        .from('inspection_photos')
         .upload(filePath, blob);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('evidence-photos')
+        .from('inspection_photos')
         .getPublicUrl(filePath);
 
-      // 2. Insert Record to Database
-      // Determine GPS quality
-      let gpsQuality = 'poor';
-      if (location?.accuracy) {
-        if (location.accuracy <= 10) gpsQuality = 'excellent';
-        else if (location.accuracy <= 50) gpsQuality = 'good';
-        else if (location.accuracy <= 100) gpsQuality = 'fair';
-      }
-
-      const photoData = {
+      // 2. Save DB Record
+      const photoRecord = {
         inspection_id: inspectionId,
         checklist_item_id: checklistItemId,
         project_id: projectId || null,
         uploaded_by: user?.id,
         photo_url: publicUrl,
         caption: caption,
-        floor_info: floorInfo,
-        item_name: itemName || null,
-        category: location?.address ? JSON.stringify(location.address) : null, // Store address in category or separate field? Schema check needed. 
-        // Previous AutoPhotoGeotag used 'category' prop. Let's use it if passed, or fallback.
-        // valid columns in inspection_photos: inspection_id, checklist_item_id, item_name, photo_url, caption, latitude, longitude, accuracy, gps_quality, captured_at...
 
-        file_path: filePath,
-        file_name: fileName,
+        // Save Metadata
+        latitude: photo.location?.lat || null,
+        longitude: photo.location?.lng || null,
+        accuracy: photo.location?.accuracy || null,
+        gps_quality: photo.isManual ? 'manual' : (photo.location?.accuracy <= 20 ? 'excellent' : 'good'),
 
-        latitude: location?.lat || null,
-        longitude: location?.lng || null,
-        accuracy: location?.accuracy || null,
-        gps_quality: gpsQuality,
-
-        captured_at: photo.timestamp || new Date().toISOString()
+        captured_at: photo.timestamp,
+        category: photo.location?.address ? JSON.stringify(photo.location.address) : null
       };
 
-      const { data: savedRecord, error: dbError } = await supabase
+      const { data: savedData, error: dbError } = await supabase
         .from('inspection_photos')
-        .insert(photoData)
+        .insert(photoRecord)
         .select()
         .single();
 
       if (dbError) throw dbError;
 
       toast({
-        title: "Berhasil",
-        description: "Foto dan data lokasi berhasil disimpan.",
-        variant: "default" // or success if configured
+        title: "Berhasil Tersimpan",
+        description: photo.isManual ? "Foto manual tersimpan." : "Foto dan lokasi tersimpan.",
+        variant: "default"
       });
 
-      // 3. Callback to parent
-      if (onSave) {
-        // Pass the FULL saved record so parent can display it
-        onSave(savedRecord);
+      // 3. Callback
+      if (onSave) onSave(savedData);
+
+      // 4. Auto-advance Logic ("Kembali ke nomor checklist selanjutnya")
+      if (onNext) {
+        // Add a small delay for UX so user sees the success state briefly
+        setTimeout(() => {
+          onNext();
+        }, 800);
       }
 
-      // Close/Reset
-      setPhoto(null);
-      setCaption('');
-      setFloorInfo('');
-
-      // Trigger "Next" if asked? Parent handles "redirect".
-
     } catch (err) {
-      console.error('Save error:', err);
-      setError(`Gagal menyimpan: ${err.message}`);
+      console.error("Save Error:", err);
+      toast({ title: "Gagal Menyimpan", description: err.message, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
   };
 
+  // --- Renders ---
 
-  return (
-    <div className={`w-full space-y-4 ${className}`}>
-      {/* Hidden elements */}
-      {/* Input khusus Kamera (Mobile Only mostly) */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={handleFileSelect}
-        style={{ display: 'none' }}
-      />
-      {/* Input khusus Gallery (Mobile & Desktop) */}
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileSelect}
-        style={{ display: 'none' }}
-      />
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
+  // 1. Camera View
+  if (mode === 'camera') {
+    return (
+      <div className={`flex flex-col h-[500px] md:h-[600px] bg-black rounded-lg overflow-hidden ${className}`}>
+        {/* Helper Canvas */}
+        <canvas ref={canvasRef} className="hidden" />
 
-      {/* Error */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Webcam View (Laptop only) - Rendered only if camera open */}
-      {isCameraOpen && !isMobile && (
-        <Card className="border-2 border-blue-500">
-          <CardContent className="p-0">
-            <div className="relative bg-black rounded-t-lg overflow-hidden">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full"
-                style={{ maxHeight: '400px', objectFit: 'contain' }}
-              />
-
-              {/* GPS overlay */}
-              <div className="absolute top-2 left-2">
-                <Badge variant={location ? "default" : "secondary"} className="text-xs bg-black/50">
-                  <MapPin className="w-3 h-3 mr-1" />
-                  {location ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : 'Mencari GPS...'}
-                </Badge>
-              </div>
-            </div>
-
-            {/* Control bar */}
-            <div className="bg-slate-900 p-4 rounded-b-lg">
-              <div className="flex justify-center items-center gap-4">
-                <Button
-                  onClick={closeCamera}
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-slate-700 rounded-full w-12 h-12"
-                >
-                  <X className="w-6 h-6" />
-                </Button>
-
-                {/* Capture Button */}
-                <button
-                  onClick={captureFromWebcam}
-                  className="w-16 h-16 rounded-full bg-white border-4 border-red-500 flex items-center justify-center hover:scale-105 transition-transform active:scale-95 shadow-lg"
-                  title="Ambil Foto"
-                >
-                  <div className="w-12 h-12 bg-red-500 rounded-full" />
-                </button>
-
-                <Button
-                  onClick={getCurrentLocation}
-                  variant="ghost"
-                  size="icon"
-                  disabled={isLoadingLocation}
-                  className="text-white hover:bg-slate-700 rounded-full w-12 h-12"
-                >
-                  {isLoadingLocation ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-5 h-5" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-center text-slate-400 text-sm mt-2">
-                Tekan tombol merah untuk mengambil foto
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Photo Section */}
-      {!isCameraOpen && (
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="text-lg font-semibold mb-3">
-              {photo ? 'Foto Terpilih' : 'Ambil Foto'}
-            </h3>
-
-            {photo ? (
-              // Photo Preview
-              <div className="space-y-3">
-                <div className="relative">
-                  <img
-                    src={photo.dataUrl}
-                    alt="Preview"
-                    className="w-full max-h-[300px] object-contain rounded-lg border"
-                  />
-                  <Button
-                    onClick={removePhoto}
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2 rounded-full"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-
-                  {/* Status Badge */}
-                  {location ? (
-                    <Badge className="absolute bottom-2 left-2 bg-green-600">
-                      <MapPin className="w-3 h-3 mr-1" />
-                      GPS Terkunci
-                    </Badge>
-                  ) : (
-                    <Badge variant="destructive" className="absolute bottom-2 left-2">
-                      <AlertTriangle className="w-3 h-3 mr-1" />
-                      Lokasi Wajib
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Metadata Preview */}
-                <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg text-sm space-y-1 border">
-                  <p className="font-semibold text-slate-700 dark:text-slate-300 border-b pb-1 mb-1">
-                    Metadata Foto
-                  </p>
-                  <p className="grid grid-cols-3 gap-2">
-                    <span className="text-slate-500">Waktu:</span>
-                    <span className="col-span-2 font-mono">
-                      {photo.timestamp ? new Date(photo.timestamp).toLocaleString('id-ID') : '-'}
-                    </span>
-                  </p>
-                  <p className="grid grid-cols-3 gap-2">
-                    <span className="text-slate-500">Koordinat:</span>
-                    <span className="col-span-2 font-mono">
-                      {location ? `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}` : 'Menunggu GPS...'}
-                    </span>
-                  </p>
-                  <p className="grid grid-cols-3 gap-2">
-                    <span className="text-slate-500">Akurasi:</span>
-                    <span className="col-span-2">
-                      {location ? `±${Math.round(location.accuracy)} meter` : '-'}
-                    </span>
-                  </p>
-                  {location?.address && (
-                    <>
-                      <p className="grid grid-cols-3 gap-2">
-                        <span className="text-slate-500">Desa/Kel:</span>
-                        <span className="col-span-2">{location.address.village}</span>
-                      </p>
-                      <p className="grid grid-cols-3 gap-2">
-                        <span className="text-slate-500">Kecamatan:</span>
-                        <span className="col-span-2">{location.address.district}</span>
-                      </p>
-                      <p className="grid grid-cols-3 gap-2">
-                        <span className="text-slate-500">Kota/Kab:</span>
-                        <span className="col-span-2">{location.address.city}</span>
-                      </p>
-                      <p className="grid grid-cols-3 gap-2">
-                        <span className="text-slate-500">Provinsi:</span>
-                        <span className="col-span-2">{location.address.province}</span>
-                      </p>
-                    </>
-                  )}
-                  {!location && (
-                    <p className="text-red-500 text-xs mt-2 italic">
-                      * Lokasi belum ditemukan. Pastikan GPS aktif.
-                    </p>
-                  )}
-                </div>
-              </div>
-            ) : (
-              // Capture Buttons
-              <div className="flex flex-col items-center justify-center py-8 bg-slate-50 dark:bg-slate-800 rounded-lg border-2 border-dashed">
-                <Camera className="w-12 h-12 text-slate-400 mb-4" />
-                <p className="text-slate-500 mb-4 text-center">
-                  {isMobile ? 'Ambil foto dengan kamera' : 'Pilih metode pengambilan foto'}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button
-                    onClick={openCamera}
-                    size="lg"
-                    className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
-                  >
-                    <Camera className="w-5 h-5 mr-2" />
-                    {isMobile ? 'Buka Kamera' : 'Buka Webcam'}
-                  </Button>
-
-                  <Button
-                    onClick={openGallery}
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                    type="button"
-                  >
-                    <ImagePlus className="w-5 h-5 mr-2" />
-                    {isMobile ? 'Galeri / File' : 'Upload File'}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Location Section */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-semibold">Lokasi GPS</h3>
-            <Button
-              onClick={getCurrentLocation}
-              disabled={isLoadingLocation}
-              variant="outline"
-              size="sm"
-            >
-              {isLoadingLocation ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-
-          {location ? (
-            <div className="space-y-3">
-              <div className={`p-3 rounded-lg ${location.isDefault ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'} border`}>
-                <div className="flex items-center gap-2">
-                  <MapPin className={`w-5 h-5 ${location.isDefault ? 'text-yellow-600' : 'text-green-600'}`} />
-                  <div>
-                    <p className="font-medium">{location.lat.toFixed(6)}, {location.lng.toFixed(6)}</p>
-                    <p className="text-sm text-slate-500">
-                      Akurasi: ±{Math.round(location.accuracy)}m
-                      {location.isDefault && ' (Lokasi default)'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mini Map */}
-              <div className="h-48 rounded-lg overflow-hidden border">
-                <MapWithNoSSR lat={location.lat} lng={location.lng} />
-              </div>
-            </div>
+        {/* Video Viewport */}
+        <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
+          {stream ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute w-full h-full object-cover"
+            />
           ) : (
-            <div className="text-center py-4 text-slate-500">
-              <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>Mendapatkan lokasi...</p>
+            <div className="text-white text-center p-4">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+              <p>Menyiapkan kamera...</p>
+              {error && <p className="text-red-400 mt-2 text-sm">{error}</p>}
             </div>
           )}
-        </CardContent>
-      </Card>
 
-      {/* Save Form */}
-      {photo && showSaveButton && (
-        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
-          <CardContent className="p-4 space-y-4">
-            <h4 className="font-semibold text-blue-800 dark:text-blue-200">
-              Simpan Dokumentasi
-            </h4>
-
-            <div className="space-y-2">
-              <Label>Keterangan Foto *</Label>
-              <Input
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                placeholder="Deskripsi foto..."
-                className="bg-white dark:bg-slate-800"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1">
-                <Building className="w-4 h-4" />
-                Lokasi/Lantai
-              </Label>
-              <Input
-                value={floorInfo}
-                onChange={(e) => setFloorInfo(e.target.value)}
-                placeholder="Contoh: Lantai 3, Ruang Server"
-                className="bg-white dark:bg-slate-800"
-              />
-            </div>
+          {/* GPS Status Badge - Overlay */}
+          <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
+            <Badge variant={location ? "default" : "destructive"} className="shadow-md backdrop-blur-md bg-opacity-80">
+              {isLoadingLocation ? (
+                <><Loader2 className="w-3 h-3 animate-spin mr-1" /> Mencari GPS...</>
+              ) : location ? (
+                <><MapPin className="w-3 h-3 mr-1" /> GPS Aktif: ±{Math.round(location.accuracy)}m</>
+              ) : (
+                <><AlertTriangle className="w-3 h-3 mr-1" /> GPS Tidak Terdeteksi</>
+              )}
+            </Badge>
 
             <Button
-              onClick={handleSaveToDatabase}
-              disabled={isSaving || !caption.trim()}
-              className="w-full"
-              size="lg"
+              size="sm"
+              variant="outline"
+              className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+              onClick={() => setMode('manual')}
+            >
+              <Upload className="w-4 h-4 mr-1" /> Manual
+            </Button>
+          </div>
+        </div>
+
+        {/* Info Area */}
+        <div className="bg-slate-900 p-4 pb-8 text-white space-y-4 shrink-0">
+          {location?.address && (
+            <p className="text-xs text-slate-400 text-center">
+              <MapPin className="w-3 h-3 inline mr-1" />
+              {location.address.city}, {location.address.district}
+            </p>
+          )}
+
+          <div className="flex justify-center items-center gap-8">
+            {/* Shutter Button */}
+            <button
+              onClick={capturePhoto}
+              disabled={!location}
+              className={`
+                  w-20 h-20 rounded-full border-4 flex items-center justify-center transition-all
+                  ${location
+                  ? 'border-white bg-red-600 hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(255,0,0,0.5)]'
+                  : 'border-slate-600 bg-slate-800 opacity-50 cursor-not-allowed'
+                }
+                `}
+            >
+              <div className="w-16 h-16 rounded-full bg-inherit border-2 border-transparent" />
+            </button>
+          </div>
+
+          {!location && (
+            <p className="text-center text-xs text-red-400 animate-pulse">
+              Menunggu sinyal GPS untuk mengaktifkan tombol...
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Manual Upload Mode
+  if (mode === 'manual') {
+    return (
+      <Card className="h-full border-none shadow-none">
+        <CardContent className="flex flex-col items-center justify-center h-full p-6 space-y-6 text-center">
+          <div className="bg-yellow-100 p-4 rounded-full dark:bg-yellow-900/30">
+            <AlertTriangle className="w-12 h-12 text-yellow-600" />
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold">Mode Upload Manual</h3>
+            <p className="text-sm text-muted-foreground">
+              Gunakan mode ini jika sinyal GPS tidak tersedia.
+              Metadata lokasi tidak akan diverifikasi sistem.
+            </p>
+          </div>
+
+          <div className="w-full max-w-xs space-y-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleManualFileSelect}
+              className="hidden"
+            />
+            <Button onClick={() => fileInputRef.current?.click()} className="w-full">
+              <Upload className="w-4 h-4 mr-2" /> Pilih File / Galeri
+            </Button>
+            <Button variant="outline" onClick={() => setMode('camera')} className="w-full">
+              <Camera className="w-4 h-4 mr-2" /> Kembali ke Kamera
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // 3. Preview & Review Mode
+  if (mode === 'preview' && photo) {
+    return (
+      <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 rounded-lg overflow-hidden">
+        <div className="relative flex-1 bg-black flex items-center justify-center">
+          <img
+            src={photo.dataUrl}
+            alt="Preview"
+            className="max-h-full max-w-full object-contain"
+          />
+        </div>
+
+        <div className="p-4 space-y-4 bg-white dark:bg-slate-800 border-t shrink-0">
+          <div className="space-y-2">
+            <Label>Keterangan (Caption)</Label>
+            <Input
+              placeholder="Contoh: Retakan pada dinding sisi utara..."
+              value={caption}
+              onChange={e => setCaption(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={handleRetake}
+              disabled={isSaving}
+              className="flex-1"
+            >
+              <Repeat className="w-4 h-4 mr-2" /> Ulangi
+            </Button>
+
+            <Button
+              onClick={handleSaveConfirmed}
+              disabled={isSaving}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             >
               {isSaving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Menyimpan...
-                </>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : (
-                <>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Simpan ke Database
-                </>
+                <CheckCircle className="w-4 h-4 mr-2" />
               )}
+              Setuju & Simpan
             </Button>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default CameraGeotagging;

@@ -15,8 +15,8 @@ import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/comp
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Icons
-import { 
-  User, Building, Mail, Phone, Calendar, MapPin, ArrowLeft, 
+import {
+  User, Building, Mail, Phone, Calendar, MapPin, ArrowLeft,
   AlertCircle, RefreshCw, MessageCircle, Crown, Users, FileText,
   Clock, CheckCircle2, XCircle, Eye
 } from "lucide-react";
@@ -100,7 +100,7 @@ const getStatusIcon = (status) => {
 // Component: Project Card
 const ProjectCard = ({ project, onViewProject }) => {
   const StatusIcon = getStatusIcon(project.status);
-  
+
   return (
     <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
       <CardContent className="p-4">
@@ -113,7 +113,7 @@ const ProjectCard = ({ project, onViewProject }) => {
                 {getStatusLabel(project.status)}
               </Badge>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-600 dark:text-slate-400">
               <div className="flex items-center gap-2">
                 <Building className="w-4 h-4" />
@@ -143,7 +143,7 @@ const ProjectCard = ({ project, onViewProject }) => {
               </p>
             )}
           </div>
-          
+
           <div className="flex space-x-2 ml-4">
             <Button variant="outline" size="sm" onClick={() => onViewProject(project)}>
               <Eye className="w-4 h-4 mr-2" />
@@ -215,7 +215,7 @@ export default function AdminLeadClientDetailPage() {
           )
         `)
         .eq('client_id', id)
-        .eq('admin_lead_id', user.id)  // Hanya projects yang dibuat oleh admin_lead ini
+        .eq('created_by', user.id)  // ✅ Hanya projects yang dibuat oleh admin_lead ini
         .order('created_at', { ascending: false });
 
       if (projectsErr) {
@@ -469,7 +469,7 @@ export default function AdminLeadClientDetailPage() {
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                     <CardContent className="p-6 text-center">
                       <CheckCircle2 className="w-8 h-8 mx-auto text-green-600 mb-2" />
@@ -481,7 +481,7 @@ export default function AdminLeadClientDetailPage() {
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                     <CardContent className="p-6 text-center">
                       <Clock className="w-8 h-8 mx-auto text-orange-600 mb-2" />

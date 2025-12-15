@@ -11,9 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Lucide Icons
-import { 
-  ShieldAlert, Loader2, Moon, Sun, LogOut, Mail, 
-  ShieldCheck, AlertCircle, CheckCircle, XCircle 
+import {
+    ShieldAlert, Loader2, Moon, Sun, LogOut, Mail,
+    ShieldCheck, AlertCircle, CheckCircle, XCircle
 } from 'lucide-react';
 
 // Komponen ThemeToggle terpisah untuk menghindari hydration error
@@ -52,7 +52,7 @@ function ThemeToggle() {
 export default function AwaitingApprovalPage() {
     const router = useRouter();
     const { user, profile, loading: authLoading, logout } = useAuth();
-    
+
     const [checking, setChecking] = useState(true);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [reason, setReason] = useState('');
@@ -80,6 +80,21 @@ export default function AwaitingApprovalPage() {
                 return;
             }
 
+            console.log("[AwaitingApproval] Profile data:", {
+                email: user?.email,
+                hasProfile: !!profile,
+                status: profile?.status,
+                is_approved: profile?.is_approved,
+                role: profile?.role
+            });
+
+            // ✅ BYPASS ALL CHECKS FOR REGISTRATION FLOW
+            if (reason === 'registered' || reason === 'email-confirmed') {
+                console.log(`[AwaitingApproval] Registration flow (${reason}), bypassing all checks`);
+                setChecking(false);
+                return;
+            }
+
             // Jika tidak ada user sama sekali, redirect ke login
             if (!user) {
                 console.log("[AwaitingApproval] Tidak ada user, redirect ke login");
@@ -87,37 +102,31 @@ export default function AwaitingApprovalPage() {
                 return;
             }
 
-            // Jika profile belum dimuat, tunggu sebentar
-            if (!profile) {
-                console.log("[AwaitingApproval] Profile belum dimuat, waiting...");
-                setTimeout(() => setChecking(false), 500);
+            // ⚠️ CRITICAL FIX: If profile doesn't exist after auth loaded, show error
+            if (user && !profile) {
+                console.log("[AwaitingApproval] Profile TIDAK ADA untuk user:", user.email);
+                // Set checking to false to show UI
+                setChecking(false);
+                // Return to prevent accessing null profile below
                 return;
             }
-
-            console.log("[AwaitingApproval] Profile data:", {
-                email: user.email,
-                hasProfile: !!profile,
-                status: profile.status,
-                is_approved: profile.is_approved,
-                role: profile.role
-            });
 
             // ✅ Check untuk legacy users (NULL values)
             const hasNullStatus = profile.status === null || profile.status === undefined;
             const hasNullApproved = profile.is_approved === null || profile.is_approved === undefined;
             const isExistingUser = hasNullStatus && hasNullApproved;
-            
+
             // Existing users dengan NULL values dianggap approved
-            const isApproved = profile.is_approved === true || 
-                              profile.status === 'approved' || 
-                              isExistingUser;
-            
+            const isApproved = profile.is_approved === true ||
+                profile.status === 'approved' ||
+                isExistingUser;
+
             // Hanya new users dengan status eksplisit 'pending' yang ditolak
             const isPendingNewUser = profile.status === 'pending' || profile.is_approved === false;
 
             if (isApproved) {
                 console.log("[AwaitingApproval] User approved/legacy, redirect ke dashboard");
-                
+
                 // Gunakan redirect yang sama dengan login page
                 const getDashboardPath = (role) => {
                     const redirectPaths = {
@@ -134,7 +143,7 @@ export default function AwaitingApprovalPage() {
 
                 const dashboardPath = getDashboardPath(profile.role);
                 console.log("[AwaitingApproval] Redirecting to:", dashboardPath);
-                
+
                 // Gunakan replace untuk menghindari history stacking
                 setTimeout(() => router.replace(dashboardPath), 100);
                 return;
@@ -170,13 +179,38 @@ export default function AwaitingApprovalPage() {
 
     // Tampilkan informasi berdasarkan status/reason
     const getStatusInfo = () => {
+        // ✅ Handle new registration success (Prioritas Tertinggi)
+        if (reason === 'registered') {
+            return {
+                icon: <Mail className="w-12 h-12 mx-auto text-primary animate-pulse" />,
+                title: "Registrasi Berhasil!",
+                description: "Terima kasih telah mendaftar. Silakan cek email Anda untuk verifikasi, kemudian tunggu persetujuan dari Superadmin.",
+                alertType: 'success', // or custom blue
+                showRedirect: false,
+                forceShowContent: true // Flag to skip loading checks
+            };
+        }
+
+        // ✅ Handle email confirmed - show pending approval message
+        if (reason === 'email-confirmed') {
+            return {
+                icon: <Clock className="w-12 h-12 mx-auto text-blue-500 animate-pulse" />,
+                title: "Email Terverifikasi!",
+                description: "Email Anda sudah dikonfirmasi. Akun Anda sedang menunggu persetujuan dari Superadmin. Anda akan menerima notifikasi setelah akun disetujui.",
+                alertType: 'default',
+                showRedirect: false,
+                forceShowContent: true
+            };
+        }
+
         if (!profile) {
             return {
-                icon: <ShieldAlert className="w-12 h-12 mx-auto text-yellow-500" />,
-                title: "Memuat...",
-                description: "Sedang memuat informasi akun...",
-                alertType: 'default',
-                showRedirect: false
+                icon: <AlertCircle className="w-12 h-12 mx-auto text-red-500" />,
+                title: "Profile Tidak Ditemukan",
+                description: "Akun Anda sudah terdaftar di sistem autentikasi, tetapi profile belum dibuat. Silakan hubungi Administrator atau refresh halaman ini dalam beberapa saat.",
+                alertType: 'destructive',
+                showRedirect: false,
+                showRefreshButton: true
             };
         }
 
@@ -184,7 +218,7 @@ export default function AwaitingApprovalPage() {
         const hasNullStatus = profile.status === null || profile.status === undefined;
         const hasNullApproved = profile.is_approved === null || profile.is_approved === undefined;
         const isExistingUser = hasNullStatus && hasNullApproved;
-        
+
         if (isExistingUser) {
             return {
                 icon: <ShieldCheck className="w-12 h-12 mx-auto text-green-500" />,
@@ -252,14 +286,16 @@ export default function AwaitingApprovalPage() {
         }
     };
 
-    // Loading state
-    if (checking || authLoading) {
+    const { icon, title, description, alertType, showRedirect, forceShowContent } = getStatusInfo();
+
+    // Loading state - SKIP if forceShowContent is true
+    if ((checking || authLoading) && !forceShowContent) {
         return (
             <div className="min-h-screen flex flex-col bg-background">
                 <header className="flex justify-end items-center p-6">
                     <ThemeToggle />
                 </header>
-                
+
                 <main className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
@@ -270,8 +306,8 @@ export default function AwaitingApprovalPage() {
         );
     }
 
-    // Safety check: jika tidak ada user atau profile, tampilkan loading
-    if (!user || !profile) {
+    // Safety check: jika tidak ada user atau profile, tampilkan loading - SKIP if forceShowContent
+    if ((!user || !profile) && !forceShowContent) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -282,19 +318,17 @@ export default function AwaitingApprovalPage() {
         );
     }
 
-    const { icon, title, description, alertType, showRedirect } = getStatusInfo();
-    
     // Determine user status text
-    const hasNullStatus = profile.status === null || profile.status === undefined;
-    const hasNullApproved = profile.is_approved === null || profile.is_approved === undefined;
+    const hasNullStatus = profile?.status === null || profile?.status === undefined;
+    const hasNullApproved = profile?.is_approved === null || profile?.is_approved === undefined;
     const isExistingUser = hasNullStatus && hasNullApproved;
-    
-    const statusText = isExistingUser ? 'Legacy User' : 
-                      profile.status || 'pending';
-    
-    const isApproved = profile.is_approved === true || 
-                      profile.status === 'approved' || 
-                      isExistingUser;
+
+    const statusText = isExistingUser ? 'Legacy User' :
+        profile?.status || reason || 'pending';
+
+    const isApproved = profile?.is_approved === true ||
+        profile?.status === 'approved' ||
+        isExistingUser;
 
     return (
         <div className="min-h-screen flex flex-col bg-background">
@@ -316,7 +350,7 @@ export default function AwaitingApprovalPage() {
                                 {description}
                             </CardDescription>
                         </CardHeader>
-                        
+
                         <CardContent className="space-y-6">
                             {/* Status Alert */}
                             {alertType && alertType !== 'default' && (
@@ -333,28 +367,27 @@ export default function AwaitingApprovalPage() {
                                     <span className="text-sm text-muted-foreground">Email:</span>
                                     <span className="font-medium text-foreground">{user.email}</span>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Nama:</span>
                                     <span className="font-medium text-foreground">{profile.full_name || 'N/A'}</span>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Peran:</span>
                                     <span className="font-medium text-primary capitalize">
                                         {profile.role?.replace(/_/g, ' ') || 'N/A'}
                                     </span>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Status:</span>
-                                    <span className={`font-medium ${
-                                        isApproved ? 'text-green-600' :
+                                    <span className={`font-medium ${isApproved ? 'text-green-600' :
                                         statusText === 'pending' ? 'text-yellow-600' :
-                                        statusText === 'rejected' ? 'text-red-600' :
-                                        statusText === 'suspended' ? 'text-orange-600' :
-                                        'text-gray-600'
-                                    }`}>
+                                            statusText === 'rejected' ? 'text-red-600' :
+                                                statusText === 'suspended' ? 'text-orange-600' :
+                                                    'text-gray-600'
+                                        }`}>
                                         {statusText}
                                     </span>
                                 </div>
@@ -371,7 +404,7 @@ export default function AwaitingApprovalPage() {
                                             </span>
                                         </div>
                                         <p className="text-sm text-muted-foreground text-center">
-                                            {isExistingUser 
+                                            {isExistingUser
                                                 ? "Akun existing terdeteksi, Anda akan diarahkan ke dashboard."
                                                 : "Akun Anda telah disetujui. Anda akan diarahkan ke dashboard dalam beberapa detik."
                                             }
@@ -382,20 +415,20 @@ export default function AwaitingApprovalPage() {
                                         <div className="flex items-center space-x-2">
                                             <Loader2 className="w-5 h-5 animate-spin text-primary" />
                                             <span className="font-medium text-primary">
-                                                {statusText === 'pending' ? "Menunggu Persetujuan" : 
-                                                 statusText === 'Legacy User' ? "Memproses..." : 
-                                                 "Memeriksa Status"}
+                                                {statusText === 'pending' ? "Menunggu Persetujuan" :
+                                                    statusText === 'Legacy User' ? "Memproses..." :
+                                                        "Memeriksa Status"}
                                             </span>
                                         </div>
-                                        
+
                                         <p className="text-sm text-muted-foreground text-center">
-                                            {statusText === 'pending' 
+                                            {statusText === 'pending'
                                                 ? "Sebagai user baru, akun Anda memerlukan persetujuan SuperAdmin sebelum dapat login."
                                                 : statusText === 'rejected'
-                                                ? "Permintaan akun Anda telah ditolak. Silakan hubungi administrator untuk informasi lebih lanjut."
-                                                : statusText === 'suspended'
-                                                ? "Akun Anda ditangguhkan karena alasan keamanan atau pelanggaran kebijakan."
-                                                : "Mohon tunggu proses verifikasi akun Anda."
+                                                    ? "Permintaan akun Anda telah ditolak. Silakan hubungi administrator untuk informasi lebih lanjut."
+                                                    : statusText === 'suspended'
+                                                        ? "Akun Anda ditangguhkan karena alasan keamanan atau pelanggaran kebijakan."
+                                                        : "Mohon tunggu proses verifikasi akun Anda."
                                             }
                                         </p>
                                     </>
@@ -404,7 +437,7 @@ export default function AwaitingApprovalPage() {
 
                             {/* Action Buttons */}
                             <div className="space-y-3 pt-2">
-                                <Button 
+                                <Button
                                     onClick={handleLogout}
                                     disabled={isLoggingOut || showRedirect}
                                     variant={showRedirect ? "outline" : "destructive"}
@@ -424,9 +457,9 @@ export default function AwaitingApprovalPage() {
                                         </>
                                     )}
                                 </Button>
-                                
+
                                 {(reason === 'email-not-verified' || !profile.email_confirmed_at) && (
-                                    <Button 
+                                    <Button
                                         variant="outline"
                                         className="w-full"
                                         onClick={() => {

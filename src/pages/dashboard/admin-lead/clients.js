@@ -87,18 +87,18 @@ const EmptyClientState = () => (
         Mulai Perjalanan Anda sebagai Admin Lead
       </h3>
       <p className="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
-        Sebagai <strong>Admin Lead</strong>, Anda bertanggung jawab membuat projects dan membentuk tim. 
+        Sebagai <strong>Admin Lead</strong>, Anda bertanggung jawab membuat projects dan membentuk tim.
         Buat project pertama Anda untuk mulai mengelola clients dan menugaskan Project Lead.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Button 
+        <Button
           onClick={() => window.location.href = '/dashboard/admin-lead/projects/create'}
           className="bg-blue-600 hover:bg-blue-700"
         >
           <Plus className="w-4 h-4 mr-2" />
           Buat Project Pertama
         </Button>
-        <Button 
+        <Button
           variant="outline"
           onClick={() => window.location.href = '/dashboard/admin-lead'}
         >
@@ -162,21 +162,21 @@ const ClientList = ({ clients, loading, onViewDetails, onSendMessage, searchTerm
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center text-sm text-slate-600 dark:text-slate-400 space-y-1 sm:space-y-0 sm:space-x-4 mb-2">
                     <span className="flex items-center gap-1">
-                      <Mail className="w-3 h-3" /> 
+                      <Mail className="w-3 h-3" />
                       {client.email || 'N/A'}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Phone className="w-3 h-3" /> 
+                      <Phone className="w-3 h-3" />
                       {client.phone || 'N/A'}
                     </span>
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" /> 
+                      <MapPin className="w-3 h-3" />
                       {client.city || 'N/A'}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="flex items-center gap-1">
-                      <Building className="w-3 h-3" /> 
+                      <Building className="w-3 h-3" />
                       {client.project_count || 0} Proyek
                     </span>
                     {client.latest_project_status && (
@@ -237,9 +237,9 @@ export default function AdminLeadClientsPage() {
     setError(null);
 
     try {
-      console.log('🔄 Fetching clients from projects created by admin_lead:', user.id);
+      console.log('🔄 Fetching clients from projects created by created_by:', user.id);
 
-      // Query utama: Ambil projects berdasarkan admin_lead_id
+      // Query utama: Ambil projects berdasarkan created_by (Admin Lead owner)
       const { data: projectsData, error: projectsErr } = await supabase
         .from('projects')
         .select(`
@@ -248,23 +248,18 @@ export default function AdminLeadClientsPage() {
           status,
           client_id,
           created_at,
-          admin_lead_id,
-          project_lead_id,
-          clients!client_id (
+          clients (
             id,
             name,
             email,
             phone,
+            address,
             city,
-            address
-          ),
-          project_lead:profiles!project_lead_id (
-            id,
-            full_name
+            company_name,
+            npwp
           )
         `)
-        .eq('admin_lead_id', user.id)  // Filter berdasarkan admin_lead_id
-        .not('client_id', 'is', null)
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
         .order('created_at', { ascending: false });
 
       if (projectsErr) {
@@ -287,7 +282,7 @@ export default function AdminLeadClientsPage() {
       projectsData.forEach(project => {
         if (project.clients && project.clients.id) {
           const clientId = project.clients.id;
-          
+
           if (!clientsMap.has(clientId)) {
             clientsMap.set(clientId, {
               ...project.clients,
@@ -300,7 +295,7 @@ export default function AdminLeadClientsPage() {
           const client = clientsMap.get(clientId);
           client.project_count += 1;
           client.projects.push(project);
-          
+
           // Tambahkan project lead names
           if (project.project_lead?.full_name) {
             client.project_lead_names.add(project.project_lead.full_name);
@@ -311,12 +306,12 @@ export default function AdminLeadClientsPage() {
       // Convert Map to Array dan process data
       const processedClients = Array.from(clientsMap.values()).map(client => {
         const projects = client.projects || [];
-        
+
         // Sort projects by created_at to get latest project
-        const sortedProjects = [...projects].sort((a, b) => 
+        const sortedProjects = [...projects].sort((a, b) =>
           new Date(b.created_at) - new Date(a.created_at)
         );
-        
+
         const latestProject = sortedProjects[0];
         const projectLeadNames = Array.from(client.project_lead_names);
 
@@ -458,6 +453,13 @@ export default function AdminLeadClientsPage() {
               >
                 <Plus className="w-4 h-4" />
                 Buat Project
+              </Button>
+              <Button
+                onClick={() => router.push('/dashboard/admin-lead/clients/new')}
+                className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Buat Client
               </Button>
             </div>
           </motion.div>

@@ -74,31 +74,60 @@ export default function AdminLeadDashboard() {
     setLoading(true);
 
     try {
-      // Fetch all projects
+      // Fetch all projects owned by this admin_lead
       const { data: projects } = await supabase
         .from('projects')
         .select('*')
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
         .order('created_at', { ascending: false });
 
       const projectsList = projects || [];
       setRecentProjects(projectsList.slice(0, 5));
 
       // Fetch pending documents (tanpa project atau status pending)
+      // Filter: only docs uploaded by this user OR attached to projects owned by this user
+      // Note: For now, strict filter by uploader is safest for new users.
+      // Ideally we'd join projects!inner, but for unassigned docs, they MUST be uploaded by user.
       const { data: pendingDocs } = await supabase
         .from('documents')
-        .select('*')
+        .select(`
+          *,
+          projects!documents_project_id_fkey (
+            id, created_by
+          )
+        `)
+        // Logic: (uploaded by me AND no project) OR (project owned by me)
+        .or(`created_by.eq.${user.id},projects.created_by.eq.${user.id}`)
         .or('project_id.is.null,status.eq.pending,status.eq.verified')
         .order('created_at', { ascending: false });
 
-      // Fetch clients
-      const { data: clients } = await supabase
-        .from('clients')
-        .select('id');
+      // Validating docs visibility (client-side filter as backup for complex OR query)
+      const validPendingDocs = (pendingDocs || []).filter(doc => {
+        if (doc.created_by === user.id) return true;
+        if (doc.projects && doc.projects.created_by === user.id) return true;
+        return false;
+      });
 
-      // Fetch pending payments
+      // Fetch clients linked to my projects
+      const { data: clients } = await supabase
+        .from('projects')
+        .select('client_id')
+        .eq('created_by', user.id)
+        .not('client_id', 'is', null);
+
+      // Unique clients count
+      const uniqueClients = new Set(clients?.map(c => c.client_id) || []).size;
+
+      // Fetch pending payments for my projects
       const { data: payments } = await supabase
         .from('payments')
-        .select('id')
+        .select(`
+          id,
+          projects!inner (
+             created_by
+          )
+        `)
+        .eq('projects.created_by', user.id)
         .eq('status', 'pending');
 
       // Fetch unread notifications
@@ -108,13 +137,14 @@ export default function AdminLeadDashboard() {
         .eq('recipient_id', user.id)
         .eq('is_read', false);
 
-      // Fetch upcoming schedules
+      // Fetch upcoming schedules for my projects
       const nextWeek = new Date();
       nextWeek.setDate(nextWeek.getDate() + 7);
 
       const { data: schedules } = await supabase
         .from('schedules')
-        .select('*, projects(name)')
+        .select('*, projects!inner(name, created_by)')
+        .eq('projects.created_by', user.id)
         .gte('schedule_date', new Date().toISOString())
         .lte('schedule_date', nextWeek.toISOString())
         .order('schedule_date', { ascending: true })
@@ -124,9 +154,9 @@ export default function AdminLeadDashboard() {
 
       // Build pending actions
       const actions = [];
-      
+
       // Dokumen tanpa project
-      const unassignedDocs = (pendingDocs || []).filter(d => !d.project_id);
+      const unassignedDocs = validPendingDocs.filter(d => !d.project_id);
       if (unassignedDocs.length > 0) {
         actions.push({
           id: 'unassigned-docs',
@@ -139,7 +169,7 @@ export default function AdminLeadDashboard() {
       }
 
       // Dokumen menunggu approval
-      const docsNeedApproval = (pendingDocs || []).filter(d => d.status === 'verified');
+      const docsNeedApproval = validPendingDocs.filter(d => d.status === 'verified');
       if (docsNeedApproval.length > 0) {
         actions.push({
           id: 'docs-approval',
@@ -167,10 +197,10 @@ export default function AdminLeadDashboard() {
 
       setStats({
         totalProjects: projectsList.length,
-        activeProjects: projectsList.filter(p => !['completed', 'cancelled'].includes(p.status)).length,
-        pendingDocuments: (pendingDocs || []).filter(d => d.status === 'pending' || d.status === 'verified').length,
-        pendingPayments: payments?.length || 0,
-        totalClients: clients?.length || 0,
+        activeProjects: projectsList.filter(p => p.status === 'active' || p.status === 'in_progress').length,
+        pendingDocuments: validPendingDocs.length,
+        pendingPayments: (payments || []).length,
+        totalClients: uniqueClients,
         unreadNotifications: notifCount || 0
       });
 
@@ -194,7 +224,7 @@ export default function AdminLeadDashboard() {
         <div className="p-6 space-y-6">
           <Skeleton className="h-8 w-64" />
           <div className="grid gap-4 md:grid-cols-4">
-            {[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
           </div>
           <Skeleton className="h-64" />
         </div>
@@ -205,7 +235,7 @@ export default function AdminLeadDashboard() {
   return (
     <DashboardLayout title="Dashboard">
       <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
-        
+
         {/* Welcome Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -216,11 +246,11 @@ export default function AdminLeadDashboard() {
               Kelola proyek SLF/PBG dan tim Anda
             </p>
           </div>
-          
+
           <div className="flex gap-2">
             {stats.unreadNotifications > 0 && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => router.push('/dashboard/notifications')}
               >
                 <Bell className="w-4 h-4 mr-2" />
@@ -329,13 +359,13 @@ export default function AdminLeadDashboard() {
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
-          
+
           {/* Recent Projects */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-lg">Proyek Terbaru</CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/admin-lead/projects')}
               >
@@ -356,7 +386,7 @@ export default function AdminLeadDashboard() {
               ) : (
                 <div className="space-y-3">
                   {recentProjects.map(project => (
-                    <div 
+                    <div
                       key={project.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                       onClick={() => router.push(`/dashboard/admin-lead/projects/${project.id}`)}
@@ -387,8 +417,8 @@ export default function AdminLeadDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto py-4"
                   onClick={() => router.push('/dashboard/admin-lead/projects/new')}
                 >
@@ -399,8 +429,8 @@ export default function AdminLeadDashboard() {
                   </div>
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto py-4"
                   onClick={() => router.push('/dashboard/admin-lead/pending-documents')}
                 >
@@ -411,8 +441,8 @@ export default function AdminLeadDashboard() {
                   </div>
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto py-4"
                   onClick={() => router.push('/dashboard/admin-lead/team')}
                 >
@@ -423,8 +453,8 @@ export default function AdminLeadDashboard() {
                   </div>
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto py-4"
                   onClick={() => router.push('/dashboard/admin-lead/schedules')}
                 >
@@ -447,8 +477,8 @@ export default function AdminLeadDashboard() {
                 <Calendar className="w-5 h-5" />
                 Jadwal Mendatang
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/admin-lead/schedules')}
               >
@@ -459,7 +489,7 @@ export default function AdminLeadDashboard() {
             <CardContent>
               <div className="space-y-3">
                 {upcomingSchedules.map(schedule => (
-                  <div 
+                  <div
                     key={schedule.id}
                     className="flex items-center justify-between p-3 border rounded-lg"
                   >

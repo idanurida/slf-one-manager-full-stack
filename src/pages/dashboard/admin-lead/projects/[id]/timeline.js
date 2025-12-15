@@ -94,6 +94,7 @@ export default function ProjectTimelinePage() {
         .from('projects')
         .select('*, clients(name)')
         .eq('id', projectId)
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY CHECK
         .single();
 
       if (projectError) throw projectError;

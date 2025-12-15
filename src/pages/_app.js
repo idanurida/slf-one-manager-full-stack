@@ -27,6 +27,15 @@ export default function MyApp({ Component, pageProps }) {
     setIsReady(true);
   }
 
+  // Disable console in production
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+    console.log = () => { };
+    console.warn = () => { };
+    console.error = () => { };
+    console.debug = () => { };
+    console.info = () => { };
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

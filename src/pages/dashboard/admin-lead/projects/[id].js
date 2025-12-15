@@ -54,7 +54,7 @@ try {
   getPhaseColor = timelinePhases.getPhaseColor;
 } catch (error) {
   console.warn('Module timeline-phases tidak ditemukan, menggunakan fallback');
-  
+
   // Fallback functions
   PROJECT_PHASES = {
     PHASE_1: { name: "Persiapan", number: 1, color: 'blue' },
@@ -66,7 +66,7 @@ try {
 
   getProjectPhase = (status) => {
     if (!status) return 1;
-    
+
     const phaseMap = {
       'draft': 1, 'submitted': 1, 'project_lead_review': 1,
       'inspection_scheduled': 2, 'inspection_in_progress': 2, 'inspection_completed': 2,
@@ -75,14 +75,14 @@ try {
       'government_submitted': 5, 'slf_issued': 5, 'completed': 5,
       'cancelled': 0, 'rejected': 0
     };
-    
+
     return phaseMap[status] || 1;
   };
 
   getPhaseColor = (phaseNumber) => {
     const colors = {
       1: 'bg-blue-500',
-      2: 'bg-green-500', 
+      2: 'bg-green-500',
       3: 'bg-yellow-500',
       4: 'bg-orange-500',
       5: 'bg-purple-500'
@@ -160,7 +160,7 @@ const getStatusText = (status) => {
 const SimpleProgressBar = ({ value, className = "" }) => {
   return (
     <div className={`w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 ${className}`}>
-      <div 
+      <div
         className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
         style={{ width: `${value}%` }}
       />
@@ -172,10 +172,10 @@ const SimpleProgressBar = ({ value, className = "" }) => {
 const ProjectProgressOverview = ({ project, documents, inspections }) => {
   const currentPhase = getProjectPhase(project.status);
   const totalPhases = 5;
-  
+
   // Calculate progress percentage
   const progressPercentage = Math.round((currentPhase / totalPhases) * 100);
-  
+
   // Count documents by status
   const approvedDocs = documents.filter(d => d.status === 'approved').length;
   const pendingDocs = documents.filter(d => d.status === 'pending').length;
@@ -246,7 +246,7 @@ const QuickActions = ({ project, onManageTimeline, onManageTeam, onViewDocuments
       label: 'Kelola Tim',
       description: 'Assign project lead & inspector',
       icon: Users,
-      color: 'bg-green-500', 
+      color: 'bg-green-500',
       onClick: onManageTeam
     },
     {
@@ -268,7 +268,7 @@ const QuickActions = ({ project, onManageTimeline, onManageTeam, onViewDocuments
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {actions.map((action, index) => (
-        <Card 
+        <Card
           key={action.label}
           className="cursor-pointer border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-lg transition-all"
           onClick={action.onClick}
@@ -306,7 +306,7 @@ const SimplePhaseTracker = ({ projectId }) => {
         </AlertDescription>
       </Alert>
       <div className="flex justify-center">
-        <Button 
+        <Button
           onClick={() => window.location.href = `/dashboard/admin-lead/projects/${projectId}/timeline`}
           className="bg-blue-600 hover:bg-blue-700 text-white"
         >
@@ -333,7 +333,7 @@ export default function AdminLeadProjectDetailPage() {
   // Fetch project data
   const fetchData = useCallback(async () => {
     if (!id) return;
-    
+
     setLoading(true);
     setError(null);
 
@@ -349,6 +349,7 @@ export default function AdminLeadProjectDetailPage() {
           project_lead:profiles!projects_project_lead_id_fkey(*)
         `)
         .eq('id', id)
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY CHECK
         .single();
 
       if (projectError) throw projectError;
@@ -415,12 +416,12 @@ export default function AdminLeadProjectDetailPage() {
         router.replace('/login');
         return;
       }
-      
+
       if (!isAdminLead) {
         router.replace('/dashboard');
         return;
       }
-      
+
       fetchData();
     }
   }, [router.isReady, authLoading, user, isAdminLead, router, fetchData]);
@@ -481,7 +482,7 @@ export default function AdminLeadProjectDetailPage() {
         </div>
 
         {/* Progress Overview */}
-        <ProjectProgressOverview 
+        <ProjectProgressOverview
           project={project}
           documents={documents}
           inspections={inspections}
@@ -639,7 +640,7 @@ export default function AdminLeadProjectDetailPage() {
               </CardHeader>
               <CardContent>
                 <SimplePhaseTracker projectId={id} />
-                
+
                 <div className="mt-6 flex justify-end">
                   <Button onClick={handleManageTimeline} className="bg-blue-600 hover:bg-blue-700 text-white">
                     <Settings className="w-4 h-4 mr-2" />

@@ -302,6 +302,48 @@ export const AuthProvider = ({ children }) => {
         throw new Error(errorMessages[error.message] || `❌ Login gagal: ${error.message}`);
       }
 
+      // ✅ SECURITY: Check approval status before allowing login
+      if (data.user) {
+        // Fetch profile to check approval status
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('status, is_approved, role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('❌ Profile fetch error:', profileError);
+          throw new Error('Gagal memuat data profil. Silakan coba lagi.');
+        }
+
+        // Check if user is approved
+        const isApproved = profileData?.is_approved === true ||
+          profileData?.status === 'approved' ||
+          profileData?.role === 'superadmin';
+
+        if (!isApproved) {
+          // Sign out immediately
+          await supabase.auth.signOut();
+
+          // Throw specific error for pending approval
+          if (profileData?.status === 'pending') {
+            throw new Error('ACCOUNT_PENDING_APPROVAL');
+          } else if (profileData?.status === 'rejected') {
+            throw new Error('ACCOUNT_REJECTED');
+          } else if (profileData?.status === 'suspended') {
+            throw new Error('ACCOUNT_SUSPENDED');
+          } else {
+            throw new Error('ACCOUNT_NOT_APPROVED');
+          }
+        }
+
+        // Check email verification - SKIP if already approved by superadmin
+        if (!data.user.email_confirmed_at && !isApproved) {
+          await supabase.auth.signOut();
+          throw new Error('EMAIL_NOT_VERIFIED');
+        }
+      }
+
       // Return success object
       console.log('✅ [AuthContext] Login successful');
       return { success: true, user: data.user };

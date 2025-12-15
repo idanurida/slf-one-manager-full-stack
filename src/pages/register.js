@@ -134,9 +134,14 @@ export default function RegisterPage() {
         password: formData.password,
         options: {
           data: {
-            full_name: formData.full_name, // ← Kirim ke auth metadata
+            full_name: formData.full_name,
             role: formData.role,
-          }
+            specialization: formData.specialization,
+            phone_number: formData.phone_number,
+            company_name: formData.company_name,
+          },
+          // Email confirmation should redirect to awaiting-approval page
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/awaiting-approval?reason=email-confirmed` : undefined,
         }
       });
 
@@ -145,40 +150,40 @@ export default function RegisterPage() {
         throw authError;
       }
 
-      // 2. If user created, also create profile with correct field names
-      if (authData.user) {
-        const profileData = {
-          id: authData.user.id,
+      if (!authData.user) {
+        throw new Error('Registration failed - no user created');
+      }
+
+      console.log('✅ User created in auth.users:', authData.user.id);
+
+      // 2. Create profile via API (more reliable than database trigger)
+      console.log('📝 Creating profile via API...');
+
+      const profileResponse = await fetch('/api/auth/create-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: authData.user.id,
           email: formData.email.trim().toLowerCase(),
-          full_name: formData.full_name, // ← SNAKE_CASE sesuai database
-          phone_number: formData.phone_number || null, // ← SNAKE_CASE
-          company_name: formData.company_name || null, // ← SNAKE_CASE
+          full_name: formData.full_name,
           role: formData.role,
-          status: 'pending',
-          is_approved: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+          specialization: formData.specialization,
+          phone_number: formData.phone_number,
+          company_name: formData.company_name,
+        }),
+      });
 
-        // Add specialization for inspector
-        if (formData.role === 'inspector' && formData.specialization) {
-          profileData.specialization = formData.specialization;
-        }
+      const profileResult = await profileResponse.json();
 
-        console.log('💾 Profile data to save:', profileData);
-
-        const { data: savedProfile, error: profileError } = await supabase
-          .from('profiles')
-          .upsert(profileData)
-          .select()
-          .single();
-
-        if (profileError) {
-          console.error('❌ Profile creation error:', profileError);
-          throw profileError;
-        }
-
-        console.log('✅ Profile saved:', savedProfile);
+      if (!profileResponse.ok) {
+        console.error('❌ Profile creation failed:', profileResult);
+        // Don't throw - user is already created in auth
+        // They can still login, admin will see the issue
+        console.warn('⚠️ Profile creation failed but user exists in auth');
+      } else {
+        console.log('✅ Profile created successfully:', profileResult.profile);
       }
 
       // ✅ Sign out user immediately
@@ -187,10 +192,10 @@ export default function RegisterPage() {
       setSuccess(true);
       setError('');
 
-      // Redirect to login
+      // Redirect to login page with registered flag
       setTimeout(() => {
-        router.replace('/login');
-      }, 3000);
+        router.replace('/login?registered=true');
+      }, 2000);
     } catch (err) {
       console.error('[Register] Error:', err);
 

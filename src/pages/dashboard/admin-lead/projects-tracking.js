@@ -114,7 +114,7 @@ const ProjectTrackingCard = ({ project, onViewDetails }) => {
   const pendingDocs = project.document_counts?.pending || 0;
 
   const hasInspection = project.schedule_counts?.inspection_scheduled > 0 ||
-                       project.schedule_counts?.inspection_in_progress > 0;
+    project.schedule_counts?.inspection_in_progress > 0;
   const hasReport = project.report_count > 0;
   const reportVerified = project.report_verified;
 
@@ -282,18 +282,17 @@ export default function AdminLeadProjectsTrackingPage() {
 
     try {
       // 1. Ambil semua proyek dengan data yang diperlukan
-      const { data: projectsData, error: projectsErr } = await supabase
+      const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select(`
-          id,
-          name,
-          status,
-          created_at,
-          clients!inner(name)
+          id, name, status, created_at, city,
+          clients (name),
+          project_lead:profiles!project_lead_id (full_name)
         `)
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
         .order('created_at', { ascending: false });
 
-      if (projectsErr) throw projectsErr;
+      if (projectsError) throw projectsError;
 
       const projectIds = projectsData.map(p => p.id);
 
@@ -333,7 +332,7 @@ export default function AdminLeadProjectsTrackingPage() {
         docsMap = allDocs.reduce((acc, doc) => {
           if (!acc[doc.project_id]) acc[doc.project_id] = { total: 0, verified: 0, pending: 0 };
           acc[doc.project_id].total += 1;
-          
+
           // Gunakan status atau compliance_status yang tersedia
           if (doc.status === 'approved' || doc.compliance_status === 'approved') {
             acc[doc.project_id].verified += 1;

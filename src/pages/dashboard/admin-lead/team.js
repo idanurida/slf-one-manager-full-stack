@@ -96,10 +96,11 @@ export default function AdminLeadTeamPage() {
 
       if (teamsError) throw teamsError;
 
-      // Fetch all projects
+      // Fetch all projects owned by this admin_lead
       const { data: projectsData } = await supabase
         .from('projects')
         .select('id, name')
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
         .order('created_at', { ascending: false });
 
       // Fetch available users (non-clients)
@@ -127,8 +128,8 @@ export default function AdminLeadTeamPage() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       if (!member.profiles?.full_name?.toLowerCase().includes(term) &&
-          !member.profiles?.email?.toLowerCase().includes(term) &&
-          !member.projects?.name?.toLowerCase().includes(term)) {
+        !member.profiles?.email?.toLowerCase().includes(term) &&
+        !member.projects?.name?.toLowerCase().includes(term)) {
         return false;
       }
     }
@@ -366,9 +367,9 @@ export default function AdminLeadTeamPage() {
           </Card>
 
           {/* Assign Dialog */}
-          <Dialog open={assignDialog.open} onOpenChange={(open) => { 
-            setAssignDialog({ open, projectId: open ? assignDialog.projectId : null }); 
-            if (!open) setFormData({ user_id: '', role: 'inspector' }); 
+          <Dialog open={assignDialog.open} onOpenChange={(open) => {
+            setAssignDialog({ open, projectId: open ? assignDialog.projectId : null });
+            if (!open) setFormData({ user_id: '', role: 'inspector' });
           }}>
             <DialogContent>
               <DialogHeader>
@@ -380,7 +381,7 @@ export default function AdminLeadTeamPage() {
               <div className="space-y-4">
                 <div>
                   <Label>Pilih Anggota</Label>
-                  <Select value={formData.user_id} onValueChange={(v) => setFormData({...formData, user_id: v})}>
+                  <Select value={formData.user_id} onValueChange={(v) => setFormData({ ...formData, user_id: v })}>
                     <SelectTrigger className="mt-2">
                       <SelectValue placeholder="Pilih anggota tim" />
                     </SelectTrigger>
@@ -395,7 +396,7 @@ export default function AdminLeadTeamPage() {
                 </div>
                 <div>
                   <Label>Peran di Proyek</Label>
-                  <Select value={formData.role} onValueChange={(v) => setFormData({...formData, role: v})}>
+                  <Select value={formData.role} onValueChange={(v) => setFormData({ ...formData, role: v })}>
                     <SelectTrigger className="mt-2">
                       <SelectValue />
                     </SelectTrigger>

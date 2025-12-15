@@ -19,7 +19,7 @@ export const MESSAGE_TYPES = {
  */
 export const NOTIFICATION_MESSAGE_TYPES = [
   'message_to_client',
-  'message_from_client', 
+  'message_from_client',
   'message_to_admin',
   'message_from_admin',
   'project_update',
@@ -42,7 +42,6 @@ export const fetchProjectMessages = async (projectId, userId) => {
         id,
         project_id,
         sender_id,
-        recipient_id,
         message,
         message_type,
         read_at,
@@ -62,39 +61,8 @@ export const fetchProjectMessages = async (projectId, userId) => {
       });
     }
 
-    // 2. Fetch dari tabel notifications (fallback untuk pesan lama)
-    const { data: notifsData, error: notifsError } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('project_id', projectId)
-      .in('type', NOTIFICATION_MESSAGE_TYPES)
-      .order('created_at', { ascending: true });
-
-    if (!notifsError && notifsData) {
-      notifsData.forEach(notif => {
-        // Hindari duplikasi jika sudah ada di messages
-        const isDuplicate = allMessages.some(m => 
-          m.message === notif.message && 
-          m.sender_id === notif.sender_id &&
-          Math.abs(new Date(m.created_at) - new Date(notif.created_at)) < 1000
-        );
-
-        if (!isDuplicate) {
-          allMessages.push({
-            id: `notif-${notif.id}`,
-            project_id: notif.project_id,
-            sender_id: notif.sender_id,
-            recipient_id: notif.recipient_id,
-            message: notif.message,
-            message_type: 'text',
-            read_at: notif.read ? notif.created_at : null,
-            created_at: notif.created_at,
-            source: 'notifications',
-            is_read: notif.read,
-          });
-        }
-      });
-    }
+    // 2. Notifications fallback removed because notifications table does not support project_id filtering
+    const notifsData = [];
 
     // Sort by created_at
     allMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -149,39 +117,7 @@ export const fetchConversations = async (userId, projectIds = []) => {
 
     // Fetch from notifications table
     const { data: notifsData } = await supabase
-      .from('notifications')
-      .select('*')
-      .in('project_id', projectIds)
-      .in('type', NOTIFICATION_MESSAGE_TYPES)
-      .order('created_at', { ascending: false });
-
-    if (notifsData) {
-      notifsData.forEach(notif => {
-        if (conversationMap[notif.project_id]) {
-          const msgObj = {
-            id: `notif-${notif.id}`,
-            project_id: notif.project_id,
-            sender_id: notif.sender_id,
-            recipient_id: notif.recipient_id,
-            message: notif.message,
-            created_at: notif.created_at,
-            read_at: notif.read ? notif.created_at : null,
-          };
-
-          conversationMap[notif.project_id].messages.push(msgObj);
-          
-          // Update last message if newer
-          if (!conversationMap[notif.project_id].lastMessage || 
-              new Date(notif.created_at) > new Date(conversationMap[notif.project_id].lastMessage.created_at)) {
-            conversationMap[notif.project_id].lastMessage = msgObj;
-          }
-          
-          if (!notif.read && notif.recipient_id === userId) {
-            conversationMap[notif.project_id].unreadCount++;
-          }
-        }
-      });
-    }
+    // Notifications fallback removed from fetchConversations as notifications table does not support project_id filtering
 
     const conversations = Object.values(conversationMap)
       .filter(conv => conv.messages.length > 0)
@@ -219,7 +155,6 @@ export const sendMessage = async ({
       .insert({
         project_id: projectId,
         sender_id: senderId,
-        recipient_id: recipientId,
         message: message.trim(),
         message_type: messageType,
         created_at: new Date().toISOString(),
@@ -263,7 +198,6 @@ const createMessageNotification = async ({ projectId, senderId, recipientId, mes
     const notifType = isFromClient ? 'message_from_client' : 'message_to_client';
 
     await supabase.from('notifications').insert({
-      project_id: projectId,
       type: notifType,
       message: `Pesan dari ${senderName}: ${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`,
       sender_id: senderId,
@@ -343,9 +277,7 @@ export const getUnreadCount = async (userId, projectIds = []) => {
       .eq('is_read', false)
       .in('type', NOTIFICATION_MESSAGE_TYPES);
 
-    if (projectIds.length > 0) {
-      notifsQuery.in('project_id', projectIds);
-    }
+    // Project ID filter removed for notifications as the column does not exist
 
     const { count: notifCount } = await notifsQuery;
     count += notifCount || 0;

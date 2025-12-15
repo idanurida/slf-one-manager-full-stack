@@ -110,9 +110,9 @@ const DocumentRow = ({ doc, onView, onVerify, isVerifying }) => {
           {(doc.status === 'pending' || doc.status === 'verified') && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => onVerify(doc)}
                   disabled={isVerifying}
                 >
@@ -147,13 +147,21 @@ export default function AdminLeadDocumentsPage() {
 
   // Fetch documents
   const fetchDocuments = useCallback(async () => {
+    if (!user?.id) return;
     setLoading(true);
     setError(null);
 
     try {
+      // Fetch documents for projects owned by this Admin Lead
       const { data: docs, error: docsError } = await supabase
         .from('documents')
-        .select('*')
+        .select(`
+          *,
+          projects!documents_project_id_fkey!inner (
+            id, name, application_type, created_by
+          )
+        `)
+        .eq('projects.created_by', user.id) // ✅ MULTI-TENANCY FILTER
         .order('created_at', { ascending: false });
 
       if (docsError) throw docsError;
@@ -185,7 +193,7 @@ export default function AdminLeadDocumentsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   // Filter documents
   const filteredDocuments = documents.filter(doc => {
@@ -197,9 +205,9 @@ export default function AdminLeadDocumentsPage() {
     // Search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      if (!doc.name?.toLowerCase().includes(term) && 
-          !doc.project_name?.toLowerCase().includes(term) &&
-          !doc.uploader_name?.toLowerCase().includes(term)) {
+      if (!doc.name?.toLowerCase().includes(term) &&
+        !doc.project_name?.toLowerCase().includes(term) &&
+        !doc.uploader_name?.toLowerCase().includes(term)) {
         return false;
       }
     }
@@ -217,7 +225,7 @@ export default function AdminLeadDocumentsPage() {
 
     try {
       const newStatus = action === 'approve' ? 'approved' : 'rejected';
-      
+
       const { error } = await supabase
         .from('documents')
         .update({
@@ -312,8 +320,8 @@ export default function AdminLeadDocumentsPage() {
                 </TabsTrigger>
               </TabsList>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => router.push('/dashboard/admin-lead/pending-documents')}
               >
                 Dokumen Client Baru
@@ -368,7 +376,7 @@ export default function AdminLeadDocumentsPage() {
                     <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                     <h3 className="text-lg font-medium mb-2">Tidak Ada Dokumen</h3>
                     <p className="text-muted-foreground">
-                      {documents.length === 0 
+                      {documents.length === 0
                         ? 'Belum ada dokumen yang diupload'
                         : 'Tidak ada dokumen yang sesuai dengan filter'
                       }

@@ -28,7 +28,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Icons
 import {
-  Calendar, Clock, CheckCircle2, PlayCircle, Edit, 
+  Calendar, Clock, CheckCircle2, PlayCircle, Edit,
   RefreshCw, Save, Loader2, Building, AlertTriangle
 } from "lucide-react";
 
@@ -63,11 +63,11 @@ export default function AdminLeadTimelinePage() {
   const [saving, setSaving] = useState(false);
   const [projects, setProjects] = useState([]);
   const [phases, setPhases] = useState([]);
-  
+
   // Filter states
   const [categoryFilter, setCategoryFilter] = useState('all'); // SLF atau PBG
   const [selectedProjectId, setSelectedProjectId] = useState('');
-  
+
   // Edit dialog
   const [editDialog, setEditDialog] = useState({ open: false, phase: null });
   const [editForm, setEditForm] = useState({
@@ -86,6 +86,7 @@ export default function AdminLeadTimelinePage() {
       const { data, error } = await supabase
         .from('projects')
         .select('id, name, application_type, status, city, clients(name)')
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -222,8 +223,8 @@ export default function AdminLeadTimelinePage() {
         if (nextPhase && nextPhase.status === 'pending') {
           await supabase
             .from('project_phases')
-            .update({ 
-              status: 'in_progress', 
+            .update({
+              status: 'in_progress',
               start_date: new Date().toISOString().split('T')[0],
               started_at: new Date().toISOString()
             })
@@ -338,8 +339,8 @@ export default function AdminLeadTimelinePage() {
                     <Badge variant="outline">
                       {selectedProject.application_type || 'SLF'}
                     </Badge>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => router.push(`/dashboard/admin-lead/projects/${selectedProject.id}`)}
                     >
@@ -390,23 +391,21 @@ export default function AdminLeadTimelinePage() {
                 const canStart = isPending && index === phases.findIndex(p => p.status === 'pending');
 
                 return (
-                  <Card 
-                    key={phase.id} 
-                    className={`border-l-4 ${
-                      isCompleted ? 'border-l-green-500' :
-                      isActive ? 'border-l-blue-500' :
-                      'border-l-muted'
-                    }`}
+                  <Card
+                    key={phase.id}
+                    className={`border-l-4 ${isCompleted ? 'border-l-green-500' :
+                        isActive ? 'border-l-blue-500' :
+                          'border-l-muted'
+                      }`}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between gap-4">
                         {/* Phase Info */}
                         <div className="flex items-start gap-4 flex-1">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isCompleted ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
-                            isActive ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
-                            'bg-muted text-muted-foreground'
-                          }`}>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCompleted ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+                              isActive ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+                                'bg-muted text-muted-foreground'
+                            }`}>
                             {isCompleted ? (
                               <CheckCircle2 className="w-5 h-5" />
                             ) : isActive ? (

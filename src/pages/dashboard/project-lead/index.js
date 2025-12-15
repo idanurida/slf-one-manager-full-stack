@@ -82,7 +82,7 @@ export default function ProjectLeadDashboard() {
       const projects = (projectTeams || [])
         .map(pt => pt.projects)
         .filter(p => p);
-      
+
       setMyProjects(projects.slice(0, 5));
 
       // Fetch team members count
@@ -97,11 +97,22 @@ export default function ProjectLeadDashboard() {
       }
 
       // Fetch pending reports (need project lead approval)
+      // Fetch pending reports (need project lead approval)
+      // Filter: only reports for projects where I am the Project Lead
       const { data: reports } = await supabase
         .from('documents')
-        .select('id, name, status, created_at, projects(name)')
+        .select(`
+          id, name, status, created_at,
+          projects!documents_project_id_fkey!inner (
+             name,
+             project_teams!inner (
+               user_id
+             )
+          )
+        `)
         .eq('document_type', 'REPORT')
         .eq('status', 'verified_by_admin_team')
+        .eq('projects.project_teams.user_id', user.id) // Ensure I am assigned
         .order('created_at', { ascending: false });
 
       setPendingReports((reports || []).slice(0, 5));
@@ -121,7 +132,7 @@ export default function ProjectLeadDashboard() {
       // Calculate stats
       setStats({
         totalProjects: projects.length,
-        activeProjects: projects.filter(p => 
+        activeProjects: projects.filter(p =>
           p.status === 'active' || p.status === 'inspection_scheduled' || p.status === 'inspection_in_progress'
         ).length,
         pendingReports: (reports || []).length,
@@ -149,7 +160,7 @@ export default function ProjectLeadDashboard() {
         <div className="p-6 space-y-6">
           <Skeleton className="h-8 w-64" />
           <div className="grid gap-4 md:grid-cols-4">
-            {[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
           </div>
           <Skeleton className="h-64" />
         </div>
@@ -187,7 +198,7 @@ export default function ProjectLeadDashboard() {
               Kelola proyek dan tim Anda
             </p>
           </div>
-          
+
           <div className="flex gap-2">
             {stats.pendingReports > 0 && (
               <Button onClick={() => router.push('/dashboard/project-lead/reports')}>
@@ -272,7 +283,7 @@ export default function ProjectLeadDashboard() {
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
-          
+
           {/* My Projects */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -280,8 +291,8 @@ export default function ProjectLeadDashboard() {
                 <Building className="w-5 h-5" />
                 Proyek Saya
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/project-lead/projects')}
               >
@@ -298,7 +309,7 @@ export default function ProjectLeadDashboard() {
               ) : (
                 <div className="space-y-3">
                   {myProjects.map(project => (
-                    <div 
+                    <div
                       key={project.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                       onClick={() => router.push(`/dashboard/project-lead/projects/${project.id}`)}
@@ -329,8 +340,8 @@ export default function ProjectLeadDashboard() {
                 <FileText className="w-5 h-5" />
                 Laporan Perlu Approval
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/project-lead/reports')}
               >
@@ -347,7 +358,7 @@ export default function ProjectLeadDashboard() {
               ) : (
                 <div className="space-y-3">
                   {pendingReports.map(report => (
-                    <div 
+                    <div
                       key={report.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                       onClick={() => router.push('/dashboard/project-lead/reports')}
@@ -383,8 +394,8 @@ export default function ProjectLeadDashboard() {
                 <Calendar className="w-5 h-5" />
                 Jadwal Inspeksi Mendatang
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/project-lead/schedules')}
               >
@@ -395,7 +406,7 @@ export default function ProjectLeadDashboard() {
             <CardContent>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {upcomingSchedules.map(schedule => (
-                  <div 
+                  <div
                     key={schedule.id}
                     className="p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                   >
@@ -421,8 +432,8 @@ export default function ProjectLeadDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="justify-start h-auto py-4"
                 onClick={() => router.push('/dashboard/project-lead/team')}
               >
@@ -433,8 +444,8 @@ export default function ProjectLeadDashboard() {
                 </div>
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="justify-start h-auto py-4"
                 onClick={() => router.push('/dashboard/project-lead/timeline')}
               >
@@ -445,8 +456,8 @@ export default function ProjectLeadDashboard() {
                 </div>
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="justify-start h-auto py-4"
                 onClick={() => router.push('/dashboard/project-lead/schedules')}
               >

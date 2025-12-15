@@ -108,10 +108,11 @@ export default function AdminLeadProjectsPage() {
     setError(null);
 
     try {
-      // Fetch projects with client info
+      // Fetch projects owned by this admin_lead with client info
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select('*')
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
         .order('created_at', { ascending: false });
 
       if (projectsError) throw projectsError;
@@ -290,7 +291,7 @@ export default function AdminLeadProjectsPage() {
                     {projects.length === 0 ? 'Belum Ada Proyek' : 'Tidak Ditemukan'}
                   </h3>
                   <p className="text-muted-foreground mb-4">
-                    {projects.length === 0 
+                    {projects.length === 0
                       ? 'Mulai dengan membuat proyek SLF/PBG pertama'
                       : 'Tidak ada proyek yang sesuai dengan filter'
                     }

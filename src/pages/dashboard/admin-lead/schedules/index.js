@@ -273,10 +273,11 @@ export default function AdminLeadSchedulesPage() {
         throw schedulesError;
       }
 
-      // 2. Fetch projects untuk form
+      // 2. Fetch projects untuk form (owned by admin_lead)
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select('id, name')
+        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
         .order('name');
 
       if (projectsError) {

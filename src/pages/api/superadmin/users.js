@@ -422,7 +422,7 @@ async function handleDelete(req, res, supabase, currentUserEmail) {
     return res.status(400).json({ error: 'User ID is required' });
   }
 
-  // Check if trying to delete current user (Fixed: Use dynamic check)
+  // Check if trying to delete current user
   const { data: userData } = await supabase
     .from('profiles')
     .select('email')
@@ -433,18 +433,40 @@ async function handleDelete(req, res, supabase, currentUserEmail) {
     return res.status(403).json({ error: 'Cannot delete your own account' });
   }
 
+  // SMART DELETE:
+  // 1. Mark as deleted
+  // 2. Change email so it can be re-used (append timestamp)
+  const timestamp = Math.floor(Date.now() / 1000);
+  const archivedEmail = `${userData.email}_deleted_${timestamp}`;
+
   const { error } = await supabase
     .from('profiles')
     .update({
       is_active: false,
       status: 'deleted',
-      deleted_at: new Date().toISOString()
-      // Removed: deleted_by (column doesn't exist)
+      deleted_at: new Date().toISOString(),
+      email: archivedEmail // Release the original email
     })
     .eq('id', id);
 
   if (error) {
+    console.error('❌ [API] Delete failed:', error);
     return res.status(400).json({ error: error.message });
+  }
+
+  // Optional: Also try to delete from auth.users (requires service role)
+  // This is strict 'Hard Delete' from Auth, but 'Soft Delete' in Profiles (for history).
+  // However, Supabase Auth doesn't support 'Archiving' email easily without changing it.
+  // Since we are using Service Role client in 'handler' (passed as supabase), we can try:
+  try {
+    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(id);
+    if (authDeleteError) {
+      console.warn('⚠️ [API] Auth user delete failed (non-critical):', authDeleteError.message);
+    } else {
+      console.log('✅ [API] Auth user deleted for ID:', id);
+    }
+  } catch (err) {
+    console.warn('⚠️ [API] Auth delete skipped:', err.message);
   }
 
   return res.status(200).json({ success: true });

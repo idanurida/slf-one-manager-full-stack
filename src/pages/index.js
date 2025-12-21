@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
@@ -31,9 +31,8 @@ export default function IntroPage() {
 
   return (
     <div
-      className={`relative overflow-hidden min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${
-        fadeOut ? "opacity-0 scale-95" : "opacity-100 scale-100"
-      }`}
+      className={`relative overflow-hidden min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${fadeOut ? "opacity-0 scale-95" : "opacity-100 scale-100"
+        }`}
     >
       {/* Background Layers */}
       <div className="absolute inset-0 animate-gradientMove bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-secondary/10 to-destructive/10 dark:from-primary/5 dark:via-secondary/5 dark:to-destructive/5"></div>

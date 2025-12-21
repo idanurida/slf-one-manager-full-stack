@@ -199,8 +199,8 @@ export const AuthProvider = ({ children }) => {
               email: session.user.email,
               role: meta.role,
               full_name: meta.full_name,
-              status: 'approved', // Optimistic assumption
-              is_approved: true // Optimistic assumption
+              status: 'pending', // Be conservative for new users
+              is_approved: false // Be conservative for new users
             });
           }
 
@@ -249,8 +249,9 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
           setProfile(null);
 
-          // Jangan redirect jika sudah di login page
+          // Jangan redirect jika sudah di login page atau sedang registrasi
           if (!router.pathname.startsWith('/login') &&
+            !router.pathname.startsWith('/register') &&
             !router.pathname.startsWith('/awaiting-approval')) {
             console.log("🔄 Redirecting to login after signout");
             setTimeout(() => router.replace("/login"), 100);

@@ -140,8 +140,8 @@ export default function RegisterPage() {
             phone_number: formData.phone_number,
             company_name: formData.company_name,
           },
-          // Email confirmation should redirect to awaiting-approval page
-          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/awaiting-approval?reason=email-confirmed` : undefined,
+          // Email confirmation should redirect to the server-side callback
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/api/auth/callback` : undefined,
         }
       });
 
@@ -186,16 +186,14 @@ export default function RegisterPage() {
         console.log('✅ Profile created successfully:', profileResult.profile);
       }
 
-      // ✅ Sign out user immediately
-      await supabase.auth.signOut();
-
       setSuccess(true);
       setError('');
 
-      // Redirect to login page with registered flag
+      // Redirect to awaiting-approval page with registered flag
+      // Wait longer so they can read the instructions
       setTimeout(() => {
-        router.replace('/login?registered=true');
-      }, 2000);
+        router.push('/awaiting-approval?reason=registered');
+      }, 5000);
     } catch (err) {
       console.error('[Register] Error:', err);
 
@@ -271,26 +269,42 @@ export default function RegisterPage() {
 
             <CardContent className="space-y-4">
               {success ? (
-                <div className="space-y-4">
-                  <Alert className="border-green-500/50 bg-green-500/10">
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-600">
-                      <div className="space-y-2">
-                        <div className="font-semibold">Registrasi berhasil!</div>
-                        <div className="text-sm space-y-1">
-                          <div>📧 <strong>Langkah 1:</strong> Cek email Anda dan klik link konfirmasi untuk verifikasi email.</div>
-                          <div>👨‍💼 <strong>Langkah 2:</strong> Tunggu approval dari SuperAdmin.</div>
-                          <div>✅ Setelah kedua langkah selesai, Anda bisa login ke sistem.</div>
-                        </div>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
-
-                  <div className="flex justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <div className="space-y-6">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                      <CheckCircle2 className="w-10 h-10 text-green-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground text-center">Registrasi Berhasil!</h3>
                   </div>
-                  <p className="text-center text-sm text-muted-foreground">
-                    Mengarahkan ke halaman login...
+
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-4">
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">1</div>
+                      <div className="text-sm">
+                        <p className="font-semibold">Verifikasi Email</p>
+                        <p className="text-muted-foreground text-xs">Cek inbox untuk link konfirmasi.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">2</div>
+                      <div className="text-sm">
+                        <p className="font-semibold">Persetujuan Admin</p>
+                        <p className="text-muted-foreground text-xs">Akun Anda sedang ditinjau.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => router.push('/awaiting-approval')}
+                    className="w-full"
+                    variant="default"
+                  >
+                    Pantau Status Akun
+                  </Button>
+
+                  <p className="text-center text-xs text-muted-foreground">
+                    Link verifikasi berlaku selama 24 jam.
                   </p>
                 </div>
               ) : (

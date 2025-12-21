@@ -16,9 +16,13 @@ CREATE TABLE IF NOT EXISTS profiles (
     email TEXT UNIQUE,
     full_name TEXT,
     role TEXT CHECK (role IN ('superadmin', 'admin_lead', 'admin_team', 'head_consultant', 'project_lead', 'inspector', 'drafter', 'client')),
-    phone TEXT,
+    phone_number TEXT,
+    phone TEXT, -- Keeping legacy 'phone' for compatibility
     avatar_url TEXT,
+    company_name TEXT,
     specialization TEXT, -- For inspector: Arsitektur, Struktur, MEP
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'suspended', 'deleted')),
+    is_approved BOOLEAN DEFAULT false,
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

@@ -9,10 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { 
-  Loader2, 
-  ArrowLeft, 
-  Save, 
+import {
+  Loader2,
+  ArrowLeft,
+  Save,
   ShieldAlert,
   User,
   Mail,
@@ -32,6 +32,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/utils/supabaseClient';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AVAILABLE_ROLES, INSPECTOR_SPECIALIZATIONS, ROLE_LABELS, STATUS_LABELS } from '@/constants/userRoles';
 import { Badge } from '@/components/ui/badge';
@@ -47,7 +48,7 @@ import {
 export default function EditUserPage() {
   const router = useRouter();
   const { id } = router.query;
-  
+
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
@@ -75,7 +76,7 @@ export default function EditUserPage() {
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  
+
   const isSuperAdmin = user?.email === 'superadmin2@slf.com';
 
   useEffect(() => {
@@ -90,17 +91,17 @@ export default function EditUserPage() {
         router.replace('/login');
         return;
       }
-      
+
       if (!isSuperAdmin) {
         setError('Akses ditolak. Hanya superadmin2@slf.com yang dapat mengedit pengguna.');
         setAccessDenied(true);
-        
+
         toast({
           title: "Akses Ditolak",
           description: `Hanya superadmin2@slf.com yang dapat mengedit pengguna.`,
           variant: "destructive",
         });
-        
+
         setTimeout(() => {
           router.push('/dashboard');
         }, 3000);
@@ -117,9 +118,9 @@ export default function EditUserPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch(`/api/superadmin/users?id=${id}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Gagal mengambil data user');
@@ -127,7 +128,7 @@ export default function EditUserPage() {
 
       const data = await response.json();
       const userData = data.user || data;
-      
+
       if (!userData) {
         throw new Error('Data tidak ditemukan');
       }
@@ -176,7 +177,7 @@ export default function EditUserPage() {
   const handleStatusChange = (value) => {
     const isApproved = value === 'approved';
     const isActive = value !== 'suspended';
-    
+
     setFormData(prev => ({
       ...prev,
       status: value,
@@ -275,7 +276,7 @@ export default function EditUserPage() {
 
   const handleQuickAction = async (action) => {
     if (!id) return;
-    
+
     setSaving(true);
     setError(null);
 
@@ -288,8 +289,8 @@ export default function EditUserPage() {
         body: JSON.stringify({
           action,
           userId: id,
-          reason: action === 'reject' ? 'Ditolak oleh superadmin' : 
-                  action === 'suspend' ? 'Ditangguhkan oleh superadmin' : '',
+          reason: action === 'reject' ? 'Ditolak oleh superadmin' :
+            action === 'suspend' ? 'Ditangguhkan oleh superadmin' : '',
           updated_by: user?.email
         }),
       });
@@ -375,16 +376,14 @@ export default function EditUserPage() {
   const handleDeleteUser = async () => {
     setDeleting(true);
     try {
-      const response = await fetch('/api/superadmin/users', {
-        method: 'POST',
+      // Get current session for token
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch(`/api/superadmin/users?id=${id}`, {
+        method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'delete',
-          userId: id,
-          updated_by: user?.email
-        }),
+          'Authorization': `Bearer ${session?.access_token}`
+        }
       });
 
       const result = await response.json();
@@ -491,9 +490,9 @@ export default function EditUserPage() {
       <div className="p-6 max-w-6xl mx-auto">
         {/* Header dengan tombol kembali */}
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            className="pl-0 hover:pl-2 transition-all" 
+          <Button
+            variant="ghost"
+            className="pl-0 hover:pl-2 transition-all"
             onClick={() => router.push('/dashboard/superadmin/users')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -516,9 +515,9 @@ export default function EditUserPage() {
                     </Badge>
                     <Badge variant="outline" className={
                       formData.status === 'approved' ? 'bg-green-100 text-green-800 border-green-200' :
-                      formData.status === 'pending' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                      formData.status === 'rejected' ? 'bg-red-100 text-red-800 border-red-200' :
-                      'bg-gray-100 text-gray-800 border-gray-200'
+                        formData.status === 'pending' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                          formData.status === 'rejected' ? 'bg-red-100 text-red-800 border-red-200' :
+                            'bg-gray-100 text-gray-800 border-gray-200'
                     }>
                       {STATUS_LABELS[formData.status] || formData.status}
                     </Badge>
@@ -537,13 +536,13 @@ export default function EditUserPage() {
                   )}
                 </div>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="border-t pt-4">
                 <h3 className="text-lg font-semibold mb-3">Aksi Cepat</h3>
                 <div className="flex flex-wrap gap-3">
                   {formData.status !== 'approved' && (
-                    <Button 
+                    <Button
                       onClick={() => handleQuickAction('approve')}
                       disabled={saving}
                       className="bg-green-600 hover:bg-green-700 flex-1 min-w-[140px]"
@@ -552,9 +551,9 @@ export default function EditUserPage() {
                       Approve User
                     </Button>
                   )}
-                  
+
                   {formData.status !== 'rejected' && (
-                    <Button 
+                    <Button
                       onClick={() => handleQuickAction('reject')}
                       disabled={saving}
                       variant="destructive"
@@ -564,9 +563,9 @@ export default function EditUserPage() {
                       Reject User
                     </Button>
                   )}
-                  
+
                   {formData.status !== 'suspended' && formData.status === 'approved' && (
-                    <Button 
+                    <Button
                       onClick={() => handleQuickAction('suspend')}
                       disabled={saving}
                       variant="outline"
@@ -576,9 +575,9 @@ export default function EditUserPage() {
                       Suspend User
                     </Button>
                   )}
-                  
+
                   {formData.status === 'suspended' && (
-                    <Button 
+                    <Button
                       onClick={() => handleQuickAction('reactivate')}
                       disabled={saving}
                       variant="outline"
@@ -588,9 +587,9 @@ export default function EditUserPage() {
                       Reactivate
                     </Button>
                   )}
-                  
+
                   {/* Tombol Reset Password */}
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={() => setShowPasswordDialog(true)}
                     disabled={saving}
@@ -601,7 +600,7 @@ export default function EditUserPage() {
                   </Button>
 
                   {/* Tombol Delete */}
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={() => setShowDeleteDialog(true)}
                     disabled={saving || formData.email === 'superadmin2@slf.com'}
@@ -643,10 +642,10 @@ export default function EditUserPage() {
                       <Mail className="w-4 h-4" />
                       Email
                     </Label>
-                    <Input 
-                      value={formData.email} 
-                      disabled 
-                      className="bg-muted" 
+                    <Input
+                      value={formData.email}
+                      disabled
+                      className="bg-muted"
                     />
                     <p className="text-xs text-muted-foreground">Email tidak dapat diubah</p>
                   </div>
@@ -752,8 +751,8 @@ export default function EditUserPage() {
                   {formData.role === 'inspector' && (
                     <div className="space-y-2">
                       <Label htmlFor="specialization">Spesialisasi</Label>
-                      <Select 
-                        value={formData.specialization} 
+                      <Select
+                        value={formData.specialization}
                         onValueChange={handleSpecializationChange}
                         disabled={saving}
                       >
@@ -811,9 +810,9 @@ export default function EditUserPage() {
 
                   {/* Action Buttons */}
                   <div className="pt-6 flex justify-end gap-3">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={() => router.push('/dashboard/superadmin/users')}
                       disabled={saving}
                     >

@@ -275,29 +275,14 @@ async function handleReactivate(req, res, supabase, currentUserEmail, userId) {
 }
 
 async function handleDeleteUser(req, res, supabase, currentUserEmail, userId) {
-  // Check if trying to delete current user (Fixed: Use dynamic check)
-  const { data: userData } = await supabase
-    .from('profiles')
-    .select('email')
-    .eq('id', userId)
-    .single();
-
-  if (userData?.email === currentUserEmail) {
-    return res.status(403).json({ error: 'Cannot delete your own account' });
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required' });
   }
 
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      is_active: false,
-      status: 'deleted',
-      deleted_at: new Date().toISOString()
-      // Removed: deleted_by (column doesn't exist)
-    })
-    .eq('id', userId);
+  const result = await performFullUserDeletion(supabase, userId, currentUserEmail);
 
-  if (error) {
-    return res.status(400).json({ error: error.message });
+  if (result.error) {
+    return res.status(result.status || 400).json({ error: result.error });
   }
 
   return res.status(200).json({ success: true });
@@ -422,52 +407,67 @@ async function handleDelete(req, res, supabase, currentUserEmail) {
     return res.status(400).json({ error: 'User ID is required' });
   }
 
-  // Check if trying to delete current user
-  const { data: userData } = await supabase
-    .from('profiles')
-    .select('email')
-    .eq('id', id)
-    .single();
+  const result = await performFullUserDeletion(supabase, id, currentUserEmail);
 
-  if (userData?.email === currentUserEmail) {
-    return res.status(403).json({ error: 'Cannot delete your own account' });
+  if (result.error) {
+    return res.status(result.status || 400).json({ error: result.error });
   }
 
-  // SMART DELETE:
-  // 1. Mark as deleted
-  // 2. Change email so it can be re-used (append timestamp)
+  return res.status(200).json({ success: true });
+}
+
+// SHARED DELETION LOGIC
+async function performFullUserDeletion(supabase, userId, currentUserEmail) {
+  console.log(`🗑️ [API] Performing full deletion for user: ${userId}`);
+
+  // 1. Get user email
+  const { data: userData, error: fetchError } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('id', userId)
+    .single();
+
+  if (fetchError || !userData) {
+    console.error('❌ [API] User not found for deletion:', fetchError);
+    return { error: 'User not found', status: 404 };
+  }
+
+  if (userData.email === currentUserEmail) {
+    return { error: 'Cannot delete your own account', status: 403 };
+  }
+
+  // 2. Archive profile (Soft Delete)
+  // Release the email so it can be reused, but keep the record with a timestamped email
   const timestamp = Math.floor(Date.now() / 1000);
   const archivedEmail = `${userData.email}_deleted_${timestamp}`;
 
-  const { error } = await supabase
+  const { error: profileError } = await supabase
     .from('profiles')
     .update({
       is_active: false,
       status: 'deleted',
       deleted_at: new Date().toISOString(),
-      email: archivedEmail // Release the original email
+      email: archivedEmail
     })
-    .eq('id', id);
+    .eq('id', userId);
 
-  if (error) {
-    console.error('❌ [API] Delete failed:', error);
-    return res.status(400).json({ error: error.message });
+  if (profileError) {
+    console.error('❌ [API] Profile archiving failed:', profileError);
+    return { error: profileError.message, status: 400 };
   }
 
-  // Optional: Also try to delete from auth.users (requires service role)
-  // This is strict 'Hard Delete' from Auth, but 'Soft Delete' in Profiles (for history).
-  // However, Supabase Auth doesn't support 'Archiving' email easily without changing it.
-  // Since we are using Service Role client in 'handler' (passed as supabase), we can try:
+  // 3. Hard Delete from Auth (requires service role)
   try {
-    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(id);
+    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId);
     if (authDeleteError) {
       console.warn('⚠️ [API] Auth user delete failed (non-critical):', authDeleteError.message);
+      // We don't fail the whole request because the profile is already archived
     } else {
-      console.log('✅ [API] Auth user deleted for ID:', id);
+      console.log('✅ [API] Auth user deleted for ID:', userId);
     }
   } catch (err) {
-    console.warn('⚠️ [API] Auth delete skipped:', err.message);
+    console.warn('⚠️ [API] Auth delete skipped/failed:', err.message);
   }
 
-  return res.status(200).json({ success: true });
+  return { success: true };
 }

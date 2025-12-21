@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from 'next-themes';
+import { supabase } from '@/utils/supabaseClient';
 
 // shadcn/ui Components
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Lucide Icons
 import {
-    ShieldAlert, Loader2, Moon, Sun, LogOut, Mail,
+    ShieldAlert, Loader2, Moon, Sun, LogOut, Mail, Clock,
     ShieldCheck, AlertCircle, CheckCircle, XCircle
 } from 'lucide-react';
 
@@ -95,8 +96,8 @@ export default function AwaitingApprovalPage() {
                 return;
             }
 
-            // Jika tidak ada user sama sekali, redirect ke login
-            if (!user) {
+            // Jika tidak ada user sama sekali, redirect ke login (kecuali sedang registrasi)
+            if (!user && reason !== 'registered' && reason !== 'email-confirmed') {
                 console.log("[AwaitingApproval] Tidak ada user, redirect ke login");
                 setTimeout(() => router.push('/login'), 100);
                 return;
@@ -365,18 +366,18 @@ export default function AwaitingApprovalPage() {
                             <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Email:</span>
-                                    <span className="font-medium text-foreground">{user.email}</span>
+                                    <span className="font-medium text-foreground">{user?.email || 'Check your inbox'}</span>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Nama:</span>
-                                    <span className="font-medium text-foreground">{profile.full_name || 'N/A'}</span>
+                                    <span className="font-medium text-foreground">{profile?.full_name || 'N/A'}</span>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Peran:</span>
                                     <span className="font-medium text-primary capitalize">
-                                        {profile.role?.replace(/_/g, ' ') || 'N/A'}
+                                        {profile?.role?.replace(/_/g, ' ') || 'N/A'}
                                     </span>
                                 </div>
 
@@ -458,13 +459,26 @@ export default function AwaitingApprovalPage() {
                                     )}
                                 </Button>
 
-                                {(reason === 'email-not-verified' || !profile.email_confirmed_at) && (
+                                {(reason === 'email-not-verified' || (profile && !profile.email_confirmed_at)) && (
                                     <Button
                                         variant="outline"
                                         className="w-full"
-                                        onClick={() => {
-                                            // TODO: Implement resend verification email
-                                            alert("Fitur resend verification email akan segera tersedia");
+                                        disabled={isLoggingOut}
+                                        onClick={async () => {
+                                            try {
+                                                const { error } = await supabase.auth.resend({
+                                                    type: 'signup',
+                                                    email: user.email,
+                                                    options: {
+                                                        emailRedirectTo: window.location.origin + '/awaiting-approval?reason=email-confirmed'
+                                                    }
+                                                });
+                                                if (error) throw error;
+                                                alert("Email verifikasi telah dikirim ulang. Silakan cek inbox (dan folder spam) Anda.");
+                                            } catch (error) {
+                                                console.error("Resend error:", error);
+                                                alert("Gagal mengirim ulang email: " + error.message);
+                                            }
                                         }}
                                     >
                                         <Mail className="w-4 h-4 mr-2" />

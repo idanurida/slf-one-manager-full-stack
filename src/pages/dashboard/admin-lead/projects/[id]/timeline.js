@@ -89,12 +89,28 @@ export default function ProjectTimelinePage() {
     setError(null);
 
     try {
+      // 1. Fetch team assignments first
+      const { data: teamData } = await supabase
+        .from('project_teams')
+        .select('project_id')
+        .eq('user_id', user.id);
+
+      const teamProjectIds = teamData?.map(t => t.project_id) || [];
+      const orConditions = [
+        `created_by.eq.${user.id}`,
+        `admin_lead_id.eq.${user.id}`
+      ];
+
+      if (teamProjectIds.length > 0) {
+        orConditions.push(`id.in.(${teamProjectIds.join(',')})`);
+      }
+
       // Fetch project
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .select('*, clients(name)')
         .eq('id', projectId)
-        .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id},id.in.(select project_id from project_teams where user_id = '${user.id}')`) // ✅ STRICT MULTI-TENANCY: Creator OR Assigned Lead OR Team Member
+        .or(orConditions.join(',')) // ✅ STRICT MULTI-TENANCY
         .single();
 
       if (projectError) throw projectError;
@@ -370,8 +386,8 @@ export default function ProjectTimelinePage() {
                     <div
                       key={phase.id}
                       className={`group relative bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border hover:shadow-xl transition-all duration-300 ${isActive ? 'border-[#7c3aed] shadow-lg shadow-[#7c3aed]/10' :
-                          isCompleted ? 'border-emerald-500/20' :
-                            'border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/30 dark:shadow-none'
+                        isCompleted ? 'border-emerald-500/20' :
+                          'border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/30 dark:shadow-none'
                         }`}
                     >
                       {/* Connector Line */}
@@ -383,8 +399,8 @@ export default function ProjectTimelinePage() {
                         {/* Icon & Order */}
                         <div className="flex flex-col items-center gap-3">
                           <div className={`size-16 rounded-[1.5rem] flex items-center justify-center text-2xl font-black shadow-lg transition-transform group-hover:scale-110 ${isCompleted ? 'bg-emerald-500 text-white shadow-emerald-500/30' :
-                              isActive ? 'bg-[#7c3aed] text-white shadow-[#7c3aed]/30' :
-                                'bg-slate-100 dark:bg-white/10 text-slate-400'
+                            isActive ? 'bg-[#7c3aed] text-white shadow-[#7c3aed]/30' :
+                              'bg-slate-100 dark:bg-white/10 text-slate-400'
                             }`}>
                             {phase.order_index}
                           </div>

@@ -80,12 +80,27 @@ export default function ProjectTeamPage() {
         setLoading(true);
 
         try {
-            // 1. Fetch Project (Strict Multi-tenancy check)
+            // 1. Fetch team assignments first (Strict Multi-tenancy check)
+            const { data: teamData } = await supabase
+                .from('project_teams')
+                .select('project_id')
+                .eq('user_id', user.id);
+
+            const teamProjectIds = teamData?.map(t => t.project_id) || [];
+            const orConditions = [
+                `created_by.eq.${user.id}`,
+                `admin_lead_id.eq.${user.id}`
+            ];
+
+            if (teamProjectIds.length > 0) {
+                orConditions.push(`id.in.(${teamProjectIds.join(',')})`);
+            }
+
             const { data: proj, error: projErr } = await supabase
                 .from('projects')
                 .select('*')
                 .eq('id', id)
-                .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id},id.in.(select project_id from project_teams where user_id = '${user.id}')`)
+                .or(orConditions.join(','))
                 .single();
 
             if (projErr) throw projErr;

@@ -343,6 +343,23 @@ export default function AdminLeadProjectDetailPage() {
     try {
       console.log('🔄 Mengambil detail project untuk:', id);
 
+
+      // 1. Fetch team assignments first to avoid subquery error
+      const { data: teamData } = await supabase
+        .from('project_teams')
+        .select('project_id')
+        .eq('user_id', user.id);
+
+      const teamProjectIds = teamData?.map(t => t.project_id) || [];
+      const orConditions = [
+        `created_by.eq.${user.id}`,
+        `admin_lead_id.eq.${user.id}`
+      ];
+
+      if (teamProjectIds.length > 0) {
+        orConditions.push(`id.in.(${teamProjectIds.join(',')})`);
+      }
+
       // Fetch project dengan data terkait
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
@@ -352,7 +369,7 @@ export default function AdminLeadProjectDetailPage() {
           project_lead:profiles!projects_project_lead_id_fkey(*)
         `)
         .eq('id', id)
-        .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id},id.in.(select project_id from project_teams where user_id = '${user.id}')`) // Allow creator, lead, OR team member
+        .or(orConditions.join(',')) // Allow creator, lead, OR team member
         .single();
 
       if (projectError) throw projectError;

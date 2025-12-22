@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Head from 'next/head';
 
 // Lucide Icons
 import { AlertTriangle, Loader2, Eye, EyeOff, Moon, Sun, LogIn } from 'lucide-react';
@@ -154,6 +155,9 @@ export default function LoginPage() {
   // âœ… OPTIMIZED: Main login form - muncul cepat
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <Head>
+        <title>SLF ONE - Masuk ke Sistem</title>
+      </Head>
       {/* Header */}
       <header className="flex justify-end items-center p-6">
         <Button

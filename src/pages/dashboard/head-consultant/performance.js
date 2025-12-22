@@ -40,16 +40,18 @@ import {
 import { Progress } from "@/components/ui/progress";
 
 // Icons
-import { 
-  Users, User, BarChart3, TrendingUp, TrendingDown, FileText, 
-  CheckCircle2, XCircle, Clock, Calendar, Building, AlertCircle, 
-  RefreshCw, ArrowLeft, Eye, Filter, Search, Info 
+import {
+  Users, User, BarChart3, TrendingUp, TrendingDown, FileText,
+  CheckCircle2, XCircle, Clock, Calendar, Building, AlertCircle,
+  RefreshCw, ArrowLeft, Eye, Filter, Search, Info,
+  LayoutDashboard, FolderOpen, Settings, LogOut, Moon, Sun, Bell, Menu, ChevronRight, ChevronDown, Home, CalendarDays
 } from "lucide-react";
 
 // Utils & Context
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "next-themes";
 
 // Animation variants
 const containerVariants = {
@@ -67,7 +69,7 @@ const getRoleColor = (role) => {
     'inspector': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
     'project_lead': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
     'admin_team': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    'admin_lead': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+    'admin_lead': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
     'head_consultant': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
     'drafter': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400',
     'client': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
@@ -91,7 +93,8 @@ const getRoleLabel = (role) => {
 // Main Component
 export default function HeadConsultantPerformancePage() {
   const router = useRouter();
-  const { user, profile, loading: authLoading, isHeadConsultant } = useAuth();
+  const { user, profile, loading: authLoading, logout, isHeadConsultant } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -253,12 +256,16 @@ export default function HeadConsultantPerformancePage() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (router.isReady && !authLoading && user && isHeadConsultant) {
+    if (router.isReady && user) {
       fetchData();
-    } else if (!authLoading && user && !isHeadConsultant) {
-      router.replace('/dashboard');
     }
-  }, [router.isReady, authLoading, user, isHeadConsultant, fetchData]);
+  }, [router.isReady, user, fetchData]);
+
+
+
+  if (!user) {
+    return null;
+  }
 
   // Get data based on filter
   const getDataForRole = (role) => {
@@ -314,235 +321,222 @@ export default function HeadConsultantPerformancePage() {
 
   return (
     <DashboardLayout>
-      <TooltipProvider>
-        <motion.div
-          className="p-6 space-y-8 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex justify-between items-start">
-            <div>
-              <p className="text-slate-600 dark:text-slate-400 text-lg">
-                Pantau dan analisis kinerja tim inspeksi, admin, dan project lead.
-              </p>
+      <div className="flex flex-col gap-8">
+
+        {/* Page Heading & Actions */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl md:text-4xl font-display font-extrabold text-gray-900 dark:text-white tracking-tight">Eksplorasi kinerja</h1>
+            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-base">Pantau metrik efisiensi dan kualitas output seluruh personil dalam ekosistem proyek.</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center justify-center gap-2 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold text-xs px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Total Inspektur"
+            value={performanceData.inspectors.length}
+            icon={Users}
+            color="text-primary"
+            subtitle="Personel lapangan"
+          />
+          <StatCard
+            title="Project Leads"
+            value={performanceData.projectLeads.length}
+            icon={User}
+            color="text-status-yellow"
+            subtitle="Manajer proyek"
+          />
+          <StatCard
+            title="Total Laporan"
+            value={performanceData.overall.total_reports || 0}
+            icon={FileText}
+            color="text-status-green"
+            subtitle="Dokumen teknis"
+          />
+          <StatCard
+            title="Total Proyek"
+            value={performanceData.overall.total_projects || 0}
+            icon={Building}
+            color="text-indigo-500"
+            subtitle="Inisiatif berjalan"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="p-6 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="h-5 w-1 bg-primary rounded-full"></div>
+            <h4 className="text-xs font-black text-primary uppercase tracking-wider">Saring anggota</h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="relative md:col-span-2">
+              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Pencarian anggota</span>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary-light" />
+                <input
+                  placeholder="Cari Nama atau Spesialisasi..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-text-secondary-light/50 text-gray-900 dark:text-white"
+                />
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => router.push('/dashboard/head-consultant')}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Kembali ke Dashboard
-              </Button>
+            <div className="relative">
+              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Kategori peran</span>
+              <div className="relative">
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-white outline-none transition-all"
+                >
+                  <option value="inspector">Inspector</option>
+                  <option value="project_lead">Project Lead</option>
+                  <option value="admin_team">Admin Team</option>
+                  <option value="admin_lead">Admin Lead</option>
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
+              </div>
             </div>
-          </motion.div>
+            <div className="relative">
+              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Jendela waktu</span>
+              <div className="relative">
+                <select
+                  value={periodFilter}
+                  onChange={(e) => setPeriodFilter(e.target.value)}
+                  className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-white outline-none transition-all"
+                >
+                  <option value="this_month">Bulan Ini</option>
+                  <option value="last_month">Bulan Lalu</option>
+                  <option value="this_year">Tahun Ini</option>
+                  <option value="all_time">Semua Waktu</option>
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
+        {/* Table Area */}
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden transition-all duration-300">
+          <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <BarChart3 size={20} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white tracking-tight">Peringkat efektivitas {getRoleLabel(roleFilter)}</h3>
+                <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Key performance indicators</p>
+              </div>
+            </div>
+          </div>
 
-          {/* Filters */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-slate-500" />
-                  Filter & Cari
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="relative md:col-span-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      placeholder="Cari nama atau spesialisasi..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-                    />
-                  </div>
-                  <Select value={roleFilter} onValueChange={setRoleFilter}>
-                    <SelectTrigger className="w-full bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                      <SelectValue placeholder="Filter Role" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <SelectItem value="inspector" className="text-slate-900 dark:text-slate-100">Inspector</SelectItem>
-                      <SelectItem value="project_lead" className="text-slate-900 dark:text-slate-100">Project Lead</SelectItem>
-                      <SelectItem value="admin_team" className="text-slate-900 dark:text-slate-100">Admin Team</SelectItem>
-                      <SelectItem value="admin_lead" className="text-slate-900 dark:text-slate-100">Admin Lead</SelectItem> {/* ✅ Ditambahkan */}
-                    </SelectContent>
-                  </Select>
-                  <Select value={periodFilter} onValueChange={setPeriodFilter}>
-                    <SelectTrigger className="w-full bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                      <SelectValue placeholder="Periode" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <SelectItem value="this_month" className="text-slate-900 dark:text-slate-100">Bulan Ini</SelectItem>
-                      <SelectItem value="last_month" className="text-slate-900 dark:text-slate-100">Bulan Lalu</SelectItem>
-                      <SelectItem value="this_year" className="text-slate-900 dark:text-slate-100">Tahun Ini</SelectItem>
-                      <SelectItem value="all_time" className="text-slate-900 dark:text-slate-100">Semua Waktu</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Performance Table */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-blue-500" />
-                    {getRoleLabel(roleFilter)} Performance
-                  </span>
-                  <Badge variant="outline" className="text-slate-700 dark:text-slate-300">
-                    {filteredData.length} Orang
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
+                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Anggota & spesialisasi</th>
+                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Indeks performa</th>
+                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase text-right">Manajemen</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {loading ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nama</TableHead>
-                        {roleFilter === 'inspector' && <TableHead>Spesialisasi</TableHead>}
-                        {roleFilter === 'admin_lead' && <TableHead>Proyek Aktif</TableHead>} {/* ✅ Ditambahkan */}
-                        <TableHead>Total Tugas</TableHead>
-                        <TableHead>Keberhasilan</TableHead>
-                        <TableHead>Detail</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
-                          {roleFilter === 'inspector' && <TableCell><Skeleton className="h-3 w-1/2" /></TableCell>}
-                          {roleFilter === 'admin_lead' && <TableCell><Skeleton className="h-3 w-8" /></TableCell>} {/* ✅ Ditambahkan */}
-                          <TableCell><Skeleton className="h-3 w-8" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/4" /></TableCell>
-                          <TableCell><Skeleton className="h-8 w-20" /></TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <tr><td colSpan="4" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-xs font-bold text-text-secondary-light">Mengomputasi metrik...</span></div></td></tr>
                 ) : filteredData.length === 0 ? (
-                  <div className="text-center py-12">
-                    <TrendingUp className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4 opacity-50" />
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                      Tidak Ada Data
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      {searchTerm
-                        ? 'Tidak ada anggota tim yang cocok dengan pencarian.'
-                        : 'Belum ada data kinerja untuk role ini dalam periode yang dipilih.'}
-                    </p>
-                    <Button onClick={handleRefresh} className="mt-4">
-                      Refresh Data
-                    </Button>
-                  </div>
+                  <tr><td colSpan="4" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 mb-4"><BarChart3 size={40} className="text-text-secondary-light/20" /></div><p className="font-bold text-sm text-text-secondary-light">Data tidak ditemukan</p></td></tr>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-slate-100 dark:bg-slate-800">
-                          <TableHead>Nama</TableHead>
-                          {roleFilter === 'inspector' && <TableHead>Spesialisasi</TableHead>}
-                          {roleFilter === 'admin_lead' && <TableHead>Proyek Aktif</TableHead>} {/* ✅ Ditambahkan */}
-                          <TableHead>Total Tugas</TableHead>
-                          <TableHead>Keberhasilan (%)</TableHead>
-                          <TableHead>Detail</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredData.map((member) => (
-                          <TableRow key={member.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-700">
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-3">
-                                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                                  <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{member.full_name}</p>
-                                  <Badge variant="outline" className="mt-1 text-xs capitalize">
-                                    {getRoleLabel(member.role)}
-                                  </Badge>
-                                </div>
-                              </div>
-                            </TableCell>
-                            {roleFilter === 'inspector' && (
-                              <TableCell>
-                                <Badge variant="secondary" className="capitalize">
-                                  {member.specialization || 'Umum'}
-                                </Badge>
-                              </TableCell>
-                            )}
-                            {roleFilter === 'admin_lead' && ( // ✅ Ditambahkan
-                              <TableCell>
-                                <Badge variant="outline" className="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                                  {member.active_projects || 0} Proyek
-                                </Badge>
-                              </TableCell>
-                            )}
-                            <TableCell>
-                              {roleFilter === 'inspector' ? member.total_reports : 
-                               roleFilter === 'admin_lead' ? member.total_projects : 
-                               member.total_projects || member.documents_verified}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Progress value={member.completion_rate || member.success_rate || member.accuracy_rate} className="w-24 h-2" />
-                                <span className="text-sm font-medium">
-                                  {Math.round(member.completion_rate || member.success_rate || member.accuracy_rate || 0)}%
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/head-consultant/team/${member.id}/performance`)}>
-                                <Eye className="w-4 h-4 mr-1" />
-                                Detail
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  filteredData.map(member => (
+                    <tr key={member.id} className="group hover:bg-primary/5 transition-all duration-300">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-sm text-white font-bold shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
+                            {member.full_name?.[0]}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-primary transition-colors cursor-pointer text-sm">
+                              {member.full_name}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-gray-900 dark:text-gray-200">
+                                {roleFilter === 'inspector' ? member.total_reports :
+                                  roleFilter === 'admin_lead' ? member.total_projects :
+                                    member.total_projects || member.documents_verified}
+                              </span>
+                              <span className="text-[10px] font-medium text-text-secondary-light">Total selesai</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col gap-2 w-48">
+                          <span className="text-[10px] font-bold text-gray-900 dark:text-gray-300 leading-none">
+                            {Math.round(member.completion_rate || member.success_rate || member.accuracy_rate || 0)}% Efektivitas
+                          </span>
+                          <div className="w-full bg-gray-100 dark:bg-white/5 rounded-full h-2 overflow-hidden border border-gray-200 dark:border-gray-800">
+                            <div
+                              className="bg-gradient-to-r from-primary to-primary-hover h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(124,58,237,0.3)]"
+                              style={{ width: `${member.completion_rate || member.success_rate || member.accuracy_rate || 0}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <button
+                          onClick={() => router.push(`/dashboard/head-consultant/team/${member.id}/performance`)}
+                          className="h-10 px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-gray-50/50 hover:bg-primary hover:text-white dark:bg-white/5 dark:hover:bg-primary text-text-secondary-light transition-all shadow-sm text-[10px] font-bold border border-gray-200 dark:border-gray-800"
+                        >
+                          <Eye size={16} />
+                          Lihat detail
+                        </button>
+                      </td>
+                    </tr>
+                  ))
                 )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Info Card */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
-              <CardContent className="p-4">
-                <div className="flex">
-                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-medium text-blue-800 dark:text-blue-200">Catatan:</h3>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                      Metrik kinerja dihitung berdasarkan data aktivitas dalam sistem SLF One.
-                      Data ini membantu <code className="bg-white dark:bg-slate-800 px-1 rounded">Head Consultant</code> dalam mengevaluasi efektivitas tim.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-      </TooltipProvider>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </DashboardLayout>
+  );
+}
+
+function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
+  return (
+    <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+      <div className="flex items-start justify-between relative z-10">
+        <div>
+          <p className="text-xs font-bold text-text-secondary-light uppercase tracking-wider">{title}</p>
+          <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
+          {subtitle && <p className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70">{subtitle}</p>}
+        </div>
+        <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 ${color}`}>
+          <Icon size={20} />
+        </div>
+      </div>
+      {trend && (
+        <div className="mt-4 flex items-center gap-1.5 relative z-10">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-[10px] font-bold border border-status-green/20">
+            <TrendingUp size={12} />
+            <span>+{trend}%</span>
+          </div>
+          <span className="text-[10px] font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
+        </div>
+      )}
+      <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-[2.5] translate-x-1/4 translate-y-1/4 ${color}`}>
+        <Icon size={60} />
+      </div>
+    </div>
   );
 }

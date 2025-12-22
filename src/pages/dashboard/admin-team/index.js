@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -149,12 +150,9 @@ export default function AdminTeamDashboard() {
 
   if (authLoading || loading) {
     return (
-      <DashboardLayout title="Dashboard">
-        <div className="p-6 space-y-6">
-          <Skeleton className="h-8 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
-            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
-          </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="animate-spin h-10 w-10 text-[#7c3aed]" />
         </div>
       </DashboardLayout>
     );
@@ -162,175 +160,217 @@ export default function AdminTeamDashboard() {
 
   if (!isAdminTeam) {
     return (
-      <DashboardLayout title="Dashboard">
-        <Alert variant="destructive" className="m-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>Akses ditolak. Halaman ini khusus Admin Team.</AlertDescription>
-        </Alert>
+      <DashboardLayout>
+        <div className="max-w-[1400px] mx-auto p-10">
+          <div className="bg-red-500/10 border border-red-500/20 p-8 rounded-[2.5rem] flex flex-col items-center text-center">
+            <AlertTriangle className="size-16 text-red-500 mb-6" />
+            <h3 className="text-2xl font-black uppercase tracking-tighter text-red-500">Akses Ditolak</h3>
+            <p className="text-slate-500 mt-2 font-medium max-w-md">Maaf, Anda tidak memiliki izin untuk mengakses Dashboard Admin Team. Silakan hubungi administrator jika Anda merasa ini adalah kesalahan.</p>
+            <Button onClick={() => router.push('/dashboard')} className="mt-8 bg-red-500 hover:bg-red-600 font-black uppercase px-8 rounded-xl">Kembali ke Dashboard</Button>
+          </div>
+        </div>
       </DashboardLayout>
     );
   }
 
-  return (
-    <DashboardLayout title="Dashboard">
-      <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
 
-        {/* Welcome */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+  };
+
+  return (
+    <DashboardLayout>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-10 pb-10"
+      >
+        {/* Hero Section */}
+        <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
-            <h1 className="text-2xl font-bold">Halo, {profile?.full_name?.split(' ')[0] || 'Admin'}</h1>
-            <p className="text-muted-foreground">Siap memverifikasi dokumen hari ini?</p>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+              Tim <span className="text-[#7c3aed]">Admin</span>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium italic">
+              "Halo, {profile?.full_name?.split(' ')[0] || 'Admin'}. Fokus kita hari ini: Verifikasi & Koordinasi."
+            </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-4">
             {stats.pendingDocs > 0 && (
-              <Button onClick={() => router.push('/dashboard/admin-team/documents')}>
-                <FileText className="w-4 h-4 mr-2" />
+              <button
+                onClick={() => router.push('/dashboard/admin-team/documents')}
+                className="h-14 px-8 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl flex items-center justify-center gap-3 font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-[#7c3aed]/20 group"
+              >
+                <FileText size={18} className="group-hover:rotate-12 transition-transform" />
                 Verifikasi Dokumen
-                <Badge variant="secondary" className="ml-2">{stats.pendingDocs}</Badge>
-              </Button>
+                <span className="size-6 bg-white/20 rounded-lg flex items-center justify-center text-[10px] ml-1">{stats.pendingDocs}</span>
+              </button>
             )}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Proyek Ditangani</p>
-                  <p className="text-3xl font-bold">{stats.assignedProjects}</p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                  <Workflow className="w-6 h-6 text-blue-600" />
-                </div>
+        {/* Stats Grid */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Proyek Aktif"
+            value={stats.assignedProjects}
+            icon={<Workflow size={24} />}
+            color="text-blue-500"
+            bg="bg-blue-500/10"
+            trend="+2"
+            trendColor="text-emerald-500"
+          />
+          <StatCard
+            title="Perlu Verifikasi"
+            value={stats.pendingDocs}
+            icon={<FileText size={24} />}
+            color="text-orange-500"
+            bg="bg-orange-500/10"
+            trend={stats.pendingDocs > 5 ? "High" : "Normal"}
+            trendColor={stats.pendingDocs > 5 ? "text-red-500" : "text-slate-400"}
+          />
+          <StatCard
+            title="Diverifikasi"
+            value={stats.verifiedDocs}
+            icon={<CheckCircle size={24} />}
+            color="text-emerald-500"
+            bg="bg-emerald-500/10"
+            trend="Total"
+            trendColor="text-emerald-500"
+          />
+          <StatCard
+            title="Agenda Inspeksi"
+            value={stats.upcomingInspections}
+            icon={<Calendar size={24} />}
+            color="text-purple-500"
+            bg="bg-purple-500/10"
+            trend="Próxima"
+            trendColor="text-purple-500"
+          />
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Documents Table */}
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+            <div className="px-8 py-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter">Dokumen Masuk</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Antrean Verifikasi</p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Perlu Verifikasi</p>
-                  <p className="text-3xl font-bold">{stats.pendingDocs}</p>
-                </div>
-                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
-                  <FileText className="w-6 h-6 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Sudah Diverifikasi</p>
-                  <p className="text-3xl font-bold">{stats.verifiedDocs}</p>
-                </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Agenda Inspeksi</p>
-                  <p className="text-3xl font-bold">{stats.upcomingInspections}</p>
-                </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                  <Calendar className="w-6 h-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-
-          {/* Documents to verify */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Dokumen Masuk
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard/admin-team/documents')}>
-                Lihat Semua <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent>
+              <button onClick={() => router.push('/dashboard/admin-team/documents')} className="p-2 text-slate-400 hover:text-[#7c3aed] transition-colors rounded-xl bg-slate-50 dark:bg-white/5">
+                <ChevronRight size={20} />
+              </button>
+            </div>
+            <div className="overflow-x-auto">
               {documentsToVerify.length === 0 ? (
-                <div className="text-center py-8">
-                  <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-3" />
-                  <p className="text-muted-foreground">Semua dokumen aman terkendali</p>
+                <div className="py-20 flex flex-col items-center justify-center text-center px-10">
+                  <div className="size-20 bg-emerald-500/10 rounded-[2.5rem] flex items-center justify-center text-emerald-500 mb-6">
+                    <CheckCircle size={32} />
+                  </div>
+                  <h4 className="text-lg font-black uppercase">Semua Selesai</h4>
+                  <p className="text-slate-500 mt-2 font-medium">Belum ada dokumen baru yang memerlukan perhatian Anda.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {documentsToVerify.map(doc => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-orange-100 rounded">
-                          <FileText className="w-4 h-4 text-orange-600" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium line-clamp-1">{doc.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {doc.projects?.name} • {formatDate(doc.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                      <Button size="sm" variant="outline" onClick={() => router.push(`/dashboard/admin-team/documents?id=${doc.id}`)}>
-                        Verifikasi
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                <table className="w-full">
+                  <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+                    {documentsToVerify.map(doc => (
+                      <tr key={doc.id} className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+                        <td className="px-8 py-5">
+                          <div className="flex items-center gap-4">
+                            <div className="size-10 bg-orange-500/10 text-orange-500 rounded-xl flex items-center justify-center shrink-0">
+                              <FileText size={18} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white truncate">{doc.name}</p>
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate">{doc.projects?.name}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 text-right">
+                          <button onClick={() => router.push(`/dashboard/admin-team/documents?id=${doc.id}`)} className="h-9 px-4 bg-slate-100 dark:bg-white/5 hover:bg-[#7c3aed] dark:hover:bg-[#7c3aed] hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                            Verifikasi
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </motion.div>
 
-          {/* My Projects */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Building className="w-5 h-5" />
-                Proyek Saya
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard/admin-team/projects')}>
-                Lihat Semua <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {myProjects.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Belum ada proyek yang ditangani</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
+          {/* Projects Table */}
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+            <div className="px-8 py-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter">Proyek Saya</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Status Pengerjaan</p>
+              </div>
+              <button onClick={() => router.push('/dashboard/admin-team/projects')} className="p-2 text-slate-400 hover:text-[#7c3aed] transition-colors rounded-xl bg-slate-50 dark:bg-white/5">
+                <ChevronRight size={20} />
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <tbody className="divide-y divide-slate-50 dark:divide-white/5">
                   {myProjects.map(project => (
-                    <div key={project.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{project.name}</p>
-                        <p className="text-xs text-muted-foreground">{project.clients?.name}</p>
-                      </div>
-                      {getStatusBadge(project.status)}
-                    </div>
+                    <tr key={project.id} className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className="size-10 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center shrink-0">
+                            <Building size={18} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white truncate">{project.name}</p>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate">{project.clients?.name}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-5 text-right">
+                        <span className="inline-flex px-3 py-1 bg-slate-100 dark:bg-white/5 rounded-full text-[9px] font-black uppercase tracking-widest text-[#7c3aed]">
+                          {project.status.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                    </tr>
                   ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
         </div>
-
-      </div>
+      </motion.div>
     </DashboardLayout>
+  );
+}
+
+// Sub-components
+function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
+  return (
+    <div className="relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+      <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
+        {React.cloneElement(icon, { size: 80 })}
+      </div>
+      <div className="relative flex items-center justify-between mb-4">
+        <div className={`size-12 rounded-2xl ${bg} ${color} flex items-center justify-center transition-all duration-300 group-hover:shadow-lg`}>
+          {icon}
+        </div>
+        {trend && (
+          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-white/5`}>
+            {trend}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col">
+        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-none mb-2">{title}</p>
+        <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">{value}</p>
+      </div>
+    </div>
   );
 }

@@ -84,28 +84,33 @@ export default function LoginPage() {
     try {
       const result = await login(formData.email, formData.password);
 
-      if (!result || !result.success) {
-        throw new Error(result?.error || 'Login gagal. Silakan coba lagi.');
+      if (result && result.success) {
+        console.log("✅ Login successful, redirect will happen automatically");
+        return; // Redirect handled by useEffect
       }
 
-      console.log("✅ Login successful, redirect will happen automatically");
+      // Handle failure without throwing (to avoid Next.js DevOverlay)
+      const errorMessage = result?.error || '';
+      console.log("❌ Login failed:", errorMessage);
+
+      if (errorMessage === 'EMAIL_NOT_VERIFIED' || errorMessage.includes('Email not confirmed')) {
+        setError('Email Anda belum diverifikasi. Silakan cek email dan klik link konfirmasi sebelum login.');
+      } else if (errorMessage === 'ACCOUNT_PENDING_APPROVAL') {
+        setError('Email sudah diverifikasi, tetapi akun Anda masih menunggu approval dari SuperAdmin. Silakan hubungi administrator.');
+      } else if (errorMessage === 'ACCOUNT_REJECTED') {
+        setError('Maaf, pendaftaran akun Anda telah ditolak. Silakan hubungi administrator.');
+      } else if (errorMessage === 'ACCOUNT_SUSPENDED') {
+        setError('Akun Anda sedang ditangguhkan. Silakan hubungi administrator.');
+      } else if (errorMessage.toLowerCase().includes('invalid') || errorMessage.includes('salah')) {
+        setError('Email atau password salah');
+      } else {
+        setError(errorMessage || 'Gagal masuk. Silakan coba lagi.');
+      }
 
     } catch (err) {
-      console.error("Login error:", err);
-
-      // ✅ Handle specific authentication errors
-      if (err.message === 'EMAIL_NOT_VERIFIED') {
-        setError('Email Anda belum diverifikasi. Silakan cek email dan klik link konfirmasi sebelum login.');
-      } else if (err.message === 'ACCOUNT_PENDING_APPROVAL') {
-        setError('Email sudah diverifikasi, tetapi akun Anda masih menunggu approval dari SuperAdmin. Silakan hubungi administrator.');
-      } else if (err.message.includes('Invalid login credentials')) {
-        setError('Email atau password salah');
-      } else if (err.message.includes('Email not confirmed')) {
-        setError('Email belum diverifikasi. Silakan cek email untuk konfirmasi akun.');
-      } else {
-        setError(err.message || 'Gagal masuk. Silakan coba lagi.');
-      }
-
+      console.error("Unexpected login error:", err);
+      setError('Terjadi kesalahan sistem. Silakan coba beberapa saat lagi.');
+    } finally {
       setLoading(false);
     }
   };
@@ -294,7 +299,7 @@ export default function LoginPage() {
       <footer className="py-6 border-t border-border">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Copyright Â© 2025 PT. Puri Dimensi - SLF One Management System v1.0
+            Copyright © 2025 PT. Puri Dimensi - SLF One Management System v2.0
           </p>
         </div>
       </footer>

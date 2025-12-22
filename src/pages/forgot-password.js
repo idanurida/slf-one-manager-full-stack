@@ -40,20 +40,32 @@ export default function ForgotPasswordPage() {
       });
 
       if (error) {
-        throw error;
+        console.error('[ForgotPassword] Error:', error);
+
+        let userMessage = 'Gagal mengirim email reset password';
+        if (error.message.includes('rate limit')) {
+          userMessage = 'Terlalu banyak permintaan. Silakan coba lagi nanti.';
+        } else if (error.message.includes('not found')) {
+          userMessage = 'Email tidak ditemukan dalam sistem';
+        } else {
+          userMessage = error.message;
+        }
+
+        setError(userMessage);
+        return;
       }
 
       setSuccess(true);
     } catch (err) {
       console.error('[ForgotPassword] Error:', err);
-      
+
       let userMessage = 'Gagal mengirim email reset password';
       if (err.message.includes('rate limit')) {
         userMessage = 'Terlalu banyak permintaan. Silakan coba lagi nanti.';
       } else if (err.message.includes('not found')) {
         userMessage = 'Email tidak ditemukan dalam sistem';
       }
-      
+
       setError(userMessage);
     } finally {
       setLoading(false);
@@ -85,9 +97,9 @@ export default function ForgotPasswordPage() {
             <CardHeader className="text-center space-y-4 pb-4">
               {/* Logo inside form */}
               <div className="flex justify-center">
-                <img 
-                  src="/leaflet/images/logo-puri-dimensi.png" 
-                  alt="PT. Puri Dimensi" 
+                <img
+                  src="/leaflet/images/logo-puri-dimensi.png"
+                  alt="PT. Puri Dimensi"
                   className="h-20 md:h-16 w-auto object-contain dark:brightness-110 dark:contrast-110"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -108,7 +120,7 @@ export default function ForgotPasswordPage() {
                 </CardDescription>
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               {success ? (
                 <div className="space-y-4">
@@ -118,13 +130,13 @@ export default function ForgotPasswordPage() {
                       Email reset password telah dikirim! Silakan cek inbox atau folder spam Anda.
                     </AlertDescription>
                   </Alert>
-                  
+
                   <div className="text-center space-y-2">
                     <p className="text-sm text-muted-foreground">
                       Tidak menerima email?
                     </p>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => { setSuccess(false); setEmail(''); }}
                       className="w-full"
                     >
@@ -144,9 +156,9 @@ export default function ForgotPasswordPage() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email">Alamat Email</Label>
-                      <Input 
+                      <Input
                         id="email"
-                        type="email" 
+                        type="email"
                         value={email}
                         onChange={(e) => { setEmail(e.target.value); setError(''); }}
                         placeholder="nama@perusahaan.com"
@@ -154,8 +166,8 @@ export default function ForgotPasswordPage() {
                         required
                       />
                     </div>
-                    
-                    <Button 
+
+                    <Button
                       type="submit"
                       disabled={loading || !email}
                       className="w-full"
@@ -190,7 +202,7 @@ export default function ForgotPasswordPage() {
       <footer className="py-6 border-t border-border">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Copyright © 2025 PT. Puri Dimensi - SLF One Management System v1.0
+            Copyright © 2025 PT. Puri Dimensi - SLF One Management System v2.0
           </p>
         </div>
       </footer>

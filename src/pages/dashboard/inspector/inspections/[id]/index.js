@@ -33,6 +33,7 @@ import DynamicChecklistForm from '@/components/inspections/DynamicChecklistForm'
 // Import PhotoUploadWithGeotag component
 import PhotoUploadWithGeotag from '@/components/inspections/PhotoUploadWithGeotag';
 import checklistData from '@/data/checklistData.json';
+import { flattenChecklistItems, isItemMatchingSpecialization } from '@/utils/checklistTemplates';
 
 // Utility function untuk class names
 const cn = (...classes) => classes.filter(Boolean).join(' ');
@@ -353,26 +354,7 @@ const InspectionNotes = ({ inspection, onUpdate }) => {
   );
 };
 
-// Flatten checklist items function
-const flattenChecklistItems = (templates) => {
-  const items = [];
-  templates?.forEach(template => {
-    if (template.subsections) {
-      template.subsections.forEach(subsection => {
-        subsection.items?.forEach(item => {
-          items.push({
-            ...item,
-            template_id: template.id,
-            template_title: template.title,
-            subsection_title: subsection.title,
-            category: template.category || 'general'
-          });
-        });
-      });
-    }
-  });
-  return items;
-};
+// [Standardized flattenChecklistItems imported from utils]
 
 // Fallback checklist data dengan struktur columns yang sesuai
 const getFallbackChecklistData = () => {
@@ -522,7 +504,7 @@ export default function InspectionDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const { user, isInspector, loading: authLoading } = useAuth();
+  const { user, profile, isInspector, loading: authLoading } = useAuth();
 
   const [inspection, setInspection] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
@@ -629,17 +611,23 @@ export default function InspectionDetailPage() {
         setInspection(inspectionData);
 
         // ✅ 2. Load checklist items
-        let checklistItems = [];
+        let items = [];
         try {
           // Use the static templates from src/data as the source of truth
-          checklistItems = flattenChecklistItems(checklistData.checklist_templates);
-          console.log('Checklist items loaded from src/data:', checklistItems.length);
+          items = flattenChecklistItems(checklistData.checklist_templates);
+
+          // Filter items by Specialization
+          const spec = profile?.specialization;
+          if (spec) {
+            items = items.filter(item => isItemMatchingSpecialization(item, spec));
+            console.log(`✅ Filtered checklist items for ${spec} in Detail Page: ${items.length} items remaining.`);
+          }
         } catch (templateError) {
           console.error('Error loading checklist templates:', templateError);
-          checklistItems = getFallbackChecklistData();
+          items = getFallbackChecklistData();
         }
 
-        setChecklistItems(checklistItems);
+        setChecklistItems(items);
 
         // ✅ 3. Fetch existing responses - sesuai RLS: "Inspector can view own checklist responses"
         const { data: existingResponses, error: responsesError } = await supabase
@@ -661,7 +649,7 @@ export default function InspectionDetailPage() {
             responsesMap[response.item_id] = responseData;
           });
           setResponses(responsesMap);
-          calculateProgress(checklistItems, existingResponses);
+          calculateProgress(items, existingResponses);
         } else {
           console.log('No existing responses found');
         }
@@ -760,7 +748,7 @@ export default function InspectionDetailPage() {
           status: 'completed',
           notes: responseData.keterangan || responseData.catatan_perbaikan || ''
         }, {
-          onConflict: 'inspection_id,item_id'
+          onConflict: ['inspection_id', 'item_id', 'responded_by']
         });
 
       if (error) throw error;
@@ -1246,6 +1234,7 @@ export default function InspectionDetailPage() {
                           checklistItem={item}
                           onSave={(photoData) => handlePhotoUpload(item.id, photoData)}
                           userId={user.id}
+                          checklistFormFilled={!!responses[item.id]}
                         />
                       </CustomAccordionContent>
                     </CustomAccordionItem>
@@ -1292,12 +1281,24 @@ export default function InspectionDetailPage() {
                         {response.response_data && (
                           <div className="p-3 bg-muted rounded-md">
                             <div className="space-y-2">
-                              {Object.entries(response.response_data).map(([key, value]) => (
-                                <p key={key} className="text-sm">
-                                  <span className="font-medium">{key.replace(/_/g, ' ')}:</span>{' '}
-                                  {Array.isArray(value) ? value.join(', ') : value}
-                                </p>
-                              ))}
+                              {Object.entries(response.response_data).map(([key, value]) => {
+                                // Safely handle different value types (string, array, object)
+                                let displayValue = value;
+
+                                if (Array.isArray(value)) {
+                                  displayValue = value.join(', ');
+                                } else if (typeof value === 'object' && value !== null) {
+                                  // Handle cases like { text: '...', option: '...' }
+                                  displayValue = value.text || value.label || value.value || JSON.stringify(value);
+                                }
+
+                                return (
+                                  <p key={key} className="text-sm">
+                                    <span className="font-medium">{key.replace(/_/g, ' ').toUpperCase()}:</span>{' '}
+                                    {displayValue}
+                                  </p>
+                                );
+                              })}
                             </div>
                           </div>
                         )}

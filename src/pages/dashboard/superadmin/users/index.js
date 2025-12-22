@@ -296,7 +296,7 @@ const UsersPage = () => {
 
   return (
     <DashboardLayout title="Manajemen Pengguna">
-      <div className="p-6 space-y-6">
+      <div className="space-y-6">
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div className="flex flex-col sm:flex-row gap-3 flex-1">

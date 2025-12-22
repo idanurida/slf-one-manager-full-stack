@@ -137,7 +137,7 @@ export default function EditProjectPage({ params }) {
   const router = useRouter();
   const { toast } = useToast();
   const [user, setUser] = useState(null);
-  
+
   // Gunakan params.id dari Next.js 15+ atau ambil dari URL
   const projectId = params?.id || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : null);
 
@@ -171,7 +171,7 @@ export default function EditProjectPage({ params }) {
     department_name: '',
     region_id: ''
   });
-  
+
   const [clients, setClients] = useState([]);
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -268,15 +268,15 @@ export default function EditProjectPage({ params }) {
     setSaving(true);
     try {
       console.log('🔄 Updating project:', form);
-      
+
       await updateProject(projectId, form);
-      
+
       toast({
         title: "Proyek diperbarui",
         description: "Perubahan berhasil disimpan.",
         variant: "default",
       });
-      
+
       router.push("/dashboard/superadmin/projects");
     } catch (error) {
       console.error("Update error:", error);
@@ -335,7 +335,7 @@ export default function EditProjectPage({ params }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="max-w-4xl mx-auto w-full p-4 md:p-6"
+        className="space-y-6"
       >
         <Card className="border-border">
           <CardHeader>

@@ -1,8 +1,8 @@
-// FILE: src/pages/dashboard/admin-lead/team.js
-// Halaman Tim Admin Lead - Clean tanpa statistik
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -27,13 +27,26 @@ import {
 
 // Icons
 import {
-  Plus, Users, Search, Edit, Trash2, X, Eye, RefreshCw, AlertCircle, Loader2, Building, UserPlus
+  Plus, Users, Search, Edit, Trash2, X, Eye, RefreshCw, AlertCircle, Loader2, Building, UserPlus,
+  ChevronRight, LayoutDashboard, Building2, FolderOpen, MoreVertical, Menu, Sun, Moon, LogOut,
+  ArrowRight, CheckCircle2, UserCheck, ShieldCheck, HardHat, FileEdit, Headset
 } from "lucide-react";
 
 // Utils & Context
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "circOut" } }
+};
 
 // Helpers
 const getRoleLabel = (role) => {
@@ -49,21 +62,33 @@ const getRoleLabel = (role) => {
   return labels[role] || role;
 };
 
-const getRoleBadgeVariant = (role) => {
-  const variants = {
-    admin_lead: 'default',
-    project_lead: 'default',
-    head_consultant: 'default',
-    inspector: 'secondary',
-    drafter: 'secondary',
-    admin_team: 'secondary',
+const getRoleIcon = (role) => {
+  switch (role) {
+    case 'admin_lead': return <ShieldCheck size={14} />;
+    case 'project_lead': return <UserCheck size={14} />;
+    case 'inspector': return <HardHat size={14} />;
+    case 'drafter': return <FileEdit size={14} />;
+    case 'head_consultant': return <Headset size={14} />;
+    default: return <Users size={14} />;
+  }
+};
+
+const getRoleBadgeStyle = (role) => {
+  const styles = {
+    admin_lead: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    project_lead: 'bg-[#7c3aed]/10 text-[#7c3aed] border-[#7c3aed]/20',
+    head_consultant: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    inspector: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    drafter: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+    admin_team: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
   };
-  return variants[role] || 'outline';
+  return styles[role] || 'bg-slate-500/10 text-slate-500 border-slate-500/20';
 };
 
 export default function AdminLeadTeamPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, isAdminLead, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -73,6 +98,7 @@ export default function AdminLeadTeamPage() {
   const [availableUsers, setAvailableUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Dialog states
   const [assignDialog, setAssignDialog] = useState({ open: false, projectId: null });
@@ -80,33 +106,38 @@ export default function AdminLeadTeamPage() {
 
   // Fetch team data
   const fetchTeamData = useCallback(async () => {
+    if (!user?.id) return;
     setLoading(true);
     setError(null);
 
     try {
-      // Fetch project_teams with profiles
+      // 1. Ambil proyek yang dibuat oleh user ini (multi-tenancy)
+      const { data: projectsData, error: projErr } = await supabase
+        .from('projects')
+        .select('id, name')
+        .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id}`)
+        .order('created_at', { ascending: false });
+
+      if (projErr) throw projErr;
+      const myProjectIds = (projectsData || []).map(p => p.id);
+
+      // 2. Ambil team members HANYA untuk proyek milik user ini
       const { data: teamsData, error: teamsError } = await supabase
         .from('project_teams')
         .select(`
           id, project_id, user_id, role, created_at,
-          profiles:user_id (id, full_name, email, role),
-          projects:project_id (id, name)
+          profiles:user_id (id, full_name, email, role, specialization),
+          projects:project_id (id, name, created_by)
         `)
+        .in('project_id', myProjectIds)
         .order('created_at', { ascending: false });
 
       if (teamsError) throw teamsError;
 
-      // Fetch all projects owned by this admin_lead
-      const { data: projectsData } = await supabase
-        .from('projects')
-        .select('id, name')
-        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
-        .order('created_at', { ascending: false });
-
-      // Fetch available users (non-clients)
+      // 3. Ambil semua profile kecuali client untuk pilihan assign
       const { data: usersData } = await supabase
         .from('profiles')
-        .select('id, full_name, email, role')
+        .select('id, full_name, email, role, specialization')
         .neq('role', 'client')
         .order('full_name');
 
@@ -121,9 +152,8 @@ export default function AdminLeadTeamPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
-  // Filter team members
   const filteredTeamMembers = teamMembers.filter(member => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -137,7 +167,6 @@ export default function AdminLeadTeamPage() {
     return true;
   });
 
-  // Add team member
   const handleAddMember = async () => {
     if (!formData.user_id || !assignDialog.projectId) {
       toast.error('Pilih anggota tim dan proyek');
@@ -168,7 +197,6 @@ export default function AdminLeadTeamPage() {
     }
   };
 
-  // Remove team member
   const handleRemoveMember = async (memberId) => {
     if (!confirm('Hapus anggota tim dari proyek ini?')) return;
 
@@ -188,241 +216,302 @@ export default function AdminLeadTeamPage() {
   };
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && isAdminLead) {
       fetchTeamData();
     }
-  }, [authLoading, user, fetchTeamData]);
+  }, [authLoading, user, isAdminLead, fetchTeamData]);
 
-  if (authLoading || loading) {
+  if (authLoading || (user && !isAdminLead)) {
     return (
-      <DashboardLayout title="Tim">
-        <div className="p-6 space-y-4">
-          <Skeleton className="h-10 w-full max-w-md" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <DashboardLayout title="Tim">
-        <div className="p-6">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-          <Button onClick={fetchTeamData} className="mt-4">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Coba Lagi
-          </Button>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="animate-spin h-10 w-10 text-[#7c3aed]" />
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Tim">
-      <TooltipProvider>
-        <div className="p-4 md:p-6 space-y-6">
-
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <p className="text-muted-foreground">
-              Kelola penugasan tim untuk proyek SLF/PBG
-            </p>
-            <Select onValueChange={(projectId) => setAssignDialog({ open: true, projectId })}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Tugaskan ke Proyek" />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map(project => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <DashboardLayout>
+      <motion.div
+        className="max-w-[1400px] mx-auto space-y-12 pb-20 p-6 md:p-0"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Header Section */}
+        <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">Team Management</Badge>
+              <div className="w-1 h-1 rounded-full bg-slate-300" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Members: {teamMembers.length}</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+              Organization <span className="text-[#7c3aed]">Team</span>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Kelola distribusi personil dan penugasan tim pada setiap proyek aktif.</p>
           </div>
 
-          {/* Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Cari nama, email, atau proyek..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Peran" />
+          <div className="flex flex-wrap gap-4">
+            <button onClick={fetchTeamData} className="size-14 bg-white dark:bg-[#1e293b] text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-white/10 transition-all border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none">
+              <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+            </button>
+            <button
+              onClick={() => setAssignDialog({ open: true, projectId: projects[0]?.id })}
+              className="h-14 px-8 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-[#7c3aed]/20"
+            >
+              <UserPlus size={16} /> Tambah Anggota
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Stats Section */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatSimple
+            title="Total Assignment"
+            value={teamMembers.length}
+            icon={<Users size={20} />}
+            color="text-[#7c3aed]"
+            bg="bg-[#7c3aed]/10"
+            subValue="Penugasan Aktif"
+          />
+          <StatSimple
+            title="Project Lead"
+            value={teamMembers.filter(m => m.role === 'project_lead').length}
+            icon={<UserCheck size={20} />}
+            color="text-emerald-500"
+            bg="bg-emerald-500/10"
+            subValue="Pimpinan Proyek"
+          />
+          <StatSimple
+            title="Inspector"
+            value={teamMembers.filter(m => m.role === 'inspector').length}
+            icon={<HardHat size={20} />}
+            color="text-amber-500"
+            bg="bg-amber-500/10"
+            subValue="Tenaga Ahli Lapangan"
+          />
+          <StatSimple
+            title="Total Projects"
+            value={projects.length}
+            icon={<Building2 size={20} />}
+            color="text-blue-500"
+            bg="bg-blue-500/10"
+            subValue="Proyek Berjalan"
+          />
+        </motion.div>
+
+        {/* Filters & Search */}
+        <motion.div variants={itemVariants} className="flex flex-col md:flex-row gap-6">
+          <div className="relative group flex-1">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
+            <input
+              className="h-16 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none pl-16 pr-8 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-bold uppercase tracking-tight"
+              placeholder="Cari Berdasarkan Nama, Email, atau Proyek..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger className="h-16 w-full md:w-[260px] rounded-2xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none font-black uppercase text-[10px] tracking-[0.2em] px-8">
+              <SelectValue placeholder="Filter Peran" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl border-slate-100 dark:border-white/5 shadow-2xl">
+              <SelectItem value="all" className="font-bold uppercase text-[10px] tracking-widest py-3">Semua Peran</SelectItem>
+              <SelectItem value="project_lead" className="font-bold uppercase text-[10px] tracking-widest py-3 text-[#7c3aed]">Project Lead</SelectItem>
+              <SelectItem value="inspector" className="font-bold uppercase text-[10px] tracking-widest py-3 text-amber-500">Inspektor</SelectItem>
+              <SelectItem value="drafter" className="font-bold uppercase text-[10px] tracking-widest py-3 text-purple-500">Drafter</SelectItem>
+              <SelectItem value="head_consultant" className="font-bold uppercase text-[10px] tracking-widest py-3 text-blue-500">Head Consultant</SelectItem>
+            </SelectContent>
+          </Select>
+        </motion.div>
+
+        {/* Members Table */}
+        <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 overflow-hidden transition-all duration-300">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-[0.15em] border-b border-slate-100 dark:border-white/5">
+                <tr>
+                  <th className="px-8 py-8">Personil & Instansi</th>
+                  <th className="px-8 py-8">Role di Proyek</th>
+                  <th className="px-8 py-8">Penugasan Proyek</th>
+                  <th className="px-8 py-8 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                {loading ? (
+                  <tr><td colSpan="4" className="px-8 py-32 text-center font-black uppercase text-xs tracking-[0.3em] text-slate-300 animate-pulse">Syncing Team Infrastructure...</td></tr>
+                ) : filteredTeamMembers.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-8 py-32 text-center">
+                      <div className="flex flex-col items-center gap-6 opacity-20">
+                        <Users size={64} />
+                        <span className="font-black uppercase text-xs tracking-[0.2em]">Data Tim Kosong</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTeamMembers.map(member => (
+                    <tr key={member.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
+                      <td className="px-8 py-8">
+                        <div className="flex items-center gap-6">
+                          <div className="size-14 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-white/5 dark:to-white/10 flex items-center justify-center font-black text-[#7c3aed] text-xl shadow-inner group-hover:scale-110 transition-all">
+                            {member.profiles?.full_name?.charAt(0)}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight group-hover:text-[#7c3aed] transition-colors">{member.profiles?.full_name}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{member.profiles?.email}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="flex flex-col gap-2">
+                          <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border w-fit ${getRoleBadgeStyle(member.role)}`}>
+                            {getRoleIcon(member.role)}
+                            {getRoleLabel(member.role)}
+                          </span>
+                          {member.profiles?.specialization && (
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">{member.profiles.specialization}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-3">
+                            <div className="size-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                              <Building size={14} />
+                            </div>
+                            <span className="text-xs font-black uppercase tracking-tight text-slate-900 dark:text-slate-200 group-hover:text-[#7c3aed] transition-colors cursor-pointer" onClick={() => router.push(`/dashboard/admin-lead/projects/${member.project_id}`)}>{member.projects?.name}</span>
+                          </div>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-11">Ditugaskan: {new Date(member.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-8 text-right">
+                        <div className="flex justify-end gap-3">
+                          <button onClick={() => router.push(`/dashboard/admin-lead/projects/${member.project_id}`)} className="size-11 rounded-2xl bg-white dark:bg-[#1e293b] text-slate-400 border border-slate-100 dark:border-white/5 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-lg shadow-slate-200/30 flex items-center justify-center">
+                            <Eye size={18} />
+                          </button>
+                          <button onClick={() => handleRemoveMember(member.id)} className="size-11 rounded-2xl bg-white dark:bg-[#1e293b] text-slate-400 border border-slate-100 dark:border-white/5 hover:text-red-500 hover:scale-110 transition-all shadow-lg shadow-slate-200/30 flex items-center justify-center">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      {/* Assign Dialog */}
+      <Dialog open={assignDialog.open} onOpenChange={(open) => setAssignDialog({ open, projectId: open ? assignDialog.projectId : null })}>
+        <DialogContent className="sm:max-w-xl bg-white dark:bg-[#1e293b] border-none rounded-[3rem] p-0 overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-br from-[#7c3aed] to-purple-600 px-10 py-12 text-white relative">
+            <div className="absolute top-0 right-0 p-12 opacity-10">
+              <UserPlus size={120} />
+            </div>
+            <DialogHeader>
+              <DialogTitle className="text-4xl font-black uppercase tracking-tighter leading-none">Tambah <span className="opacity-70">Anggota</span></DialogTitle>
+              <DialogDescription className="text-white/80 font-black uppercase tracking-widest text-[10px] mt-4 opacity-80">
+                Tugaskan tenaga ahli ke workflow proyek kelaikan struktur
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="p-12 space-y-10">
+            <div className="grid gap-8">
+              <div className="space-y-4">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Proyek Penugasan</Label>
+                <Select value={assignDialog.projectId} onValueChange={(v) => setAssignDialog({ ...assignDialog, projectId: v })}>
+                  <SelectTrigger className="h-16 bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 rounded-2xl px-8 font-bold uppercase text-xs tracking-tight shadow-inner">
+                    <SelectValue placeholder="Pilih Proyek Target..." />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Peran</SelectItem>
-                    <SelectItem value="project_lead">Project Lead</SelectItem>
-                    <SelectItem value="inspector">Inspektor</SelectItem>
-                    <SelectItem value="drafter">Drafter</SelectItem>
-                    <SelectItem value="head_consultant">Head Consultant</SelectItem>
+                  <SelectContent className="rounded-2xl border-none shadow-2xl">
+                    {projects.map(p => (
+                      <SelectItem key={p.id} value={p.id} className="rounded-xl py-4 font-black uppercase text-[10px] tracking-widest">{p.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                {(searchTerm || roleFilter !== 'all') && (
-                  <Button variant="ghost" size="icon" onClick={() => { setSearchTerm(''); setRoleFilter('all'); }}>
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Team Table */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Penugasan Tim ({filteredTeamMembers.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {filteredTeamMembers.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Belum Ada Penugasan</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Pilih proyek untuk menugaskan anggota tim
-                  </p>
-                </div>
-              ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nama</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Peran di Proyek</TableHead>
-                        <TableHead>Proyek</TableHead>
-                        <TableHead className="text-center">Aksi</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredTeamMembers.map((member) => (
-                        <TableRow key={member.id} className="hover:bg-muted/50">
-                          <TableCell className="font-medium">
-                            {member.profiles?.full_name || '-'}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {member.profiles?.email || '-'}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={getRoleBadgeVariant(member.role)}>
-                              {getRoleLabel(member.role)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Building className="w-4 h-4 text-muted-foreground" />
-                              {member.projects?.name || '-'}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex justify-center gap-1">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => router.push(`/dashboard/admin-lead/projects/${member.project_id}`)}
-                                  >
-                                    <Eye className="w-4 h-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Lihat Proyek</TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleRemoveMember(member.id)}
-                                  >
-                                    <Trash2 className="w-4 h-4 text-destructive" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Hapus dari Proyek</TooltipContent>
-                              </Tooltip>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Assign Dialog */}
-          <Dialog open={assignDialog.open} onOpenChange={(open) => {
-            setAssignDialog({ open, projectId: open ? assignDialog.projectId : null });
-            if (!open) setFormData({ user_id: '', role: 'inspector' });
-          }}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Tambah Anggota Tim</DialogTitle>
-                <DialogDescription>
-                  Tugaskan anggota ke proyek: {projects.find(p => p.id === assignDialog.projectId)?.name}
-                </DialogDescription>
-              </DialogHeader>
               <div className="space-y-4">
-                <div>
-                  <Label>Pilih Anggota</Label>
-                  <Select value={formData.user_id} onValueChange={(v) => setFormData({ ...formData, user_id: v })}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Pilih anggota tim" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableUsers.map(u => (
-                        <SelectItem key={u.id} value={u.id}>
-                          {u.full_name} ({getRoleLabel(u.role)})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Peran di Proyek</Label>
-                  <Select value={formData.role} onValueChange={(v) => setFormData({ ...formData, role: v })}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="project_lead">Project Lead</SelectItem>
-                      <SelectItem value="inspector">Inspektor</SelectItem>
-                      <SelectItem value="drafter">Drafter</SelectItem>
-                      <SelectItem value="head_consultant">Head Consultant</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#7c3aed] px-1">Personil Ahli</Label>
+                <Select value={formData.user_id} onValueChange={(v) => setFormData({ ...formData, user_id: v })}>
+                  <SelectTrigger className="h-16 bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 rounded-2xl px-8 font-bold uppercase text-xs tracking-tight shadow-inner">
+                    <SelectValue placeholder="Pilih Nama Tenaga Ahli..." />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-none shadow-2xl">
+                    {availableUsers.map(u => (
+                      <SelectItem key={u.id} value={u.id} className="rounded-xl py-4">
+                        <div className="flex flex-col">
+                          <span className="font-black uppercase text-[10px] tracking-tight">{u.full_name}</span>
+                          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 inline-flex items-center gap-2">
+                            {getRoleIcon(u.role)} {getRoleLabel(u.role)} {u.specialization && `• ${u.specialization}`}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setAssignDialog({ open: false, projectId: null })}>
-                  Batal
-                </Button>
-                <Button onClick={handleAddMember} disabled={saving}>
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
-                  Tugaskan
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
 
-        </div>
-      </TooltipProvider>
+              <div className="space-y-4">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Responsibilitas</Label>
+                <Select value={formData.role} onValueChange={(v) => setFormData({ ...formData, role: v })}>
+                  <SelectTrigger className="h-16 bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 rounded-2xl px-8 font-black uppercase text-[10px] tracking-[0.2em] shadow-inner">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-none shadow-2xl">
+                    <SelectItem value="project_lead" className="font-bold uppercase text-[10px] tracking-widest py-4">Project Lead</SelectItem>
+                    <SelectItem value="inspector" className="font-bold uppercase text-[10px] tracking-widest py-4">Inspektor</SelectItem>
+                    <SelectItem value="drafter" className="font-bold uppercase text-[10px] tracking-widest py-4">Drafter</SelectItem>
+                    <SelectItem value="head_consultant" className="font-bold uppercase text-[10px] tracking-widest py-4">Head Consultant</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => setAssignDialog({ open: false, projectId: null })}
+                className="flex-1 h-16 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-400 hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100"
+              >
+                Batalkan
+              </button>
+              <button
+                onClick={handleAddMember}
+                disabled={saving || !formData.user_id || !assignDialog.projectId}
+                className="flex-[2] h-16 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl shadow-[#7c3aed]/30 transition-all active:scale-95 disabled:opacity-50 disabled:scale-100"
+              >
+                {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : <UserPlus className="mr-2" size={16} />}
+                Assign Team Member
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
+  );
+}
+
+// Sub-components
+function StatSimple({ title, value, icon, color, bg, subValue }) {
+  return (
+    <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none flex items-center gap-8 transition-all hover:translate-y-[-5px]">
+      <div className={`size-16 rounded-[1.5rem] flex items-center justify-center ${bg} ${color} shadow-lg shadow-current/5`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{title}</p>
+        <p className="text-3xl font-black tracking-tighter leading-none uppercase">{value}</p>
+        {subValue && (
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2 opacity-60 group-hover:opacity-100 transition-opacity">{subValue}</p>
+        )}
+      </div>
+    </div>
   );
 }

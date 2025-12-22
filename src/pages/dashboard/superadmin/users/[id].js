@@ -447,7 +447,7 @@ export default function EditUserPage() {
 
   return (
     <DashboardLayout title="Edit Pengguna">
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="space-y-6">
         <div className="mb-6">
           <Button variant="ghost" className="pl-0 hover:pl-2 transition-all" onClick={() => router.back()}>
             <ArrowLeft className="w-4 h-4 mr-2" />

@@ -32,7 +32,7 @@ import {
 
 // Icons
 import {
-  Building, Users, MapPin, Calendar, FileText, CheckCircle2, Clock, AlertTriangle, Eye, Search, Filter, RefreshCw, ExternalLink, ArrowRight
+  Building, Users, MapPin, Calendar, FileText, CheckCircle2, Clock, AlertTriangle, Eye, Search, Filter, RefreshCw, ExternalLink, ArrowRight, Loader2
 } from "lucide-react";
 
 // Utils & Context
@@ -91,84 +91,7 @@ const getStatusLabel = (status) => {
   return labels[status] || status;
 };
 
-// Project Card Component
-const ProjectCard = ({ project, onViewDetails }) => {
-  const getPhaseProgress = (status) => {
-    const phaseMap = {
-      'draft': 1, 'submitted': 1, 'project_lead_review': 1,
-      'inspection_scheduled': 2, 'inspection_in_progress': 2,
-      'report_draft': 3, 'head_consultant_review': 3,
-      'client_review': 4,
-      'government_submitted': 5, 'slf_issued': 5, 'completed': 5
-    };
-    return phaseMap[status] || 1;
-  };
 
-  const progress = (getPhaseProgress(project.status) / 5) * 100;
-
-  return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-shadow cursor-pointer"
-          onClick={() => onViewDetails(project)}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
-                {project.name}
-              </h3>
-              <Badge className={getStatusColor(project.status)}>
-                {getStatusLabel(project.status)}
-              </Badge>
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-1 flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              <span className="truncate">{project.location || 'Lokasi tidak diset'}</span>
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Client: {project.client_name || 'Tidak diset'}
-            </p>
-          </div>
-          <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
-                  <Eye className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Lihat Detail</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mb-2">
-          <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mb-1">
-            <span>Progress</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mt-2">
-          <div className="flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
-            <span>{new Date(project.created_at).toLocaleDateString('id-ID')}</span>
-          </div>
-          <Badge variant="outline" className="text-xs">
-            {project.application_type || 'Tipe Tidak Diset'}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 // Main Component
 export default function AdminTeamProjectsPage() {
@@ -229,12 +152,12 @@ export default function AdminTeamProjectsPage() {
   // Filter projects
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.client_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      project.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.client_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    const matchesApplicationType = applicationTypeFilter === 'all' || 
-                                  project.application_type === applicationTypeFilter;
+    const matchesApplicationType = applicationTypeFilter === 'all' ||
+      project.application_type === applicationTypeFilter;
 
     return matchesSearch && matchesStatus && matchesApplicationType;
   });
@@ -255,161 +178,208 @@ export default function AdminTeamProjectsPage() {
 
   if (authLoading || !user || !isAdminTeam) {
     return (
-      <DashboardLayout title="Daftar Proyek">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="animate-spin h-10 w-10 text-[#7c3aed]" />
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Daftar Proyek Saya">
-      <TooltipProvider>
-        <motion.div 
-          className="p-6 space-y-6 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex items-center justify-end gap-3">
+    <DashboardLayout>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-12 pb-20"
+      >
+        {/* Header Section */}
+        <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+              Monitoring <span className="text-[#7c3aed]">Proyek</span>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Dashboard pemantauan progress teknis dan administratif proyek yang Anda tangani.</p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            <div className="relative group flex-1 lg:min-w-[400px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
+              <input
+                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                placeholder="Cari Nama Proyek, Lokasi, atau Client..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10">
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Filters Section */}
+        <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Filter size={14} className="text-slate-400" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Filter:</span>
+          </div>
+
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+              <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Status</SelectItem>
+              {statuses.map(s => (
+                <SelectItem key={s} value={s} className="uppercase text-[10px] font-bold">{getStatusLabel(s)}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={applicationTypeFilter} onValueChange={setApplicationTypeFilter}>
+            <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+              <SelectValue placeholder="Tipe Aplikasi" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+              <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Tipe</SelectItem>
+              {applicationTypes.map(t => (
+                <SelectItem key={t} value={t} className="uppercase text-[10px] font-bold">{t || 'Tanpa Tipe'}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {(statusFilter !== 'all' || applicationTypeFilter !== 'all' || searchTerm) && (
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={loading}
-              className="flex items-center gap-2"
+              variant="ghost"
+              onClick={() => { setStatusFilter('all'); setApplicationTypeFilter('all'); setSearchTerm(''); }}
+              className="text-[10px] font-black uppercase tracking-widest text-[#7c3aed] hover:bg-[#7c3aed]/5 rounded-xl h-11"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              Reset Filter
             </Button>
-            <Button
-              size="sm"
-              onClick={() => router.push('/dashboard/admin-team')}
-              className="flex items-center gap-2"
-            >
-              <ArrowRight className="w-4 h-4 rotate-180" />
-              Kembali
-            </Button>
-          </motion.div>
-
-          {/* Filters */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <label htmlFor="search" className="sr-only">Cari Proyek</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <Input
-                        id="search"
-                        placeholder="Cari nama project, lokasi, atau client..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="w-full sm:w-48">
-                    <label htmlFor="status-filter" className="sr-only">Filter Status</label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                        <SelectValue placeholder="Filter Status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                        <SelectItem value="all">Semua Status</SelectItem>
-                        {statuses.map(status => (
-                          <SelectItem key={status} value={status}>
-                            {getStatusLabel(status)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="w-full sm:w-48">
-                    <label htmlFor="type-filter" className="sr-only">Filter Tipe Aplikasi</label>
-                    <Select value={applicationTypeFilter} onValueChange={setApplicationTypeFilter}>
-                      <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                        <SelectValue placeholder="Filter Tipe" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                        <SelectItem value="all">Semua Tipe</SelectItem>
-                        {applicationTypes.map(type => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Error Alert */}
-          {error && (
-            <motion.div variants={itemVariants}>
-              <Alert variant="destructive" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle className="text-slate-900 dark:text-slate-100">Error</AlertTitle>
-                <AlertDescription className="text-slate-600 dark:text-slate-400">{error}</AlertDescription>
-              </Alert>
-            </motion.div>
           )}
+        </motion.div>
 
-          {/* Projects Grid */}
-          <motion.div variants={itemVariants}>
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <Card key={i} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <Skeleton className="h-5 w-3/4 bg-slate-300 dark:bg-slate-600" />
-                        <Skeleton className="h-4 w-full bg-slate-300 dark:bg-slate-600" />
-                        <Skeleton className="h-2 w-full bg-slate-300 dark:bg-slate-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : filteredProjects.length === 0 ? (
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-12 text-center">
-                  <Building className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                    Tidak ada proyek
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-6">
-                    {searchTerm || statusFilter !== 'all' || applicationTypeFilter !== 'all'
-                      ? 'Tidak ada proyek yang sesuai dengan filter' 
-                      : 'Anda belum ditugaskan ke proyek mana pun'}
-                  </p>
-                  <Button onClick={() => router.push('/dashboard/admin-team')}>
-                    Kembali ke Dashboard
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Projects Grid */}
+        <motion.div variants={itemVariants}>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-72 rounded-[2.5rem] w-full" />)}
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+              <Building size={80} className="text-slate-300 dark:text-slate-700 opacity-30 mb-8" />
+              <h3 className="text-2xl font-black uppercase tracking-tighter">Proyek Tidak Ditemukan</h3>
+              <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Tidak ada proyek yang sesuai dengan kriteria filter Anda saat ini.</p>
+              <Button onClick={() => { setStatusFilter('all'); setApplicationTypeFilter('all'); setSearchTerm(''); }} className="mt-8 bg-[#7c3aed] hover:bg-[#6d28d9] font-black uppercase px-8 rounded-xl h-12 shadow-lg shadow-[#7c3aed]/20 transition-all">Tampilkan Semua Proyek</Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <AnimatePresence mode="popLayout">
                 {filteredProjects.map((project) => (
-                  <ProjectCard
+                  <ProjectCardPremium
                     key={project.id}
                     project={project}
                     onViewDetails={handleViewDetails}
                   />
                 ))}
-              </div>
-            )}
-          </motion.div>
+              </AnimatePresence>
+            </div>
+          )}
         </motion.div>
-      </TooltipProvider>
+      </motion.div>
     </DashboardLayout>
   );
 }
+
+// Sub-components
+const ProjectCardPremium = ({ project, onViewDetails }) => {
+  const getPhaseProgress = (status) => {
+    const phaseMap = {
+      'draft': 1, 'submitted': 1, 'project_lead_review': 1,
+      'inspection_scheduled': 2, 'inspection_in_progress': 2,
+      'report_draft': 3, 'head_consultant_review': 3,
+      'client_review': 4,
+      'government_submitted': 5, 'slf_issued': 5, 'completed': 5
+    };
+    return phaseMap[status] || 1;
+  };
+
+  const currentPhase = getPhaseProgress(project.status);
+  const progress = (currentPhase / 5) * 100;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ y: -8 }}
+      className="group bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col justify-between transition-all duration-300 cursor-pointer"
+      onClick={() => onViewDetails(project)}
+    >
+      <div>
+        <div className="flex justify-between items-start mb-8">
+          <div className="size-14 bg-gradient-to-br from-[#7c3aed] to-purple-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-[#7c3aed]/20 group-hover:rotate-6 transition-transform">
+            {project.name?.charAt(0)}
+          </div>
+          <Badge className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border ${getStatusColor(project.status)}`}>
+            {getStatusLabel(project.status)}
+          </Badge>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-xl font-black uppercase tracking-tight leading-tight group-hover:text-[#7c3aed] transition-colors line-clamp-2 min-h-[3.5rem]">{project.name}</h3>
+            <div className="flex items-center gap-2 mt-2 text-slate-400">
+              <MapPin size={14} className="shrink-0" />
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{project.location || 'Lokasi tidak diset'}</p>
+            </div>
+          </div>
+
+          <div className="pt-2 bg-slate-50 dark:bg-white/5 rounded-2xl p-4 border border-slate-100 dark:border-white/5">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] mb-1">Client Utama</p>
+            <p className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-tight truncate">{project.client_name}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10 space-y-6">
+        {/* Progress Bar Container */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-[9px] font-black text-[#7c3aed] uppercase tracking-widest mb-0.5">Progress Tahapan</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Phase {currentPhase} of 5</p>
+            </div>
+            <span className="text-xl font-black text-[#7c3aed]">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-3 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden p-0.5">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="h-full bg-gradient-to-r from-[#7c3aed] to-purple-500 rounded-full shadow-[0_0_12px_rgba(124,58,237,0.4)]"
+            />
+          </div>
+        </div>
+
+        <div className="pt-6 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{new Date(project.created_at).getFullYear()}</span>
+              <span className="text-[10px] font-black uppercase text-slate-900 dark:text-white tracking-tight">{new Date(project.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+            </div>
+            <Separator orientation="vertical" className="h-8 bg-slate-100 dark:bg-white/10" />
+            <Badge variant="secondary" className="bg-[#7c3aed]/10 text-[#7c3aed] text-[9px] font-black uppercase tracking-widest py-1 border-none">{project.application_type}</Badge>
+          </div>
+
+          <button className="size-11 rounded-xl bg-[#7c3aed] text-white flex items-center justify-center shadow-lg shadow-[#7c3aed]/20 group-hover:scale-110 transition-all">
+            <ArrowRight size={20} />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};

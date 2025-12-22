@@ -1,478 +1,358 @@
-// FILE: src/pages/dashboard/head-consultant/projects.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
-import { motion } from "framer-motion";
+import { format } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
 import { toast } from "sonner";
-
-// Components
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
-
-// Icons
-import { Building, User, MapPin, Calendar, FileText, CheckCircle2, Clock, AlertTriangle, RefreshCw, Download, MessageCircle, Search, Filter, ArrowLeft, ExternalLink, Eye, AlertCircle, TrendingUp, TrendingDown }
-from "lucide-react";
-
-// Utils & Context
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "next-themes";
 
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-};
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
-};
+// Icons (Lucide React)
+import {
+  LayoutDashboard, FolderOpen, FileText, Users, Settings,
+  Search, Bell, Menu, CloudDownload, Plus,
+  TrendingUp, AlertTriangle, CheckCircle, Clock,
+  MoreVertical, ChevronRight, Star, LogOut,
+  Moon, Sun, Building2, Calendar, SortAsc,
+  Home, Mail, ArrowUpRight, PlusCircle,
+  Zap, Eye, Check, Filter, RefreshCw,
+  Folder, HardHat, BadgeCheck, ChevronDown, CheckCircle2, Target, CalendarDays, BarChart3
+} from "lucide-react";
 
-// Helper functions
-const getProjectPhase = (status) => {
-  const phaseMap = {
-    'draft': 1, 'submitted': 1, 'project_lead_review': 1,
-    'inspection_scheduled': 2, 'inspection_in_progress': 2,
-    'report_draft': 3, 'head_consultant_review': 3,
-    'client_review': 4,
-    'government_submitted': 5, 'slf_issued': 5, 'completed': 5
-  };
-  return phaseMap[status] || 1;
-};
-
-const getStatusColor = (status) => {
-  const colors = {
-    'draft': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
-    'submitted': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-    'project_lead_review': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    'inspection_scheduled': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-    'inspection_in_progress': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-    'report_draft': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
-    'head_consultant_review': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
-    'client_review': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400',
-    'government_submitted': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'slf_issued': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400',
-    'completed': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-  };
-  return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
-};
-
-const getStatusLabel = (status) => {
-  const labels = {
-    'draft': 'Draft',
-    'submitted': 'Submitted',
-    'project_lead_review': 'Project Lead Review',
-    'inspection_scheduled': 'Inspection Scheduled',
-    'inspection_in_progress': 'Inspection In Progress',
-    'report_draft': 'Report Draft',
-    'head_consultant_review': 'Head Consultant Review',
-    'client_review': 'Client Review',
-    'government_submitted': 'Government Submitted',
-    'slf_issued': 'SLF Issued',
-    'completed': 'Completed',
-    'cancelled': 'Cancelled'
-  };
-  return labels[status] || status;
-};
-
-// Format date safely
-const formatDateSafely = (dateString) => {
+// Helpers
+const formatDate = (dateString) => {
   if (!dateString) return '-';
   try {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  } catch (error) {
+    return format(new Date(dateString), 'dd MMM yyyy', { locale: localeId });
+  } catch (e) {
     return '-';
   }
 };
 
-// Main Component
 export default function HeadConsultantProjectsPage() {
   const router = useRouter();
-  const { user, profile, loading: authLoading, isHeadConsultant } = useAuth();
+  const { user, profile, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [allProjects, setAllProjects] = useState([]); // For stats
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [clientFilter, setClientFilter] = useState('all');
-  const [clients, setClients] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('Semua Status');
+  const [timeFilter, setTimeFilter] = useState('Bulan Ini');
 
-  // Fetch data proyek dan client
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    technicalVerification: 0,
+    pendingTTD: 0,
+    completed: 0
+  });
+
+  // Fetch Data
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
-
     setLoading(true);
-    setError(null);
 
     try {
-      // PERBAIKAN: Gunakan struktur response yang benar untuk Supabase v2
-      const { data: projectsData, error: projectsErr } = await supabase
+      const { data, error } = await supabase
         .from('projects')
-        .select(`
-          *,
-          clients!inner(name, email)
-        `)
+        .select('*, clients(name)')
         .order('created_at', { ascending: false });
 
-      if (projectsErr) throw projectsErr;
+      if (error) throw error;
 
-      // PERBAIKAN: Gunakan struktur response yang benar
-      const { data: clientsData, error: clientsErr } = await supabase
-        .from('clients')
-        .select('id, name');
+      const projectsList = data || [];
+      setAllProjects(projectsList);
+      setProjects(projectsList);
 
-      if (clientsErr) throw clientsErr;
+      // Calculate Stats
+      setStats({
+        totalProjects: projectsList.length,
+        technicalVerification: projectsList.filter(p => p.status === 'technical_verification' || p.status === 'head_consultant_review').length,
+        pendingTTD: projectsList.filter(p => p.status === 'pending_ttd' || p.status === 'approved_by_pl').length,
+        completed: projectsList.filter(p => p.status === 'completed' || p.status === 'slf_issued').length
+      });
 
-      // PERBAIKAN: Set dengan data yang benar dan berikan fallback array kosong
-      setProjects(projectsData || []);
-      setClients(clientsData || []);
-
-    } catch (err) {
-      console.error('Error fetching projects data for head consultant:', err);
-      setError('Gagal memuat data proyek');
-      toast.error('Gagal memuat data proyek');
-      // PERBAIKAN: Set ke array kosong jika error
-      setProjects([]);
-      setClients([]);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Gagal memuat daftar proyek');
     } finally {
       setLoading(false);
     }
   }, [user?.id]);
 
   useEffect(() => {
-    if (router.isReady && !authLoading && user && isHeadConsultant) {
-      fetchData();
-    } else if (!authLoading && user && !isHeadConsultant) {
-      router.replace('/dashboard');
+    if (user) fetchData();
+  }, [user, fetchData]);
+
+  // Filtering Logic
+  useEffect(() => {
+    let filtered = allProjects;
+
+    if (searchTerm) {
+      filtered = filtered.filter(p =>
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-  }, [router.isReady, authLoading, user, isHeadConsultant, fetchData]);
 
-  // PERBAIKAN: Filter projects dengan safety check
-  const filteredProjects = (projects || []).filter(project => {
-    const matchesSearch = project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    const matchesClient = clientFilter === 'all' || project.client_id === clientFilter;
+    if (statusFilter !== 'Semua Status') {
+      const statusMap = {
+        'Draft': 'draft',
+        'Verifikasi Teknis': 'head_consultant_review',
+        'Menunggu TTD': 'approved_by_pl',
+        'Selesai': 'completed'
+      };
+      const filteredStatus = statusMap[statusFilter];
+      // Special case for Verifikasi Teknis and Menunggu TTD as they might match multiple internal codes
+      if (statusFilter === 'Verifikasi Teknis') {
+        filtered = filtered.filter(p => p.status === 'head_consultant_review' || p.status === 'technical_verification');
+      } else if (statusFilter === 'Menunggu TTD') {
+        filtered = filtered.filter(p => p.status === 'approved_by_pl' || p.status === 'pending_ttd');
+      } else if (statusFilter === 'Selesai') {
+        filtered = filtered.filter(p => p.status === 'completed' || p.status === 'slf_issued');
+      } else {
+        filtered = filtered.filter(p => p.status === filteredStatus);
+      }
+    }
 
-    return matchesSearch && matchesStatus && matchesClient;
-  });
+    setProjects(filtered);
+  }, [searchTerm, statusFilter, allProjects]);
 
-  const handleViewProject = (projectId) => {
-    router.push(`/dashboard/head-consultant/projects/${projectId}`);
-  };
-
-  const handleRefresh = () => {
-    fetchData();
-    toast.success('Data diperbarui');
-  };
-
-  // Get unique clients for filters
-  const availableClients = clients || [];
-
-  if (authLoading || (user && !isHeadConsultant)) {
-    return (
-      <DashboardLayout title="Daftar Proyek">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <DashboardLayout title="Daftar Proyek">
-        <div className="p-4 md:p-6">
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-          <Button onClick={fetchData}>Coba Muat Ulang</Button>
-        </div>
-      </DashboardLayout>
-    );
-  }
 
   return (
-    <DashboardLayout title="Daftar Proyek">
-      <TooltipProvider>
-        <motion.div
-          className="p-6 space-y-8 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button size="sm" onClick={() => router.push('/dashboard/head-consultant')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali
-            </Button>
-          </motion.div>
+    <DashboardLayout>
+      <div className="flex flex-col gap-8">
+        {/* Page Heading & Actions */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl md:text-4xl font-display font-black text-gray-900 dark:text-white tracking-tight">Eksplorasi proyek</h1>
+            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-base">Kelola dan pantau seluruh inisiatif kelaikan fungsi dalam satu pusat visual.</p>
+          </div>
+        </div>
 
-          {/* Filters */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-slate-500" />
-                  Filter Proyek
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="relative md:col-span-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      placeholder="Cari nama proyek, lokasi, atau client..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Filter Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Status</SelectItem>
-                      <SelectItem value="head_consultant_review">Perlu Review HC</SelectItem>
-                      <SelectItem value="government_submitted">Government Submitted</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={clientFilter} onValueChange={setClientFilter}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Filter Client" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Client</SelectItem>
-                      {availableClients.map(client => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Proyek berjalan"
+            value={stats.totalProjects}
+            icon={FolderOpen}
+            color="text-primary"
+            subtitle="Dalam Eksekusi"
+          />
+          <StatCard
+            title="Persetujuan akhir"
+            value={stats.pendingTTD}
+            icon={FileText}
+            color="text-status-yellow"
+            subtitle="Menunggu Validasi"
+          />
+          <StatCard
+            title="SLF terbit"
+            value={stats.completed}
+            icon={CheckCircle2}
+            color="text-status-green"
+            subtitle="Sertifikasi Selesai"
+          />
+          <StatCard
+            title="Total portfolio"
+            value={stats.totalProjects}
+            icon={TrendingUp}
+            color="text-blue-500"
+            subtitle="Total Keseluruhan"
+          />
+        </div>
 
-          {/* Projects Table */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Building className="w-5 h-5 text-blue-500" />
-                    Proyek ({filteredProjects.length})
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+        {/* Filters & Search Toolbar */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+          {/* Left: Filters */}
+          <div className="flex w-full lg:w-auto flex-wrap gap-4">
+            <div className="relative min-w-[180px]">
+              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Status filter</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-gray-100 outline-none transition-all"
+              >
+                <option>Semua Status</option>
+                <option>Draft</option>
+                <option>Verifikasi Teknis</option>
+                <option>Menunggu TTD</option>
+                <option>Selesai</option>
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
+            </div>
+            <div className="relative min-w-[180px]">
+              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Jendela waktu</span>
+              <select
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value)}
+                className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-gray-100 outline-none transition-all"
+              >
+                <option>Bulan Ini</option>
+                <option>3 Bulan Terakhir</option>
+                <option>Tahun Ini</option>
+              </select>
+              <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
+            </div>
+          </div>
+          {/* Right: Search & Sort */}
+          <div className="flex w-full lg:w-auto items-center gap-3">
+            <div className="relative group flex-1 lg:flex-none lg:min-w-[300px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary-light group-focus-within:text-primary transition-colors" />
+              <input
+                type="text"
+                placeholder="Cari nama proyek atau klien..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary text-gray-900 dark:text-white outline-none transition-all placeholder:text-text-secondary-light/50"
+              />
+            </div>
+            <button className="h-11 w-11 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 text-text-secondary-light hover:text-primary hover:border-primary transition-all shadow-sm" title="Sort Results">
+              <SortAsc size={20} />
+            </button>
+            <button className="h-11 w-11 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 text-text-secondary-light hover:text-primary hover:border-primary transition-all shadow-sm" title="Refresh">
+              <RefreshCw size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Projects Table */}
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden transition-all duration-300">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-white/[0.02]">
+                  <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Informasi proyek</th>
+                  <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Lokasi & klien</th>
+                  <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Status progres</th>
+                  <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase text-right">Manajemen</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {loading ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nama Proyek</TableHead>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Lokasi</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Fase</TableHead>
-                        <TableHead>Tanggal Dibuat</TableHead>
-                        <TableHead>Aksi</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/2" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/2" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/4" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/4" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/4" /></TableCell>
-                          <TableCell><Skeleton className="h-8 w-20" /></TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : filteredProjects.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Building className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4 opacity-50" />
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                      Tidak Ada Proyek
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      {searchTerm || statusFilter !== 'all' || clientFilter !== 'all'
-                        ? 'Tidak ada proyek yang cocok dengan filter.'
-                        : 'Belum ada proyek dalam sistem.'}
-                    </p>
-                    <Button onClick={handleRefresh} className="mt-4">
-                      Refresh Data
-                    </Button>
-                  </div>
+                  <tr><td colSpan="5" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-xs font-bold text-text-secondary-light">Menyelaraskan data...</span></div></td></tr>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nama Proyek</TableHead>
-                          <TableHead>Client</TableHead>
-                          <TableHead>Lokasi</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Fase</TableHead>
-                          <TableHead>Tanggal Dibuat</TableHead>
-                          <TableHead>Aksi</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredProjects.map((project) => (
-                          <TableRow key={project.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                  <Building className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[150px]">
-                                    {project.name}
-                                  </p>
-                                  {project.application_type && (
-                                    <Badge variant="outline" className="mt-1 text-xs capitalize">
-                                      {project.application_type}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <User className="w-3 h-3 text-slate-500" />
-                                <span>{project.clients?.name || 'N/A'}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-3 h-3 text-slate-500" />
-                                <div>
-                                  <p className="text-sm">{project.city || 'N/A'}</p>
-                                  {project.address && (
-                                    <p className="text-xs text-slate-500 truncate max-w-[100px]">
-                                      {project.address}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getStatusColor(project.status)}>
-                                {getStatusLabel(project.status)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <span>Fase {getProjectPhase(project.status)}</span>
-                            </TableCell>
-                            <TableCell>
-                              {formatDateSafely(project.created_at)}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => handleViewProject(project.id)}
-                                >
-                                  <Eye className="w-4 h-4 mr-1" />
-                                  Detail
-                                </Button>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="outline" size="sm">
-                                      <ExternalLink className="w-4 h-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Lihat di External System (jika ada)</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  projects.length === 0 ? (
+                    <tr><td colSpan="5" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 mb-4"><FolderOpen size={40} className="text-slate-500/20" /></div><p className="font-bold text-sm text-slate-500">Database kosong</p></td></tr>
+                  ) : (
+                    projects.map(p => (
+                      <tr key={p.id} className="group hover:bg-primary/5 transition-all duration-300">
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-primary transition-colors cursor-pointer text-base" onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)}>
+                              {p.name}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-text-secondary-light bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md tracking-wider">ID: {p.id.slice(0, 8).toUpperCase()}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-sm text-white font-bold shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                              {(p.clients?.name || 'K')[0]}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-gray-900 dark:text-gray-200 tracking-tight">{p.clients?.name || 'Unknown Client'}</span>
+                              <span className="text-[10px] font-medium text-text-secondary-light">Entitas terverifikasi</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs font-bold text-gray-900 dark:text-gray-300">{formatDate(p.created_at)}</span>
+                            <span className="text-[10px] font-bold text-primary">Pendaftaran masuk</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <StatusBadge status={p.status} />
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          <button
+                            onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)}
+                            className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 text-text-secondary-light hover:bg-primary hover:text-white transition-all shadow-sm"
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )
                 )}
-              </CardContent>
-            </Card>
-          </motion.div>
+              </tbody>
+            </table>
+          </div>
 
-          {/* Info Card */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
-              <CardContent className="p-4">
-                <div className="flex">
-                  {/* PERBAIKAN: Ganti Info dengan AlertCircle yang sudah di-import */}
-                  <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-medium text-blue-800 dark:text-blue-200">Catatan:</h3>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                      Halaman ini menampilkan daftar semua proyek dalam sistem. Anda dapat memfilter berdasarkan status atau client untuk fokus pada proyek yang perlu ditinjau.
-                      Klik "Detail" untuk melihat informasi lengkap proyek, termasuk dokumen, jadwal, dan tim.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-      </TooltipProvider>
+          {/* Pagination (Simplified) */}
+          <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 dark:border-gray-800 px-8 py-6 gap-6 bg-gray-50/30 dark:bg-black/10">
+            <div className="flex flex-col">
+              <p className="text-xs font-bold text-text-secondary-light mb-1">Status kelaikan</p>
+              <span className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">
+                Menampilkan <span className="font-bold text-primary">1 - {projects.length}</span> dari <span className="font-bold text-gray-900 dark:text-white">{stats.totalProjects} entri data</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button className="h-10 px-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark text-xs font-bold text-text-secondary-light hover:border-primary hover:text-primary transition-all disabled:opacity-30 shadow-sm" disabled>Sebelumnya</button>
+              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/30">1</div>
+              <button className="h-10 px-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark text-xs font-bold text-text-secondary-light hover:border-primary hover:text-primary transition-all shadow-sm">Berikutnya</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </DashboardLayout>
+  );
+}
+
+
+function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
+  return (
+    <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+      <div className="flex items-start justify-between relative z-10">
+        <div>
+          <p className="text-xs font-bold text-text-secondary-light uppercase tracking-wider">{title}</p>
+          <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
+          {subtitle && <p className="text-xs font-medium text-text-secondary-light mt-1 opacity-70">{subtitle}</p>}
+        </div>
+        <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 ${color}`}>
+          <Icon size={20} />
+        </div>
+      </div>
+      {trend && (
+        <div className="mt-4 flex items-center gap-1.5 relative z-10">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-[10px] font-bold border border-status-green/20">
+            <TrendingUp size={12} />
+            <span>+{trend}%</span>
+          </div>
+          <span className="text-[10px] font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
+        </div>
+      )}
+      <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-[2.5] translate-x-1/4 translate-y-1/4 ${color}`}>
+        <Icon size={60} />
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const configs = {
+    'head_consultant_review': { label: 'Verifikasi teknis', class: 'bg-primary/10 text-primary border-primary/20' },
+    'technical_verification': { label: 'Verifikasi teknis', class: 'bg-primary/10 text-primary border-primary/20' },
+    'pending_ttd': { label: 'Menunggu validasi', class: 'bg-status-yellow/10 text-status-yellow border-status-yellow/20' },
+    'approved_by_pl': { label: 'Menunggu validasi', class: 'bg-status-yellow/10 text-status-yellow border-status-yellow/20' },
+    'completed': { label: 'Sertifikasi terbit', class: 'bg-status-green/10 text-status-green border-status-green/20' },
+    'slf_issued': { label: 'Sertifikasi terbit', class: 'bg-status-green/10 text-status-green border-status-green/20' },
+    'draft': { label: 'Draft proposal', class: 'bg-gray-400/10 text-gray-500 border-gray-400/20' }
+  };
+
+  const config = configs[status] || configs.draft;
+
+  return (
+    <span className={`inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold border shadow-sm ${config.class}`}>
+      <Zap size={10} className="mr-1.5" />
+      {config.label}
+    </span>
   );
 }

@@ -25,9 +25,9 @@ const checkPasswordStrength = (password) => {
     number: /[0-9]/.test(password),
     special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
   };
-  
+
   const score = Object.values(checks).filter(Boolean).length;
-  
+
   return {
     checks,
     score,
@@ -39,7 +39,7 @@ const checkPasswordStrength = (password) => {
 export default function ResetPasswordPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  
+
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: '',
@@ -57,7 +57,7 @@ export default function ResetPasswordPage() {
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         // Jika ada session dan user datang dari reset link
         if (session) {
           setValidSession(true);
@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const type = hashParams.get('type');
-          
+
           if (accessToken && type === 'recovery') {
             setValidSession(true);
           }
@@ -128,21 +128,21 @@ export default function ResetPasswordPage() {
       }
 
       setSuccess(true);
-      
+
       // Redirect to login after 3 seconds
       setTimeout(() => {
         router.push('/login');
       }, 3000);
     } catch (err) {
       console.error('[ResetPassword] Error:', err);
-      
+
       let userMessage = 'Gagal mengubah password';
       if (err.message.includes('same as')) {
         userMessage = 'Password baru tidak boleh sama dengan password lama';
       } else if (err.message.includes('weak')) {
         userMessage = 'Password terlalu lemah';
       }
-      
+
       setError(userMessage);
     } finally {
       setLoading(false);
@@ -188,9 +188,9 @@ export default function ResetPasswordPage() {
             <CardHeader className="text-center space-y-4 pb-4">
               {/* Logo inside form */}
               <div className="flex justify-center">
-                <img 
-                  src="/leaflet/images/logo-puri-dimensi.png" 
-                  alt="PT. Puri Dimensi" 
+                <img
+                  src="/leaflet/images/logo-puri-dimensi.png"
+                  alt="PT. Puri Dimensi"
                   className="h-20 md:h-16 w-auto object-contain dark:brightness-110 dark:contrast-110"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -251,9 +251,9 @@ export default function ResetPasswordPage() {
             <CardHeader className="text-center space-y-4 pb-4">
               {/* Logo inside form */}
               <div className="flex justify-center">
-                <img 
-                  src="/leaflet/images/logo-puri-dimensi.png" 
-                  alt="PT. Puri Dimensi" 
+                <img
+                  src="/leaflet/images/logo-puri-dimensi.png"
+                  alt="PT. Puri Dimensi"
                   className="h-20 md:h-16 w-auto object-contain dark:brightness-110 dark:contrast-110"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -274,7 +274,7 @@ export default function ResetPasswordPage() {
                 </CardDescription>
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               {success ? (
                 <div className="space-y-4">
@@ -284,7 +284,7 @@ export default function ResetPasswordPage() {
                       Password berhasil diubah! Anda akan diarahkan ke halaman login...
                     </AlertDescription>
                   </Alert>
-                  
+
                   <div className="flex justify-center">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
@@ -303,7 +303,7 @@ export default function ResetPasswordPage() {
                     <div className="space-y-2">
                       <Label htmlFor="password">Password Baru</Label>
                       <div className="relative">
-                        <Input 
+                        <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
                           name="password"
@@ -325,7 +325,7 @@ export default function ResetPasswordPage() {
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
                       </div>
-                      
+
                       {/* Password Strength Indicator */}
                       {formData.password && (
                         <div className="space-y-2">
@@ -337,15 +337,14 @@ export default function ResetPasswordPage() {
                             {[1, 2, 3, 4, 5].map((i) => (
                               <div
                                 key={i}
-                                className={`h-1 rounded ${
-                                  i <= passwordStrength.score
+                                className={`h-1 rounded ${i <= passwordStrength.score
                                     ? passwordStrength.score <= 2
                                       ? 'bg-red-500'
                                       : passwordStrength.score <= 3
-                                      ? 'bg-yellow-500'
-                                      : 'bg-green-500'
+                                        ? 'bg-yellow-500'
+                                        : 'bg-green-500'
                                     : 'bg-muted'
-                                }`}
+                                  }`}
                               />
                             ))}
                           </div>
@@ -374,7 +373,7 @@ export default function ResetPasswordPage() {
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
                       <div className="relative">
-                        <Input 
+                        <Input
                           id="confirmPassword"
                           type={showConfirmPassword ? "text" : "password"}
                           name="confirmPassword"
@@ -402,8 +401,8 @@ export default function ResetPasswordPage() {
                         </p>
                       )}
                     </div>
-                    
-                    <Button 
+
+                    <Button
                       type="submit"
                       disabled={loading || !formData.password || !formData.confirmPassword || !passwordsMatch}
                       className="w-full mt-2"
@@ -429,7 +428,7 @@ export default function ResetPasswordPage() {
       <footer className="py-6 border-t border-border">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Copyright © 2025 PT. Puri Dimensi - SLF One Management System v1.0
+            Copyright © 2025 PT. Puri Dimensi - SLF One Management System v2.0
           </p>
         </div>
       </footer>

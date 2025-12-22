@@ -1,512 +1,289 @@
 ﻿// FILE: src/pages/dashboard/inspector/inspections/[id]/checklist.js
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/router";
+
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useRouter } from 'next/router';
+import { useToast } from '@/components/ui/use-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { motion } from "framer-motion";
-import { toast } from "sonner";
 
-// Components
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+// shadcn/ui Components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@/components/ui/alert";
+} from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Lucide Icons
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  FileText, Clock, Activity, CheckCircle, XCircle, Eye,
+  CheckSquare, AlertTriangle, Loader2, Info, Camera,
+  Plus, MapPin, TrendingUp, ClipboardList, ListChecks,
+  Building, Users, Search, Filter, Download, Upload,
+  Save, X, ArrowLeft, ChevronRight, Check, AlertCircle,
+  HelpCircle, Image as ImageIcon, Gauge, RefreshCw,
+  Calendar, User, ArrowRight
+} from 'lucide-react';
+
+// Other Imports
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { supabase } from '@/utils/supabaseClient';
+import { useAuth } from '@/context/AuthContext';
+import CameraGeotagging from '@/components/CameraGeotagging';
+import { getPhotosByInspection } from '@/utils/inspectionPhotos';
+
+// Centralized Checklist Logic
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  getChecklistTemplate,
+  flattenChecklistItems,
+  isItemMatchingSpecialization,
+  itemRequiresPhotogeotag,
+  getChecklistsBySpecialization
+} from "@/utils/checklistTemplates.js";
 
-// Icons - ✅ DIPERBAIKI: Hapus duplikasi, tambah yang missing
-import {
-  FileText, Building, User, MapPin, Calendar, Clock, CheckCircle2, XCircle, Eye, Plus,
-  ArrowRight, TrendingUp, FolderOpen, DollarSign, ClipboardList, FileCheck, UserCheck,
-  RefreshCw, Download, MessageCircle, Search, Filter, ArrowLeft, ExternalLink, AlertCircle,
-  Info, CheckSquare, Radio, Camera, Upload, Globe, Target, ListChecks, Check, X,
-  AlertOctagon, CheckCircle, Send, AlertTriangle, FileSignature, ClipboardCheck,
-  TrendingDown, FileQuestion, Loader2, Save // ✅ DITAMBAHKAN: Loader2, Save
-} from "lucide-react";
-
-// Utils & Context
-import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { supabase } from "@/utils/supabaseClient";
-import { useAuth } from "@/context/AuthContext";
-import { getChecklistTemplate, itemRequiresPhotogeotag, getPhotoRequirements } from "@/utils/checklistTemplates";
-import CameraGeotagging from "@/components/CameraGeotagging";
-
-// ... existing imports
-
-// [Removed Duplicate Component Definition]
-
-// Helper functions
-const getProjectPhase = (status) => {
-  const phaseMap = {
-    'draft': 1, 'submitted': 1, 'project_lead_review': 1,
-    'inspection_scheduled': 2, 'inspection_in_progress': 2,
-    'report_draft': 3, 'head_consultant_review': 3,
-    'client_review': 4,
-    'government_submitted': 5, 'slf_issued': 5, 'completed': 5
-  };
-  return phaseMap[status] || 1;
+// Animation Variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1
+    }
+  }
 };
 
-const getStatusColor = (status) => {
-  const colors = {
-    'draft': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
-    'submitted': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-    'project_lead_review': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    'inspection_scheduled': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-    'inspection_in_progress': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-    'report_draft': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
-    'head_consultant_review': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
-    'client_review': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400',
-    'government_submitted': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'slf_issued': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400',
-    'completed': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-    'rejected': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-    'verified_by_admin_team': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'approved_by_pl': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-    'revision_requested': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-  };
-  return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "easeOut" } }
 };
 
-const getStatusLabel = (status) => {
-  const labels = {
-    'draft': 'Draft',
-    'submitted': 'Submitted',
-    'project_lead_review': 'Project Lead Review',
-    'inspection_scheduled': 'Inspection Scheduled',
-    'inspection_in_progress': 'Inspection In Progress',
-    'report_draft': 'Report Draft',
-    'head_consultant_review': 'Head Consultant Review',
-    'client_review': 'Client Review',
-    'government_submitted': 'Government Submitted',
-    'slf_issued': 'SLF Issued',
-    'completed': 'Completed',
-    'cancelled': 'Cancelled',
-    'rejected': 'Rejected',
-    'verified_by_admin_team': 'Verified by Admin Team',
-    'approved_by_pl': 'Approved by Project Lead',
-    'revision_requested': 'Revision Requested',
-  };
-  return labels[status] || status;
-};
+// Utility function untuk class names
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
-// Komponen Formulir untuk Item Checklist
-const ChecklistItemForm = ({ item, templateId, inspectionId, projectId, onSave, existingResponse, onNext }) => {
-  const { user } = useAuth();
+// --- Sub-Components ---
+
+const CategoryButton = ({ active, label, count, onClick, icon: Icon }) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "w-full flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-300 group",
+      active
+        ? "bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/30 border-0"
+        : "bg-white dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 hover:bg-slate-50"
+    )}
+  >
+    <div className="flex items-center gap-3">
+      {Icon && <Icon size={18} className={cn(active ? "text-white" : "text-slate-400 group-hover:text-[#7c3aed]")} />}
+      <span className="text-[11px] font-black uppercase tracking-widest">{label.replace(/_/g, ' ')}</span>
+    </div>
+    {count !== undefined && (
+      <Badge className={cn(
+        "rounded-full px-2 py-0.5 text-[10px] font-bold border-0",
+        active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+      )}>
+        {count}
+      </Badge>
+    )}
+  </button>
+);
+
+const ChecklistCard = ({ item, response, onSave, requiresPhoto, photoCount, onCameraOpen, saving }) => {
   const [formData, setFormData] = useState({});
-  const [saving, setSaving] = useState(false);
-  const [showCamera, setShowCamera] = useState(false);
-  const [savedPhotos, setSavedPhotos] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [gettingLocation, setGettingLocation] = useState(false);
-
-  const requiresPhotoGeotag = itemRequiresPhotogeotag(templateId, item.id);
 
   useEffect(() => {
-    if (existingResponse) {
-      setFormData(existingResponse.response || {});
-      // Ambil foto yang sudah disimpan sebelumnya
-      const fetchSavedPhotos = async () => {
-        if (inspectionId && item.id) {
-          const { data: photos, error } = await supabase // ✅ DIPERBAIKI: hapus spasi aneh
-            .from('inspection_photos')
-            .select('id, photo_url, caption, latitude, longitude, uploaded_at')
-            .eq('inspection_id', inspectionId)
-            .eq('checklist_item_id', item.id)
-            .order('uploaded_at', { ascending: true });
-
-          if (error) {
-            console.error('Error fetching saved photos for item:', item.id, error);
-          } else {
-            setSavedPhotos(photos || []);
-          }
-        }
-      };
-      fetchSavedPhotos();
-    } else {
-      const initialData = {};
-      item.columns?.forEach(col => {
-        if (col.type === 'radio_with_text') {
-          initialData[col.name] = { option: '', text: '' };
-        } else {
-          initialData[col.name] = '';
-        }
-      });
-      setFormData(initialData);
-    }
-  }, [existingResponse, inspectionId, item.id, item.columns]);
-
-  const handleInputChange = (columnName, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [columnName]: value
-    }));
-  };
-
-  const handleSaveItem = async () => {
-    if (!inspectionId || !item.id || !user?.id) return;
-
-    setSaving(true);
-    try {
-      const responseData = {
-        inspection_id: inspectionId,
-        item_id: item.id,
-        template_id: templateId,
-        response: formData,
-        notes: '',
-        responded_by: user.id,
-        responded_at: new Date().toISOString(),
-        status: 'submitted',
-        project_id: projectId
-      };
-
-      const { error } = await supabase
-        .from('checklist_responses')
-        .upsert([responseData], { onConflict: ['inspection_id', 'item_id', 'responded_by'] });
-
-      if (error) throw error;
-
-      toast.success(`Item "${item.item_name || item.description}" berhasil disimpan`);
-      onSave && onSave(item.id, responseData);
-
-      // Auto redirect to next item
-      if (onNext) {
-        onNext();
+    const initialData = {};
+    item.columns?.forEach(column => {
+      if (column.type === 'radio_with_text') {
+        initialData[column.name] = response?.response?.[column.name] || { option: '', text: '' };
+      } else {
+        initialData[column.name] = response?.response?.[column.name] || '';
       }
+    });
+    setFormData(initialData);
+  }, [item, response]);
 
-    } catch (err) {
-      console.error('Error saving checklist item:', err);
-      toast.error('Gagal menyimpan item checklist: ' + err.message);
-    } finally {
-      setSaving(false);
-    }
+  const handleInputChange = (colName, value) => {
+    setFormData(prev => ({ ...prev, [colName]: value }));
   };
 
-  const handlePhotoSaved = (photoData) => {
-    setSavedPhotos(prev => [...prev, photoData]);
-    toast.success('Foto berhasil disimpan ke item checklist');
-  };
-
-  const renderInputField = (column, index) => {
-    const value = formData[column.name] || '';
-
-    switch (column.type) {
+  const renderField = (col) => {
+    const value = formData[col.name] || '';
+    switch (col.type) {
       case 'radio':
-        return (
-          <div className="flex flex-wrap gap-4">
-            {column.options?.map(option => (
-              <div key={option} className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={`${item.id}-${column.name}`}
-                  value={option}
-                  checked={value === option}
-                  onChange={(e) => handleInputChange(column.name, e.target.value)}
-                  className="w-4 h-4 text-blue-600"
-                />
-                <Label className="text-sm">{option}</Label>
-              </div>
-            ))}
-          </div>
-        );
-
       case 'radio_with_text':
-        const selectedOption = value.option || '';
-        const textValue = value.text || '';
+        const currentOption = col.type === 'radio' ? value : value.option;
         return (
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-4">
-              {column.options?.map(option => (
-                <div key={option} className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name={`${item.id}-${column.name}-option`}
-                    value={option}
-                    checked={selectedOption === option}
-                    onChange={(e) => handleInputChange(column.name, { option: e.target.value, text: textValue })}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <Label className="text-sm">{option}</Label>
-                </div>
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {col.options.map(opt => (
+                <button
+                  key={opt}
+                  onClick={() => {
+                    const newVal = col.type === 'radio' ? opt : { ...value, option: opt };
+                    handleInputChange(col.name, newVal);
+                  }}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border",
+                    currentOption === opt
+                      ? "bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed]"
+                      : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-[#7c3aed]/30"
+                  )}
+                >
+                  {opt}
+                </button>
               ))}
             </div>
-            {(selectedOption === 'Tidak Sesuai' || selectedOption === 'Tidak Lengkap' || column.show_text_field_for_options?.includes(selectedOption)) && (
-              <div className="mt-2">
-                <Label htmlFor={`${item.id}-${column.name}-text`} className="text-sm">
-                  {column.text_label || 'Keterangan:'}
-                </Label>
-                <Textarea
-                  id={`${item.id}-${column.name}-text`}
-                  value={textValue}
-                  onChange={(e) => handleInputChange(column.name, { option: selectedOption, text: e.target.value })}
-                  placeholder={column.text_label || 'Tuliskan alasan...'}
-                  className="mt-1 text-sm"
-                />
-              </div>
+            {col.type === 'radio_with_text' && (currentOption === 'Tidak Sesuai' || currentOption === 'Tidak Lengkap') && (
+              <Input
+                placeholder={col.text_label || "Beri keterangan..."}
+                value={value.text || ''}
+                onChange={(e) => handleInputChange(col.name, { ...value, text: e.target.value })}
+                className="rounded-xl border-slate-200 focus:ring-[#7c3aed]"
+              />
             )}
           </div>
         );
-
+      case 'textarea':
+        return (
+          <textarea
+            className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-[#7c3aed]/30 outline-none transition-all min-h-[100px]"
+            value={value}
+            onChange={(e) => handleInputChange(col.name, e.target.value)}
+            placeholder="Masukkan hasil observasi..."
+          />
+        );
       case 'input_number':
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Input
               type="number"
               value={value}
-              onChange={(e) => handleInputChange(column.name, parseFloat(e.target.value) || 0)}
-              placeholder="0"
-              className="w-32"
+              onChange={(e) => handleInputChange(col.name, e.target.value)}
+              className="w-32 rounded-xl"
             />
-            {column.unit && <span className="text-sm text-muted-foreground">{column.unit}</span>}
+            {col.unit && <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{col.unit}</span>}
           </div>
         );
-
-      case 'textarea':
-        return (
-          <Textarea
-            value={value}
-            onChange={(e) => handleInputChange(column.name, e.target.value)}
-            placeholder={column.placeholder || 'Tuliskan jawaban...'}
-            className="text-sm"
-            rows={3}
-          />
-        );
-
-      case 'input_text':
       default:
         return (
           <Input
-            type="text"
             value={value}
-            onChange={(e) => handleInputChange(column.name, e.target.value)}
-            placeholder={column.placeholder || 'Tuliskan jawaban...'}
-            className="text-sm"
+            onChange={(e) => handleInputChange(col.name, e.target.value)}
+            className="rounded-xl"
           />
         );
     }
   };
 
   return (
-    <Card id={`item-${item.id}`} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 scroll-mt-20">
-      <CardHeader>
-        <CardTitle className="text-lg font-medium flex items-start justify-between">
-          <div>
-            <span className="mr-2">{item.item_number || ''}</span>
-            {item.item_name || item.description}
-          </div>
-          {requiresPhotoGeotag && (
-            <Badge variant="outline" className="text-xs">
-              <Camera className="w-3 h-3 mr-1" />
-              GPS Diperlukan
-            </Badge>
-          )}
-        </CardTitle>
-        {item.subsection_title && (
-          <CardDescription className="text-slate-600 dark:text-slate-400">
-            {item.subsection_title}
-          </CardDescription>
-        )}
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Kolom Input */}
-          {item.columns?.map((column, index) => (
-            <div key={index} className="space-y-2">
-              <Label htmlFor={`${item.id}-${column.name}`} className="text-sm font-medium">
-                {column.name?.replace(/_/g, ' ') || `Kolom ${index + 1}`}
-                {column.required && <span className="text-red-500 ml-1">*</span>}
-              </Label>
-              {renderInputField(column, index)}
+    <motion.div variants={itemVariants}>
+      <Card className="rounded-[2rem] border-0 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-[#1e293b] overflow-hidden group">
+        <div className="p-1 h-2 bg-gradient-to-r from-[#7c3aed] to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <CardHeader className="pb-4">
+          <div className="flex justify-between items-start gap-4">
+            <div className="space-y-1">
+              <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:bg-slate-100 border-0 text-[10px] font-black tracking-widest uppercase">
+                {item.section_id || 'GENERAL'} • {item.subsection_title || 'Item Detail'}
+              </Badge>
+              <CardTitle className="text-xl font-bold text-slate-800 dark:text-white leading-tight">
+                {item.item_name}
+              </CardTitle>
             </div>
-          ))}
-
-          {/* Bagian Dokumentasi Foto & Geotag */}
-          {requiresPhotoGeotag && (
-            <div className="mt-4">
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Dokumentasi Foto & Geotag
-              </Label>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Checklist ini memerlukan foto dengan lokasi GPS.
-              </p>
-
-              {savedPhotos.length > 0 && (
-                <div className="mt-2 space-y-2">
-                  <h4 className="text-sm font-medium">Foto Tersimpan:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {savedPhotos.map(photo => (
-                      <div key={photo.id} className="relative">
-                        <img
-                          src={photo.photo_url}
-                          alt={`Foto untuk ${item.item_name}`}
-                          className="w-16 h-16 object-cover rounded border border-slate-300 dark:border-slate-600"
-                        />
-                        {photo.latitude && photo.longitude && (
-                          <Badge variant="outline" className="mt-1 text-xs">
-                            {photo.latitude.toFixed(5)}, {photo.longitude.toFixed(5)}
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-4">
-                <Button
-                  onClick={() => setShowCamera(true)}
-                  variant="outline"
-                  className="w-full"
-                  disabled={!inspectionId || !projectId}
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Ambil Dokumentasi dengan Kamera
-                </Button>
-                {!inspectionId || !projectId && (
-                  <p className="text-xs text-red-500 mt-1">
-                    Simpan checklist terlebih dahulu untuk mengaktifkan fitur dokumentasi.
-                  </p>
-                )}
+            {response && (
+              <div className="shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <Check size={18} />
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-6">
+            {item.columns?.map(col => (
+              <div key={col.name} className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block ml-1">
+                  {col.name.replace(/_/g, ' ')}
+                </Label>
+                {renderField(col)}
+              </div>
+            ))}
+          </div>
 
-          {/* Tombol Simpan Item */}
-          <div className="mt-4">
-            <Button
-              onClick={handleSaveItem}
-              disabled={saving}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Menyimpan...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Simpan Item Checklist
-                </>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-3">
+              {requiresPhoto && (
+                <Button
+                  onClick={onCameraOpen}
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-wider",
+                    photoCount > 0 ? "border-emerald-500 text-emerald-600 bg-emerald-50" : "border-slate-200 text-slate-500"
+                  )}
+                >
+                  <Camera size={14} className="mr-2" />
+                  {photoCount > 0 ? `${photoCount} Foto Tersimpan` : 'Ambil Foto'}
+                </Button>
               )}
+            </div>
+
+            <Button
+              onClick={() => onSave(item.id, formData)}
+              disabled={saving}
+              className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl h-10 px-6 font-black uppercase text-[10px] tracking-widest shadow-lg shadow-[#7c3aed]/20"
+            >
+              {saving ? <Loader2 size={16} className="animate-spin mr-2" /> : <Save size={16} className="mr-2" />}
+              {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
             </Button>
           </div>
-        </div>
-      </CardContent>
-
-      {/* Dialog untuk AutoPhotoGeotag */}
-      <Dialog open={showCamera} onOpenChange={setShowCamera}>
-        <DialogContent className="max-w-2xl p-0 bg-white dark:bg-slate-800 border-border">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle className="text-slate-900 dark:text-slate-100">
-              Ambil Foto & Geotag untuk: {item.item_name || item.description}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="p-6 pt-2">
-            {/* Replaced AutoPhotoGeotag with CameraGeotagging for strict enforcement */}
-            <CameraGeotagging
-              inspectionId={inspectionId}
-              checklistItemId={item.id}
-              itemName={item.item_name || item.description}
-              projectId={projectId}
-              onSave={handlePhotoSaved}
-              showSaveButton={true}
-              className="w-full"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 
-// Main Component
+// --- Main Page Component ---
+
 export default function InspectorInspectionChecklistPage() {
   const router = useRouter();
   const { id: scheduleId } = router.query;
+  const { toast } = useToast();
   const { user, profile, loading: authLoading, isInspector } = useAuth();
 
+  // States
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [schedule, setSchedule] = useState(null);
   const [project, setProject] = useState(null);
   const [client, setClient] = useState(null);
-  const [checklistTemplate, setChecklistTemplate] = useState(null);
-  const [checklistItems, setChecklistItems] = useState([]);
-  const [checklistResponses, setChecklistResponses] = useState({});
-  const [checklistLoading, setChecklistLoading] = useState(false);
 
-  // Fetch data inspeksi & proyek
+  const [allChecklistItems, setAllChecklistItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [checklistResponses, setChecklistResponses] = useState({});
+  const [savedPhotos, setSavedPhotos] = useState({});
+  const [savingItems, setSavingItems] = useState({});
+
+  // UI States
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraTarget, setCameraTarget] = useState(null);
+
+  // 1. Fetch Data
   const fetchData = useCallback(async () => {
     if (!scheduleId || !user?.id) return;
-
     setLoading(true);
     setError(null);
 
     try {
-      console.log('🔍 Fetching checklist for:', { scheduleId, userId: user.id });
-
-      // 1. Cek apakah inspeksi ada
-      const { data: inspectionCheck, error: checkErr } = await supabase
-        .from('inspections')
-        .select('id, inspector_id, scheduled_date')
-        .eq('id', scheduleId)
-        .maybeSingle();
-
-      if (checkErr) throw checkErr;
-
-      if (!inspectionCheck) {
-        throw new Error(`Data inspeksi tidak ditemukan. (ID: ${scheduleId})`);
-      }
-
-      // 2. Validasi assignment
-      if (inspectionCheck.inspector_id !== user.id) {
-        throw new Error(`Inspeksi ini ditugaskan ke inspector lain (ID: ${inspectionCheck.inspector_id}), bukan Anda.`);
-      }
-
-      // 3. Ambil data lengkap
+      // Get Inspection Data
       const { data: inspectionData, error: inspectionErr } = await supabase
         .from('inspections')
         .select(`
@@ -520,148 +297,129 @@ export default function InspectorInspectionChecklistPage() {
         .single();
 
       if (inspectionErr) throw inspectionErr;
+      if (inspectionData.inspector_id !== user.id) throw new Error("Akses ditolak: Anda bukan inspektor yang ditugaskan.");
 
-      // Normalisasi data untuk state
-      const mappedData = {
-        ...inspectionData,
-        // Mapping kolom agar kompatibel dengan kode yang ada
-        schedule_date: inspectionData.scheduled_date,
-        assigned_to: inspectionData.inspector_id
-      };
+      setSchedule(inspectionData);
+      setProject(inspectionData.projects);
+      setClient(inspectionData.projects.clients);
 
-      setSchedule(mappedData);
-      setProject(mappedData.projects);
-      setClient(mappedData.projects.clients);
-
-      let templateId = mappedData.template_id;
-      if (!templateId) {
-        templateId = mappedData.projects.building_function?.toLowerCase() || 'general';
-      }
-
+      // 2. Load Checklist Template
+      let templateId = inspectionData.template_id || inspectionData.projects.building_function?.toLowerCase() || 'general';
       const template = getChecklistTemplate(templateId);
-      if (!template) {
-        throw new Error(`Template checklist untuk ID "${templateId}" tidak ditemukan.`);
+
+      if (!template) throw new Error(`Template checklist "${templateId}" tidak ditemukan.`);
+
+      // 3. Prepare Items
+      let items = flattenChecklistItems([template]);
+      const spec = profile?.specialization;
+
+      if (spec) {
+        items = items.filter(item => isItemMatchingSpecialization(item, spec));
       }
 
-      setChecklistTemplate(template);
-
-      // --- Filter Items by Specialization ---
-      let filteredItems = template.items || [];
-
-      if (profile?.specialization) {
-        const spec = profile.specialization.toLowerCase();
-        console.log('🔍 Filtering checklist for specialization:', spec);
-
-        filteredItems = filteredItems.filter(item => {
-          // 1. Selalu tampilkan Administrative
-          if (item.category === 'administrative') return true;
-
-          // 2. Arsitektur
-          if (spec === 'arsitektur') {
-            // M.1 (Tata Bangunan), M.3 (Keselamatan), M.2.3 (Proteksi Pasif/Kompartemen)
-            return ['tata_bangunan', 'keselamatan'].includes(item.category) || item.id.startsWith('m23');
-          }
-
-          // 3. Struktur
-          if (spec === 'struktur') {
-            // M.2.1 (Struktur), M.2.10 (Bencana/Disaster)
-            // Check prefixes explicitly to distinguish form MEP
-            return item.id.startsWith('m21') && !item.id.startsWith('m21'); // Wait, logic below handles specific matches
-            // Logic: m21... includes m210. 
-            // Exclude ME items (m22-m29)
-            if (item.category === 'keandalan') {
-              // Only M.2.1 and M.2.10
-              return item.id.startsWith('pondasi') || item.id.startsWith('kolom') || item.id.startsWith('balok') || item.id.startsWith('pelat') || item.id.startsWith('dinding_geser') || item.id.startsWith('atap_struktur') || item.id.startsWith('tangga') || item.id.startsWith('struktur') || item.id.startsWith('sistem_gempa') || item.id.startsWith('sistem_banjir');
-              // Alternative: Check ID format or Title?
-              // Let's use the ID prefixes from the template if they follow m21, m210 pattern in ID?
-              // Problem: item.id in templates are e.g. "pondasi", "kolom" (human readable).
-              // The PARENT section ID (m21, m210) is NOT on the item itself in the flattened list.
-              // BUT, getChecklistTemplate currently flattens items?
-              // Let's check getChecklistTemplate again.
-            }
-            return false;
-          }
-
-          // 3. MEP
-          if (spec === 'mep' || spec === 'mekanikal' || spec === 'elektrikal') {
-            // M.2.2, M.2.4 - M.2.9
-            // Need to identify these items.
-            // Since item.id isn't M21..., we need another way.
-            // We can use item.category === 'keandalan', but exclude structure items?
-            if (item.category === 'keandalan') {
-              const structureKeywords = ['pondasi', 'kolom', 'balok', 'pelat', 'dinding_geser', 'atap_struktur', 'strukur', 'gempa', 'banjir'];
-              const isStructure = structureKeywords.some(k => item.id.includes(k) || (item.item_name && item.item_name.toLowerCase().includes(k)));
-              return !isStructure && !item.id.startsWith('m23'); // Exclude Structure & Passive Fire
-            }
-            return false;
-          }
-
-          return true; // Default: show all
-        });
-
-        // RE-CHECK: flattened items DO NOT have parent section ID easily accessible unless we assume structure.
-        // Wait, if I look at checklistTemplates.js, the items are nested in sections.
-        // `getChecklistTemplate` implementation for 'general' (line 1164) does:
-        // `const mergedItems = technicalTemplates.flatMap(t => t.items || []);`
-        // It loses the section context (M.2.1, etc) unless I inject it.
+      setAllChecklistItems(items);
+      if (items.length > 0 && !selectedCategory) {
+        setSelectedCategory(items[0].category);
       }
 
-      setChecklistItems(filteredItems);
-
-      // ✅ DIPERBAIKI: hapus spasi aneh sebelum data
+      // 4. Fetch Responses
       const { data: responses, error: respErr } = await supabase
         .from('checklist_responses')
-        .select('item_id, response, notes, responded_at, status')
+        .select('*')
         .eq('inspection_id', scheduleId)
         .eq('responded_by', user.id);
 
       if (respErr) throw respErr;
+      const respMap = {};
+      responses.forEach(r => { respMap[r.item_id] = r; });
+      setChecklistResponses(respMap);
 
-      const responseMap = {};
-      responses.forEach(resp => {
-        responseMap[resp.item_id] = resp;
+      // 5. Fetch Photos
+      const photos = await getPhotosByInspection(scheduleId);
+      const photoMap = {};
+      photos.forEach(p => {
+        if (!photoMap[p.checklist_item_id]) photoMap[p.checklist_item_id] = [];
+        photoMap[p.checklist_item_id].push(p);
       });
-      setChecklistResponses(responseMap);
+      setSavedPhotos(photoMap);
 
     } catch (err) {
-
-      console.error('Error fetching inspection checklist data:', err);
-      const errorMessage = err.message || 'Gagal memuat data checklist';
-      setError(errorMessage);
-      toast.error(`Gagal memuat data checklist: ${errorMessage}`);
+      console.error('Fetch error:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [scheduleId, user?.id]);
+  }, [scheduleId, user?.id, profile?.specialization, selectedCategory]);
 
   useEffect(() => {
-    if (router.isReady && !authLoading && user && isInspector && scheduleId) {
+    if (router.isReady && scheduleId && user?.id) {
       fetchData();
-    } else if (!authLoading && user && !isInspector) {
-      router.replace('/dashboard');
-    } else if (!authLoading && user && isInspector && !scheduleId) {
-      setError('ID Jadwal Inspeksi tidak ditemukan.');
     }
-  }, [router.isReady, authLoading, user, isInspector, scheduleId, fetchData]);
+  }, [router.isReady, scheduleId, user?.id]);
 
-  const handleSaveResponse = (itemId, responseData) => {
-    setChecklistResponses(prev => ({
-      ...prev,
-      [itemId]: responseData
-    }));
+  // Filter items for UI display when category changes
+  useEffect(() => {
+    if (allChecklistItems.length > 0) {
+      setFilteredItems(
+        allChecklistItems.filter(item => item.category === selectedCategory)
+      );
+    }
+  }, [selectedCategory, allChecklistItems]);
+
+  const categoryStats = useMemo(() => {
+    const stats = {};
+    allChecklistItems.forEach(item => {
+      stats[item.category] = (stats[item.category] || 0) + 1;
+    });
+    return stats;
+  }, [allChecklistItems]);
+
+  const handleSave = async (itemId, data) => {
+    if (!user?.id) return;
+
+    setSavingItems(prev => ({ ...prev, [itemId]: true }));
+    try {
+      const payload = {
+        inspection_id: scheduleId,
+        item_id: itemId,
+        response: data,
+        responded_by: user.id,
+        responded_at: new Date().toISOString(),
+        status: 'submitted',
+        project_id: project?.id
+      };
+
+      const { error } = await supabase
+        .from('checklist_responses')
+        .upsert([payload], { onConflict: ['inspection_id', 'item_id', 'responded_by'] });
+
+      if (error) throw error;
+
+      setChecklistResponses(prev => ({ ...prev, [itemId]: { ...payload } }));
+      toast({ title: "Berhasil", description: "Data checklist tersimpan." });
+    } catch (err) {
+      console.error('Save error:', err);
+      toast({ title: "Gagal", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingItems(prev => ({ ...prev, [itemId]: false }));
+    }
   };
 
-  const handleRefresh = () => {
-    fetchData();
-    toast.success('Data diperbarui');
+  const handlePhotoCaptured = (photo) => {
+    if (cameraTarget) {
+      const itemId = cameraTarget.id;
+      setSavedPhotos(prev => ({
+        ...prev,
+        [itemId]: [...(prev[itemId] || []), photo]
+      }));
+    }
   };
 
-  if (authLoading || (user && !isInspector)) {
+  if (authLoading || loading) {
     return (
-      <DashboardLayout title="Isi Checklist Inspeksi">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[500px]">
+          <Loader2 className="animate-spin text-[#7c3aed]" size={48} />
         </div>
       </DashboardLayout>
     );
@@ -669,193 +427,230 @@ export default function InspectorInspectionChecklistPage() {
 
   if (error) {
     return (
-      <DashboardLayout title="Isi Checklist Inspeksi">
-        <div className="p-4 md:p-6">
-          <Alert variant="destructive" className="mb-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <AlertCircle className="h-4 w-4" /> {/* ✅ DIPERBAIKI: pakai AlertCircle langsung */}
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-          <Button onClick={fetchData}>Coba Muat Ulang</Button>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (loading) {
-    return (
-      <DashboardLayout title="Isi Checklist Inspeksi">
-        <div className="p-6 space-y-6">
-          <motion.div variants={itemVariants} className="flex justify-between items-start">
-            <div>
-              <Skeleton className="h-8 w-64 bg-slate-300 dark:bg-slate-600" />
-              <Skeleton className="h-4 w-48 mt-2 bg-slate-300 dark:bg-slate-600" />
-            </div>
-            <div className="flex items-center space-x-3">
-              <Skeleton className="h-10 w-24 bg-slate-300 dark:bg-slate-600" />
-              <Skeleton className="h-10 w-24 bg-slate-300 dark:bg-slate-600" />
-            </div>
-          </motion.div>
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
-          <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-            <CardContent className="p-4 space-y-4">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 w-full bg-slate-300 dark:bg-slate-600" />)}
-            </CardContent>
-          </Card>
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto mt-20 p-8 text-center bg-white dark:bg-[#1e293b] rounded-[3rem] shadow-xl">
+          <AlertTriangle size={64} className="mx-auto text-amber-500 mb-6" />
+          <h2 className="text-2xl font-black uppercase tracking-tighter mb-4">Terjadi Kesalahan</h2>
+          <p className="text-slate-500 mb-8">{error}</p>
+          <Button onClick={() => router.push('/dashboard/inspector/schedules')} className="rounded-2xl px-8 h-12">
+            Kembali ke Jadwal
+          </Button>
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Isi Checklist Inspeksi">
-      <TooltipProvider>
+    <DashboardLayout>
+      <div className="min-h-screen pb-24">
         <motion.div
-          className="p-6 space-y-6 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
+          className="max-w-[1600px] mx-auto p-6 md:p-10 space-y-12"
           initial="hidden"
           animate="visible"
+          variants={containerVariants}
         >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">
-              Proyek: {project?.name || 'N/A'} • Klien: {client?.name || 'N/A'}
-            </span>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
+          {/* Header */}
+          <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => router.back()}
+                  className="rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200"
+                >
+                  <ArrowLeft size={18} />
+                </Button>
+                <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-0 text-[10px] uppercase font-black tracking-widest px-4 py-1.5 rounded-full">
+                  Inspection Execution
+                </Badge>
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">• {project?.name}</span>
+              </div>
+              <h1 className="text-5xl md:text-6xl font-black text-slate-800 dark:text-white tracking-tighter uppercase leading-none">
+                Monitoring <span className="text-[#7c3aed]">Checklist</span>
+              </h1>
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center gap-2 text-slate-500 font-bold uppercase text-[10px] tracking-widest">
+                  <Calendar size={14} className="text-[#7c3aed]" />
+                  {schedule?.scheduled_date ? format(new Date(schedule.scheduled_date), 'dd MMMM yyyy', { locale: localeId }) : 'N/A'}
+                </div>
+                <div className="flex items-center gap-2 text-slate-500 font-bold uppercase text-[10px] tracking-widest">
+                  <User size={14} className="text-[#7c3aed]" />
+                  {client?.name || 'N/A'}
+                </div>
+                <Badge className="bg-amber-100 text-amber-700 border-0 text-[9px] font-black tracking-widest px-3">
+                  IN PROGRESS
+                </Badge>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={fetchData}
+                variant="outline"
+                className="h-12 rounded-2xl border-slate-200 dark:border-white/10 text-[11px] font-black uppercase tracking-widest px-6"
+              >
+                <RefreshCw size={16} className="mr-2" /> Refresh Data
               </Button>
-              <Button size="sm" onClick={() => router.push('/dashboard/inspector/inspections')}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Kembali
+              <Button
+                className="bg-emerald-500 hover:bg-emerald-600 text-white h-12 rounded-2xl px-8 text-[11px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20"
+                onClick={() => router.push(`/dashboard/inspector/inspections/${scheduleId}`)}
+              >
+                Selesaikan Inspeksi <ArrowRight size={16} className="ml-2" />
               </Button>
             </div>
           </motion.div>
 
-          {/* Project & Schedule Info Card */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building className="w-5 h-5 text-blue-500" />
-                  Informasi Proyek & Jadwal
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Core Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+            {/* Nav Sidebar */}
+            <motion.div variants={itemVariants} className="space-y-4 lg:sticky lg:top-10 self-start">
+              <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none space-y-6">
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-2 pl-2">
+                    <Filter size={12} /> Kategori Pemeriksaan
+                  </h3>
                   <div className="space-y-2">
-                    <h4 className="font-medium text-slate-900 dark:text-slate-100">Nama Proyek</h4>
-                    <p className="text-slate-600 dark:text-slate-400">{project?.name}</p>
-                    <h4 className="font-medium text-slate-900 dark:text-slate-100 mt-2">Alamat</h4>
-                    <p className="text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {project?.city}, {project?.address}
-                    </p>
-                    <h4 className="font-medium text-slate-900 dark:text-slate-100 mt-2">Fungsi Bangunan</h4>
-                    <p className="text-slate-600 dark:text-slate-400">{project?.building_function || 'N/A'}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-slate-900 dark:text-slate-100">Judul Jadwal</h4>
-                    <p className="text-slate-600 dark:text-slate-400">{schedule?.title}</p>
-                    <h4 className="font-medium text-slate-900 dark:text-slate-100 mt-2">Tanggal & Waktu</h4>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      {format(new Date(schedule?.schedule_date), 'dd MMM yyyy, HH:mm', { locale: localeId })}
-                    </p>
-                    <h4 className="font-medium text-slate-900 dark:text-slate-100 mt-2">Status Jadwal</h4>
-                    <Badge className={getStatusColor(schedule?.status)}>
-                      {getStatusLabel(schedule?.status)}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Checklist Items */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <ListChecks className="w-5 h-5 text-green-500" />
-                    Formulir Checklist ({checklistItems.length} Item)
-                  </span>
-                  <Badge variant="outline">
-                    Template: {checklistTemplate?.title || 'N/A'}
-                  </Badge>
-                </CardTitle>
-                <CardDescription>
-                  Lengkapi checklist ini berdasarkan hasil inspeksi lapangan.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {checklistLoading ? (
-                  <div className="space-y-4">
-                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
-                  </div>
-                ) : checklistItems.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FileText className="w-16 h-16 text-slate-400 dark:text-slate-500 mx-auto mb-4 opacity-50" />
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                      Template Checklist Kosong
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      Template untuk proyek ini belum memiliki item checklist yang terdefinisi.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {checklistItems.map((item) => (
-                      <ChecklistItemForm
-                        key={item.id}
-                        item={item}
-                        templateId={checklistTemplate?.id}
-                        inspectionId={scheduleId}
-                        projectId={project?.id}
-                        onSave={handleSaveResponse}
-                        existingResponse={checklistResponses[item.id]}
-                        onNext={() => {
-                          const nextIndex = checklistItems.findIndex(i => i.id === item.id) + 1;
-                          if (nextIndex < checklistItems.length) {
-                            const nextId = checklistItems[nextIndex].id;
-                            const element = document.getElementById(`item-${nextId}`);
-                            if (element) {
-                              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                              // Optional: Focus or highlight?
-                            }
-                          } else {
-                            toast.success("Semua item telah diperiksa!");
-                          }
-                        }}
+                    {Object.keys(categoryStats).map(cat => (
+                      <CategoryButton
+                        key={cat}
+                        label={cat}
+                        active={selectedCategory === cat}
+                        count={categoryStats[cat]}
+                        onClick={() => setSelectedCategory(cat)}
+                        icon={cat === 'keandalan' ? Gauge : cat === 'arsitektur' ? Building : Activity}
                       />
                     ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+                </div>
 
-          {/* Info Card */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
-              <CardContent className="p-4">
-                <div className="flex">
-                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-medium text-blue-800 dark:text-blue-200">Catatan:</h3>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                      Checklist ini disusun berdasarkan standar dan template SLF yang ditentukan.
-                      Isi semua item dengan akurat. Jika item memerlukan foto dengan geotag, gunakan tombol "Ambil Dokumentasi dengan Kamera".
-                      Setelah selesai, checklist akan diupload sebagai bagian dari laporan inspeksi Anda.
+                <Separator className="bg-slate-100 dark:bg-white/5" />
+
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[#7c3aed]">Overall Progress</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-[11px] font-black uppercase">
+                      <span className="text-slate-400">Total Completion</span>
+                      <span className="text-[#7c3aed]">{Math.round((Object.keys(checklistResponses).length / (allChecklistItems.length || 1)) * 100)}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-[#7c3aed] to-violet-500"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(Object.keys(checklistResponses).length / (allChecklistItems.length || 1)) * 100}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                      />
+                    </div>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                      {Object.keys(checklistResponses).length} of {allChecklistItems.length} items verified
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              </div>
+
+              {/* Specialization Badge */}
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-[2.5rem] text-white overflow-hidden relative group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
+                  <Users size={80} />
+                </div>
+                <h4 className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">My Specialization</h4>
+                <p className="text-2xl font-black tracking-tighter uppercase mb-4">{profile?.specialization || 'Generalist'}</p>
+                <Badge className="bg-white/10 text-white border-0 text-[9px] font-black tracking-widest rounded-lg px-2 py-1">
+                  READY FOR INSPECTION
+                </Badge>
+              </div>
+            </motion.div>
+
+            {/* Checklist items */}
+            <div className="lg:col-span-3 space-y-8">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedCategory}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-8"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-800 dark:text-white">
+                      {selectedCategory.replace(/_/g, ' ')} <span className="text-[#7c3aed]">•</span>
+                    </h2>
+                    <Badge variant="outline" className="border-slate-200 font-bold rounded-lg px-3">
+                      {filteredItems.length} Items In This Category
+                    </Badge>
+                  </div>
+
+                  {filteredItems.length > 0 ? (
+                    filteredItems.map(item => (
+                      <ChecklistCard
+                        key={item.id}
+                        item={item}
+                        response={checklistResponses[item.id]}
+                        saving={savingItems[item.id]}
+                        requiresPhoto={itemRequiresPhotogeotag(item.template_id, item.id, item.category)}
+                        photoCount={savedPhotos[item.id]?.length || 0}
+                        onSave={handleSave}
+                        onCameraOpen={() => {
+                          setCameraTarget(item);
+                          setShowCamera(true);
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <div className="p-24 rounded-[3rem] bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 text-center space-y-4">
+                      <div className="w-20 h-20 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                        <CheckSquare size={32} />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800 dark:text-white uppercase tracking-tighter">No Items Found</h3>
+                      <p className="text-slate-500 font-medium">There are no verification points for this category under your specialization.</p>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
         </motion.div>
-      </TooltipProvider>
+      </div>
+
+      {/* Camera Dialog */}
+      <Dialog open={showCamera} onOpenChange={setShowCamera}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-0 rounded-[3rem] p-0 overflow-hidden">
+          <div className="p-10 space-y-8">
+            <DialogHeader>
+              <div className="flex items-center gap-6 mb-2">
+                <div className="p-4 bg-purple-50 dark:bg-purple-900/30 text-[#7c3aed] rounded-[1.5rem] shadow-sm">
+                  <Camera size={28} />
+                </div>
+                <div>
+                  <DialogTitle className="text-3xl font-black uppercase tracking-tighter text-slate-800 dark:text-white">
+                    Visual Evidence
+                  </DialogTitle>
+                  <DialogDescription className="text-sm font-medium text-slate-500 mt-1">
+                    Documentation for: <span className="text-[#7c3aed] font-bold">{cameraTarget?.item_name || 'Item'}</span>
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <div className="rounded-[2.5rem] overflow-hidden border border-slate-100 dark:border-white/5 shadow-inner">
+              <CameraGeotagging
+                inspectionId={scheduleId}
+                checklistItemId={cameraTarget?.id}
+                itemName={cameraTarget?.item_name}
+                projectId={project?.id}
+                onSave={handlePhotoCaptured}
+                showSaveButton={true}
+              />
+            </div>
+
+            <div className="flex justify-center">
+              <Button onClick={() => setShowCamera(false)} variant="ghost" className="rounded-full h-12 px-8 font-black uppercase tracking-widest text-[10px] text-slate-400">
+                <X size={16} className="mr-2" /> Close Camera
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

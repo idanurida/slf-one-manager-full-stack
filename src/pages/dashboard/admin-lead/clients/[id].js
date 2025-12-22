@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   User, Building, Mail, Phone, Calendar, MapPin, ArrowLeft,
   AlertCircle, RefreshCw, MessageCircle, Crown, Users, FileText,
-  Clock, CheckCircle2, XCircle, Eye
+  Clock, CheckCircle2, XCircle, Eye, Loader2, Briefcase
 } from "lucide-react";
 
 // Utils & Context
@@ -169,124 +169,12 @@ export default function AdminLeadClientDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch client detail dan projects
-  const fetchData = useCallback(async () => {
-    if (!user?.id || !id) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      console.log('🔄 Fetching client detail for:', id);
-
-      // 1. Fetch client detail
-      const { data: clientData, error: clientErr } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (clientErr) {
-        console.error('Error fetching client:', clientErr);
-        throw clientErr;
-      }
-
-      console.log('📋 Client data:', clientData);
-
-      // 2. Fetch projects untuk client ini yang dibuat oleh admin_lead ini
-      const { data: projectsData, error: projectsErr } = await supabase
-        .from('projects')
-        .select(`
-          id,
-          name,
-          status,
-          address,
-          city,
-          description,
-          created_at,
-          start_date,
-          due_date,
-          admin_lead_id,
-          project_lead_id,
-          project_lead:profiles!project_lead_id (
-            full_name
-          )
-        `)
-        .eq('client_id', id)
-        .eq('created_by', user.id)  // ✅ Hanya projects yang dibuat oleh admin_lead ini
-        .order('created_at', { ascending: false });
-
-      if (projectsErr) {
-        console.error('Error fetching projects:', projectsErr);
-        throw projectsErr;
-      }
-
-      console.log('📋 Projects data:', projectsData);
-
-      setClient(clientData);
-      setProjects(projectsData || []);
-
-    } catch (err) {
-      console.error('❌ Error fetching client detail:', err);
-      setError('Gagal memuat data client: ' + err.message);
-      toast.error('Gagal memuat data client');
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.id, id]);
-
-  useEffect(() => {
-    if (router.isReady && !authLoading && user && isAdminLead && id) {
-      fetchData();
-    } else if (!authLoading && user && !isAdminLead) {
-      router.replace('/dashboard');
-    }
-  }, [router.isReady, authLoading, user, isAdminLead, id, fetchData, router]);
-
-  const handleRefresh = () => {
-    fetchData();
-    toast.success('Data diperbarui');
-  };
-
-  const handleSendMessage = () => {
-    router.push(`/dashboard/admin-lead/communication?client=${id}`);
-  };
-
-  const handleViewProject = (project) => {
-    router.push(`/dashboard/admin-lead/projects/${project.id}`);
-  };
-
-  const handleBack = () => {
-    router.push('/dashboard/admin-lead/clients');
-  };
-
-  if (authLoading) {
+  if (authLoading || (user && !isAdminLead) || (loading && !client)) {
     return (
-      <DashboardLayout title="Detail Client">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (user && !isAdminLead) {
-    return (
-      <DashboardLayout title="Detail Client">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
-            Akses Ditolak
-          </h3>
-          <p className="text-slate-600 dark:text-slate-400 text-center mb-4">
-            Anda tidak memiliki akses ke halaman ini.
-          </p>
-          <Button onClick={() => router.push('/dashboard')}>
-            Kembali ke Dashboard
-          </Button>
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
+          <Loader2 className="w-12 h-12 animate-spin text-[#7c3aed]" />
+          <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Accessing Partner Profile...</p>
         </div>
       </DashboardLayout>
     );
@@ -294,263 +182,275 @@ export default function AdminLeadClientDetailPage() {
 
   if (error) {
     return (
-      <DashboardLayout title="Detail Client">
-        <div className="p-4 md:p-6">
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Terjadi Kesalahan</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-          <div className="flex space-x-2">
-            <Button onClick={fetchData}>Coba Muat Ulang</Button>
-            <Button variant="outline" onClick={handleBack}>
-              Kembali ke Daftar Client
-            </Button>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (loading) {
-    return (
-      <DashboardLayout title="Detail Client">
-        <div className="p-6 space-y-6">
-          {/* Header Skeleton */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Skeleton className="h-12 w-12 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-40" />
-                <Skeleton className="h-4 w-32" />
-              </div>
+      <DashboardLayout>
+        <div className="max-w-[1400px] mx-auto p-6 md:p-0 min-h-[60vh] flex items-center justify-center">
+          <div className="bg-white dark:bg-[#1e293b] rounded-[3rem] p-12 border border-slate-100 dark:border-white/5 shadow-2xl max-w-md text-center">
+            <div className="size-20 bg-red-500/10 rounded-[2rem] flex items-center justify-center mx-auto mb-8">
+              <AlertCircle className="w-10 h-10 text-red-500" />
             </div>
-            <div className="flex space-x-2">
-              <Skeleton className="h-9 w-24" />
-              <Skeleton className="h-9 w-24" />
+            <h3 className="text-2xl font-black uppercase tracking-tighter">Access Inhibited</h3>
+            <p className="text-slate-500 mt-4 font-medium mb-10">{error}</p>
+            <div className="flex flex-col gap-3">
+              <button onClick={fetchData} className="h-14 bg-[#7c3aed] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-[#7c3aed]/20">Retry Connection</button>
+              <button onClick={handleBack} className="h-14 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-[10px] uppercase tracking-widest">Return to Base</button>
             </div>
           </div>
-
-          {/* Content Skeleton */}
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (!client) {
-    return (
-      <DashboardLayout title="Detail Client">
-        <div className="p-4 md:p-6">
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Client Tidak Ditemukan</AlertTitle>
-            <AlertDescription>
-              Client yang Anda cari tidak ditemukan atau Anda tidak memiliki akses.
-            </AlertDescription>
-          </Alert>
-          <Button onClick={handleBack}>
-            Kembali ke Daftar Client
-          </Button>
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title={`Detail Client - ${client.name}`}>
+    <DashboardLayout>
       <TooltipProvider>
         <motion.div
-          className="p-6 space-y-8 bg-white dark:bg-slate-900 min-h-screen"
+          className="max-w-[1400px] mx-auto space-y-12 pb-24 p-6 md:p-0"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={handleBack}>
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-sm text-muted-foreground">{client.name}</span>
-              <Badge variant="secondary">{projects.length} Proyek</Badge>
+          {/* Header Section */}
+          <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="flex items-start gap-6">
+              <button onClick={handleBack} className="mt-2 size-12 rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-xl shadow-slate-200/30 dark:shadow-none">
+                <ArrowLeft size={20} />
+              </button>
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">Partner Data Record</Badge>
+                  <div className="w-1 h-1 rounded-full bg-slate-300" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">UID: {id?.toString().substring(0, 8)}</span>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+                  {client?.company_name || 'Individual'} <span className="text-[#7c3aed]">Intelligence</span>
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium max-w-2xl">Arsip terpusat untuk seluruh rincian operasional dan kolaborasi dengan {client?.name}.</p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button size="sm" onClick={handleSendMessage}>
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Kirim Pesan
-              </Button>
+
+            <div className="flex items-center gap-4">
+              <button onClick={handleRefresh} className="size-14 bg-white dark:bg-[#1e293b] text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-white/10 transition-all border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none">
+                <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+              </button>
+              <button
+                onClick={handleSendMessage}
+                className="h-14 px-8 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl flex items-center justify-center gap-3 font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-[#7c3aed]/30 active:scale-95"
+              >
+                <MessageCircle size={18} /> Direct Messenger
+              </button>
             </div>
           </motion.div>
 
-          {/* Tabs */}
-          <motion.section variants={itemVariants}>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="projects">Proyek ({projects.length})</TabsTrigger>
-                <TabsTrigger value="team">Tim</TabsTrigger>
-                <TabsTrigger value="documents">Dokumen</TabsTrigger>
-              </TabsList>
+          {/* Metrics Grid */}
+          <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-between group overflow-hidden relative">
+              <div className="absolute -top-6 -right-6 size-20 bg-[#7c3aed]/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
+              <div className="space-y-1 relative z-10">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Total Engagements</p>
+                <p className="text-3xl font-black tracking-tighter leading-none mt-2 group-hover:text-[#7c3aed] transition-colors">{projects.length}</p>
+              </div>
+              <div className="mt-8 flex items-center gap-2 relative z-10">
+                <div className="size-8 rounded-xl bg-[#7c3aed]/10 text-[#7c3aed] flex items-center justify-center">
+                  <Briefcase size={16} />
+                </div>
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Lifecycle</span>
+              </div>
+            </div>
 
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="space-y-6">
-                <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="w-5 h-5" />
-                      Informasi Client
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-slate-500 dark:text-slate-400">Email</label>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Mail className="w-4 h-4 text-slate-400" />
-                            <span className="text-slate-900 dark:text-slate-100">
-                              {client.email || 'Tidak tersedia'}
-                            </span>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-slate-500 dark:text-slate-400">Telepon</label>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Phone className="w-4 h-4 text-slate-400" />
-                            <span className="text-slate-900 dark:text-slate-100">
-                              {client.phone || 'Tidak tersedia'}
-                            </span>
-                          </div>
-                        </div>
+            <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-between group overflow-hidden relative">
+              <div className="absolute -top-6 -right-6 size-20 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
+              <div className="space-y-1 relative z-10">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Completed Tasks</p>
+                <p className="text-3xl font-black tracking-tighter leading-none mt-2 group-hover:text-emerald-500 transition-colors uppercase">{projects.filter(p => ['completed', 'slf_issued'].includes(p.status)).length}</p>
+              </div>
+              <div className="mt-8 flex items-center gap-2 relative z-10">
+                <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                  <CheckCircle2 size={16} />
+                </div>
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Success Quota</span>
+              </div>
+            </div>
+
+            <div className="col-span-2 bg-slate-900 text-white p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-8 shadow-2xl shadow-slate-900/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#7c3aed]/20 to-transparent pointer-events-none" />
+              <div className="flex-1 space-y-4 relative z-10">
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#7c3aed] mb-1">Communication Channel</h4>
+                  <p className="text-2xl font-black tracking-tighter uppercase leading-none">Project Sync Terminal</p>
+                </div>
+                <p className="text-[10px] font-medium text-slate-400 leading-relaxed max-w-xs">
+                  Aktifkan jalur komunikasi langsung dengan partner untuk koordinasi teknis dan update pengerjaan proyek.
+                </p>
+              </div>
+              <button onClick={handleSendMessage} className="h-14 px-8 bg-white text-slate-900 rounded-2xl flex items-center justify-center gap-3 font-black text-[10px] uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 group relative z-10">
+                Establish Connect <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.section variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Tab System */}
+            <div className="lg:col-span-8 space-y-8">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+                <TabsList className="w-full h-16 bg-slate-100 dark:bg-white/5 rounded-[1.5rem] p-1.5 flex gap-1 border border-slate-100 dark:border-white/5">
+                  <TabsTrigger value="overview" className="flex-1 rounded-2xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:shadow-lg text-[10px] font-black uppercase tracking-widest transition-all">Identity</TabsTrigger>
+                  <TabsTrigger value="projects" className="flex-1 rounded-2xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:shadow-lg text-[10px] font-black uppercase tracking-widest transition-all">Assignments</TabsTrigger>
+                  <TabsTrigger value="history" className="flex-1 rounded-2xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:shadow-lg text-[10px] font-black uppercase tracking-widest transition-all">Audit Trail</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-8 mt-0 focus-visible:outline-none">
+                  <div className="bg-white dark:bg-[#1e293b] rounded-[3rem] p-10 border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none">
+                    <div className="flex items-center gap-4 mb-10">
+                      <div className="size-12 rounded-2xl bg-[#7c3aed]/10 text-[#7c3aed] flex items-center justify-center font-black">
+                        ID
                       </div>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-slate-500 dark:text-slate-400">Alamat</label>
-                          <div className="flex items-center gap-2 mt-1">
-                            <MapPin className="w-4 h-4 text-slate-400" />
-                            <span className="text-slate-900 dark:text-slate-100">
-                              {client.address || 'Tidak tersedia'}
-                            </span>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-slate-500 dark:text-slate-400">Kota</label>
-                          <div className="flex items-center gap-2 mt-1">
-                            <MapPin className="w-4 h-4 text-slate-400" />
-                            <span className="text-slate-900 dark:text-slate-100">
-                              {client.city || 'Tidak tersedia'}
-                            </span>
-                          </div>
-                        </div>
+                      <div>
+                        <h3 className="text-xl font-black uppercase tracking-tighter tracking-tight">Profile Credentials</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Detail administratif rekanan</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                    <CardContent className="p-6 text-center">
-                      <Building className="w-8 h-8 mx-auto text-blue-600 mb-2" />
-                      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {projects.length}
-                      </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">
-                        Total Proyek
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                      <InfoItem icon={<User />} label="PIC Primary" value={client?.name} />
+                      <InfoItem icon={<Building />} label="Enterprise Name" value={client?.company_name || 'Individual Record'} />
+                      <InfoItem icon={<Mail />} label="Communication Hub" value={client?.email} lowercase />
+                      <InfoItem icon={<Phone />} label="Direct Channel" value={client?.phone} />
+                      <InfoItem icon={<MapPin />} label="Regional Office" value={client?.city} uppercase />
+                      <InfoItem icon={<FileText />} label="Tax Compliance" value={client?.npwp} />
+                    </div>
 
-                  <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                    <CardContent className="p-6 text-center">
-                      <CheckCircle2 className="w-8 h-8 mx-auto text-green-600 mb-2" />
-                      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {projects.filter(p => p.status === 'completed').length}
+                    <div className="mt-12 pt-10 border-t border-slate-100 dark:border-white/5">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Official HQ Address</p>
+                      <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-3xl text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed border border-transparent hover:border-[#7c3aed]/20 transition-all">
+                        {client?.address || 'No primary address recorded in central database.'}
                       </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">
-                        Proyek Selesai
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                    <CardContent className="p-6 text-center">
-                      <Clock className="w-8 h-8 mx-auto text-orange-600 mb-2" />
-                      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {projects.filter(p => ['active', 'in_progress', 'draft'].includes(p.status)).length}
-                      </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">
-                        Proyek Aktif
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              {/* Projects Tab */}
-              <TabsContent value="projects" className="space-y-4">
-                {projects.length === 0 ? (
-                  <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                    <CardContent className="p-8 text-center">
-                      <Building className="w-12 h-12 mx-auto text-slate-400 mb-4" />
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                        Belum Ada Proyek
-                      </h3>
-                      <p className="text-slate-600 dark:text-slate-400 mb-4">
-                        Client ini belum memiliki proyek yang Anda buat sebagai Admin Lead.
-                      </p>
-                      <Button onClick={() => router.push('/dashboard/admin-lead/projects/create')}>
-                        Buat Proyek Pertama
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-4">
-                    {projects.map((project) => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                        onViewProject={handleViewProject}
-                      />
-                    ))}
+                    </div>
                   </div>
-                )}
-              </TabsContent>
+                </TabsContent>
 
-              {/* Team Tab */}
-              <TabsContent value="team">
-                <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <CardContent className="p-6">
-                    <p className="text-slate-600 dark:text-slate-400 text-center py-8">
-                      Fitur manajemen tim akan segera tersedia.
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                <TabsContent value="projects" className="space-y-6 mt-0 focus-visible:outline-none">
+                  {projects.length === 0 ? (
+                    <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[3rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+                      <div className="size-20 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-8">
+                        <Briefcase size={32} className="text-slate-300 dark:text-slate-700" />
+                      </div>
+                      <h3 className="text-2xl font-black uppercase tracking-tighter">Inventory Empty</h3>
+                      <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Client ini belum memiliki proyek yang aktif dalam pengelolaan Anda.</p>
+                      <button onClick={() => router.push('/dashboard/admin-lead/projects/new')} className="mt-8 h-12 px-8 bg-[#7c3aed] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-[#7c3aed]/20">Create Initiation</button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {projects.map((project) => (
+                        <motion.div
+                          key={project.id}
+                          whileHover={{ x: 10 }}
+                          className="bg-white dark:bg-[#1e293b] rounded-[2rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none group flex items-center justify-between transition-all"
+                        >
+                          <div className="flex items-center gap-6">
+                            <div className="size-14 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-[#7c3aed]/10 group-hover:text-[#7c3aed] transition-all">
+                              {project.status === 'completed' ? <CheckCircle2 size={24} /> : <Clock size={24} />}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-3 mb-1">
+                                <h4 className="text-lg font-black uppercase tracking-tight group-hover:text-[#7c3aed] transition-colors">{project.name}</h4>
+                                <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">{project.status?.replace(/_/g, ' ')}</Badge>
+                              </div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <MapPin size={10} /> {project.city} &bull; Created {new Date(project.created_at).toLocaleDateString('id-ID')}
+                              </p>
+                            </div>
+                          </div>
+                          <button onClick={() => handleViewProject(project)} className="size-12 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-white hover:bg-slate-900 transition-all flex items-center justify-center">
+                            <ArrowRight size={20} />
+                          </button>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
 
-              {/* Documents Tab */}
-              <TabsContent value="documents">
-                <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <CardContent className="p-6">
-                    <p className="text-slate-600 dark:text-slate-400 text-center py-8">
-                      Fitur dokumen akan segera tersedia.
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                <TabsContent value="history" className="mt-0 focus-visible:outline-none">
+                  <div className="py-20 bg-white dark:bg-[#1e293b] rounded-[3rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10 grayscale opacity-40">
+                    <RefreshCw size={40} className="text-slate-300 mb-6" />
+                    <h3 className="text-xl font-black uppercase tracking-tighter">System Node Pending</h3>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2 px-10">Audit trail logs currently being established in secondary backup cluster.</p>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Sidebar Overview */}
+            <div className="lg:col-span-4 space-y-8">
+              <div className="bg-white dark:bg-[#1e293b] rounded-[3rem] p-10 border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none space-y-8">
+                <h3 className="text-xl font-black uppercase tracking-tighter">Partner <span className="text-[#7c3aed]">Snapshot</span></h3>
+
+                <div className="space-y-6">
+                  <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-transparent hover:border-[#7c3aed]/20 transition-all">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Lifetime Value</p>
+                    <p className="text-2xl font-black tracking-tighter">Rp --.---.---</p>
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="h-1 flex-1 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full w-2/3 bg-[#7c3aed]" />
+                      </div>
+                      <span className="text-[8px] font-black text-[#7c3aed] uppercase">Strategic</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-white/5">
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
+                          <Clock size={16} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest">SLA Compliance</span>
+                      </div>
+                      <span className="text-xs font-black text-orange-500">98%</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-white/5">
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                          <Users size={16} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Active Collab</span>
+                      </div>
+                      <span className="text-xs font-black text-blue-500">Tier 2</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-slate-100 dark:border-white/5">
+                  <button onClick={() => router.push('/dashboard/admin-lead/clients/new')} className="w-full h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95">Update Client Record</button>
+                </div>
+              </div>
+
+              <div className="bg-[#7c3aed]/5 rounded-[2.5rem] p-8 border border-[#7c3aed]/10">
+                <div className="flex items-center gap-3 mb-4 text-[#7c3aed]">
+                  <Crown size={18} />
+                  <h4 className="text-[10px] font-black uppercase tracking-widest">Priority Account</h4>
+                </div>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
+                  Client ini memiliki profil kerjasama strategis. Seluruh update dokumen SLA akan diprioritaskan oleh sistem automasi.
+                </p>
+              </div>
+            </div>
           </motion.section>
         </motion.div>
       </TooltipProvider>
     </DashboardLayout>
+  );
+}
+
+// Sub-components
+function InfoItem({ icon, label, value, uppercase = false, lowercase = false }) {
+  return (
+    <div className="space-y-2 group">
+      <div className="flex items-center gap-2 text-slate-400 group-hover:text-[#7c3aed] transition-colors">
+        {React.cloneElement(icon, { size: 14 })}
+        <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
+      </div>
+      <p className={`text-sm font-bold text-slate-900 dark:text-white ${uppercase ? 'uppercase' : ''} ${lowercase ? 'lowercase' : ''}`}>
+        {value || 'N/A'}
+      </p>
+    </div>
   );
 }

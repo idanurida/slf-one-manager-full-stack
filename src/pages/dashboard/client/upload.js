@@ -96,7 +96,7 @@ export default function UploadDokumenPage() {
   const [uploadDialog, setUploadDialog] = useState({ open: false, document: null });
   const [selectedFile, setSelectedFile] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
-  
+
   // Form data untuk pengajuan baru
   const [formData, setFormData] = useState({
     buildingName: '',
@@ -218,10 +218,10 @@ export default function UploadDokumenPage() {
     try {
       const doc = uploadDialog.document;
       const fileExt = selectedFile.name.split('.').pop().toLowerCase();
-      
+
       // Use client folder for new submissions, or project folder if exists
-      const folderName = selectedProject === 'new' 
-        ? `client_${user.id}` 
+      const folderName = selectedProject === 'new'
+        ? `client_${user.id}`
         : selectedProject;
       const fileName = `${folderName}/${doc.id}_${Date.now()}.${fileExt}`;
 
@@ -385,8 +385,8 @@ export default function UploadDokumenPage() {
   };
 
   // Filter documents by category
-  const filteredDocuments = activeCategory === 'all' 
-    ? documents 
+  const filteredDocuments = activeCategory === 'all'
+    ? documents
     : documents.filter(d => d.category === activeCategory);
 
   useEffect(() => {
@@ -416,16 +416,15 @@ export default function UploadDokumenPage() {
 
   return (
     <DashboardLayout title="Upload Dokumen">
-      <div className="space-y-6">
+      <div className="flex flex-col gap-8 pb-20">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Upload Dokumen</h1>
-            <p className="text-muted-foreground">
-              Unggah dokumen untuk pengajuan SLF/PBG baru atau proyek yang sudah ada
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-2 border-b border-gray-100 dark:border-gray-800/50">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight text-gray-900 dark:text-white leading-tight uppercase">
+              Upload <span className="text-primary italic">Dokumen</span>
+            </h1>
+            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-lg font-medium">
+              Unggah dokumen untuk pengajuan SLF/PBG baru atau proyek yang sudah ada.
             </p>
           </div>
         </div>
@@ -510,7 +509,7 @@ export default function UploadDokumenPage() {
                       id="buildingName"
                       placeholder="Contoh: Gedung Kantor ABC"
                       value={formData.buildingName}
-                      onChange={(e) => setFormData({...formData, buildingName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, buildingName: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -519,7 +518,7 @@ export default function UploadDokumenPage() {
                       id="buildingCity"
                       placeholder="Contoh: Jakarta Selatan"
                       value={formData.buildingCity}
-                      onChange={(e) => setFormData({...formData, buildingCity: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, buildingCity: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
@@ -528,7 +527,7 @@ export default function UploadDokumenPage() {
                       id="buildingAddress"
                       placeholder="Alamat lengkap bangunan..."
                       value={formData.buildingAddress}
-                      onChange={(e) => setFormData({...formData, buildingAddress: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, buildingAddress: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
@@ -537,7 +536,7 @@ export default function UploadDokumenPage() {
                       id="notes"
                       placeholder="Catatan untuk admin (opsional)..."
                       value={formData.notes}
-                      onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     />
                   </div>
                 </div>
@@ -616,8 +615,8 @@ export default function UploadDokumenPage() {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button 
-                                    size="sm" 
+                                  <Button
+                                    size="sm"
                                     onClick={() => setUploadDialog({ open: true, document: doc })}
                                   >
                                     <Upload className="w-4 h-4" />
@@ -634,9 +633,9 @@ export default function UploadDokumenPage() {
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() => handleDownload(uploadedDoc)}
                                       >
                                         <Eye className="w-4 h-4" />
@@ -650,8 +649,8 @@ export default function UploadDokumenPage() {
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <Button 
-                                          variant="outline" 
+                                        <Button
+                                          variant="outline"
                                           size="sm"
                                           className="text-red-500 hover:text-red-700"
                                           onClick={() => handleDelete(uploadedDoc)}
@@ -687,8 +686,8 @@ export default function UploadDokumenPage() {
         </Card>
 
         {/* Upload Dialog */}
-        <Dialog 
-          open={uploadDialog.open} 
+        <Dialog
+          open={uploadDialog.open}
           onOpenChange={(open) => {
             setUploadDialog({ open, document: uploadDialog.document });
             if (!open) {

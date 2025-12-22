@@ -1,10 +1,10 @@
 // FILE: src/pages/dashboard/inspector/projects/index.js
-// Halaman Proyek Inspector - Clean tanpa statistik
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -23,13 +23,31 @@ import {
 // Icons
 import {
   Building, MapPin, Calendar, Eye, Search, X,
-  AlertTriangle, Loader2, ClipboardList, RefreshCw
+  AlertTriangle, Loader2, ClipboardList, RefreshCw,
+  FolderOpen
 } from 'lucide-react';
 
 // Layout & Utils
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
+
+// Animation Variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+};
 
 // Helpers
 const formatDate = (dateString) => {
@@ -43,14 +61,68 @@ const formatDate = (dateString) => {
 
 const getStatusBadge = (status) => {
   const config = {
-    active: { label: 'Aktif', variant: 'default' },
-    draft: { label: 'Draft', variant: 'secondary' },
-    completed: { label: 'Selesai', variant: 'default' },
-    cancelled: { label: 'Dibatalkan', variant: 'destructive' },
+    active: { label: 'Aktif', className: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+    draft: { label: 'Draft', className: 'bg-slate-100 text-slate-700 border-slate-200' },
+    completed: { label: 'Selesai', className: 'bg-blue-100 text-blue-700 border-blue-200' },
+    cancelled: { label: 'Dibatalkan', className: 'bg-red-100 text-red-700 border-red-200' },
   };
-  const { label, variant } = config[status] || { label: status, variant: 'secondary' };
-  return <Badge variant={variant}>{label}</Badge>;
+  const style = config[status] || { label: status, className: 'bg-slate-100 text-slate-700' };
+
+  return (
+    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${style.className}`}>
+      {style.label}
+    </span>
+  );
 };
+
+// Premium Project Card
+const PremiumProjectCard = ({ project, onClick, onChecklist }) => (
+  <motion.div
+    variants={itemVariants}
+    whileHover={{ y: -5 }}
+    className="group bg-white dark:bg-[#1e293b] rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/40 dark:shadow-none p-2 cursor-pointer transition-all hover:border-[#7c3aed]/50"
+    onClick={onClick}
+  >
+    <div className="p-6 relative">
+      <div className="absolute top-6 right-6">
+        {getStatusBadge(project.status)}
+      </div>
+
+      <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-[#7c3aed] group-hover:bg-[#7c3aed]/10 transition-colors mb-4">
+        <Building size={24} />
+      </div>
+
+      <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2 line-clamp-1 group-hover:text-[#7c3aed] transition-colors">{project.name}</h3>
+
+      <div className="space-y-2 mb-6">
+        <p className="text-sm text-slate-500 font-medium flex items-center gap-2">
+          <Building size={14} className="text-slate-400" />
+          {project.clients?.name || 'Klien Tidak Diketahui'}
+        </p>
+        <p className="text-sm text-slate-500 font-medium flex items-center gap-2">
+          <MapPin size={14} className="text-slate-400" />
+          {project.city || 'Lokasi N/A'}
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2 pt-2">
+        <Button
+          className="flex-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase tracking-wider rounded-xl h-10 shadow-sm"
+          onClick={(e) => { e.stopPropagation(); onChecklist(); }}
+        >
+          <ClipboardList className="w-3 h-3 mr-2" />
+          Checklist
+        </Button>
+        <Button
+          className="w-10 h-10 rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-lg shadow-[#7c3aed]/20 p-0 flex items-center justify-center"
+          onClick={onClick}
+        >
+          <Eye size={16} />
+        </Button>
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default function InspectorProjects() {
   const router = useRouter();
@@ -133,12 +205,11 @@ export default function InspectorProjects() {
     return true;
   });
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <DashboardLayout title="Proyek Saya">
-        <div className="p-6 space-y-4">
-          <Skeleton className="h-10 w-full max-w-md" />
-          <Skeleton className="h-64 w-full" />
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <Loader2 className="w-10 h-10 animate-spin text-[#7c3aed]" />
         </div>
       </DashboardLayout>
     );
@@ -162,140 +233,119 @@ export default function InspectorProjects() {
 
   return (
     <DashboardLayout title="Proyek Saya">
-      <TooltipProvider>
-        <div className="p-4 md:p-6 space-y-6">
+      <div className="min-h-screen pb-20">
+        <motion.div
+          className="max-w-[1600px] mx-auto p-6 md:p-8 space-y-10"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          {/* Header */}
+          <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] hover:bg-[#7c3aed]/20 border-0 uppercase tracking-widest text-[10px]">
+                  Project Directory
+                </Badge>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
+                Direktori <span className="text-[#7c3aed]">Proyek</span>
+              </h1>
+              <p className="text-slate-500 font-medium mt-3 max-w-lg">
+                Daftar semua proyek yang ditugaskan kepada Anda untuk inspeksi dan pemantauan.
+              </p>
+            </div>
+            <Button
+              onClick={fetchProjects}
+              className="h-12 px-6 rounded-2xl bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/5 font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-slate-50 transition-all"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </motion.div>
 
           {/* Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Cari nama proyek, klien, atau kota..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Status</SelectItem>
-                    <SelectItem value="active">Aktif</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="completed">Selesai</SelectItem>
-                  </SelectContent>
-                </Select>
-                {(searchTerm || statusFilter !== 'all') && (
-                  <Button variant="ghost" size="icon" onClick={() => { setSearchTerm(''); setStatusFilter('all'); }}>
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-2 pr-4 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col md:flex-row items-center gap-4">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari proyek, klien, atau lokasi..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-14 pl-14 pr-4 rounded-[2rem] bg-transparent border-0 focus:ring-0 text-slate-800 dark:text-white font-medium placeholder:text-slate-400"
+              />
+            </div>
+
+            <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden md:block"></div>
+
+            <div className="w-full md:w-64">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-12 rounded-xl bg-slate-50 dark:bg-white/5 border-0 font-bold text-xs uppercase tracking-widest text-slate-600">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Status</SelectItem>
+                  <SelectItem value="active">Aktif</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="completed">Selesai</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(searchTerm || statusFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full hover:bg-slate-100"
+                onClick={() => { setSearchTerm(''); setStatusFilter('all'); }}
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </Button>
+            )}
+          </motion.div>
+
+          {/* Projects Grid */}
+          {loading ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-[280px] w-full rounded-[2.5rem]" />)}
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-16 text-center border border-slate-100 dark:border-white/5 shadow-xl flex flex-col items-center"
+            >
+              <div className="w-24 h-24 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-6">
+                <FolderOpen className="w-10 h-10 text-slate-300" />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Projects List */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Building className="w-5 h-5" />
-                Proyek Ditugaskan ({filteredProjects.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {filteredProjects.length === 0 ? (
-                <div className="text-center py-12">
-                  <Building className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">
-                    {projects.length === 0 ? 'Belum Ada Proyek' : 'Tidak Ditemukan'}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {projects.length === 0
-                      ? 'Menunggu penugasan dari Project Lead'
-                      : 'Tidak ada proyek yang sesuai dengan filter'
-                    }
-                  </p>
-                </div>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredProjects.map((project) => (
-                    <Card
-                      key={project.id}
-                      className="hover:shadow-md cursor-pointer transition-shadow"
-                      onClick={() => router.push(`/dashboard/inspector/projects/${project.id}`)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="p-2 bg-primary/10 rounded">
-                            <Building className="w-4 h-4 text-primary" />
-                          </div>
-                          {getStatusBadge(project.status)}
-                        </div>
-
-                        <h3 className="font-semibold line-clamp-1 mb-1">{project.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {project.clients?.name || '-'}
-                        </p>
-
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {project.city || '-'}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {formatDate(project.created_at)}
-                          </span>
-                        </div>
-
-                        <div className="flex gap-2 mt-4">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  router.push(`/dashboard/inspector/checklist?project=${project.id}`);
-                                }}
-                              >
-                                <ClipboardList className="w-3 h-3 mr-1" />
-                                Checklist
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Isi checklist inspeksi</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  router.push(`/dashboard/inspector/projects/${project.id}`);
-                                }}
-                              >
-                                <Eye className="w-3 h-3" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Lihat detail</TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+              <h3 className="text-xl font-black uppercase tracking-tight text-slate-800 dark:text-white">Proyek Tidak Ditemukan</h3>
+              <p className="text-slate-500 font-medium mt-2 max-w-md mb-8">
+                {projects.length === 0
+                  ? 'Belum ada proyek yang ditugaskan kepada Anda.'
+                  : 'Tidak ada proyek yang cocok dengan filter pencarian.'}
+              </p>
+              {projects.length === 0 && (
+                <Button className="rounded-xl px-8" variant="outline" disabled>
+                  Hubungi Admin
+                </Button>
               )}
-            </CardContent>
-          </Card>
+            </motion.div>
+          ) : (
+            <motion.div variants={itemVariants} className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredProjects.map((project) => (
+                <PremiumProjectCard
+                  key={project.id}
+                  project={project}
+                  onClick={() => router.push(`/dashboard/inspector/projects/${project.id}`)}
+                  onChecklist={() => router.push(`/dashboard/inspector/checklist?project=${project.id}`)}
+                />
+              ))}
+            </motion.div>
+          )}
 
-        </div>
-      </TooltipProvider>
+        </motion.div>
+      </div>
     </DashboardLayout>
   );
 }

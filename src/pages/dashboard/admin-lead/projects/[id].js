@@ -36,8 +36,12 @@ import {
 import {
   FileText, Eye, AlertTriangle, Loader2, Info, ArrowLeft,
   Building, MapPin, Calendar, UserCheck, Clock, CalendarDays,
-  Users, BarChart3, FolderOpen, Download, Settings
+  Users, BarChart3, FolderOpen, Download, Settings, RefreshCw,
+  TrendingUp, CheckCircle2, MoreVertical, Briefcase, User, Phone,
+  ArrowRight
 } from 'lucide-react';
+
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Utils & Context
 import DashboardLayout from '@/components/layouts/DashboardLayout';
@@ -156,79 +160,66 @@ const getStatusText = (status) => {
   return status?.replace(/_/g, ' ') || 'N/A';
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "circOut" } }
+};
+
 // Simple Progress Bar Component
-const SimpleProgressBar = ({ value, className = "" }) => {
+const PremiumProgressBar = ({ value, label }) => {
   return (
-    <div className={`w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 ${className}`}>
-      <div
-        className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
-        style={{ width: `${value}%` }}
-      />
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">
+        <span>{label}</span>
+        <span className="text-[#7c3aed]">{value}%</span>
+      </div>
+      <div className="h-2 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          className="h-full bg-gradient-to-r from-[#7c3aed] to-blue-500 rounded-full"
+        />
+      </div>
     </div>
   );
 };
 
-// Project Progress Component - FIXED VERSION
+// Project Progress Component
 const ProjectProgressOverview = ({ project, documents, inspections }) => {
   const currentPhase = getProjectPhase(project.status);
   const totalPhases = 5;
-
-  // Calculate progress percentage
   const progressPercentage = Math.round((currentPhase / totalPhases) * 100);
 
-  // Count documents by status
   const approvedDocs = documents.filter(d => d.status === 'approved').length;
-  const pendingDocs = documents.filter(d => d.status === 'pending').length;
   const totalDocs = documents.length;
 
   return (
-    <Card className="border-l-4 border-l-blue-500 dark:border-l-blue-400">
-      <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Phase Progress - FIXED: Using simple progress bar */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <div className={`w-3 h-3 rounded-full ${getPhaseColor(currentPhase)}`} />
-              <span className="text-sm font-medium">Fase {currentPhase}/5</span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                {progressPercentage}%
-              </div>
-              <SimpleProgressBar value={progressPercentage} className="w-20" />
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">Progress Overall</p>
-          </div>
-
-          {/* Documents Stats */}
-          <div className="text-center">
-            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">
-              {approvedDocs}/{totalDocs}
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Dokumen Disetujui</p>
-            <div className="flex justify-center gap-1 mt-2">
-              <Badge variant={approvedDocs > 0 ? "success" : "secondary"} className="text-xs">
-                {approvedDocs} Approved
-              </Badge>
-              <Badge variant={pendingDocs > 0 ? "warning" : "secondary"} className="text-xs">
-                {pendingDocs} Pending
-              </Badge>
-            </div>
-          </div>
-
-          {/* Timeline Status */}
-          <div className="text-center">
-            <StatusBadge status={project.status} className="text-lg py-2 px-4" />
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">Status Saat Ini</p>
-            <div className="mt-2">
-              <Badge variant="outline" className="text-xs">
-                {PROJECT_PHASES[`PHASE_${currentPhase}`]?.name || `Fase ${currentPhase}`}
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <StatSimple
+        title="Current Activity"
+        value={project.status?.replace(/_/g, ' ')}
+        icon={<Clock size={20} />}
+        color="text-[#7c3aed]"
+        bg="bg-[#7c3aed]/10"
+        subValue={PROJECT_PHASES[`PHASE_${currentPhase}`]?.name || `Fase ${currentPhase}`}
+      />
+      <StatSimple
+        title="Document Status"
+        value={`${approvedDocs}/${totalDocs}`}
+        icon={<FileText size={20} />}
+        color="text-blue-500"
+        bg="bg-blue-500/10"
+        subValue="Verifikasi Dokumen"
+      />
+      <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-center gap-4 transition-all col-span-1 md:col-span-2 lg:col-span-1">
+        <PremiumProgressBar value={progressPercentage} label="Overall Progress" />
+      </div>
+    </div>
   );
 };
 
@@ -297,21 +288,33 @@ const QuickActions = ({ project, onManageTimeline, onManageTeam, onViewDocuments
 // Simple Phase Tracker Component
 const SimplePhaseTracker = ({ projectId }) => {
   return (
-    <div className="space-y-4">
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle className="text-slate-900 dark:text-slate-100">Manajemen Timeline</AlertTitle>
-        <AlertDescription className="text-slate-600 dark:text-slate-400">
-          Fitur manajemen timeline sedang dalam pengembangan. Anda dapat mengelola timeline melalui menu khusus.
-        </AlertDescription>
-      </Alert>
-      <div className="flex justify-center">
-        <Button
+    <div className="space-y-8 py-10">
+      <div className="flex flex-col items-center text-center gap-4">
+        <div className="size-20 bg-[#7c3aed]/10 text-[#7c3aed] rounded-[2rem] flex items-center justify-center">
+          <CalendarDays size={32} />
+        </div>
+        <div>
+          <h4 className="text-xl font-black uppercase tracking-tighter">Manajemen Timeline</h4>
+          <p className="text-slate-500 text-sm font-medium mt-2 max-w-sm">Pantau dan kelola jadwal setiap fase pengerjaan proyek secara real-time.</p>
+        </div>
+        <button
           onClick={() => window.location.href = `/dashboard/admin-lead/projects/${projectId}/timeline`}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="mt-6 h-12 px-10 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-[#7c3aed]/20"
         >
           Buka Timeline Manager
-        </Button>
+        </button>
+      </div>
+
+      <div className="bg-blue-500/5 border border-blue-500/10 rounded-[2rem] p-8 flex gap-6 mt-12">
+        <div className="size-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center shrink-0">
+          <Info size={24} />
+        </div>
+        <div>
+          <h4 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-2">Informasi Workflow</h4>
+          <p className="text-sm font-medium text-blue-800/60 dark:text-blue-400/60 leading-relaxed">
+            Timeline dirancang untuk memastikan setiap tahapan verifikasi dokumen dan inspeksi lapangan berjalan sesuai jadwal yang telah disepakati bersama klien.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -321,7 +324,7 @@ const SimplePhaseTracker = ({ projectId }) => {
 export default function AdminLeadProjectDetailPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { user, profile, loading: authLoading, isAdminLead } = useAuth();
+  const { user, profile, loading: authLoading, isAdminLead, isAdminTeam } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -349,7 +352,7 @@ export default function AdminLeadProjectDetailPage() {
           project_lead:profiles!projects_project_lead_id_fkey(*)
         `)
         .eq('id', id)
-        .eq('created_by', user.id) // ✅ MULTI-TENANCY CHECK
+        .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id},id.in.(select project_id from project_teams where user_id = '${user.id}')`) // Allow creator, lead, OR team member
         .single();
 
       if (projectError) throw projectError;
@@ -382,11 +385,15 @@ export default function AdminLeadProjectDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, user]);
 
   // Handlers
   const handleBack = () => {
-    router.push('/dashboard/admin-lead/projects');
+    if (isAdminTeam) {
+      router.push('/dashboard/admin-team/projects');
+    } else {
+      router.push('/dashboard/admin-lead/projects');
+    }
   };
 
   const handleManageTimeline = () => {
@@ -398,7 +405,11 @@ export default function AdminLeadProjectDetailPage() {
   };
 
   const handleViewDocuments = () => {
-    router.push('/dashboard/admin-lead/documents');
+    if (isAdminTeam) {
+      router.push('/dashboard/admin-team/documents');
+    } else {
+      router.push('/dashboard/admin-lead/documents');
+    }
   };
 
   const handleViewDocument = (documentUrl) => {
@@ -417,17 +428,17 @@ export default function AdminLeadProjectDetailPage() {
         return;
       }
 
-      if (!isAdminLead) {
+      if (!isAdminLead && !isAdminTeam) {
         router.replace('/dashboard');
         return;
       }
 
       fetchData();
     }
-  }, [router.isReady, authLoading, user, isAdminLead, router, fetchData]);
+  }, [router.isReady, authLoading, user, isAdminLead, isAdminTeam, fetchData]);
 
   // Loading State
-  if (authLoading || (user && !isAdminLead) || loading) {
+  if (authLoading || (user && !isAdminLead && !isAdminTeam) || loading) {
     return (
       <DashboardLayout title="Detail Project">
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
@@ -459,366 +470,305 @@ export default function AdminLeadProjectDetailPage() {
   }
 
   return (
-    <DashboardLayout title={`${project.name}`}>
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        {/* Action Buttons */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={handleBack}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <span className="text-sm text-muted-foreground">{project.name}</span>
-            <Badge variant={getStatusColor(project.status)}>
-              {getStatusText(project.status)}
-            </Badge>
-          </div>
-          <Button variant="outline" size="sm" asChild>
-            <a href={`/dashboard/admin-lead/projects/${id}/edit`}>
-              <Settings className="w-4 h-4 mr-2" />
-              Edit
-            </a>
-          </Button>
-        </div>
+    <DashboardLayout>
+      <TooltipProvider>
+        <motion.div
+          className="max-w-[1400px] mx-auto space-y-12 pb-20 p-6 md:p-0"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Header Section */}
+          <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="flex items-start gap-6">
+              <button onClick={handleBack} className="mt-2 size-12 rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-lg shadow-slate-200/30 dark:shadow-none">
+                <ArrowLeft size={20} />
+              </button>
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">{project.application_type || 'SLF'}</Badge>
+                  <div className="w-1 h-1 rounded-full bg-slate-300" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Project ID: {id?.slice(0, 8)}</span>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+                  Project <span className="text-[#7c3aed]">Detail</span>
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">{project.name}</p>
+              </div>
+            </div>
 
-        {/* Progress Overview */}
-        <ProjectProgressOverview
-          project={project}
-          documents={documents}
-          inspections={inspections}
-        />
+            <div className="flex flex-wrap gap-4">
+              <button onClick={fetchData} className="size-14 bg-white dark:bg-[#1e293b] text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-white/10 transition-all border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none">
+                <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+              </button>
+              {isAdminLead && (
+                <button
+                  onClick={() => router.push(`/dashboard/admin-lead/projects/${id}/edit`)}
+                  className="h-14 px-8 bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-slate-200/30 dark:shadow-none hover:bg-slate-50"
+                >
+                  <Settings size={16} /> Edit Settings
+                </button>
+              )}
+            </div>
+          </motion.div>
 
-        {/* Quick Actions */}
-        <QuickActions
-          project={project}
-          onManageTimeline={handleManageTimeline}
-          onManageTeam={handleManageTeam}
-          onViewDocuments={handleViewDocuments}
-        />
+          {/* Progress & Stat Panels */}
+          <motion.div variants={itemVariants}>
+            <ProjectProgressOverview
+              project={project}
+              documents={documents}
+              inspections={inspections}
+            />
+          </motion.div>
 
-        {/* Tabs Navigation */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="timeline" className="flex items-center gap-2">
-              <CalendarDays className="w-4 h-4" />
-              Timeline
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Dokumen ({documents.length})
-            </TabsTrigger>
-            <TabsTrigger value="inspections" className="flex items-center gap-2">
-              <Eye className="w-4 h-4" />
-              Inspeksi ({inspections.length})
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <Building className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Informasi Project</h2>
-                  </div>
-
-                  <Separator className="bg-slate-200 dark:bg-slate-700" />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nama Project</Label>
-                      <p className="text-slate-900 dark:text-slate-100">{project.name}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Alamat</Label>
-                      <p className="text-slate-900 dark:text-slate-100">{project.address || '-'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Kota</Label>
-                      <p className="text-slate-900 dark:text-slate-100">{project.city || '-'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tipe Aplikasi</Label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {project.application_type?.replace(/_/g, ' ') || '-'}
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Fungsi Bangunan</Label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {project.building_function?.replace(/_/g, ' ') || '-'}
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Jumlah Lantai</Label>
-                      <p className="text-slate-900 dark:text-slate-100">{project.floors || '-'}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Mulai</Label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {formatDateSafely(project.start_date)}
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Selesai</Label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {formatDateSafely(project.due_date)}
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Dibuat Pada</Label>
-                      <p className="text-slate-900 dark:text-slate-100">
-                        {formatDateSafely(project.created_at)}
-                      </p>
-                    </div>
-
-                    {/* Client Info */}
-                    <div className="space-y-2 md:col-span-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Klien</Label>
-                      <div className="space-y-1">
-                        <p className="text-slate-900 dark:text-slate-100 font-medium">
-                          {project.clients?.name || project.clients?.email || 'Tidak ada klien'}
-                        </p>
-                        {project.clients?.phone && (
-                          <p className="text-sm text-slate-600 dark:text-slate-400">Telp: {project.clients.phone}</p>
+          {/* Content Area */}
+          <motion.div variants={itemVariants} className="space-y-8">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 dark:border-white/5 pb-8">
+                <TabsList className="bg-transparent h-auto p-0 flex flex-wrap gap-2 lg:gap-8">
+                  {[
+                    { id: 'overview', label: 'Spesifikasi', icon: <Briefcase size={14} /> },
+                    { id: 'timeline', label: 'Timeline', icon: <CalendarDays size={14} /> },
+                    { id: 'documents', label: 'Arsip Dokumen', icon: <FileText size={14} />, count: documents.length },
+                    { id: 'inspections', label: 'Hasil Inspeksi', icon: <Eye size={14} />, count: inspections.length }
+                  ].map((tab) => (
+                    <TabsTrigger
+                      key={tab.id}
+                      value={tab.id}
+                      className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#7c3aed] text-slate-400 font-black uppercase text-[11px] tracking-widest p-0 flex items-center gap-2 group transition-all relative py-2"
+                    >
+                      <div className="size-8 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center group-data-[state=active]:bg-[#7c3aed]/10 transition-all">
+                        {tab.icon}
+                      </div>
+                      {tab.label}
+                      {tab.count !== undefined && (
+                        <span className="size-5 rounded-md bg-slate-100 dark:bg-white/5 flex items-center justify-center text-[9px] group-data-[state=active]:bg-[#7c3aed]/20">
+                          {tab.count}
+                        </span>
+                      )}
+                      <AnimatePresence>
+                        {activeTab === tab.id && (
+                          <motion.div
+                            layoutId="tab-underline"
+                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#7c3aed] rounded-full"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                          />
                         )}
-                        {project.clients?.address && (
-                          <p className="text-sm text-slate-600 dark:text-slate-400">{project.clients.address}</p>
-                        )}
+                      </AnimatePresence>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
+
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="space-y-6">
+                <Card className="border border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] rounded-[2.5rem] shadow-xl shadow-slate-200/30 dark:shadow-none overflow-hidden">
+                  <CardContent className="p-10">
+                    <div className="space-y-12">
+                      <div className="flex items-center gap-4">
+                        <div className="size-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                          <Building size={20} />
+                        </div>
+                        <h2 className="text-xl font-black uppercase tracking-tighter">Spesifikasi Proyek</h2>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-12">
+                        <InfoItem label="Nama Proyek" value={project.name} />
+                        <InfoItem label="Alamat Lokasi" value={project.address} icon={<MapPin size={12} />} />
+                        <InfoItem label="Kota/Kabupaten" value={project.city} />
+                        <InfoItem label="Tipe Aplikasi" value={project.application_type?.replace(/_/g, ' ')} />
+                        <InfoItem label="Fungsi Bangunan" value={project.building_function?.replace(/_/g, ' ')} />
+                        <InfoItem label="Jumlah Lantai" value={project.floors} />
+                        <InfoItem label="Tanggal Mulai" value={formatDateSafely(project.start_date)} icon={<Calendar size={12} />} />
+                        <InfoItem label="Target Selesai" value={formatDateSafely(project.due_date)} icon={<Clock size={12} />} />
+                        <InfoItem label="Waktu Registrasi" value={formatDateSafely(project.created_at)} />
+                      </div>
+
+                      <Separator className="bg-slate-100 dark:bg-white/5" />
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-3">
+                            <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                              <User size={16} />
+                            </div>
+                            <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Informasi Klien</h3>
+                          </div>
+                          <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 space-y-4 border border-slate-100 dark:border-white/5">
+                            <p className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white">{project.clients?.name || project.clients?.email || 'N/A'}</p>
+                            {project.clients?.phone && <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><Phone size={12} /> {project.clients.phone}</p>}
+                            {project.clients?.address && <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><MapPin size={12} /> {project.clients.address}</p>}
+                          </div>
+                        </div>
+
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-3">
+                            <div className="size-8 rounded-lg bg-[#7c3aed]/10 text-[#7c3aed] flex items-center justify-center">
+                              <UserCheck size={16} />
+                            </div>
+                            <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Project Leadership</h3>
+                          </div>
+                          <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 space-y-4 border border-slate-100 dark:border-white/5">
+                            <p className="text-lg font-black uppercase tracking-tight text-[#7c3aed]">{project.project_lead?.full_name || project.project_lead?.email || 'N/A'}</p>
+                            {project.project_lead?.specialization && (
+                              <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">{project.project_lead.specialization.replace(/_/g, ' ')}</Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                    {/* Project Lead Info */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Project Lead</Label>
-                      <div className="space-y-1">
-                        <p className="text-slate-900 dark:text-slate-100 font-medium">
-                          {project.project_lead?.full_name || project.project_lead?.email || 'Tidak ada project lead'}
-                        </p>
-                        {project.project_lead?.specialization && (
-                          <Badge variant="secondary" className="text-xs">
-                            {project.project_lead.specialization.replace(/_/g, ' ')}
-                          </Badge>
+              {/* Timeline Tab */}
+              <TabsContent value="timeline">
+                <Card className="border border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] rounded-[2.5rem] shadow-xl shadow-slate-200/30 dark:shadow-none overflow-hidden">
+                  <CardContent className="p-0">
+                    <SimplePhaseTracker projectId={id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Documents Tab */}
+              <TabsContent value="documents" className="space-y-6">
+                <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-300">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-[0.15em] border-b border-slate-100 dark:border-white/5">
+                        <tr>
+                          <th className="px-8 py-6">Nama Dokumen</th>
+                          <th className="px-8 py-6">Kategori & Tipe</th>
+                          <th className="px-8 py-6">Uploader</th>
+                          <th className="px-8 py-6">Status</th>
+                          <th className="px-8 py-6 text-right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                        {documents.length === 0 ? (
+                          <tr><td colSpan="5" className="px-8 py-20 text-center font-black uppercase text-xs tracking-widest text-slate-400">Belum Ada Dokumen Terlampir</td></tr>
+                        ) : (
+                          documents.map(doc => (
+                            <tr key={doc.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
+                              <td className="px-8 py-6">
+                                <div className="flex flex-col">
+                                  <span className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight group-hover:text-[#7c3aed] transition-colors">{doc.name}</span>
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{formatDateSafely(doc.created_at)}</span>
+                                </div>
+                              </td>
+                              <td className="px-8 py-6">
+                                <div className="flex flex-col">
+                                  <Badge className="w-fit mb-2 bg-blue-500/10 text-blue-500 border-none text-[8px] font-black uppercase tracking-widest">{doc.type?.replace(/_/g, ' ') || 'N/A'}</Badge>
+                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{doc.document_type || '-'}</span>
+                                </div>
+                              </td>
+                              <td className="px-8 py-6">
+                                <span className="text-xs font-black uppercase tracking-tight text-slate-600 dark:text-slate-400">{doc.uploader?.full_name || 'N/A'}</span>
+                              </td>
+                              <td className="px-8 py-6">
+                                <StatusBadge status={doc.status} className="rounded-xl font-black text-[9px] uppercase tracking-widest px-3 py-1.5" />
+                              </td>
+                              <td className="px-8 py-6 text-right">
+                                <button
+                                  onClick={() => handleViewDocument(doc.url)}
+                                  disabled={!doc.url}
+                                  className="size-10 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10 transition-all flex items-center justify-center ml-auto"
+                                >
+                                  <Eye size={18} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
                         )}
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    {project.description && (
-                      <div className="space-y-2 md:col-span-3">
-                        <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Deskripsi</Label>
-                        <p className="text-slate-900 dark:text-slate-100">{project.description}</p>
-                      </div>
-                    )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </TabsContent>
 
-          {/* Timeline Tab */}
-          <TabsContent value="timeline" className="space-y-6">
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-                  <CalendarDays className="w-5 h-5" />
-                  Project Timeline
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SimplePhaseTracker projectId={id} />
-
-                <div className="mt-6 flex justify-end">
-                  <Button onClick={handleManageTimeline} className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Kelola Timeline
-                  </Button>
+              {/* Inspections Tab */}
+              <TabsContent value="inspections" className="space-y-6">
+                <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-300">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-[0.15em] border-b border-slate-100 dark:border-white/5">
+                        <tr>
+                          <th className="px-8 py-6">Jadwal Inspeksi</th>
+                          <th className="px-8 py-6">Inspector Assigned</th>
+                          <th className="px-8 py-6">Status</th>
+                          <th className="px-8 py-6 text-right">Detil</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                        {inspections.length === 0 ? (
+                          <tr><td colSpan="4" className="px-8 py-20 text-center font-black uppercase text-xs tracking-widest text-slate-400">Belum Ada Agenda Inspeksi</td></tr>
+                        ) : (
+                          inspections.map(insp => (
+                            <tr key={insp.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
+                              <td className="px-8 py-6">
+                                <div className="flex flex-col">
+                                  <span className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight">{formatDateSafely(insp.scheduled_date)}</span>
+                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 inline-flex items-center gap-2"><Clock size={10} /> Agenda Lapangan</span>
+                                </div>
+                              </td>
+                              <td className="px-8 py-6">
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-black uppercase tracking-tight text-slate-600 dark:text-slate-400 group-hover:text-[#7c3aed] transition-colors">{insp.inspector?.full_name || 'N/A'}</span>
+                                  {insp.inspector?.specialization && <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{insp.inspector.specialization}</span>}
+                                </div>
+                              </td>
+                              <td className="px-8 py-6">
+                                <StatusBadge status={insp.status} className="rounded-xl font-black text-[9px] uppercase tracking-widest px-3 py-1.5" />
+                              </td>
+                              <td className="px-8 py-6 text-right">
+                                <button onClick={() => toast.info('Detail inspeksi akan segera tersedia')} className="size-10 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10 transition-all flex items-center justify-center ml-auto">
+                                  <ArrowLeft size={18} className="rotate-180" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Documents Tab */}
-          <TabsContent value="documents" className="space-y-6">
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-                  <FileText className="w-5 h-5" />
-                  Dokumen Project ({documents.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {documents.length === 0 ? (
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle className="text-slate-900 dark:text-slate-100">Tidak ada dokumen</AlertTitle>
-                    <AlertDescription className="text-slate-600 dark:text-slate-400">
-                      Belum ada dokumen untuk project ini.
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <div className="rounded-md border border-slate-200 dark:border-slate-700">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nama Dokumen</TableHead>
-                          <TableHead>Tipe</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Uploader</TableHead>
-                          <TableHead>Tanggal</TableHead>
-                          <TableHead className="text-right">Aksi</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {documents.map((doc) => (
-                          <TableRow key={doc.id}>
-                            <TableCell className="font-medium">
-                              <div>
-                                <p className="text-slate-900 dark:text-slate-100">{doc.name}</p>
-                                {doc.document_type && (
-                                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                                    {doc.document_type}
-                                  </p>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="text-slate-700 dark:text-slate-200">
-                                {doc.type?.replace(/_/g, ' ') || 'N/A'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <StatusBadge status={doc.status} />
-                            </TableCell>
-                            <TableCell>
-                              {doc.uploader?.full_name || doc.uploader?.email || 'N/A'}
-                            </TableCell>
-                            <TableCell className="text-slate-600 dark:text-slate-400 text-sm">
-                              {formatDateSafely(doc.created_at)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleViewDocument(doc.url)}
-                                      disabled={!doc.url}
-                                      className="text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600"
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-slate-900 text-slate-50 border-slate-700">
-                                    <p>{doc.url ? 'Lihat Dokumen' : 'Tidak ada URL'}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Inspections Tab */}
-          <TabsContent value="inspections" className="space-y-6">
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-                  <Eye className="w-5 h-5" />
-                  Inspeksi ({inspections.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {inspections.length === 0 ? (
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle className="text-slate-900 dark:text-slate-100">Tidak ada inspeksi</AlertTitle>
-                    <AlertDescription className="text-slate-600 dark:text-slate-400">
-                      Belum ada inspeksi untuk project ini.
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <div className="rounded-md border border-slate-200 dark:border-slate-700">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Tanggal</TableHead>
-                          <TableHead>Inspector</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Aksi</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {inspections.map((inspection) => (
-                          <TableRow key={inspection.id}>
-                            <TableCell className="font-medium">
-                              {formatDateSafely(inspection.scheduled_date)}
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                  {inspection.inspector?.full_name || inspection.inspector?.email || 'N/A'}
-                                </p>
-                                {inspection.inspector?.specialization && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    {inspection.inspector.specialization.replace(/_/g, ' ')}
-                                  </Badge>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <StatusBadge status={inspection.status} />
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => router.push(`/dashboard/admin-lead/inspections/${inspection.id}`)}
-                                      className="text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600"
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-slate-900 text-slate-50 border-slate-700">
-                                    <p>Lihat Detail Inspeksi</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+              </TabsContent>
+            </Tabs>
+          </motion.div>
+        </motion.div>
+      </TooltipProvider>
     </DashboardLayout>
+  );
+}
+
+// Sub-components
+function StatSimple({ title, value, icon, color, bg, subValue }) {
+  return (
+    <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-6 transition-all hover:translate-y-[-5px]">
+      <div className={`size-14 rounded-2xl flex items-center justify-center ${bg} ${color} shadow-lg shadow-current/5`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-2">{title}</p>
+        <p className="text-xl font-black tracking-tighter leading-none uppercase">{value}</p>
+        {subValue && (
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">{subValue}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function InfoItem({ label, value, icon }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+      <div className="flex items-center gap-2">
+        {icon && <span className="text-slate-300">{icon}</span>}
+        <p className="font-black text-sm uppercase tracking-tight text-slate-900 dark:text-white">{value || 'N/A'}</p>
+      </div>
+    </div>
   );
 }

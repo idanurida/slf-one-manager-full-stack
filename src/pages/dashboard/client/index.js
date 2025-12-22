@@ -52,32 +52,53 @@ const getStatusBadge = (status) => {
     on_hold: { label: 'Ditahan', variant: 'secondary' },
   };
   const { label, variant } = config[status] || { label: status, variant: 'secondary' };
-  return <Badge variant={variant} className="capitalize">{label}</Badge>;
+  return <Badge variant={variant} className="capitalize font-bold">{label}</Badge>;
 };
+
+function StatCard({ title, value, icon: Icon, subtitle, color, bg }) {
+  return (
+    <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+      <div className="flex items-start justify-between relative z-10">
+        <div>
+          <p className="text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">{title}</p>
+          <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
+          {subtitle && <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70 uppercase tracking-widest">{subtitle}</p>}
+        </div>
+        <div className={`rounded-xl p-3 ${bg || 'bg-gray-50 dark:bg-white/5'} border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 duration-300 ${color || 'text-primary'}`}>
+          <Icon className="w-6 h-6" />
+        </div>
+      </div>
+      {/* Decorative background element */}
+      <div className="absolute -right-4 -bottom-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500">
+        <Icon className="w-24 h-24" />
+      </div>
+    </div>
+  )
+}
 
 // Safe fetch dengan retry logic
 const safeFetch = async (queryFn, retries = 2) => {
   for (let i = 0; i <= retries; i++) {
     try {
       const { data, error, count } = await queryFn();
-      
+
       if (error) {
         console.warn(`Attempt ${i + 1} failed:`, error.message);
-        
+
         // Jika RLS error, throw specific error
         if (error.code === '42501' || error.message.includes('permission denied')) {
           throw new Error('RLS_POLICY_ERROR');
         }
-        
+
         if (i === retries) {
           throw error;
         }
-        
+
         // Tunggu sebelum retry
         await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
         continue;
       }
-      
+
       return { data: data || [], count: count || 0 };
     } catch (error) {
       if (i === retries) {
@@ -112,13 +133,13 @@ export default function ClientDashboard() {
   // Safe redirect function
   const safeRedirect = useCallback((path) => {
     if (typeof window === 'undefined' || redirecting) return;
-    
+
     // Don't redirect to current path
     if (window.location.pathname === path) return;
-    
+
     console.log(`[ClientDashboard] Safe redirect to: ${path}`);
     setRedirecting(true);
-    
+
     setTimeout(() => {
       try {
         window.location.href = path;
@@ -132,17 +153,17 @@ export default function ClientDashboard() {
   // Fetch user profile dengan error handling
   const fetchUserProfile = useCallback(async () => {
     if (!user?.id) return null;
-    
+
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
-      
+
       if (error) {
         console.warn('Profile fetch error:', error.message);
-        
+
         // Fallback: create minimal profile from auth data
         return {
           id: user.id,
@@ -153,7 +174,7 @@ export default function ClientDashboard() {
           updated_at: new Date().toISOString()
         };
       }
-      
+
       return data || {
         id: user.id,
         email: user.email,
@@ -180,7 +201,7 @@ export default function ClientDashboard() {
       // 2. Fetch projects untuk user ini (as client)
       let projectsList = [];
       try {
-        const { data: projects, error: projectsError } = await safeFetch(() => 
+        const { data: projects, error: projectsError } = await safeFetch(() =>
           supabase
             .from('projects')
             .select('*')
@@ -188,11 +209,11 @@ export default function ClientDashboard() {
             .order('created_at', { ascending: false })
             .limit(10)
         );
-        
+
         if (projectsError) {
           throw projectsError;
         }
-        
+
         projectsList = projects || [];
       } catch (error) {
         console.warn('Projects fetch failed, using empty list:', error.message);
@@ -214,7 +235,7 @@ export default function ClientDashboard() {
               .in('project_id', projectIds)
               .limit(50)
           );
-          
+
           documentsData = docs || [];
         } catch (error) {
           console.warn('Documents fetch failed:', error.message);
@@ -232,7 +253,7 @@ export default function ClientDashboard() {
             .is('project_id', null)
             .limit(20)
         );
-        
+
         pendingDocs = pendingData || [];
       } catch (error) {
         console.warn('Pending docs fetch failed:', error.message);
@@ -241,22 +262,22 @@ export default function ClientDashboard() {
       const allDocs = [...documentsData, ...pendingDocs];
 
       // 5. Calculate stats
-      const pendingCount = allDocs.filter(d => 
-        d.status === 'pending' || 
+      const pendingCount = allDocs.filter(d =>
+        d.status === 'pending' ||
         d.status === 'revision_needed' ||
         d.status === 'draft'
       ).length;
-      
-      const approvedCount = allDocs.filter(d => 
-        d.status === 'approved' || 
+
+      const approvedCount = allDocs.filter(d =>
+        d.status === 'approved' ||
         d.status === 'verified'
       ).length;
-      
-      const completedProjects = projectsList.filter(p => 
-        p.status === 'completed' || 
+
+      const completedProjects = projectsList.filter(p =>
+        p.status === 'completed' ||
         p.status === 'approved'
       ).length;
-      
+
       const totalRequired = Math.max(allDocs.length, 1); // Prevent division by zero
       const progress = totalRequired > 0 ? Math.round((approvedCount / totalRequired) * 100) : 0;
 
@@ -271,11 +292,11 @@ export default function ClientDashboard() {
             .eq('recipient_id', user.id)
             .eq('is_read', false)
         );
-        
+
         notifCount = count || 0;
       } catch (error) {
         console.warn('Notifications fetch failed:', error.message);
-        
+
         // Fallback: coba dengan read (jika kolom bernama read)
         try {
           const { count } = await safeFetch(() =>
@@ -285,7 +306,7 @@ export default function ClientDashboard() {
               .eq('recipient_id', user.id)
               .eq('is_read', false)
           );
-          
+
           notifCount = count || 0;
         } catch (secondError) {
           console.warn('Second notifications attempt failed:', secondError.message);
@@ -294,7 +315,7 @@ export default function ClientDashboard() {
 
       // 7. Build pending actions
       const actions = [];
-      
+
       // Documents needing revision
       const revisionDocs = allDocs.filter(d => d.status === 'revision_needed');
       if (revisionDocs.length > 0) {
@@ -323,10 +344,10 @@ export default function ClientDashboard() {
       // Overdue documents
       const overdueDocs = allDocs.filter(d => {
         if (!d.due_date) return false;
-        return new Date(d.due_date) < new Date() && 
-               (d.status === 'pending' || d.status === 'draft');
+        return new Date(d.due_date) < new Date() &&
+          (d.status === 'pending' || d.status === 'draft');
       });
-      
+
       if (overdueDocs.length > 0) {
         actions.push({
           id: 'overdue',
@@ -358,7 +379,7 @@ export default function ClientDashboard() {
               .order('schedule_date', { ascending: true })
               .limit(3)
           );
-          
+
           schedulesData = schedules || [];
         } catch (error) {
           console.warn('Schedules fetch failed:', error.message);
@@ -370,7 +391,7 @@ export default function ClientDashboard() {
       // 9. Set stats
       setStats({
         totalProjects: projectsList.length,
-        activeProjects: projectsList.filter(p => 
+        activeProjects: projectsList.filter(p =>
           !['completed', 'approved', 'cancelled'].includes(p.status)
         ).length,
         pendingDocuments: pendingCount,
@@ -382,14 +403,14 @@ export default function ClientDashboard() {
 
     } catch (error) {
       console.error('Error fetching dashboard:', error);
-      
+
       if (error.message === 'RLS_POLICY_ERROR') {
         setRlsError(true);
         toast.error('Terjadi masalah dengan hak akses database. Silakan hubungi administrator.');
       } else {
         toast.error('Gagal memuat data dashboard. Coba refresh halaman.');
       }
-      
+
       // Set default stats untuk mencegah UI crash
       setStats({
         totalProjects: 0,
@@ -408,23 +429,23 @@ export default function ClientDashboard() {
   // Effect untuk handle auth dan fetch data
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     const initializeDashboard = async () => {
       if (!authLoading) {
         if (!user) {
           safeRedirect('/login');
           return;
         }
-        
+
         // Check user role
         const userProfile = await fetchUserProfile();
         const userRole = userProfile?.role || 'client';
-        
+
         console.log('[ClientDashboard] User role:', userRole);
-        
+
         if (userRole !== 'client') {
           console.log('[ClientDashboard] User is not a client, redirecting based on role...');
-          
+
           // Redirect berdasarkan role
           const roleRedirects = {
             superadmin: '/dashboard/superadmin',
@@ -435,18 +456,18 @@ export default function ClientDashboard() {
             drafter: '/dashboard/drafter',
             head_consultant: '/dashboard/head-consultant'
           };
-          
+
           const targetPath = roleRedirects[userRole] || '/dashboard';
           safeRedirect(targetPath);
           return;
         }
-        
+
         // User is client, fetch dashboard data
         setProfile(userProfile);
         fetchDashboardData();
       }
     };
-    
+
     initializeDashboard();
   }, [authLoading, user, fetchDashboardData, fetchUserProfile, safeRedirect]);
 
@@ -462,9 +483,9 @@ export default function ClientDashboard() {
             </div>
             <Skeleton className="h-10 w-32" />
           </div>
-          
+
           <div className="grid gap-4 md:grid-cols-4">
-            {[1,2,3,4].map(i => (
+            {[1, 2, 3, 4].map(i => (
               <Card key={i}>
                 <CardContent className="pt-6">
                   <Skeleton className="h-4 w-24 mb-2" />
@@ -477,14 +498,14 @@ export default function ClientDashboard() {
               </Card>
             ))}
           </div>
-          
+
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <Skeleton className="h-6 w-32" />
               </CardHeader>
               <CardContent>
-                {[1,2,3].map(i => (
+                {[1, 2, 3].map(i => (
                   <div key={i} className="flex items-center gap-3 mb-3">
                     <Skeleton className="h-12 w-12 rounded" />
                     <div className="flex-1">
@@ -496,13 +517,13 @@ export default function ClientDashboard() {
                 ))}
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <Skeleton className="h-6 w-32" />
               </CardHeader>
               <CardContent>
-                {[1,2,3,4].map(i => (
+                {[1, 2, 3, 4].map(i => (
                   <div key={i} className="flex items-center gap-3 mb-3">
                     <Skeleton className="h-12 w-12 rounded-full" />
                     <div className="flex-1">
@@ -529,7 +550,7 @@ export default function ClientDashboard() {
               <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
               <h2 className="text-xl font-bold mb-2">Masalah Hak Aksas Database</h2>
               <p className="text-muted-foreground mb-6">
-                Terjadi masalah dengan konfigurasi keamanan database. 
+                Terjadi masalah dengan konfigurasi keamanan database.
                 Silakan hubungi administrator sistem untuk memperbaiki RLS (Row Level Security) policies.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -551,24 +572,24 @@ export default function ClientDashboard() {
 
   return (
     <DashboardLayout title="Dashboard">
-      <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto">
-        
+      <div className="space-y-6">
+
         {/* Welcome Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">
-              Selamat Datang, {profile?.full_name?.split(' ')[0] || 'Client'}!
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-2 border-b border-gray-100 dark:border-gray-800/50">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight text-gray-900 dark:text-white leading-tight uppercase">
+              Dashboard <span className="text-primary italic">Klien</span>
             </h1>
-            <p className="text-muted-foreground">
-              Kelola pengajuan SLF/PBG Anda di satu tempat
+            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-lg font-medium">
+              Selamat datang kembali, <span className="font-bold text-gray-900 dark:text-white">{authProfile?.full_name?.split(' ')[0] || 'Client'}</span>! Kelola pengajuan SLF/PBG Anda di satu tempat.
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             {/* Notification Button */}
             {stats.unreadNotifications > 0 && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => router.push('/dashboard/notifications')}
                 className="relative"
               >
@@ -579,8 +600,8 @@ export default function ClientDashboard() {
                 </Badge>
               </Button>
             )}
-            
-            <Button 
+
+            <Button
               variant="outline"
               onClick={() => window.location.reload()}
               size="sm"
@@ -599,8 +620,8 @@ export default function ClientDashboard() {
                 <action.icon className="h-4 w-4" />
                 <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <span className="font-medium">{action.title}</span>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant={action.type === 'destructive' ? 'destructive' : 'default'}
                     onClick={action.action}
                     className="sm:w-auto w-full"
@@ -613,247 +634,215 @@ export default function ClientDashboard() {
           </div>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Proyek</p>
-                  <p className="text-3xl font-bold">{stats.totalProjects}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stats.completedProjects} selesai
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                  <Building className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Total Proyek"
+            value={stats.totalProjects}
+            icon={Building}
+            color="text-blue-500"
+            bg="bg-blue-500/10"
+            subtitle={`${stats.completedProjects} selesai`}
+          />
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Proyek Aktif</p>
-                  <p className="text-3xl font-bold">{stats.activeProjects}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Sedang berjalan
-                  </p>
-                </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Proyek Aktif"
+            value={stats.activeProjects}
+            icon={TrendingUp}
+            color="text-emerald-500"
+            bg="bg-emerald-500/10"
+            subtitle="Sedang berjalan"
+          />
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Dokumen Pending</p>
-                  <p className="text-3xl font-bold">{stats.pendingDocuments}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Perlu perhatian
-                  </p>
-                </div>
-                <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
-                  <Clock className="w-6 h-6 text-yellow-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Dokumen Menunggu"
+            value={stats.pendingDocuments}
+            icon={Clock}
+            color="text-orange-500"
+            bg="bg-orange-500/10"
+            subtitle="Perlu perhatian"
+          />
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">Progress Dokumen</p>
-                  <p className="text-sm font-bold">{stats.documentProgress}%</p>
-                </div>
-                <Progress value={stats.documentProgress} className="h-2" />
-                <p className="text-xs text-muted-foreground">
-                  {stats.approvedDocuments} dari {stats.pendingDocuments + stats.approvedDocuments} disetujui
-                </p>
+          <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm transition-all duration-300">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Progress Dokumen</p>
+                <p className="text-sm font-black text-primary">{stats.documentProgress}%</p>
               </div>
-            </CardContent>
-          </Card>
+              <Progress value={stats.documentProgress} className="h-2 bg-gray-100 dark:bg-white/5" />
+              <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest opacity-70">
+                {stats.approvedDocuments} dari {stats.pendingDocuments + stats.approvedDocuments} disetujui
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
-          
-          {/* Recent Projects */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FolderOpen className="w-5 h-5" />
-                Proyek Terbaru
-              </CardTitle>
-              <Button 
-                variant="ghost" 
+
+          <div className="bg-surface-light dark:bg-surface-dark rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col h-full">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-800/50 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <FolderOpen size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Proyek Terbaru</h3>
+                  <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest italic opacity-70">Monitor status pengajuan anda</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
                 size="sm"
+                className="text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/5 px-4 rounded-xl"
                 onClick={() => router.push('/dashboard/client/projects')}
               >
                 Lihat Semua
-                <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
-            </CardHeader>
-            <CardContent>
-              {recentProjects.length === 0 ? (
-                <div className="text-center py-8">
-                  <Building className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground mb-4">Belum ada proyek</p>
-                  <Button onClick={() => router.push('/dashboard/client/upload')}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Mulai Pengajuan
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {recentProjects.map(project => (
-                    <div 
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                {recentProjects.length === 0 ? (
+                  <div className="text-center py-10 bg-gray-50 dark:bg-black/10 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
+                    <FolderOpen className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-700 mb-3" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary-light dark:text-text-secondary-dark">Belum ada proyek aktif</p>
+                  </div>
+                ) : (
+                  recentProjects.map((project) => (
+                    <div
                       key={project.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                      className="group/item flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-gray-800/50 hover:border-primary/30 hover:bg-primary/[0.02] transition-all cursor-pointer"
                       onClick={() => router.push(`/dashboard/client/projects/${project.id}`)}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded">
-                          <Building className="w-4 h-4 text-primary" />
+                      <div className="flex items-center gap-4">
+                        <div className="size-10 rounded-xl bg-gray-50 dark:bg-black/20 text-gray-400 group-hover/item:bg-primary/10 group-hover/item:text-primary flex items-center justify-center transition-colors">
+                          <Building size={18} />
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium line-clamp-1">{project.name || 'Proyek Tanpa Nama'}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{project.application_type || 'SLF'}</span>
-                            <span>•</span>
-                            <span>{formatDate(project.created_at)}</span>
-                          </div>
+                        <div>
+                          <h4 className="font-black text-xs text-gray-900 dark:text-white uppercase tracking-tight">{project.name}</h4>
+                          <p className="text-[9px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest mt-0.5">{project.city || 'Lokasi N/A'}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-4">
                         {getStatusBadge(project.status)}
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        <ArrowRight size={14} className="text-gray-300 dark:text-gray-700 group-hover/item:text-primary group-hover/item:translate-x-1 transition-all" />
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
 
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileCheck className="w-5 h-5" />
-                Aksi Cepat
-              </CardTitle>
-              <CardDescription>
-                Akses fitur penting dengan cepat
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3">
-                <Button 
-                  variant="outline" 
-                  className="justify-start h-auto py-4 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-950/30"
+          <div className="bg-surface-light dark:bg-surface-dark rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col h-full">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-800/50">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
+                  <CheckCircle size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Aksi Cepat</h3>
+                  <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest italic opacity-70">Layanan mandiri klien</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 h-full flex flex-col">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
+                <Button
+                  variant="outline"
+                  className="flex flex-col items-center justify-center h-full min-h-[140px] p-6 rounded-2xl border-gray-200 dark:border-gray-800 hover:border-primary/40 hover:bg-primary/5 transition-all group"
                   onClick={() => router.push('/dashboard/client/upload')}
                 >
-                  <Upload className="w-5 h-5 mr-3 text-blue-600" />
-                  <div className="text-left flex-1">
-                    <p className="font-medium">Upload Dokumen</p>
-                    <p className="text-xs text-muted-foreground">Upload dokumen SLF/PBG baru</p>
+                  <div className="size-12 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Upload size={24} />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  <p className="font-black uppercase tracking-tight text-xs text-gray-900 dark:text-white">Upload Dokumen</p>
+                  <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest mt-1 opacity-60">Pengajuan baru</p>
                 </Button>
 
-                <Button 
-                  variant="outline" 
-                  className="justify-start h-auto py-4 hover:bg-green-50 hover:border-green-200 dark:hover:bg-green-950/30"
+                <Button
+                  variant="outline"
+                  className="flex flex-col items-center justify-center h-full min-h-[140px] p-6 rounded-2xl border-gray-200 dark:border-gray-800 hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-all group"
                   onClick={() => router.push('/dashboard/client/projects')}
                 >
-                  <Eye className="w-5 h-5 mr-3 text-green-600" />
-                  <div className="text-left flex-1">
-                    <p className="font-medium">Lihat Proyek</p>
-                    <p className="text-xs text-muted-foreground">Cek status semua proyek</p>
+                  <div className="size-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Eye size={24} />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  <p className="font-black uppercase tracking-tight text-xs text-gray-900 dark:text-white">Lihat Proyek</p>
+                  <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest mt-1 opacity-60">Status Real-time</p>
                 </Button>
 
-                <Button 
-                  variant="outline" 
-                  className="justify-start h-auto py-4 hover:bg-purple-50 hover:border-purple-200 dark:hover:bg-purple-950/30"
+                <Button
+                  variant="outline"
+                  className="flex flex-col items-center justify-center h-full min-h-[140px] p-6 rounded-2xl border-gray-200 dark:border-gray-800 hover:border-purple-500/40 hover:bg-purple-500/5 transition-all group"
                   onClick={() => router.push('/dashboard/client/timeline')}
                 >
-                  <Calendar className="w-5 h-5 mr-3 text-purple-600" />
-                  <div className="text-left flex-1">
-                    <p className="font-medium">Timeline Proyek</p>
-                    <p className="text-xs text-muted-foreground">Lihat progress dan jadwal</p>
+                  <div className="size-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Calendar size={24} />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  <p className="font-black uppercase tracking-tight text-xs text-gray-900 dark:text-white">Timeline</p>
+                  <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest mt-1 opacity-60">Agenda Proyek</p>
                 </Button>
 
-                <Button 
-                  variant="outline" 
-                  className="justify-start h-auto py-4 hover:bg-orange-50 hover:border-orange-200 dark:hover:bg-orange-950/30"
+                <Button
+                  variant="outline"
+                  className="flex flex-col items-center justify-center h-full min-h-[140px] p-6 rounded-2xl border-gray-200 dark:border-gray-800 hover:border-orange-500/40 hover:bg-orange-500/5 transition-all group"
                   onClick={() => router.push('/dashboard/client/support')}
                 >
-                  <HelpCircle className="w-5 h-5 mr-3 text-orange-600" />
-                  <div className="text-left flex-1">
-                    <p className="font-medium">Bantuan & Support</p>
-                    <p className="text-xs text-muted-foreground">Hubungi tim support</p>
+                  <div className="size-12 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <HelpCircle size={24} />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  <p className="font-black uppercase tracking-tight text-xs text-gray-900 dark:text-white">Support</p>
+                  <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest mt-1 opacity-60">Pusat Bantuan</p>
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Upcoming Schedules */}
         {upcomingSchedules.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Jadwal Mendatang
-              </CardTitle>
-              <CardDescription>
-                Jadwal inspeksi dan pertemuan dalam 7 hari ke depan
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="bg-surface-light dark:bg-surface-dark rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col h-full mt-6">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-800/50 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <Calendar size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-white">Jadwal Mendatang</h3>
+                  <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest italic opacity-70">Agenda inspeksi & pertemuan</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
               <div className="space-y-3">
                 {upcomingSchedules.map(schedule => (
-                  <div 
+                  <div
                     key={schedule.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50"
+                    className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-gray-800/50 hover:border-primary/30 hover:bg-primary/[0.02] transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="text-center min-w-[50px] bg-primary/10 py-2 rounded">
-                        <p className="text-2xl font-bold text-primary">
+                      <div className="text-center min-w-[50px] bg-primary/10 py-2 rounded-xl">
+                        <p className="text-xl font-black text-primary">
                           {new Date(schedule.schedule_date).getDate()}
                         </p>
-                        <p className="text-xs text-muted-foreground uppercase">
+                        <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">
                           {format(new Date(schedule.schedule_date), 'MMM', { locale: localeId })}
                         </p>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium">{schedule.title || 'Jadwal Inspeksi'}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-bold text-sm text-gray-900 dark:text-white uppercase tracking-tight">{schedule.title || 'Jadwal Inspeksi'}</p>
+                        <p className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mt-0.5">
                           {schedule.projects?.name || 'Proyek'}
                           {schedule.description && ` • ${schedule.description}`}
                         </p>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <Badge variant="outline">
+                      <Badge variant="outline" className="font-mono text-xs">
                         {format(new Date(schedule.schedule_date), 'HH:mm', { locale: localeId })}
                       </Badge>
                       {schedule.location && (
-                        <p className="text-xs text-muted-foreground text-right">
+                        <p className="text-[10px] font-medium text-text-secondary-light dark:text-text-secondary-dark text-right uppercase tracking-wider">
                           {schedule.location}
                         </p>
                       )}
@@ -861,8 +850,8 @@ export default function ClientDashboard() {
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Help & Support Footer */}
@@ -881,15 +870,15 @@ export default function ClientDashboard() {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => router.push('/dashboard/client/support')}
                   className="border-blue-300 dark:border-blue-700"
                 >
                   <HelpCircle className="w-4 h-4 mr-2" />
                   Hubungi Support
                 </Button>
-                <Button 
+                <Button
                   onClick={() => router.push('/dashboard/client/faq')}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
@@ -921,7 +910,7 @@ export default function ClientDashboard() {
         )}
 
       </div>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 }
 

@@ -47,8 +47,29 @@ const getStatusBadge = (status) => {
     approved: { label: 'Disetujui', variant: 'default' },
   };
   const { label, variant } = config[status] || { label: status, variant: 'secondary' };
-  return <Badge variant={variant}>{label}</Badge>;
+  return <Badge variant={variant} className="font-bold">{label}</Badge>;
 };
+
+function StatCard({ title, value, icon: Icon, subtitle, color }) {
+  return (
+    <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+      <div className="flex items-start justify-between relative z-10">
+        <div>
+          <p className="text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">{title}</p>
+          <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
+          {subtitle && <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70 uppercase tracking-widest">{subtitle}</p>}
+        </div>
+        <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 duration-300 ${color || 'text-primary'}`}>
+          <Icon className="w-6 h-6" />
+        </div>
+      </div>
+      {/* Decorative background element */}
+      <div className="absolute -right-4 -bottom-4 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500">
+        <Icon className="w-24 h-24" />
+      </div>
+    </div>
+  )
+}
 
 export default function InspectorDashboard() {
   const router = useRouter();
@@ -177,16 +198,16 @@ export default function InspectorDashboard() {
 
   return (
     <DashboardLayout title="Dashboard">
-      <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="space-y-6">
 
         {/* Welcome Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">
-              Selamat Datang, {profile?.full_name?.split(' ')[0] || 'Inspector'}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-2 border-b border-gray-100 dark:border-gray-800/50">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight text-gray-900 dark:text-white leading-tight uppercase">
+              Dashboard <span className="text-primary italic">Inspektur</span>
             </h1>
-            <p className="text-muted-foreground">
-              {profile?.specialization?.replace(/_/g, ' ') || 'Inspector'} • {recentProjects.length} Proyek Aktif
+            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-lg font-medium">
+              Selamat datang kembali, <span className="font-bold text-gray-900 dark:text-white">{profile?.full_name?.split(' ')[0] || 'Inspektur'}</span>. {recentProjects.length} proyek aktif menunggu Anda.
             </p>
           </div>
 
@@ -223,64 +244,38 @@ export default function InspectorDashboard() {
           </Alert>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/inspector/schedules')}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Inspeksi</p>
-                  <p className="text-3xl font-bold">{stats.totalInspections}</p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                  <ClipboardList className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Total Inspeksi"
+            value={stats.totalInspections}
+            icon={ClipboardList}
+            color="text-blue-500"
+            subtitle="Seluruh penugasan"
+          />
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/inspector/my-inspections')}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Selesai</p>
-                  <p className="text-3xl font-bold">{stats.completedInspections}</p>
-                </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
-                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-              <Progress value={completionRate} className="h-1 mt-3" />
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Laporan Selesai"
+            value={stats.completedInspections}
+            icon={CheckCircle}
+            color="text-status-green"
+            subtitle={`${completionRate}% tingkat penyelesaian`}
+          />
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/inspector/schedules')}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Jadwal Mendatang</p>
-                  <p className="text-3xl font-bold">{stats.upcomingSchedules}</p>
-                </div>
-                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
-                  <Calendar className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Jadwal Dekat"
+            value={stats.upcomingSchedules}
+            icon={Calendar}
+            color="text-orange-500"
+            subtitle="7 Hari ke depan"
+          />
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/inspector/reports')}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Laporan Pending</p>
-                  <p className="text-3xl font-bold">{stats.pendingReports}</p>
-                </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                  <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Draft Laporan"
+            value={stats.pendingReports}
+            icon={FileText}
+            color="text-purple-500"
+            subtitle="Membutuhkan aksi"
+          />
         </div>
 
         {/* Main Content Grid */}

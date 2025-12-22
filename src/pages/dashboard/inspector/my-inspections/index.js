@@ -487,7 +487,7 @@ const InspectorChecklistDashboard = () => {
       <div className="p-6 space-y-6">
         {/* Location Permission Dialog */}
         <Dialog open={locationDialog} onOpenChange={setLocationDialog}>
-          <DialogContent className="sm:max-w-md bg-card-solid">
+          <DialogContent className="sm:max-w-md bg-white dark:bg-surface-dark">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Navigation className="w-5 h-5" />
@@ -580,7 +580,7 @@ const InspectorChecklistDashboard = () => {
         {/* Stats Cards dengan warna soft - SESUAI GLOBAL CSS */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Total Inspections */}
-          <Card className="bg-card-solid border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-white dark:bg-surface-dark border-blue-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -596,7 +596,7 @@ const InspectorChecklistDashboard = () => {
           </Card>
 
           {/* Scheduled Today */}
-          <Card className="bg-card-solid border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-white dark:bg-surface-dark border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -612,7 +612,7 @@ const InspectorChecklistDashboard = () => {
           </Card>
 
           {/* In Progress */}
-          <Card className="bg-card-solid border-amber-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-white dark:bg-surface-dark border-amber-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -628,7 +628,7 @@ const InspectorChecklistDashboard = () => {
           </Card>
 
           {/* Scheduled */}
-          <Card className="bg-card-solid border-violet-200 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-white dark:bg-surface-dark border-violet-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -645,7 +645,7 @@ const InspectorChecklistDashboard = () => {
         </div>
 
         {/* Filters Section - SESUAI GLOBAL CSS */}
-        <Card className="bg-card-solid border-border shadow-sm">
+        <Card className="bg-white dark:bg-surface-dark border-border shadow-sm">
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="relative flex-1 w-full">
@@ -672,7 +672,7 @@ const InspectorChecklistDashboard = () => {
         </Card>
 
         {/* Inspections Table - SESUAI GLOBAL CSS */}
-        <Card className="bg-card-solid border-border shadow-sm">
+        <Card className="bg-white dark:bg-surface-dark border-border shadow-sm">
           <CardContent className="p-0">
             <div className="p-6 border-b border-border">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

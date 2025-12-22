@@ -173,49 +173,57 @@ export default function ClientProjectsPage() {
   return (
     <DashboardLayout title="Proyek Saya">
       <TooltipProvider>
-        <div className="p-4 md:p-6 space-y-6">
+        <div className="flex flex-col gap-8 pb-20">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-2 border-b border-gray-100 dark:border-gray-800/50">
+            <div className="flex flex-col gap-1">
+              <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight text-gray-900 dark:text-white leading-tight uppercase">
+                Proyek <span className="text-primary italic">Saya</span>
+              </h1>
+              <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-lg font-medium">
+                Monitor status dan detail seluruh proyek yang Anda miliki.
+              </p>
+            </div>
+          </div>
 
           {/* Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Cari nama proyek, jenis, atau kota..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Filter Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Status</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="active">Aktif</SelectItem>
-                    <SelectItem value="submitted">Diajukan</SelectItem>
-                    <SelectItem value="completed">Selesai</SelectItem>
-                    <SelectItem value="cancelled">Dibatalkan</SelectItem>
-                  </SelectContent>
-                </Select>
-                {(searchTerm || statusFilter !== 'all') && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSearchTerm('');
-                      setStatusFilter('all');
-                    }}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
+          <div className="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Cari nama proyek, jenis, atau kota..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
               </div>
-            </CardContent>
-          </Card>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Status</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="active">Aktif</SelectItem>
+                  <SelectItem value="submitted">Diajukan</SelectItem>
+                  <SelectItem value="completed">Selesai</SelectItem>
+                  <SelectItem value="cancelled">Dibatalkan</SelectItem>
+                </SelectContent>
+              </Select>
+              {(searchTerm || statusFilter !== 'all') && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setStatusFilter('all');
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </div>
 
           {/* Projects Table */}
           <Card>
@@ -318,6 +326,6 @@ export default function ClientProjectsPage() {
 
         </div>
       </TooltipProvider>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 }

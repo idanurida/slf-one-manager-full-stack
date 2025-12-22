@@ -575,7 +575,7 @@ export default function RegisterPage() {
       <footer className="py-6 border-t border-border">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Copyright © 2025 PT. Puri Dimensi - SLF One Management System v1.0
+            Copyright © 2025 PT. Puri Dimensi - SLF One Management System v2.0
           </p>
         </div>
       </footer>

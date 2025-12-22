@@ -44,15 +44,14 @@ export async function POST(request, { params }) {
       project_id: projectId,
       inspection_id: inspectionId,
       item_id: resp.item_id,
-      inspector_id: userId,
+      responded_by: userId,
       response: resp.response,
-      photo_url: resp.photo_url || null,
       status: 'submitted'
     }));
 
     const { error: insertErr } = await supabase
       .from('checklist_responses')
-      .upsert(inserts, { onConflict: 'project_id,item_id,inspection_id' });
+      .upsert(inserts, { onConflict: ['inspection_id', 'item_id', 'responded_by'] });
 
     if (insertErr) {
       console.error('Insert error:', insertErr);

@@ -274,8 +274,8 @@ const HybridChecklistForm = ({ inspectorId }) => {
 
         {checklistItems.map(item => (
           // MotionCard -> motion(Card) dengan kelas styling
-          <MotionCard 
-            key={item.id} 
+          <MotionCard
+            key={item.id}
             className="w-full shadow-lg border-gray-200" // variant="outline" borderRadius="lg"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -287,10 +287,10 @@ const HybridChecklistForm = ({ inspectorId }) => {
               <h3 className="text-md font-semibold text-gray-800">{item.title}</h3>
               {/* Text fontSize="sm" color="gray.500" -> p dengan kelas */}
               <p className="text-sm text-gray-500">{item.description}</p>
-              
+
               {/* Divider my={2} -> Separator my-2 */}
               <Separator className="my-3" />
-              
+
               <div className="space-y-4">
                 {renderColumns(item)}
               </div>
@@ -299,7 +299,15 @@ const HybridChecklistForm = ({ inspectorId }) => {
               {item.require_photo && (
                 // Box mt={3} -> div mt-4
                 <div className="mt-4">
-                  <PhotoUploadWithGeotag inspectionId={item.inspection_id} />
+                  <PhotoUploadWithGeotag
+                    checklistItem={item}
+                    onSave={(photoData) => {
+                      console.log('📸 Photo saved via HybridChecklistForm:', photoData);
+                      toast({ title: 'Foto Tersimpan', description: 'Foto dokumentasi telah diupload' });
+                    }}
+                    userId={inspectorId}
+                    checklistFormFilled={!!responses[item.id]}
+                  />
                 </div>
               )}
             </CardContent>

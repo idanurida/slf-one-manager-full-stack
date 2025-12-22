@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/team-leader/example-with-hook.js
+// FILE: src/pages/dashboard/project-lead/example-with-hook.js
 // Contoh penggunaan useAuthGuard hook untuk auth protection
 // File ini bisa dihapus - hanya untuk demonstrasi
 

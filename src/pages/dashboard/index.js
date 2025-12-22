@@ -13,7 +13,7 @@ const ROLE_REDIRECT_MAP = {
   project_lead: "/dashboard/project-lead",
   inspector: "/dashboard/inspector",
   drafter: "/dashboard/drafter",
-  head_consultant: "/dashboard/head-consultant", 
+  head_consultant: "/dashboard/head-consultant",
   client: "/dashboard/client",
 };
 
@@ -25,35 +25,35 @@ export default function DashboardIndex() {
 
   useEffect(() => {
     if (typeof window === 'undefined' || redirecting) return;
-    
+
     // Jika loading selesai dan ada user + profile
     if (!authLoading && user && profile) {
       const role = profile.role?.toLowerCase();
       const redirectPath = ROLE_REDIRECT_MAP[role] || "/dashboard/client";
-      
+
       // Cek jika sudah di path yang benar
       if (window.location.pathname === redirectPath) {
         console.log(`✅ Sudah di dashboard yang benar: ${redirectPath}`);
         return;
       }
-      
+
       // Lakukan redirect
       console.log(`🔄 Redirect ke: ${redirectPath} (Role: ${role})`);
       setRedirecting(true);
       router.replace(redirectPath);
     }
-    
+
     // Jika tidak ada user setelah loading selesai
     if (!authLoading && !user) {
       console.log('❌ Tidak ada user, redirect ke login');
       router.replace('/login');
     }
-    
+
     // Jika tidak ada profile setelah loading selesai
     if (!authLoading && user && !profile) {
       console.log('⚠️ User ada tapi profile tidak ditemukan');
       setError('Profil pengguna tidak ditemukan. Silakan login ulang.');
-      
+
       // Fallback: redirect setelah 3 detik
       setTimeout(() => {
         if (!profile) {
@@ -70,18 +70,18 @@ export default function DashboardIndex() {
         {redirecting ? 'Mengarahkan...' : 'Memuat Dashboard'}
       </p>
       <p className="text-sm text-muted-foreground">
-        {user && profile 
+        {user && profile
           ? `Role: ${profile.role || 'Tidak Terdeteksi'}`
           : 'Memuat informasi pengguna...'}
       </p>
-      
+
       {error && (
         <div className="mt-4 p-3 border border-red-300 bg-red-50 rounded-md max-w-md">
           <p className="text-sm text-red-600 font-medium">⚠️ Perhatian</p>
           <p className="text-sm text-red-500 mt-1">{error}</p>
         </div>
       )}
-      
+
       {/* Loading indicator khusus */}
       {authLoading && (
         <div className="mt-4">

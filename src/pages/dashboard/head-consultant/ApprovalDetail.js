@@ -35,7 +35,7 @@ import {
 
 // Lucide Icons
 import {
-  Check, X, Eye, FileText, AlertTriangle, CheckCircle, Clock, MapPin, Download, Trash2, Edit3, Bell, RotateCcw, Info
+  Check, X, Eye, FileText, AlertTriangle, CheckCircle, Clock, MapPin, Download, Trash2, Edit3, Bell, RotateCcw, Info, Zap
 } from 'lucide-react';
 
 // --- Utility Functions ---
@@ -135,38 +135,38 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
   const isAwaitingReview = status === 'project_lead_approved' || status === 'head_consultant_review';
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-8">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-border">
+        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
           <CardContent className="p-6">
             <div className="flex flex-col space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Proyek:</p>
-              <h3 className="text-lg font-semibold text-foreground">{project.name}</h3>
-              <p className="text-xs text-muted-foreground">Client ID: {project.client_id?.substring(0, 8)}...</p>
+              <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">Identitas Proyek</span>
+              <h3 className="text-lg font-display font-extrabold text-gray-900 dark:text-white leading-tight">{project.name}</h3>
+              <p className="text-[10px] font-medium text-text-secondary-light">Client ID: {project.client_id?.substring(0, 8)}...</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
           <CardContent className="p-6">
             <div className="flex flex-col space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Status Laporan:</p>
-              <Badge variant={getStatusColor(status)} className="self-start capitalize">
-                {status?.replace(/_/g, ' ') || 'N/A'}
-              </Badge>
-              <p className="text-xs text-muted-foreground">
-                Dikirim: {formatDateSafely(approval.submitted_at)}
-              </p>
+              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Status Laporan</span>
+              <div className="flex flex-col gap-2">
+                <StatusBadge status={status} />
+                <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">
+                  Dikirim: {formatDateSafely(approval.submitted_at)}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
           <CardContent className="p-6">
             <div className="flex flex-col space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Catatan Lead:</p>
-              <p className="text-sm italic text-foreground">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Catatan Project Lead</span>
+              <p className="text-xs font-medium text-gray-900 dark:text-gray-200 leading-relaxed italic">
                 "{approval.project_lead_notes || 'Tidak ada catatan dari Project Lead.'}"
               </p>
             </div>
@@ -175,44 +175,54 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
       </div>
 
       {/* Checklist Detail */}
-      <Card className="border-border">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Detail Checklist
-          </h3>
+      <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden">
+        <CardHeader className="px-8 py-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-white/5 flex flex-row items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-black text-gray-900 dark:text-white tracking-tight">Detail checklist temuan</CardTitle>
+              <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Hasil inspeksi lapangan oleh tim teknis</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
           <div className="w-full overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="text-foreground">Item</TableHead>
-                  <TableHead className="text-foreground w-[150px]">Kesesuaian</TableHead>
-                  <TableHead className="text-foreground">Catatan Inspector</TableHead>
-                  <TableHead className="text-foreground w-[100px]">File Pendukung</TableHead>
+                <TableRow className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
+                  <TableHead className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Item inspeksi</TableHead>
+                  <TableHead className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase w-[180px]">Status kepatuhan</TableHead>
+                  <TableHead className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Catatan verifikator</TableHead>
+                  <TableHead className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase w-[100px] text-right">Lampiran</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {checklist_items && checklist_items.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{item.item_name}</TableCell>
-                    <TableCell>
-                      <Badge variant={item.is_compliant ? 'default' : 'destructive'}>
+                  <TableRow key={index} className="group hover:bg-primary/5 transition-all duration-300">
+                    <TableCell className="px-8 py-6 font-bold text-sm text-gray-900 dark:text-white tracking-tight leading-tight">{item.item_name}</TableCell>
+                    <TableCell className="px-8 py-6">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold border shadow-sm ${item.is_compliant
+                        ? 'bg-status-green/10 text-status-green border-status-green/20'
+                        : 'bg-consultant-red/10 text-consultant-red border-consultant-red/20'
+                        }`}>
+                        <CheckCircle className="w-3 h-3 mr-1.5" />
                         {item.is_compliant ? 'SESUAI' : 'TIDAK SESUAI'}
-                      </Badge>
+                      </span>
                     </TableCell>
-                    <TableCell className="text-foreground">{item.notes || '-'}</TableCell>
-                    <TableCell>
+                    <TableCell className="px-8 py-6 text-xs font-medium text-gray-700 dark:text-gray-300 leading-relaxed">{item.notes || '-'}</TableCell>
+                    <TableCell className="px-8 py-6 text-right">
                       {item.file_url ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <button
                           onClick={() => window.open(item.file_url, '_blank')}
-                          className="p-1 h-auto"
+                          className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 text-text-secondary-light hover:bg-primary hover:text-white transition-all shadow-sm"
                         >
-                          <Eye className="w-4 h-4" />
-                          <span className="sr-only">Lihat Lampiran</span>
-                        </Button>
-                      ) : '-'}
+                          <Eye className="w-5 h-5" />
+                        </button>
+                      ) : (
+                        <span className="text-gray-300 dark:text-gray-700">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -223,122 +233,146 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
       </Card>
 
       {/* Aksi Persetujuan/Penolakan */}
-      {isAwaitingReview && (
-        <Card className="border-l-4 border-l-primary bg-primary/5 border-border">
-          <CardContent className="p-6">
-            <div className="flex flex-col space-y-4">
-              <h3 className="text-lg font-semibold text-primary">Aksi Tinjauan Head Consultant</h3>
-              <div className="flex flex-wrap gap-4">
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2"
-                  onClick={() => openReviewModal('rejected')}
-                  disabled={actionLoading.rejected}
-                >
-                  {actionLoading.rejected ? (
-                    <>
-                      <RotateCcw className="w-4 h-4 animate-spin" />
-                      Memproses...
-                    </>
-                  ) : (
-                    <>
-                      <X className="w-4 h-4" />
-                      Tolak
-                    </>
-                  )}
-                </Button>
-                <Button
-                  className="flex items-center gap-2"
-                  onClick={() => openReviewModal('approved')}
-                  disabled={actionLoading.approved}
-                >
-                  {actionLoading.approved ? (
-                    <>
-                      <RotateCcw className="w-4 h-4 animate-spin" />
-                      Memproses...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4" />
-                      Setujui
-                    </>
-                  )}
-                </Button>
+      {
+        isAwaitingReview && (
+          <Card className="rounded-2xl border border-primary/20 bg-primary/5 shadow-sm overflow-hidden">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-display font-black text-primary tracking-tight">Tinjauan Head Consultant</h3>
+                  <p className="text-xs font-bold text-primary/70 uppercase tracking-widest">Berikan keputusan validasi teknis untuk laporan ini</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    className="px-6 py-3 rounded-xl border border-consultant-red/30 text-consultant-red font-bold text-xs uppercase tracking-widest hover:bg-consultant-red hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                    onClick={() => openReviewModal('rejected')}
+                    disabled={actionLoading.rejected}
+                  >
+                    {actionLoading.rejected ? <RotateCcw className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                    Tolak Revisi
+                  </button>
+                  <button
+                    className="px-8 py-3 rounded-xl bg-primary text-white font-bold text-xs uppercase tracking-widest hover:bg-primary-hover transition-all shadow-lg shadow-primary/30 active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                    onClick={() => openReviewModal('approved')}
+                    disabled={actionLoading.approved}
+                  >
+                    {actionLoading.approved ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    Setujui Laporan
+                  </button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )
+      }
 
       {/* Catatan Penolakan/Persetujuan (Jika sudah di-review) */}
-      {!isAwaitingReview && approval.head_consultant_rejection_notes && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Laporan Ditolak Oleh HC!</AlertTitle>
-          <AlertDescription>
-            Catatan: {approval.head_consultant_rejection_notes}
-          </AlertDescription>
-        </Alert>
-      )}
-      {!isAwaitingReview && status === 'approved' && approval.head_consultant_review_at && (
-        <Alert>
-          <CheckCircle className="h-4 w-4" />
-          Laporan telah <strong>Disetujui</strong> oleh Head Consultant pada {formatDateSafely(approval.head_consultant_review_at)}.
-        </Alert>
-      )}
+      {
+        !isAwaitingReview && approval.head_consultant_rejection_notes && (
+          <div className="p-6 rounded-2xl bg-consultant-red/10 border border-consultant-red/20 flex items-start gap-4">
+            <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-consultant-red text-white flex items-center justify-center shadow-lg shadow-consultant-red/20">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-consultant-red uppercase tracking-widest">Laporan Ditolak Oleh HC</h4>
+              <p className="text-xs font-medium text-gray-900 dark:text-gray-200 leading-relaxed italic">
+                "{approval.head_consultant_rejection_notes}"
+              </p>
+            </div>
+          </div>
+        )
+      }
+      {
+        !isAwaitingReview && status === 'approved' && approval.head_consultant_review_at && (
+          <div className="p-6 rounded-2xl bg-status-green/10 border border-status-green/20 flex items-start gap-4">
+            <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-status-green text-white flex items-center justify-center shadow-lg shadow-status-green/20">
+              <CheckCircle className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-status-green uppercase tracking-widest">Laporan Telah Disetujui</h4>
+              <p className="text-xs font-medium text-gray-900 dark:text-gray-200">
+                Divalidasi secara teknis oleh Head Consultant pada {formatDateSafely(approval.head_consultant_review_at)}.
+              </p>
+            </div>
+          </div>
+        )
+      }
 
       {/* Modal Konfirmasi Review (dibuat inline di sini, atau bisa dipindah ke parent) */}
-      {reviewStatus && (
-        <Dialog open={!!reviewStatus} onOpenChange={() => setReviewStatus(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {reviewStatus === 'approved' ? 'Setujui Checklist' : 'Tolak Checklist'}
-              </DialogTitle>
-              <DialogDescription>
-                Apakah Anda yakin ingin {reviewStatus === 'approved' ? 'menyetujui' : 'menolak'} checklist ini?
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              {reviewStatus === 'rejected' && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground flex items-center gap-1">
-                    <Info className="w-4 h-4" />
-                    Alasan Penolakan
-                  </label>
-                  <Textarea
-                    placeholder="Tuliskan alasan penolakan di sini..."
-                    rows={4}
-                    value={reviewNotes}
-                    onChange={(e) => setReviewNotes(e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setReviewStatus(null)}>
-                Batal
-              </Button>
-              <Button
-                variant={reviewStatus === 'approved' ? 'default' : 'destructive'}
-                onClick={handleReview}
-                disabled={actionLoading[reviewStatus] || (reviewStatus === 'rejected' && !reviewNotes.trim())}
-              >
-                {actionLoading[reviewStatus] ? (
-                  <>
-                    <RotateCcw className="w-4 h-4 animate-spin mr-2" />
-                    Memproses...
-                  </>
-                ) : (
-                  reviewStatus === 'approved' ? 'Setujui' : 'Tolak'
+      {
+        reviewStatus && (
+          <Dialog open={!!reviewStatus} onOpenChange={() => setReviewStatus(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {reviewStatus === 'approved' ? 'Setujui Checklist' : 'Tolak Checklist'}
+                </DialogTitle>
+                <DialogDescription>
+                  Apakah Anda yakin ingin {reviewStatus === 'approved' ? 'menyetujui' : 'menolak'} checklist ini?
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                {reviewStatus === 'rejected' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground flex items-center gap-1">
+                      <Info className="w-4 h-4" />
+                      Alasan Penolakan
+                    </label>
+                    <Textarea
+                      placeholder="Tuliskan alasan penolakan di sini..."
+                      rows={4}
+                      value={reviewNotes}
+                      onChange={(e) => setReviewNotes(e.target.value)}
+                    />
+                  </div>
                 )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setReviewStatus(null)}>
+                  Batal
+                </Button>
+                <Button
+                  variant={reviewStatus === 'approved' ? 'default' : 'destructive'}
+                  onClick={handleReview}
+                  disabled={actionLoading[reviewStatus] || (reviewStatus === 'rejected' && !reviewNotes.trim())}
+                >
+                  {actionLoading[reviewStatus] ? (
+                    <>
+                      <RotateCcw className="w-4 h-4 animate-spin mr-2" />
+                      Memproses...
+                    </>
+                  ) : (
+                    reviewStatus === 'approved' ? 'Setujui' : 'Tolak'
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )
+      }
     </div>
   );
 };
+
+
+function StatusBadge({ status }) {
+  const configs = {
+    'head_consultant_review': { label: 'Verifikasi teknis', class: 'bg-primary/10 text-primary border-primary/20' },
+    'approved_by_admin_lead': { label: 'Siap disetujui', class: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+    'approved': { label: 'Disetujui (OK)', class: 'bg-status-green/10 text-status-green border-status-green/20' },
+    'slf_issued': { label: 'Sertifikasi terbit', class: 'bg-status-green/10 text-status-green border-status-green/20' },
+    'rejected': { label: 'Ditolak/revisi', class: 'bg-consultant-red/10 text-consultant-red border-consultant-red/20' },
+    'draft': { label: 'Draft proposal', class: 'bg-gray-400/10 text-gray-500 border-gray-400/20' }
+  };
+
+  const config = configs[status] || { label: status?.replace(/_/g, ' ') || 'UNKNOWN', class: 'bg-gray-400/10 text-gray-500 border-gray-400/20' };
+
+  return (
+    <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold border shadow-sm ${config.class}`}>
+      <Zap size={10} className="mr-1.5" />
+      {config.label}
+    </span>
+  );
+}
 
 export default ApprovalDetail;

@@ -1,287 +1,86 @@
-/* styles/globals.css */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Tema Agusta - Light Mode dengan warna slate */
-    --background: 0 0% 100%; /* #FFFFFF */
-    --foreground: 222.2 84% 4.9%; /* #111827 */
-
-    --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 222.2 84% 4.9%; /* #111827 */
-
-    --popover: 0 0% 100%; /* #FFFFFF */
-    --popover-foreground: 222.2 84% 4.9%; /* #111827 */
-
-    --primary: 262.1 83.3% 57.8%; /* #A855F7 (violet-400) */
-    --primary-foreground: 0 0% 100%; /* #FFFFFF */
-
-    --secondary: 163.4 74.5% 55.5%; /* #34D399 (emerald-400) */
-    --secondary-foreground: 0 0% 0%; /* #000000 */
-
-    --muted: 210 40% 96.1%; /* #F1F5F9 */
-    --muted-foreground: 215.4 16.3% 46.9%; /* #64748B */
-
-    --accent: 210 40% 96.1%; /* #F1F5F9 */
-    --accent-foreground: 222.2 47.4% 11.2%; /* #334155 */
-
-    --destructive: 346.8 77.2% 49.8%; /* #EC4899 (pink-500) */
-    --destructive-foreground: 0 0% 100%; /* #FFFFFF */
-
-    --border: 214.3 31.8% 91.4%; /* #E2E8F0 */
-    --input: 214.3 31.8% 91.4%; /* #E2E8F0 */
-    --ring: 262.1 83.3% 57.8%; /* #A855F7 (sama dengan primary) */
-
-    --radius: 0.5rem; /* 8px */
+    --background: 0 0% 98%;
+    /* Neutral light grey */
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 269 85% 50%;
+    /* Vivid Purple */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 163 75% 55.5%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    /* #6b7280 */
+    --accent: 220 14% 96%;
+    --accent-foreground: 217 19% 17%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 269 85% 50%;
+    --radius: 1rem;
+    /* 16px */
   }
 
   .dark {
-    /* Tema Agusta - Dark Mode dengan warna slate */
-    --background: 222.2 84% 4.9%; /* #121212 (hampir hitam) */
-    --foreground: 210 40% 98%; /* #F9FAFB (putih lembut) */
-
-    --card: 222.2 84% 4.9%; /* #1F1F1F (abu gelap) */
-    --card-foreground: 210 40% 98%; /* #F9FAFB */
-
-    --popover: 222.2 84% 4.9%; /* #1F1F1F */
-    --popover-foreground: 210 40% 98%; /* #F9FAFB */
-
-    --primary: 262.1 83.3% 57.8%; /* #A855F7 (tetap sama) */
-    --primary-foreground: 0 0% 100%; /* #FFFFFF */
-
-    --secondary: 163.4 74.5% 55.5%; /* #34D399 (tetap sama) */
-    --secondary-foreground: 0 0% 0%; /* #000000 */
-
-    --muted: 217.2 32.6% 17.5%; /* #334155 */
-    --muted-foreground: 215 20.2% 65.1%; /* #94A3B8 */
-
-    --accent: 217.2 32.6% 17.5%; /* #334155 */
-    --accent-foreground: 210 40% 98%; /* #F9FAFB */
-
-    --destructive: 346.8 77.2% 49.8%; /* #EC4899 (tetap sama) */
-    --destructive-foreground: 0 0% 100%; /* #FFFFFF */
-
-    --border: 217.2 32.6% 17.5%; /* #374151 */
-    --input: 217.2 32.6% 17.5%; /* #374151 */
-    --ring: 212.7 26.8% 83.9%; /* #93C5FD (opsional, bisa disamakan dengan primary) */
+    --background: 0 0% 7%;
+    /* Neutral Near Black */
+    --foreground: 0 0% 100%;
+    --card: 0 0% 11%;
+    /* Neutral Dark Grey */
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 11%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 262 83% 58%;
+    /* Lighter Purple for dark mode contrast */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 163 75% 55.5%;
+    --secondary-foreground: 0 0% 0%;
+    --muted-foreground: 215 16% 47%;
+    /* Neutral muted text */
+    --accent: 264 15% 20%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 262 83% 58%;
   }
+}
 
+@layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
+    @apply transition-colors duration-200;
   }
 
   body {
-    @apply bg-background text-foreground font-roboto;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground font-body antialiased;
   }
 
-  /* Font Roboto untuk seluruh aplikasi */
-  .font-roboto {
-    font-family: 'Roboto', sans-serif;
-  }
-
-  /* Improved scrollbar */
+  /* Custom Scrollbar for Sidebar and Containers */
   ::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
   }
-  
+
   ::-webkit-scrollbar-track {
-    @apply bg-muted;
+    @apply bg-transparent;
   }
-  
+
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/30 rounded-full;
+    @apply bg-slate-300 dark:bg-slate-700 rounded-full;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground/50;
-  }
-
-  /* PERBAIKAN: Pastikan dropdown menu memiliki background solid */
-  [data-radix-popper-content-wrapper] {
-    background: hsl(var(--background)) !important;
-    border: 1px solid hsl(var(--border)) !important;
-    border-radius: calc(var(--radius) - 2px) !important;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
-  }
-
-  /* PERBAIKAN: Untuk Select Content */
-  [data-radix-select-content] {
-    background: hsl(var(--background)) !important;
-    border: 1px solid hsl(var(--border)) !important;
-    border-radius: calc(var(--radius) - 2px) !important;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
-  }
-
-  /* PERBAIKAN: Untuk Dropdown Menu Items */
-  [data-radix-collection-item] {
-    background: hsl(var(--background)) !important;
-  }
-
-  [data-radix-collection-item]:hover {
-    background: hsl(var(--accent)) !important;
-    color: hsl(var(--accent-foreground)) !important;
-  }
-
-  /* PERBAIKAN: Untuk Tooltip */
-  [data-radix-tooltip-content] {
-    background: hsl(var(--background)) !important;
-    border: 1px solid hsl(var(--border)) !important;
-    color: hsl(var(--foreground)) !important;
-    border-radius: calc(var(--radius) - 2px) !important;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
-  }
-
-  /* PERBAIKAN: Untuk Hover state yang konsisten */
-  .hover\:bg-accent:hover {
-    background-color: hsl(var(--accent)) !important;
-    color: hsl(var(--accent-foreground)) !important;
-  }
-
-  /* PERBAIKAN: Untuk focus states */
-  .focus-visible\:outline-none:focus-visible {
-    outline: 2px solid hsl(var(--ring)) !important;
-    outline-offset: 2px !important;
-  }
-}
-
-@layer utilities {
-  .animate-in {
-    animation: animate-in 0.5s ease-out;
-  }
-  
-  .animate-out {
-    animation: animate-out 0.5s ease-in;
-  }
-  
-  .fade-in-0 {
-    animation: fade-in 0.5s ease-out;
-  }
-  
-  .slide-in-from-top-2 {
-    animation: slide-in-from-top-2 0.5s ease-out;
-  }
-
-  /* PERBAIKAN: Utility classes untuk background solid */
-  .bg-solid {
-    background-color: hsl(var(--background)) !important;
-  }
-
-  .bg-card-solid {
-    background-color: hsl(var(--card)) !important;
-  }
-
-  /* PERBAIKAN: Untuk memastikan dropdown tidak transparan */
-  .dropdown-fix {
-    background: hsl(var(--background)) !important;
-    border: 1px solid hsl(var(--border)) !important;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
-  }
-}
-
-@layer components {
-  /* PERBAIKAN: Component classes untuk dropdown */
-  .dropdown-content {
-    @apply bg-background border-border border shadow-lg rounded-md p-1 min-w-[8rem] overflow-hidden;
-  }
-
-  .dropdown-item {
-    @apply relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
-  }
-
-  /* PERBAIKAN: Untuk select components */
-  .select-content {
-    @apply bg-background border-border border shadow-lg rounded-md p-1 min-w-[8rem] overflow-hidden;
-  }
-
-  .select-item {
-    @apply relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
-  }
-
-  /* PERBAIKAN: Untuk tooltip */
-  .tooltip-content {
-    @apply bg-background border-border border shadow-lg rounded-md px-3 py-1.5 text-sm text-foreground;
-  }
-}
-
-/* PERBAIKAN: Animasi keyframes */
-@keyframes animate-in {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes animate-out {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes slide-in-from-top-2 {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* PERBAIKAN: Print styles untuk aksesibilitas */
-@media print {
-  * {
-    background: transparent !important;
-    color: black !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-}
-
-/* PERBAIKAN: High contrast mode support */
-@media (prefers-contrast: high) {
-  :root {
-    --border: 222.2 84% 4.9%;
-    --muted-foreground: 222.2 84% 4.9%;
-  }
-  
-  .dark {
-    --border: 210 40% 98%;
-    --muted-foreground: 210 40% 98%;
-  }
-}
-
-/* PERBAIKAN: Reduced motion untuk aksesibilitas */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    @apply bg-slate-400 dark:bg-slate-600;
   }
 }

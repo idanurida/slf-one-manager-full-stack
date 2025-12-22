@@ -1108,24 +1108,33 @@ export const INSPECTOR_SPECIALIZATIONS = [
 ];
 
 // Fungsi helper untuk menentukan apakah item memerlukan photo geotag
-export const itemRequiresPhotogeotag = (templateId, itemId) => {
-  // Cari template berdasarkan ID
+export const itemRequiresPhotogeotag = (templateId, itemId, itemCategory = null) => {
+  // 1. Jika kategori diberikan secara eksplisit, gunakan itu
+  const category = itemCategory;
+
+  if (category) {
+    const categoryReqs = SLF_CHECKLIST_TEMPLATES.photo_requirements.per_category[category];
+    if (categoryReqs) {
+      return categoryReqs.require_geotag !== false;
+    }
+    return category !== 'administrative';
+  }
+
+  // 2. Fallback: Cari template berdasarkan ID
   const template = SLF_CHECKLIST_TEMPLATES.checklist_templates.find(
     t => t.id === templateId
   );
-  if (!template) return false;
+  if (!template) return true; // Default to true for safety
 
-  // Dapatkan kategori dari template
-  const category = template.category;
+  const templateCategory = template.category;
+  const categoryRequirements = SLF_CHECKLIST_TEMPLATES.photo_requirements.per_category[templateCategory];
 
-  // Periksa persyaratan geotag berdasarkan kategori
-  const categoryRequirements = SLF_CHECKLIST_TEMPLATES.photo_requirements.per_category[category];
   if (categoryRequirements) {
     return categoryRequirements.require_geotag !== false;
   }
 
   // Default: require geotag kecuali untuk administrative
-  return category !== 'administrative';
+  return templateCategory !== 'administrative';
 };
 
 // Fungsi untuk mendapatkan photo requirements berdasarkan template dan item
@@ -1146,6 +1155,46 @@ export const getPhotoRequirements = (templateId, itemId = null) => {
   };
 };
 
+// Fungsi utilitas untuk flatten checklist dari berbagai template
+export const flattenChecklistItems = (templates) => {
+  const items = [];
+  if (!templates || !Array.isArray(templates)) return items;
+
+  templates.forEach((template) => {
+    const category = template.category || 'administrative';
+
+    if (template.subsections) {
+      template.subsections.forEach((subsection) => {
+        subsection.items?.forEach((item) => {
+          items.push({
+            ...item,
+            template_id: template.id,
+            template_title: template.title,
+            category: item.category || category, // Prioritaskan category pada item if any
+            section_id: template.id, // Gunakan template ID sebagai section ID
+            section_title: template.title,
+            subsection_title: subsection.title,
+            applicable_for: subsection.applicable_for || template.applicable_for || []
+          });
+        });
+      });
+    } else if (template.items) {
+      template.items?.forEach((item) => {
+        items.push({
+          ...item,
+          template_id: template.id,
+          template_title: template.title,
+          category: item.category || category,
+          section_id: template.id,
+          section_title: template.title,
+          applicable_for: template.applicable_for || []
+        });
+      });
+    }
+  });
+  return items;
+};
+
 // Fungsi untuk mendapatkan template berdasarkan ID
 export const getChecklistTemplate = (templateId) => {
   // 1. Coba cari template exact match
@@ -1161,7 +1210,14 @@ export const getChecklistTemplate = (templateId) => {
       t => t.id.startsWith('m')
     );
 
-    const mergedItems = technicalTemplates.flatMap(t => t.items || []);
+    const mergedItems = technicalTemplates.flatMap(t =>
+      (t.items || []).map(item => ({
+        ...item,
+        category: t.category,
+        section_id: t.id,
+        section_title: t.title // Optional: useful for UI context
+      }))
+    );
 
     return {
       id: 'general',
@@ -1205,30 +1261,75 @@ export const getChecklistItem = (templateId, itemId) => {
  * @param {string} buildingType - Tipe bangunan (e.g., 'baru', 'existing', 'perubahan_fungsi', dll)
  * @returns {Array} Daftar template yang sesuai
  */
+/**
+ * Menentukan apakah sebuah item checklist sesuai dengan spesialisasi inspector.
+ * Digunakan untuk menyaring item dalam tipe template 'general' atau teknis gabungan.
+ * 
+ * @param {Object} item - Item checklist (harus memiliki category dan section_id)
+ * @param {string} specialization - Spesialisasi (arsitektur, struktur, mep)
+ * @returns {boolean} True jika item sesuai, false jika tidak.
+ */
+export const isItemMatchingSpecialization = (item, specialization) => {
+  const spec = specialization?.toLowerCase();
+
+  // 1. PENTING: Administrative DIABAIKAN untuk inspeksi teknis spesialis
+  // Karena inspector hanya melakukan inspeksi lapangan sesuai spesialisasinya.
+  if (item.category === 'administrative') return false;
+
+  // 2. Arsitektur
+  if (spec === 'arsitektur') {
+    // Tata Bangunan (M.1.x), Keselamatan (M.3.x), Kesehatan (M.4.x - if any), 
+    // Proteksi Pasif (M.2.3)
+    return (
+      item.category === 'tata_bangunan' ||
+      item.category === 'keselamatan' ||
+      item.section_id === 'm23' ||
+      item.section_id?.startsWith('m1') ||
+      item.section_id?.startsWith('m3')
+    );
+  }
+
+  // 3. Struktur
+  if (spec === 'struktur') {
+    // Struktur (M.2.1), Bencana (M.2.10)
+    return item.section_id === 'm21' || item.section_id === 'm210';
+  }
+
+  // 4. MEP (Mekanikal, Elektrikal, Plumbing)
+  if (['mep', 'mekanikal', 'elektrikal'].includes(spec)) {
+    // Keandalan minus Struktur, Bencana, dan Proteksi Pasif
+    // M.2.2 (Proteksi Aktif), M.2.4 - M.2.9
+    if (item.category === 'keandalan') {
+      return !['m21', 'm210', 'm23'].includes(item.section_id);
+    }
+    // Tambahkan category lain jika ada (misal MEP di luar keandalan)
+    return false;
+  }
+
+  // default: untuk 'building_inspection' atau spesialisasi tak dikenal, tampilkan semua
+  return true;
+};
+
 export const getChecklistsBySpecialization = (specialization = 'building_inspection', buildingType = 'baru') => {
   const templates = SLF_CHECKLIST_TEMPLATES.checklist_templates;
 
   console.log(`🔍 Filtering checklists for specialization: ${specialization}, buildingType: ${buildingType}`);
 
-  // Dapatkan mapping untuk spesialisasi yang diminta
-  const specializationConfig = SPECIALIZATION_MAPPING[specialization] || SPECIALIZATION_MAPPING['building_inspection'];
+  // Dapatkan mapping - handle lowercase
+  const specKey = specialization?.toLowerCase() || 'building_inspection';
+  const specializationConfig = SPECIALIZATION_MAPPING[specKey] || SPECIALIZATION_MAPPING['building_inspection'];
 
   return templates.filter(template => {
-    // 1. SELALU tampilkan template administratif
+    // 1. Filter template administratif: HANYA untuk building_inspection (admin/super)
     if (template.category === 'administrative') {
-      console.log(`✅ Including administrative template: ${template.title}`);
-      return true;
+      return specKey === 'building_inspection' || specKey === 'all';
     }
 
     // 2. Untuk building_inspection, tampilkan SEMUA non-administrative
-    if (specialization === 'building_inspection') {
-      // Filter berdasarkan applicable_for jika ada
+    if (specKey === 'building_inspection') {
       if (template.applicable_for && buildingType !== 'all') {
-        const isApplicable = template.applicable_for.includes(buildingType);
-        console.log(`🏗️ Building Inspection - ${template.title}: applicable=${isApplicable}`);
-        return isApplicable;
+        return template.applicable_for.includes(buildingType);
       }
-      console.log(`🏗️ Building Inspection - ${template.title}: including all`);
       return true;
     }
 
@@ -1252,27 +1353,7 @@ export const getChecklistsBySpecialization = (specialization = 'building_inspect
       template.applicable_for.includes(buildingType) ||
       template.applicable_for.includes('all');
 
-    const shouldInclude = (matchesCategory || matchesTemplate || matchesKeyword) && matchesBuildingType;
-
-    if (shouldInclude) {
-      console.log(`✅ ${specialization} - Including: ${template.title}`, {
-        category: template.category,
-        matchesCategory,
-        matchesTemplate,
-        matchesKeyword,
-        matchesBuildingType
-      });
-    } else {
-      console.log(`❌ ${specialization} - Excluding: ${template.title}`, {
-        category: template.category,
-        matchesCategory,
-        matchesTemplate,
-        matchesKeyword,
-        matchesBuildingType
-      });
-    }
-
-    return shouldInclude;
+    return (matchesCategory || matchesTemplate || matchesKeyword) && matchesBuildingType;
   });
 };
 

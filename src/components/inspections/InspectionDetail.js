@@ -288,7 +288,7 @@ const InspectionDetail = ({ inspectionId, projectId }) => {
           responded_at: new Date().toISOString(),
           status: 'submitted'
         }], {
-          onConflict: 'item_id,inspection_id,responded_by'
+          onConflict: ['inspection_id', 'item_id', 'responded_by']
         });
 
       if (error) throw error;

@@ -24,13 +24,15 @@ import {
 } from "@/components/ui/alert";
 
 // Icons
-import { 
-  User, BarChart3, TrendingUp, TrendingDown, FileText, 
-  CheckCircle2, XCircle, Clock, Calendar, Building, AlertCircle, 
-  RefreshCw, ArrowLeft, Eye, Users, Target, Award, Mail, Phone
+import {
+  User, BarChart3, TrendingUp, TrendingDown, FileText,
+  CheckCircle2, XCircle, Clock, Calendar, Building, AlertCircle,
+  RefreshCw, ArrowLeft, Eye, Users, Target, Award, Mail, Phone,
+  LayoutDashboard, FolderOpen, LogOut, Moon, Sun, Building2, Home, Zap, ChevronRight, Bell, Menu, Send, ExternalLink, Filter, FileCheck, CalendarDays
 } from "lucide-react";
 
 // Utils & Context
+import { useTheme } from "next-themes";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
@@ -51,7 +53,7 @@ const getRoleColor = (role) => {
     'inspector': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
     'project_lead': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
     'admin_team': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    'admin_lead': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+    'admin_lead': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
     'head_consultant': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
   };
   return colors[role] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
@@ -68,29 +70,6 @@ const getRoleLabel = (role) => {
   return labels[role] || role;
 };
 
-// StatCard Component
-const DetailStatCard = ({ title, value, subtitle, icon: Icon, color, trend }) => (
-  <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-    <CardContent className="p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</p>
-          <p className="text-2xl font-bold mt-1 text-slate-900 dark:text-slate-100">{value}</p>
-          {subtitle && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
-        </div>
-        <div className={`p-3 rounded-lg ${color} bg-opacity-10`}>
-          <Icon className={`w-6 h-6 ${color}`} />
-        </div>
-      </div>
-      {trend !== undefined && (
-        <div className={`flex items-center mt-3 text-sm ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {trend >= 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
-          {Math.abs(trend)}% dari periode sebelumnya
-        </div>
-      )}
-    </CardContent>
-  </Card>
-);
 
 // Main Component
 export default function TeamMemberPerformanceDetail() {
@@ -102,6 +81,8 @@ export default function TeamMemberPerformanceDetail() {
   const [error, setError] = useState(null);
   const [memberData, setMemberData] = useState(null);
   const [performanceStats, setPerformanceStats] = useState({});
+  const { theme, setTheme } = useTheme();
+
 
   // Fetch team member data and performance
   const fetchData = useCallback(async () => {
@@ -265,178 +246,255 @@ export default function TeamMemberPerformanceDetail() {
   }
 
   return (
-    <DashboardLayout title="Detail Kinerja Anggota Tim">
-      <TooltipProvider>
-        <motion.div
-          className="p-6 space-y-8 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/head-consultant/performance')}>
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-sm text-muted-foreground">{memberData?.full_name}</span>
-              {!loading && (
-                <>
-                  <Badge className={getRoleColor(memberData?.role)}>
-                    {getRoleLabel(memberData?.role)}
-                  </Badge>
-                  {performanceStats.specialization && (
-                    <Badge variant="outline" className="capitalize">
-                      {performanceStats.specialization}
+    <DashboardLayout>
+      <div className="flex flex-col gap-8">
+        <TooltipProvider>
+          <motion.div
+            className="space-y-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {/* Action Buttons */}
+            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push('/dashboard/head-consultant/performance')}
+                  className="rounded-xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+                <h1 className="text-3xl md:text-3xl font-display font-black text-gray-900 dark:text-white tracking-tight">{memberData?.full_name}</h1>
+                {!loading && (
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className={`rounded-lg px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${getRoleColor(memberData?.role)}`}>
+                      {getRoleLabel(memberData?.role)}
                     </Badge>
-                  )}
-                </>
-              )}
-            </div>
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </motion.div>
-
-          {loading ? (
-            // Loading State
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map(i => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <Skeleton className="h-4 w-3/4 mb-2" />
-                    <Skeleton className="h-8 w-1/2 mb-2" />
-                    <Skeleton className="h-3 w-full" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            // Content
-            <>
-              {/* Key Metrics */}
-              <motion.div variants={itemVariants}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <DetailStatCard
-                    title="Total Tugas"
-                    value={performanceStats.totalTasks || 0}
-                    subtitle={`${memberData?.role === 'inspector' ? 'Laporan' : 'Proyek'} ditangani`}
-                    icon={FileText}
-                    color="text-blue-600 dark:text-blue-400"
-                    trend={5}
-                  />
-                  <DetailStatCard
-                    title="Berhasil Diselesaikan"
-                    value={performanceStats.completedTasks || 0}
-                    subtitle="Tugas berhasil"
-                    icon={CheckCircle2}
-                    color="text-green-600 dark:text-green-400"
-                    trend={8}
-                  />
-                  <DetailStatCard
-                    title="Tingkat Keberhasilan"
-                    value={`${Math.round(performanceStats.successRate || 0)}%`}
-                    subtitle="Rata-rata keberhasilan"
-                    icon={Target}
-                    color="text-purple-600 dark:text-purple-400"
-                    trend={3}
-                  />
-                  <DetailStatCard
-                    title={memberData?.role === 'project_lead' ? 'Proyek Aktif' : 'Tugas Tertunda'}
-                    value={performanceStats.activeProjects || performanceStats.pendingTasks || 0}
-                    subtitle={memberData?.role === 'project_lead' ? 'Dalam pengerjaan' : 'Menunggu'}
-                    icon={Clock}
-                    color="text-orange-600 dark:text-orange-400"
-                    trend={-2}
-                  />
-                </div>
-              </motion.div>
-
-              {/* Additional Stats */}
-              <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Performance Progress */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5 text-blue-500" />
-                      Ringkasan Kinerja
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span>Tingkat Keberhasilan</span>
-                        <span>{Math.round(performanceStats.successRate || 0)}%</span>
-                      </div>
-                      <Progress value={performanceStats.successRate || 0} className="h-2" />
-                    </div>
-                    
-                    {performanceStats.rejectedTasks !== undefined && (
-                      <div>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span>Tugas Ditolak</span>
-                          <span>{performanceStats.rejectedTasks}</span>
-                        </div>
-                        <Progress 
-                          value={performanceStats.totalTasks > 0 ? (performanceStats.rejectedTasks / performanceStats.totalTasks) * 100 : 0} 
-                          className="h-2 bg-red-100 dark:bg-red-900/20"
-                        />
-                      </div>
+                    {performanceStats.specialization && (
+                      <Badge variant="outline" className="rounded-lg px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary border-primary/30 bg-primary/5">
+                        {performanceStats.specialization}
+                      </Badge>
                     )}
+                  </div>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={loading}
+                className="rounded-xl bg-surface-light dark:bg-surface-dark border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold text-xs px-4 py-2 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-display"
+              >
+                <RefreshCw className={`w-3 h-3 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </motion.div>
 
-                    {performanceStats.avgProcessingTime && (
-                      <div className="pt-4 border-t">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4" />
-                          Rata-rata waktu penyelesaian: {performanceStats.avgProcessingTime}
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+            {loading ? (
+              // Loading State
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map(i => (
+                  <Card key={i} className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden">
+                    <CardContent className="p-6">
+                      <Skeleton className="h-4 w-3/4 mb-4 rounded-lg" />
+                      <Skeleton className="h-10 w-1/2 mb-4 rounded-lg" />
+                      <Skeleton className="h-3 w-full rounded-lg" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              // Content
+              <>
+                {/* Key Metrics */}
+                <motion.div variants={itemVariants}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <StatCard
+                      title="Total penugasan"
+                      value={performanceStats.totalTasks || 0}
+                      subtitle={`${memberData?.role === 'inspector' ? 'Berkas Laporan' : 'Proyek Strategis'}`}
+                      icon={FileText}
+                      color="text-blue-500"
+                      trend={5}
+                    />
+                    <StatCard
+                      title="Tingkat penyelesaian"
+                      value={performanceStats.completedTasks || 0}
+                      subtitle="Hasil Terverifikasi"
+                      icon={CheckCircle2}
+                      color="text-emerald-500"
+                      trend={8}
+                    />
+                    <StatCard
+                      title="Akurasi kerja"
+                      value={`${Math.round(performanceStats.successRate || 0)}%`}
+                      subtitle="Sesuai Standar Mutu"
+                      icon={Target}
+                      color="text-emerald-500"
+                      trend={3}
+                    />
+                    <StatCard
+                      title={memberData?.role === 'project_lead' ? 'Antrian aktif' : 'Pending review'}
+                      value={performanceStats.activeProjects || performanceStats.pendingTasks || 0}
+                      subtitle={memberData?.role === 'project_lead' ? 'Dalam Eksekusi' : 'Menunggu Validasi'}
+                      icon={Clock}
+                      color="text-orange-500"
+                      trend={-2}
+                    />
+                  </div>
+                </motion.div>
 
-                {/* Member Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Award className="w-5 h-5 text-yellow-500" />
-                      Informasi Anggota
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-2">Deskripsi Role</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {memberData?.role === 'inspector' && 'Bertanggung jawab untuk melakukan inspeksi lapangan dan membuat laporan inspeksi.'}
-                        {memberData?.role === 'project_lead' && 'Memimpin dan mengkoordinasi proyek dari awal hingga selesai.'}
-                        {memberData?.role === 'admin_team' && 'Memverifikasi dokumen dan memastikan kelengkapan administrasi.'}
-                        {memberData?.role === 'admin_lead' && 'Mengelola tim admin dan mengawasi proses administrasi proyek.'}
-                      </p>
-                    </div>
-                    
-                    <div className="pt-4 border-t">
-                      <h4 className="font-medium mb-2">Kontak</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4" />
-                          <span>{memberData?.email || 'Tidak tersedia'}</span>
-                        </div>
-                        {memberData?.phone && (
-                          <div className="flex items-center gap-2">
-                            <Phone className="w-4 h-4" />
-                            <span>{memberData.phone}</span>
+                {/* Additional Stats */}
+                <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden">
+                    <div className="h-1.5 bg-primary"></div>
+                    <CardHeader className="pb-8 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
+                      <CardTitle className="flex items-center gap-3 text-sm font-bold text-gray-900 dark:text-white uppercase tracking-widest">
+                        <BarChart3 className="w-5 h-5 text-primary" />
+                        Grafik capaian kinerja
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-10 p-10">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-end">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">Efficiency rate</span>
+                            <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Keberhasilan penuntasan</span>
                           </div>
-                        )}
+                          <span className="text-3xl font-display font-black text-primary">{Math.round(performanceStats.successRate || 0)}%</span>
+                        </div>
+                        <div className="h-4 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden border border-gray-200 dark:border-gray-800 p-1">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${performanceStats.successRate || 0}%` }}
+                            transition={{ duration: 1.2, ease: "circOut" }}
+                            className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-500 shadow-lg shadow-primary/20"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </>
-          )}
-        </motion.div>
-      </TooltipProvider>
+
+                      {performanceStats.rejectedTasks !== undefined && (
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-end">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">Error margin</span>
+                              <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Revisi & penolakan</span>
+                            </div>
+                            <span className="text-3xl font-display font-black text-red-500">{performanceStats.rejectedTasks}</span>
+                          </div>
+                          <div className="h-4 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden border border-gray-200 dark:border-gray-800 p-1">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${performanceStats.totalTasks > 0 ? (performanceStats.rejectedTasks / performanceStats.totalTasks) * 100 : 0}%` }}
+                              transition={{ duration: 1.2, ease: "circOut", delay: 0.2 }}
+                              className="h-full rounded-full bg-red-500 shadow-lg shadow-red-500/20"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {performanceStats.avgProcessingTime && (
+                        <div className="pt-10 border-t border-gray-200 dark:border-gray-800 mt-6">
+                          <div className="flex items-center gap-6 p-6 rounded-2xl bg-primary/5 border border-primary/20 group hover:border-primary/40 transition-all">
+                            <div className="h-14 w-14 flex items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                              <Clock className="w-7 h-7" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Response time index</span>
+                              <span className="text-xl font-display font-black text-gray-900 dark:text-white tracking-tight uppercase tracking-wider">{performanceStats.avgProcessingTime} <span className="text-xs text-text-secondary-light font-bold lowercase tracking-widest">Rata-rata</span></span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
+                    <CardHeader className="pb-8 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
+                      <CardTitle className="flex items-center gap-3 text-sm font-bold text-gray-900 dark:text-white uppercase tracking-widest">
+                        <Award className="w-5 h-5 text-yellow-500" />
+                        Profil & kompetensi
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-10 p-10">
+                      <div className="space-y-4">
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Tanggung jawab utama</span>
+                        <div className="p-6 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 relative overflow-hidden group">
+                          <p className="text-xs font-semibold leading-relaxed text-text-secondary-light dark:text-text-secondary-dark relative z-10">
+                            {memberData?.role === 'inspector' && 'Melaksanakan inspeksi kelaikan fungsi bangunan di lapangan, melakukan verifikasi data teknis, dan menyusun laporan komprehensif sesuai standar SIMBG.'}
+                            {memberData?.role === 'project_lead' && 'Bertanggung jawab penuh atas orchestrasi proyek, koordinasi antar departemen, mitigasi risiko sengketa proyek, dan memastikan timeline terpenuhi.'}
+                            {memberData?.role === 'admin_team' && 'Manajemen integritas dokumen, verifikasi keakuratan administrasi client, dan sinkronisasi berkas sebelum tahap approval final oleh Head Consultant.'}
+                            {memberData?.role === 'admin_lead' && 'Kepemimpinan unit administratif, pengawasan arus kerja tim admin, dan optimasi proses manajemen dokumen di seluruh level operasional.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-10 border-t border-gray-200 dark:border-gray-800">
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest mb-6 block">Informasi kontak</span>
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="flex items-center gap-5 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 hover:border-primary/20 transition-all group">
+                            <div className="h-11 w-11 flex items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform shadow-sm">
+                              <Mail className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col overflow-hidden">
+                              <span className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">Alamat email</span>
+                              <span className="text-xs font-bold text-gray-900 dark:text-white truncate uppercase tracking-tight">{memberData?.email || 'N/A'}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-5 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 hover:border-primary/20 transition-all group">
+                            <div className="h-11 w-11 flex items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-500/10 text-orange-600 group-hover:scale-110 transition-transform shadow-sm">
+                              <Phone className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">Koneksi telepon</span>
+                              <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-tight">{memberData?.phone || 'Unregistered'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </>
+            )}
+          </motion.div>
+        </TooltipProvider>
+      </div>
     </DashboardLayout>
   );
 }
+
+// NavItem, BottomNavItem, StatCard Helper Components
+
+function StatCard({ title, value, subtitle, icon: Icon, color, trend }) {
+  return (
+    <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className={`p-2.5 rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 ${color} transition-transform group-hover:scale-110 shadow-sm`}>
+            <Icon className="w-5 h-5" />
+          </div>
+          {trend !== undefined && (
+            <div className={`flex items-center px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${trend >= 0 ? 'bg-green-500/10 text-green-600 border border-green-500/20' : 'bg-red-500/10 text-red-600 border border-red-500/20'}`}>
+              {trend >= 0 ? '+' : ''}{trend}%
+            </div>
+          )}
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">{title}</p>
+          <div className="flex items-baseline gap-1 mt-1">
+            <h3 className="text-2xl font-display font-black text-gray-900 dark:text-white tracking-tight">{value}</h3>
+          </div>
+          {subtitle && <p className="text-[10px] font-bold text-text-secondary-light mt-1 opacity-70 uppercase tracking-widest">{subtitle}</p>}
+        </div>
+        <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-150 translate-x-1/4 translate-y-1/4 ${color}`}>
+          <Icon size={60} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+

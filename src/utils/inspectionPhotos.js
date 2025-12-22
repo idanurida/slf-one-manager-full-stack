@@ -9,7 +9,7 @@ import { supabase } from './supabaseClient';
 const validatePhotoData = (photoData) => {
   const requiredFields = ['inspection_id', 'checklist_item_id', 'photo_url', 'uploaded_by', 'project_id'];
   const missingFields = requiredFields.filter(field => !photoData[field]);
-  
+
   if (missingFields.length > 0) {
     throw new Error(`Field yang diperlukan tidak lengkap: ${missingFields.join(', ')}`);
   }
@@ -76,8 +76,7 @@ export const saveInspectionPhoto = async (photoData) => {
       latitude: latitude !== undefined && latitude !== null ? Number(latitude) : null,
       longitude: longitude !== undefined && longitude !== null ? Number(longitude) : null,
       uploaded_by,
-      project_id,
-      uploaded_at: new Date().toISOString()
+      project_id
     };
 
     const { data, error } = await supabase
@@ -87,7 +86,7 @@ export const saveInspectionPhoto = async (photoData) => {
       .single();
 
     if (error) throw error;
-    
+
     console.log(`✅ Photo saved successfully for inspection ${inspection_id}, item ${checklist_item_id}`);
     return data;
 
@@ -114,7 +113,7 @@ export const getPhotosByInspection = async (inspectionId, options = {}) => {
       .from('inspection_photos')
       .select('*')
       .eq('inspection_id', inspectionId)
-      .order('uploaded_at', { ascending: false });
+      .order('created_at', { ascending: false });
 
     // Jika perlu include user info
     if (options.includeUserInfo) {
@@ -125,13 +124,13 @@ export const getPhotosByInspection = async (inspectionId, options = {}) => {
           profiles:uploaded_by(full_name, email)
         `)
         .eq('inspection_id', inspectionId)
-        .order('uploaded_at', { ascending: false });
+        .order('created_at', { ascending: false });
     }
 
     const { data, error } = await query;
 
     if (error) throw error;
-    
+
     console.log(`✅ Retrieved ${data?.length || 0} photos for inspection ${inspectionId}`);
     return data || [];
 
@@ -157,7 +156,7 @@ export const getPhotosByChecklistItem = async (checklistItemId, inspectionId = n
       .from('inspection_photos')
       .select('*')
       .eq('checklist_item_id', checklistItemId)
-      .order('uploaded_at', { ascending: false });
+      .order('created_at', { ascending: false });
 
     // Filter tambahan berdasarkan inspection ID jika provided
     if (inspectionId) {
@@ -167,7 +166,7 @@ export const getPhotosByChecklistItem = async (checklistItemId, inspectionId = n
     const { data, error } = await query;
 
     if (error) throw error;
-    
+
     console.log(`✅ Retrieved ${data?.length || 0} photos for checklist item ${checklistItemId}`);
     return data || [];
 
@@ -198,7 +197,7 @@ export const updatePhotoMetadata = async (photoId, updates) => {
     // Hanya izinkan field tertentu untuk diupdate
     const allowedFields = ['caption', 'floor_info'];
     const invalidFields = Object.keys(updates).filter(field => !allowedFields.includes(field));
-    
+
     if (invalidFields.length > 0) {
       throw new Error(`Field tidak valid untuk diupdate: ${invalidFields.join(', ')}`);
     }
@@ -219,7 +218,7 @@ export const updatePhotoMetadata = async (photoId, updates) => {
       .single();
 
     if (error) throw error;
-    
+
     console.log(`✅ Photo metadata updated for photo ${photoId}`);
     return data;
 
@@ -246,7 +245,7 @@ export const deleteInspectionPhoto = async (photoId) => {
       .eq('id', photoId);
 
     if (error) throw error;
-    
+
     console.log(`✅ Photo ${photoId} deleted successfully`);
     return true;
 
@@ -273,7 +272,7 @@ export const getPhotoCountByInspection = async (inspectionId) => {
       .eq('inspection_id', inspectionId);
 
     if (error) throw error;
-    
+
     return count || 0;
 
   } catch (error) {

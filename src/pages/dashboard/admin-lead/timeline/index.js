@@ -1,14 +1,16 @@
 // FILE: src/pages/dashboard/admin-lead/timeline/index.js
-// Halaman Timeline Admin Lead - Clean dengan dropdown proyek
+// Halaman Timeline Admin Lead - Premium Design & Multi-tenancy
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 
 // UI Components
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,12 +26,13 @@ import {
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger
 } from "@/components/ui/tooltip";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Icons
 import {
   Calendar, Clock, CheckCircle2, PlayCircle, Edit,
-  RefreshCw, Save, Loader2, Building, AlertTriangle
+  RefreshCw, Save, Loader2, Building, AlertTriangle,
+  ArrowRight, Activity, TrendingUp, AlertCircle, MapPin,
+  ChevronRight, Filter, Search, LayoutDashboard
 } from "lucide-react";
 
 // Utils & Context
@@ -37,7 +40,18 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 
-// Format date helper
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "circOut" } }
+};
+
+// Helpers
 const formatDate = (dateString) => {
   if (!dateString) return '-';
   try {
@@ -47,7 +61,6 @@ const formatDate = (dateString) => {
   }
 };
 
-// Get category from application_type
 const getCategory = (applicationType) => {
   if (!applicationType) return 'all';
   if (applicationType.startsWith('SLF')) return 'SLF';
@@ -57,7 +70,8 @@ const getCategory = (applicationType) => {
 
 export default function AdminLeadTimelinePage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, isAdminLead } = useAuth();
+  const { theme } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -65,7 +79,7 @@ export default function AdminLeadTimelinePage() {
   const [phases, setPhases] = useState([]);
 
   // Filter states
-  const [categoryFilter, setCategoryFilter] = useState('all'); // SLF atau PBG
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedProjectId, setSelectedProjectId] = useState('');
 
   // Edit dialog
@@ -86,13 +100,13 @@ export default function AdminLeadTimelinePage() {
       const { data, error } = await supabase
         .from('projects')
         .select('id, name, application_type, status, city, clients(name)')
-        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
+        .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id}`) // ✅ MULTI-TENANCY FILTER
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setProjects(data || []);
 
-      // Auto-select first project if available
+      // Auto-select first project if available and not selected
       if (data && data.length > 0 && !selectedProjectId) {
         setSelectedProjectId(data[0].id);
       }
@@ -102,7 +116,7 @@ export default function AdminLeadTimelinePage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedProjectId]);
+  }, [selectedProjectId, user?.id]);
 
   // Fetch phases for selected project
   const fetchPhases = useCallback(async () => {
@@ -139,6 +153,11 @@ export default function AdminLeadTimelinePage() {
   const totalProgress = phases.length > 0
     ? Math.round(phases.filter(p => p.status === 'completed').length / phases.length * 100)
     : 0;
+
+  // Stats calculation
+  const completedPhases = phases.filter(p => p.status === 'completed').length;
+  const activePhases = phases.filter(p => p.status === 'in_progress').length;
+  const pendingPhases = phases.filter(p => p.status === 'pending').length;
 
   // Open edit dialog
   const openEditDialog = (phase) => {
@@ -254,356 +273,307 @@ export default function AdminLeadTimelinePage() {
     }
   }, [selectedProjectId, fetchPhases]);
 
-  // When category changes, reset project selection to first matching project
+  // When category changes, reset project selection
   useEffect(() => {
-    if (filteredProjects.length > 0) {
-      const currentProjectInFilter = filteredProjects.find(p => p.id === selectedProjectId);
-      if (!currentProjectInFilter) {
-        setSelectedProjectId(filteredProjects[0].id);
+    if (projects.length > 0 && selectedProjectId) {
+      const currentP = projects.find(p => p.id === selectedProjectId);
+      if (currentP && categoryFilter !== 'all' && getCategory(currentP.application_type) !== categoryFilter) {
+        // If current selection doesn't match filter, select first matching
+        if (filteredProjects.length > 0) setSelectedProjectId(filteredProjects[0].id);
+        else setSelectedProjectId('');
       }
-    } else {
-      setSelectedProjectId('');
     }
-  }, [categoryFilter, filteredProjects, selectedProjectId]);
+  }, [categoryFilter, filteredProjects, projects, selectedProjectId]);
 
-  if (authLoading || loading) {
+  if (authLoading || (user && !isAdminLead) || loading) {
     return (
-      <DashboardLayout title="Timeline">
-        <div className="p-6 space-y-4">
-          <Skeleton className="h-10 w-full max-w-md" />
-          <Skeleton className="h-64 w-full" />
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
+          <Loader2 className="w-12 h-12 animate-spin text-[#7c3aed]" />
+          <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Syncing Timeline Data...</p>
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Timeline">
+    <DashboardLayout>
       <TooltipProvider>
-        <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
+        <motion.div
+          className="max-w-[1400px] mx-auto space-y-10 pb-20 p-6 md:p-0"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Header Section */}
+          <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">Master Planning</Badge>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+                Project <span className="text-[#7c3aed]">Timeline</span>
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium max-w-2xl">
+                Visualisasi progres dan manajemen fase pengerjaan proyek secara real-time.
+              </p>
+            </div>
 
-          {/* Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Kategori Permohonan</Label>
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih kategori" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Kategori</SelectItem>
-                      <SelectItem value="SLF">SLF (Sertifikat Laik Fungsi)</SelectItem>
-                      <SelectItem value="PBG">PBG (Persetujuan Bangunan Gedung)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Pilih Proyek</Label>
-                  <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih proyek" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredProjects.length === 0 ? (
-                        <SelectItem value="no-project" disabled>Tidak ada proyek</SelectItem>
-                      ) : (
-                        filteredProjects.map(project => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name} - {project.clients?.name || 'N/A'}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+            <div className="bg-white dark:bg-[#1e293b] p-2 rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/20 dark:shadow-none flex items-center gap-2">
+              <div className="px-4 py-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Active Project</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <Building size={14} className="text-[#7c3aed]" />
+                  <span className="font-bold text-xs truncate max-w-[150px]">{selectedProject?.name || 'No Project Selected'}</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="h-10 w-px bg-slate-100 dark:bg-white/10 mx-2" />
+              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                <SelectTrigger className="w-[200px] h-12 border-none bg-transparent focus:ring-0 text-right font-bold">
+                  <SelectValue placeholder="Ganti Proyek" />
+                </SelectTrigger>
+                <SelectContent align="end" className="max-h-[300px]">
+                  {filteredProjects.map(p => (
+                    <SelectItem key={p.id} value={p.id} className="font-medium text-xs">
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </motion.div>
 
-          {/* Selected Project Info */}
+          {/* Stats Grid */}
           {selectedProject && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-xl font-bold">{selectedProject.name}</h2>
-                    <p className="text-muted-foreground flex items-center gap-2">
-                      <Building className="w-4 h-4" />
-                      {selectedProject.clients?.name || '-'} • {selectedProject.city || '-'}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">
-                      {selectedProject.application_type || 'SLF'}
-                    </Badge>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => router.push(`/dashboard/admin-lead/projects/${selectedProject.id}`)}
-                    >
-                      Detail Proyek
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Progress */}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">
-                    Progress: {phases.filter(p => p.status === 'completed').length} dari {phases.length} fase
-                  </span>
-                  <Badge variant="outline">{totalProgress}%</Badge>
-                </div>
-                <Progress value={totalProgress} className="h-2" />
-              </CardContent>
-            </Card>
+            <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatSimple
+                title="Total Fase"
+                value={phases.length}
+                icon={<LayoutDashboard size={18} />}
+                color="text-slate-500"
+                bg="bg-slate-100 dark:bg-white/5"
+              />
+              <StatSimple
+                title="Selesai"
+                value={completedPhases}
+                icon={<CheckCircle2 size={18} />}
+                color="text-emerald-500"
+                bg="bg-emerald-500/10"
+              />
+              <StatSimple
+                title="Sedang Berjalan"
+                value={activePhases}
+                icon={<Activity size={18} />}
+                color="text-blue-500"
+                bg="bg-blue-500/10"
+              />
+              <StatSimple
+                title="Total Progress"
+                value={`${totalProgress}%`}
+                icon={<TrendingUp size={18} />}
+                color="text-[#7c3aed]"
+                bg="bg-[#7c3aed]/10"
+              />
+            </motion.div>
           )}
 
-          {/* Timeline Phases */}
-          {!selectedProject ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Pilih Proyek</h3>
-                <p className="text-muted-foreground">
-                  Pilih proyek dari dropdown di atas untuk melihat timeline
-                </p>
-              </CardContent>
-            </Card>
-          ) : phases.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <AlertTriangle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Belum Ada Fase</h3>
-                <p className="text-muted-foreground">
-                  Timeline belum dibuat untuk proyek ini
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {phases.map((phase, index) => {
-                const isActive = phase.status === 'in_progress';
-                const isCompleted = phase.status === 'completed';
-                const isPending = phase.status === 'pending';
-                const canStart = isPending && index === phases.findIndex(p => p.status === 'pending');
+          {/* Timeline Content */}
+          <motion.div variants={itemVariants}>
+            {!selectedProject ? (
+              <div className="py-24 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center">
+                <div className="size-20 bg-slate-50 dark:bg-white/5 rounded-[2rem] flex items-center justify-center text-slate-300 dark:text-slate-600 mb-6">
+                  <Calendar size={32} />
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white">Pilih Proyek</h3>
+                <p className="text-slate-500 mt-2 max-w-xs text-sm">Silakan pilih proyek di pojok kanan atas untuk melihat timeline.</p>
+              </div>
+            ) : phases.length === 0 ? (
+              <div className="py-24 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center">
+                <div className="size-20 bg-orange-50 dark:bg-orange-500/10 rounded-[2rem] flex items-center justify-center text-orange-400 mb-6">
+                  <AlertTriangle size={32} />
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white">Timeline Kosong</h3>
+                <p className="text-slate-500 mt-2 max-w-xs text-sm">Belum ada fase pengerjaan yang dibuat untuk proyek ini.</p>
+              </div>
+            ) : (
+              <div className="relative space-y-8 pl-8 md:pl-0">
+                {/* Vertical Line for Desktop */}
+                <div className="hidden md:block absolute left-[50%] top-0 bottom-0 w-px bg-slate-200 dark:bg-white/10 -translate-x-1/2" />
 
-                return (
-                  <Card
-                    key={phase.id}
-                    className={`border-l-4 ${isCompleted ? 'border-l-green-500' :
-                        isActive ? 'border-l-blue-500' :
-                          'border-l-muted'
-                      }`}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between gap-4">
-                        {/* Phase Info */}
-                        <div className="flex items-start gap-4 flex-1">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCompleted ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
-                              isActive ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
-                                'bg-muted text-muted-foreground'
-                            }`}>
-                            {isCompleted ? (
-                              <CheckCircle2 className="w-5 h-5" />
-                            ) : isActive ? (
-                              <PlayCircle className="w-5 h-5" />
-                            ) : (
-                              <Clock className="w-5 h-5" />
-                            )}
+                {phases.map((phase, index) => {
+                  const isEven = index % 2 === 0;
+                  const isActive = phase.status === 'in_progress';
+                  const isCompleted = phase.status === 'completed';
+
+                  return (
+                    <div key={phase.id} className={`relative flex flex-col md:flex-row items-center w-full ${isEven ? 'md:flex-row-reverse' : ''}`}>
+                      {/* Content Card */}
+                      <div className="w-full md:w-[calc(50%-40px)] mb-8 md:mb-0">
+                        <div className={`
+                                 relative p-6 rounded-[2rem] border transition-all duration-300 group
+                                 ${isActive
+                            ? 'bg-white dark:bg-[#1e293b] border-[#7c3aed] shadow-2xl shadow-[#7c3aed]/10 ring-4 ring-[#7c3aed]/5'
+                            : isCompleted
+                              ? 'bg-slate-50 dark:bg-white/5 border-transparent opacity-80 hover:opacity-100 hover:bg-white dark:hover:bg-[#1e293b] hover:shadow-xl'
+                              : 'bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 hover:shadow-xl'
+                          }
+                              `}>
+                          <div className="flex justify-between items-start mb-4">
+                            <Badge className={`
+                                       text-[9px] font-black uppercase tracking-widest border-none px-3 py-1.5 rounded-lg
+                                       ${isActive ? 'bg-[#7c3aed] text-white' : isCompleted ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-100 dark:bg-white/10 text-slate-500'}
+                                    `}>
+                              Fase {phase.phase}
+                            </Badge>
+                            <div className="flex gap-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button onClick={() => openEditDialog(phase)} className="size-8 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-400 transition-colors">
+                                    <Edit size={14} />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit Fase</TooltipContent>
+                              </Tooltip>
+                            </div>
                           </div>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold">
-                                Fase {phase.phase}: {phase.phase_name}
-                              </h3>
-                              <Badge variant={isCompleted ? 'default' : isActive ? 'default' : 'secondary'}>
-                                {isCompleted ? 'Selesai' : isActive ? 'Berjalan' : 'Menunggu'}
-                              </Badge>
+                          <h3 className="text-lg font-black uppercase tracking-tight mb-2 text-slate-900 dark:text-white group-hover:text-[#7c3aed] transition-colors">{phase.phase_name}</h3>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-6 line-clamp-2">{phase.description || 'Tidak ada deskripsi'}</p>
+
+                          <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="bg-slate-50 dark:bg-black/20 p-3 rounded-2xl">
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Estimasi</span>
+                              <span className="text-sm font-bold">{phase.estimated_duration} Hari</span>
                             </div>
-
-                            <p className="text-sm text-muted-foreground mb-3">
-                              {phase.description || '-'}
-                            </p>
-
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Durasi:</span>
-                                <p className="font-medium">{phase.estimated_duration || 7} hari</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Mulai:</span>
-                                <p className="font-medium">{formatDate(phase.start_date)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Selesai:</span>
-                                <p className="font-medium">{formatDate(phase.end_date)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Progress:</span>
-                                <div className="flex items-center gap-2">
-                                  <Progress value={phase.progress || 0} className="h-2 flex-1" />
-                                  <span className="font-medium">{phase.progress || 0}%</span>
-                                </div>
-                              </div>
+                            <div className="bg-slate-50 dark:bg-black/20 p-3 rounded-2xl">
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Mulai</span>
+                              <span className="text-sm font-bold">{formatDate(phase.start_date)}</span>
                             </div>
-
-                            {phase.notes && (
-                              <p className="text-sm text-muted-foreground mt-2 italic">
-                                Catatan: {phase.notes}
-                              </p>
-                            )}
                           </div>
-                        </div>
 
-                        {/* Actions */}
-                        <div className="flex flex-col gap-2">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openEditDialog(phase)}
-                              >
-                                <Edit className="w-4 h-4 mr-1" />
-                                Edit
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-3">
+                            {isActive && (
+                              <Button onClick={() => handlePhaseAction('complete', phase)} disabled={saving} className="w-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl font-black text-[10px] uppercase tracking-widest h-10 shadow-lg shadow-[#7c3aed]/20">
+                                <CheckCircle2 size={14} className="mr-2" /> Selesaikan
                               </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit fase</TooltipContent>
-                          </Tooltip>
-
-                          {canStart && (
-                            <Button
-                              size="sm"
-                              onClick={() => handlePhaseAction('start', phase)}
-                              disabled={saving}
-                            >
-                              <PlayCircle className="w-4 h-4 mr-1" />
-                              Mulai
-                            </Button>
-                          )}
-
-                          {isActive && (
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700"
-                              onClick={() => handlePhaseAction('complete', phase)}
-                              disabled={saving}
-                            >
-                              <CheckCircle2 className="w-4 h-4 mr-1" />
-                              Selesai
-                            </Button>
-                          )}
+                            )}
+                            {phase.status === 'pending' && index === phases.findIndex(p => p.status === 'pending') && (
+                              <Button onClick={() => handlePhaseAction('start', phase)} disabled={saving} className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 shadow-lg">
+                                <PlayCircle size={14} className="mr-2" /> Mulai Fase
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
 
-          {/* Edit Phase Dialog */}
-          <Dialog open={editDialog.open} onOpenChange={(open) => !saving && setEditDialog({ open, phase: open ? editDialog.phase : null })}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Fase {editDialog.phase?.phase}</DialogTitle>
-                <DialogDescription>
-                  Ubah detail fase {editDialog.phase?.phase_name}
-                </DialogDescription>
-              </DialogHeader>
+                      {/* Center Node */}
+                      <div className="absolute left-[0px] md:left-[50%] top-8 md:top-[50%] md:-translate-y-1/2 -translate-x-1/2 z-10">
+                        <div className={`
+                                 size-10 rounded-full border-4 flex items-center justify-center shadow-xl
+                                 ${isActive
+                            ? 'bg-[#7c3aed] border-white dark:border-slate-800 ring-4 ring-[#7c3aed]/20'
+                            : isCompleted
+                              ? 'bg-emerald-500 border-white dark:border-slate-800 ring-4 ring-emerald-500/20'
+                              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                          }
+                              `}>
+                          {isCompleted ? <CheckCircle2 size={16} className="text-white" /> :
+                            isActive ? <Activity size={16} className="text-white animate-pulse" /> :
+                              <Clock size={16} className="text-slate-300" />}
+                        </div>
+                      </div>
 
-              <div className="space-y-4">
+                      {/* Spacer for desktop layout */}
+                      <div className="hidden md:block w-[calc(50%-40px)]" />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
+
+        {/* Edit Dialog */}
+        <Dialog open={editDialog.open} onOpenChange={(open) => !saving && setEditDialog({ open, phase: open ? editDialog.phase : null })}>
+          <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden bg-white dark:bg-slate-900 border-none max-w-lg">
+            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+              <DialogTitle className="text-xl font-black uppercase tracking-tight">Edit Fase Pengerjaan</DialogTitle>
+              <DialogDescription className="text-xs font-bold uppercase tracking-widest text-slate-400">Update status dan detail timeline proyek</DialogDescription>
+            </DialogHeader>
+
+            <div className="p-8 space-y-6">
+              <div className="space-y-2">
+                <Label className="uppercase text-[10px] font-black tracking-widest text-slate-500">Nama Fase</Label>
+                <Input
+                  value={editForm.phase_name}
+                  onChange={(e) => setEditForm({ ...editForm, phase_name: e.target.value })}
+                  className="rounded-xl h-12 bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 font-bold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Nama Fase</Label>
+                  <Label className="uppercase text-[10px] font-black tracking-widest text-slate-500">Durasi (Hari)</Label>
                   <Input
-                    value={editForm.phase_name}
-                    onChange={(e) => setEditForm({ ...editForm, phase_name: e.target.value })}
+                    type="number"
+                    value={editForm.estimated_duration}
+                    onChange={(e) => setEditForm({ ...editForm, estimated_duration: e.target.value })}
+                    className="rounded-xl h-12 bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 font-bold"
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label>Deskripsi</Label>
-                  <Textarea
-                    value={editForm.description}
-                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                    rows={2}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Durasi (hari)</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={60}
-                      value={editForm.estimated_duration}
-                      onChange={(e) => setEditForm({ ...editForm, estimated_duration: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Tanggal Mulai</Label>
-                    <Input
-                      type="date"
-                      value={editForm.start_date}
-                      onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Status</Label>
+                  <Label className="uppercase text-[10px] font-black tracking-widest text-slate-500">Status</Label>
                   <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
-                    <SelectTrigger>
+                    <SelectTrigger className="rounded-xl h-12 bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 font-bold">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-xl">
                       <SelectItem value="pending">Menunggu</SelectItem>
                       <SelectItem value="in_progress">Berjalan</SelectItem>
                       <SelectItem value="completed">Selesai</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div className="space-y-2">
-                  <Label>Catatan (opsional)</Label>
-                  <Textarea
-                    value={editForm.notes}
-                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                    placeholder="Catatan tambahan..."
-                    rows={2}
-                  />
-                </div>
               </div>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setEditDialog({ open: false, phase: null })} disabled={saving}>
-                  Batal
-                </Button>
-                <Button onClick={handleSavePhase} disabled={saving}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Simpan
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              <div className="space-y-2">
+                <Label className="uppercase text-[10px] font-black tracking-widest text-slate-500">Catatan Internal</Label>
+                <Textarea
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                  className="rounded-2xl min-h-[100px] bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 resize-none"
+                  placeholder="Tambahkan catatan progres..."
+                />
+              </div>
+            </div>
 
-        </div>
+            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 gap-3">
+              <Button variant="outline" onClick={() => setEditDialog({ open: false, phase: null })} className="rounded-xl h-12 font-black text-[10px] uppercase tracking-widest flex-1">
+                Batal
+              </Button>
+              <Button onClick={handleSavePhase} disabled={saving} className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl h-12 font-black text-[10px] uppercase tracking-widest flex-1 shadow-lg shadow-[#7c3aed]/20">
+                {saving ? <Loader2 className="animate-spin" /> : 'Simpan Perubahan'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </TooltipProvider>
     </DashboardLayout>
   );
 }
 
+// Sub-components
+function StatSimple({ title, value, icon, color, bg }) {
+  return (
+    <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-4 transition-all hover:scale-105">
+      <div className={`size-12 rounded-2xl flex items-center justify-center ${bg} ${color} shadow-lg shadow-current/5`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1.5">{title}</p>
+        <p className="text-2xl font-black tracking-tighter leading-none">{value}</p>
+      </div>
+    </div>
+  );
+}

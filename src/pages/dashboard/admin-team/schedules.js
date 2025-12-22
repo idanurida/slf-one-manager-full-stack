@@ -41,8 +41,8 @@ import {
 } from "@/components/ui/alert";
 
 // Icons
-import { Calendar, MapPin, Users, FileText, Clock, CheckCircle2, XCircle, Eye, Search, Filter, RefreshCw, ArrowLeft, ExternalLink, AlertTriangle, Info }
-from "lucide-react";
+import { Calendar, MapPin, Users, FileText, Clock, CheckCircle2, XCircle, Eye, Search, Filter, RefreshCw, ArrowLeft, ExternalLink, AlertTriangle, Info, TrendingUp }
+  from "lucide-react";
 
 // Utils & Context
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -115,7 +115,7 @@ export default function AdminTeamSchedulesPage() {
 
     try {
       // Ambil proyek yang saya handle sebagai admin_team
-      const {  assignments, error: assignErr } = await supabase
+      const { data: assignments, error: assignErr } = await supabase
         .from('project_teams')
         .select('project_id')
         .eq('user_id', user.id)
@@ -127,7 +127,7 @@ export default function AdminTeamSchedulesPage() {
 
       let schedulesData = [];
       if (projectIds.length > 0) {
-        const {  scheds, error: schedsErr } = await supabase
+        const { data: scheds, error: schedsErr } = await supabase
           .from('schedules')
           .select(`
             *,
@@ -147,7 +147,7 @@ export default function AdminTeamSchedulesPage() {
 
       // Ambil daftar proyek untuk filter dropdown
       if (projectIds.length > 0) {
-        const {  projs, error: projsErr } = await supabase
+        const { data: projs, error: projsErr } = await supabase
           .from('projects')
           .select('id, name')
           .in('id', projectIds)
@@ -177,9 +177,9 @@ export default function AdminTeamSchedulesPage() {
   // Filter schedules
   const filteredSchedules = schedules.filter(s => {
     const matchesSearch = s.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         s.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         s.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      s.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesType = typeFilter === 'all' || s.schedule_type === typeFilter;
     const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
     const matchesProject = projectFilter === 'all' || s.project_id === projectFilter;
@@ -188,8 +188,6 @@ export default function AdminTeamSchedulesPage() {
   });
 
   const handleViewSchedule = (scheduleId) => {
-    // Arahkan ke detail jadwal jika ada (opsional)
-    // router.push(`/dashboard/admin-team/schedules/${scheduleId}`);
     toast.info('Detail jadwal akan segera tersedia.');
   };
 
@@ -204,251 +202,218 @@ export default function AdminTeamSchedulesPage() {
 
   if (authLoading || (user && !isAdminTeam)) {
     return (
-      <DashboardLayout title="Jadwal Proyek">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <RefreshCw className="animate-spin h-10 w-10 text-[#7c3aed]" />
         </div>
       </DashboardLayout>
     );
   }
 
-  if (error) {
-    return (
-      <DashboardLayout title="Jadwal Proyek">
-        <div className="p-4 md:p-6">
-          <Alert variant="destructive" className="mb-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-          <Button onClick={fetchData}>Coba Muat Ulang</Button>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  // Stats calculation
+  const totalSchedules = schedules.length;
+  const upcomingCount = schedules.filter(s => s.status === 'scheduled').length;
+  const activeCount = schedules.filter(s => s.status === 'in_progress').length;
+  const completedCount = schedules.filter(s => s.status === 'completed').length;
 
   return (
-    <DashboardLayout title="Jadwal Proyek">
-      <TooltipProvider>
-        <motion.div
-          className="p-6 space-y-8 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={loading}
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => router.push('/dashboard/admin-team')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali
-            </Button>
-          </motion.div>
+    <DashboardLayout>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-12 pb-20"
+      >
+        {/* Header Section */}
+        <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+              Agenda <span className="text-[#7c3aed]">Proyek</span>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Manajemen waktu dan koordinasi kegiatan operasional di lapangan.</p>
+          </div>
 
-          {/* Filters */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardContent className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                  <div className="relative md:col-span-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      placeholder="Cari judul, deskripsi, atau nama proyek..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-                    />
-                  </div>
-                  <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="w-full bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                      <SelectValue placeholder="Filter Tipe" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <SelectItem value="all">Semua Tipe</SelectItem>
-                      {availableTypes.map(type => (
-                        <SelectItem key={type} value={type} className="text-slate-900 dark:text-slate-100">
-                          {type?.replace(/_/g, ' ') || 'N/A'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                      <SelectValue placeholder="Filter Status" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <SelectItem value="all">Semua Status</SelectItem>
-                      {availableStatuses.map(status => (
-                        <SelectItem key={status} value={status} className="text-slate-900 dark:text-slate-100">
-                          {getScheduleStatusLabel(status)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select value={projectFilter} onValueChange={setProjectFilter}>
-                    <SelectTrigger className="w-full bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                      <SelectValue placeholder="Filter Proyek" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <SelectItem value="all">Semua Proyek</SelectItem>
-                      {projects.map(project => (
-                        <SelectItem key={project.id} value={project.id} className="text-slate-900 dark:text-slate-100">
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            <div className="relative group flex-1 lg:min-w-[400px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
+              <input
+                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                placeholder="Cari Agenda atau Proyek..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10">
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            </button>
+          </div>
+        </motion.div>
 
-          {/* Schedules Table */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-blue-500" />
-                    Jadwal ({filteredSchedules.length})
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Judul</TableHead>
-                        <TableHead>Proyek</TableHead>
-                        <TableHead>Tanggal & Waktu</TableHead>
-                        <TableHead>Tipe</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Aksi</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/2" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/4" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/4" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/4" /></TableCell>
-                          <TableCell><Skeleton className="h-8 w-20" /></TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : filteredSchedules.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Calendar className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4 opacity-50" />
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                      Tidak Ada Jadwal
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      {searchTerm || typeFilter !== 'all' || statusFilter !== 'all' || projectFilter !== 'all'
-                        ? 'Tidak ada jadwal yang sesuai dengan filter.'
-                        : 'Belum ada jadwal yang ditetapkan untuk proyek Anda saat ini.'}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-slate-100 dark:bg-slate-800">
-                          <TableHead>Judul</TableHead>
-                          <TableHead>Proyek</TableHead>
-                          <TableHead>Tanggal & Waktu</TableHead>
-                          <TableHead>Tipe</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Aksi</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredSchedules.map((schedule) => (
-                          <TableRow key={schedule.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-700">
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                  <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{schedule.title}</p>
-                                  {schedule.description && (
-                                    <p className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-xs">
-                                      {schedule.description}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <Building className="w-3 h-3 text-slate-500" />
-                                <span className="truncate max-w-[100px]">{schedule.project_name}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-slate-600 dark:text-slate-400">
-                              {format(new Date(schedule.schedule_date), 'dd MMM yyyy HH:mm', { locale: localeId })}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getScheduleTypeColor(schedule.schedule_type)}>
-                                {schedule.schedule_type?.replace(/_/g, ' ') || 'N/A'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getScheduleStatusColor(schedule.status)}>
-                                {getScheduleStatusLabel(schedule.status)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Button variant="outline" size="sm" onClick={() => handleViewSchedule(schedule.id)}>
-                                <Eye className="w-4 h-4 mr-2" />
-                                Detail
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+        {/* Stats Section */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Total Agenda" value={totalSchedules} icon={<Calendar size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
+          <StatCard title="Mendatang" value={upcomingCount} icon={<Clock size={24} />} color="text-blue-500" bg="bg-blue-500/10" trend="Soon" trendColor="text-blue-500" />
+          <StatCard title="Berjalan" value={activeCount} icon={<TrendingUp size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Live" trendColor="text-orange-500" />
+          <StatCard title="Selesai" value={completedCount} icon={<CheckCircle2 size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Done" trendColor="text-emerald-500" />
+        </motion.div>
 
-          {/* Info Card */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
-              <CardContent className="p-4">
-                <div className="flex">
-                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-medium text-blue-800 dark:text-blue-200">Catatan:</h3>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                      Jadwal ini mencakup kegiatan seperti inspeksi, review laporan, verifikasi dokumen, dan meeting yang terkait dengan proyek yang Anda tangani.
-                      Jadwal ini ditetapkan oleh <code className="bg-white dark:bg-slate-800 px-1 rounded">project_lead</code> atau <code className="bg-white dark:bg-slate-800 px-1 rounded">admin_lead</code>.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Filters and Search Results */}
+        <motion.div variants={itemVariants} className="space-y-8">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter size={14} className="text-slate-400" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Filter:</span>
+            </div>
+
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Tipe Agenda" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Tipe</SelectItem>
+                {availableTypes.map(t => (
+                  <SelectItem key={t} value={t} className="uppercase text-[10px] font-bold">{t?.replace(/_/g, ' ') || 'Tanpa Tipe'}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Status</SelectItem>
+                {availableStatuses.map(s => (
+                  <SelectItem key={s} value={s} className="uppercase text-[10px] font-bold">{getScheduleStatusLabel(s)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={projectFilter} onValueChange={setProjectFilter}>
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Pilih Proyek" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Proyek</SelectItem>
+                {projects.map(p => (
+                  <SelectItem key={p.id} value={p.id} className="uppercase text-[10px] font-bold">{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {loading ? (
+            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 space-y-4">
+              {[1, 2, 3, 4, 5].map(i => (
+                <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+              ))}
+            </div>
+          ) : filteredSchedules.length === 0 ? (
+            <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+              <Calendar size={80} className="text-slate-300 dark:text-slate-700 opacity-30 mb-8" />
+              <h3 className="text-2xl font-black uppercase tracking-tighter">Agenda Kosong</h3>
+              <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Tidak ada jadwal yang ditemukan untuk filter ini.</p>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden mt-8">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-50 dark:border-white/5">
+                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Kegiatan & Deskripsi</th>
+                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Proyek</th>
+                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Waktu</th>
+                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
+                      <th className="px-8 py-6 text-right text-[10px] font-black uppercase tracking-widest text-slate-400 px-12">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+                    {filteredSchedules.map((schedule) => (
+                      <tr key={schedule.id} className="group hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all">
+                        <td className="px-8 py-6">
+                          <div className="flex items-start gap-4">
+                            <div className={`p-3 rounded-2xl shrink-0 ${getScheduleTypeColor(schedule.schedule_type)}`}>
+                              <Calendar size={18} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-black uppercase tracking-tight group-hover:text-[#7c3aed] transition-colors">{schedule.title}</p>
+                              <p className="text-[10px] font-medium text-slate-400 mt-1 line-clamp-1">{schedule.description || 'Tidak ada deskripsi'}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-2">
+                            <Building size={14} className="text-slate-300" />
+                            <span className="text-[11px] font-bold uppercase tracking-tight">{schedule.project_name}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="space-y-1">
+                            <p className="text-[11px] font-black uppercase tracking-tight">{format(new Date(schedule.schedule_date), 'dd MMM yyyy', { locale: localeId })}</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{format(new Date(schedule.schedule_date), 'HH:mm', { locale: localeId })} WIB</p>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <Badge className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getScheduleStatusColor(schedule.status)}`}>
+                            {getScheduleStatusLabel(schedule.status)}
+                          </Badge>
+                        </td>
+                        <td className="px-8 py-6 text-right group-hover:px-10 transition-all">
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleViewSchedule(schedule.id)}
+                            className="size-10 p-0 rounded-xl hover:bg-[#7c3aed] hover:text-white transition-all shadow-lg hover:shadow-[#7c3aed]/20"
+                          >
+                            <Eye size={18} />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Info Banner */}
+          <motion.div variants={itemVariants} className="bg-blue-500/5 border border-blue-500/10 rounded-[2rem] p-8 flex gap-6 mt-12">
+            <div className="size-12 bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center shrink-0">
+              <Info size={24} />
+            </div>
+            <div>
+              <h4 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-2">Informasi Agenda</h4>
+              <p className="text-sm font-medium text-blue-800/60 dark:text-blue-400/60 leading-relaxed">
+                Agenda ini merupakan sinkronisasi dari Project Lead dan Admin Lead. Sebagai Admin Team, Anda berkewajiban memantau ketepatan waktu pelaksanaan setiap kegiatan untuk memastikan verifikasi dokumen berjalan sesuai target timeline.
+              </p>
+            </div>
           </motion.div>
         </motion.div>
-      </TooltipProvider>
+      </motion.div>
     </DashboardLayout>
+  );
+}
+
+// Sub-components
+function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
+  return (
+    <div className="relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+      <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
+        {React.cloneElement(icon, { size: 80 })}
+      </div>
+      <div className="relative flex items-center justify-between mb-4">
+        <div className={`size-12 rounded-2xl ${bg} ${color} flex items-center justify-center transition-all duration-300 group-hover:shadow-lg`}>
+          {icon}
+        </div>
+        {trend && (
+          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-white/5`}>
+            {trend}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col">
+        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-none mb-2">{title}</p>
+        <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">{value}</p>
+      </div>
+    </div>
   );
 }

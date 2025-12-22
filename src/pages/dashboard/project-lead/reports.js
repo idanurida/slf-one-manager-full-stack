@@ -1,16 +1,17 @@
 // FILE: src/pages/dashboard/project-lead/reports.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { id as localeId } from "date-fns/locale";
 
 // Components
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -18,25 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -49,7 +31,7 @@ import { Label } from "@/components/ui/label";
 
 // Icons
 import {
-  FileText, Building, User, Clock, CheckCircle2, XCircle, AlertTriangle, Eye, Search, Filter, RefreshCw, Send, ArrowLeft, Download
+  FileText, CheckCircle2, XCircle, Search, Filter, RefreshCw, ArrowLeft, Download, Eye, AlertCircle, Clock, Calendar, User, Building
 } from "lucide-react";
 
 // Utils & Context
@@ -60,71 +42,57 @@ import { useAuth } from "@/context/AuthContext";
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
 };
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+  visible: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "easeOut" } }
 };
 
-// Helper functions
-const getStatusColor = (status) => {
-  const colors = {
-    'submitted': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-    'verified_by_admin_team': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400', // Siap disetujui oleh PL
-    'approved_by_pl': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400', // Sudah disetujui PL
-    'rejected_by_pl': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400', // Ditolak PL
-    'approved': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'rejected': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-  };
-  return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
-};
-
-const getStatusLabel = (status) => {
-  const labels = {
-    'submitted': 'Submitted',
-    'verified_by_admin_team': 'Siap Disetujui',
-    'approved_by_pl': 'Disetujui oleh PL',
-    'rejected_by_pl': 'Ditolak oleh PL',
-    'approved': 'Approved',
-    'rejected': 'Rejected',
-  };
-  return labels[status] || status;
-};
-
-// Main Component
-export default function ProjectLeadReportsPage() {
+export default function TeamLeaderReportsPage() {
   const router = useRouter();
-  const { user, profile, loading: authLoading, isProjectLead } = useAuth();
+  const { user, profile, loading: authLoading, isProjectLead, isTeamLeader } = useAuth();
+  const hasAccess = isProjectLead || isTeamLeader;
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [reports, setReports] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('verified_by_admin_team'); // Default ke yang siap disetujui
+  const [statusFilter, setStatusFilter] = useState('verified_by_admin_team');
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [rejectionNotes, setRejectionNotes] = useState('');
+  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
 
   // Fetch reports assigned to this project_lead's projects
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
 
     setLoading(true);
-    setError(null);
 
     try {
-      // Ambil project_ids dari proyek yang ditangani oleh saya
-      const { data: assignments, error: assignErr } = await supabase
+      // 1. Fetch assignments via project_teams
+      const teamQuery = supabase
         .from('project_teams')
         .select('project_id')
         .eq('user_id', user.id)
         .eq('role', 'project_lead');
 
-      if (assignErr) throw assignErr;
+      // 2. Fetch assignments via project_lead_id
+      const legacyQuery = supabase
+        .from('projects')
+        .select('id')
+        .eq('project_lead_id', user.id);
 
-      const projectIds = assignments.map(a => a.project_id);
+      const [teamRes, legacyRes] = await Promise.all([teamQuery, legacyQuery]);
+
+      if (teamRes.error) throw teamRes.error;
+      if (legacyRes.error) throw legacyRes.error;
+
+      // Extract and Merge IDs
+      const teamIds = (teamRes.data || []).map(a => a.project_id);
+      const legacyIds = (legacyRes.data || []).map(p => p.id);
+      const projectIds = [...new Set([...teamIds, ...legacyIds])]; // Unique IDs
 
       let reportsData = [];
       if (projectIds.length > 0) {
@@ -132,12 +100,12 @@ export default function ProjectLeadReportsPage() {
           .from('documents')
           .select(`
             *,
-            projects(name),
+            projects!documents_project_id_fkey(name),
             profiles!created_by(full_name, specialization)
           `)
           .in('project_id', projectIds)
-          .eq('document_type', 'REPORT') // Hanya laporan
-          .in('status', ['verified_by_admin_team', 'approved_by_pl', 'rejected_by_pl']) // Filter status yang relevan
+          .eq('document_type', 'REPORT')
+          .in('status', ['verified_by_admin_team', 'approved_by_pl', 'rejected_by_pl', 'submitted'])
           .order('created_at', { ascending: false });
 
         if (docsErr) throw docsErr;
@@ -145,16 +113,22 @@ export default function ProjectLeadReportsPage() {
         reportsData = docs.map(doc => ({
           ...doc,
           project_name: doc.projects?.name || 'Unknown Project',
-          inspector_name: doc.profiles?.full_name || 'Unknown Inspector',
-          inspector_specialization: doc.profiles?.specialization || 'General'
+          inspector_name: doc.profiles?.full_name || 'Tim',
+          inspector_specialization: doc.profiles?.specialization || 'Umum'
         }));
       }
 
       setReports(reportsData);
 
+      // Calculate Stats
+      setStats({
+        pending: reportsData.filter(r => r.status === 'verified_by_admin_team').length,
+        approved: reportsData.filter(r => r.status === 'approved_by_pl').length,
+        rejected: reportsData.filter(r => r.status === 'rejected_by_pl').length
+      });
+
     } catch (err) {
-      console.error('Error fetching reports for lead:', err);
-      setError('Gagal memuat data laporan');
+      console.error('Error fetching reports:', err);
       toast.error('Gagal memuat data laporan');
     } finally {
       setLoading(false);
@@ -162,19 +136,18 @@ export default function ProjectLeadReportsPage() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (router.isReady && !authLoading && user && isProjectLead) {
+    if (router.isReady && !authLoading && user && hasAccess) {
       fetchData();
-    } else if (!authLoading && user && !isProjectLead) {
+    } else if (!authLoading && user && !hasAccess) {
       router.replace('/dashboard');
     }
-  }, [router.isReady, authLoading, user, isProjectLead, fetchData]);
+  }, [router.isReady, authLoading, user, hasAccess, fetchData]);
 
-  // Filter reports
   const filteredReports = reports.filter(r => {
     const matchesSearch = r.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         r.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         r.inspector_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      r.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.inspector_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
 
     return matchesSearch && matchesStatus;
@@ -187,19 +160,18 @@ export default function ProjectLeadReportsPage() {
         .update({
           status: 'approved_by_pl',
           updated_at: new Date().toISOString()
-          // Tambahkan kolom verified_by_pl jika perlu
         })
         .eq('id', reportId);
 
       if (error) throw error;
 
-      toast.success('Laporan berhasil disetujui');
+      toast.success('Laporan disetujui');
       setApproveDialogOpen(false);
       setSelectedReport(null);
-      fetchData(); // Refresh data
+      fetchData();
     } catch (err) {
-      console.error('Error approving report:', err);
-      toast.error('Gagal menyetujui laporan: ' + err.message);
+      console.error('Error approving:', err);
+      toast.error('Gagal menyetujui laporan');
     }
   };
 
@@ -214,321 +186,239 @@ export default function ProjectLeadReportsPage() {
         .from('documents')
         .update({
           status: 'rejected_by_pl',
-          admin_team_feedback: rejectionNotes, // Gunakan kolom feedback untuk alasan
+          admin_team_feedback: rejectionNotes,
           updated_at: new Date().toISOString()
         })
         .eq('id', reportId);
 
       if (error) throw error;
 
-      toast.success('Laporan berhasil ditolak');
+      toast.success('Laporan ditolak');
       setRejectDialogOpen(false);
       setSelectedReport(null);
-      setRejectionNotes(''); // Reset notes
-      fetchData(); // Refresh data
+      setRejectionNotes('');
+      fetchData();
     } catch (err) {
-      console.error('Error rejecting report:', err);
-      toast.error('Gagal menolak laporan: ' + err.message);
+      console.error('Error rejecting:', err);
+      toast.error('Gagal menolak laporan');
     }
   };
 
-  const handleOpenApproveDialog = (report) => {
-    setSelectedReport(report);
-    setApproveDialogOpen(true);
-  };
-
-  const handleOpenRejectDialog = (report) => {
-    setSelectedReport(report);
-    setRejectionNotes(''); // Reset notes sebelum buka
-    setRejectDialogOpen(true);
-  };
-
-  const handleViewReport = (reportId) => {
-    router.push(`/dashboard/project-lead/reports/${reportId}`); // Detail report page
-  };
-
-  const handleDownloadReport = (url) => {
-    if (url) {
-      window.open(url, '_blank');
-    } else {
-      toast.error('File tidak tersedia');
-    }
-  };
-
-  const handleRefresh = () => {
-    fetchData();
-    toast.success('Data diperbarui');
-  };
-
-  if (authLoading || (user && !isProjectLead)) {
-    return (
-      <DashboardLayout title="Laporan Inspector">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  if (authLoading || (user && !hasAccess)) return null;
 
   return (
-    <DashboardLayout title="Laporan Inspector">
-      <TooltipProvider>
-        <motion.div
-          className="p-6 space-y-6 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+    <DashboardLayout>
+      <motion.div
+        className="space-y-8 pb-20"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <motion.div variants={itemVariants}>
+            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">
+              Approval <span className="text-[#7c3aed]">Laporan</span>
+            </h1>
+            <p className="text-slate-500 font-medium">Tinjau dan setujui laporan teknis dari tim lapangan.</p>
+          </motion.div>
+          <motion.div variants={itemVariants} className="flex gap-3">
+            <Button variant="outline" size="sm" onClick={fetchData} className="rounded-xl h-10 px-4">
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            <Button size="sm" onClick={() => router.push('/dashboard/project-lead')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali
-            </Button>
           </motion.div>
+        </div>
 
-          {/* Filters */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      placeholder="Cari nama laporan, proyek, atau inspector..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-                    />
-                  </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full md:w-[180px] bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                      <SelectValue placeholder="Filter Status" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <SelectItem value="all">Semua Status</SelectItem>
-                      <SelectItem value="verified_by_admin_team">Siap Disetujui</SelectItem>
-                      <SelectItem value="approved_by_pl">Sudah Disetujui</SelectItem>
-                      <SelectItem value="rejected_by_pl">Ditolak</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Error Alert */}
-          {error && (
-            <motion.div variants={itemVariants}>
-              <Alert variant="destructive" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
-
-          {/* Reports Table */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle>Laporan ({filteredReports.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nama Laporan</TableHead>
-                        <TableHead>Proyek</TableHead>
-                        <TableHead>Inspector</TableHead>
-                        <TableHead>Tanggal Upload</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Aksi</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <TableRow key={i}>
-                          <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/2" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/2" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/4" /></TableCell>
-                          <TableCell><Skeleton className="h-3 w-1/4" /></TableCell>
-                          <TableCell><Skeleton className="h-8 w-20" /></TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : filteredReports.length === 0 ? (
-                  <div className="text-center py-12">
-                    <FileText className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                      Tidak Ada Laporan
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      {searchTerm || statusFilter !== 'all'
-                        ? 'Tidak ada laporan yang sesuai dengan filter.'
-                        : 'Belum ada laporan dari inspector untuk proyek Anda.'}
-                    </p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nama Laporan</TableHead>
-                        <TableHead>Proyek</TableHead>
-                        <TableHead>Inspector</TableHead>
-                        <TableHead>Tanggal Upload</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Aksi</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredReports.map((report) => (
-                        <TableRow key={report.id}>
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-purple-500" />
-                              <span>{report.name}</span>
-                              <Badge variant="outline" className="ml-2 text-xs capitalize">
-                                {report.inspector_specialization}
-                              </Badge>
-                            </div>
-                          </TableCell>
-                          <TableCell>{report.project_name}</TableCell>
-                          <TableCell>{report.inspector_name}</TableCell>
-                          <TableCell>
-                            {new Date(report.created_at).toLocaleDateString('id-ID')}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(report.status)}>
-                              {getStatusLabel(report.status)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDownloadReport(report.url)}
-                              >
-                                <Download className="w-4 h-4 mr-2" />
-                                Unduh
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewReport(report.id)}
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                Detail
-                              </Button>
-                              {report.status === 'verified_by_admin_team' && (
-                                <>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
-                                    onClick={() => handleOpenApproveDialog(report)}
-                                  >
-                                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                                    Approve
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    onClick={() => handleOpenRejectDialog(report)}
-                                  >
-                                    <XCircle className="w-4 h-4 mr-2" />
-                                    Reject
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Approve Dialog */}
-          <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
-            <DialogContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-              <DialogHeader>
-                <DialogTitle className="text-slate-900 dark:text-slate-100">
-                  Approve Laporan
-                </DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <p className="text-slate-600 dark:text-slate-400">
-                  Anda yakin ingin menyetujui laporan "<strong>{selectedReport?.name}</strong>" dari proyek "<strong>{selectedReport?.project_name}</strong>"?
-                </p>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setApproveDialogOpen(false)}>
-                  Batal
-                </Button>
-                <Button
-                  onClick={() => handleApproveReport(selectedReport?.id)}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Approve
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {/* Reject Dialog */}
-          <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-            <DialogContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-              <DialogHeader>
-                <DialogTitle className="text-slate-900 dark:text-slate-100">
-                  Tolak Laporan
-                </DialogTitle>
-              </DialogHeader>
-              <div className="py-4 space-y-4">
-                <p className="text-slate-600 dark:text-slate-400">
-                  Anda yakin ingin menolak laporan "<strong>{selectedReport?.name}</strong>" dari proyek "<strong>{selectedReport?.project_name}</strong>"?
-                </p>
-                <div>
-                  <Label htmlFor="rejection-notes">Alasan Penolakan</Label>
-                  <Textarea
-                    id="rejection-notes"
-                    value={rejectionNotes}
-                    onChange={(e) => setRejectionNotes(e.target.value)}
-                    placeholder="Tuliskan alasan penolakan..."
-                    className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
-                  Batal
-                </Button>
-                <Button
-                  onClick={() => handleRejectReport(selectedReport?.id)}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Tolak
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+        {/* Stats */}
+        <motion.div variants={itemVariants} className="grid grid-cols-3 gap-6">
+          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between group hover:border-orange-200 transition-colors cursor-default">
+            <div>
+              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Perlu Review</p>
+              <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.pending}</h3>
+            </div>
+            <div className="size-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <AlertCircle size={24} />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between group hover:border-green-200 transition-colors cursor-default">
+            <div>
+              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Disetujui</p>
+              <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.approved}</h3>
+            </div>
+            <div className="size-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <CheckCircle2 size={24} />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between group hover:border-red-200 transition-colors cursor-default">
+            <div>
+              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Ditolak</p>
+              <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.rejected}</h3>
+            </div>
+            <div className="size-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <XCircle size={24} />
+            </div>
+          </div>
         </motion.div>
-      </TooltipProvider>
+
+        {/* Filters */}
+        <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] p-4 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Input
+              placeholder="Cari laporan..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-12 h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full md:w-[200px] h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="all">Semua Status</SelectItem>
+              <SelectItem value="verified_by_admin_team">Perlu Review</SelectItem>
+              <SelectItem value="approved_by_pl">Disetujui</SelectItem>
+              <SelectItem value="rejected_by_pl">Ditolak</SelectItem>
+            </SelectContent>
+          </Select>
+        </motion.div>
+
+        {/* Reports List */}
+        <div className="space-y-4">
+          <AnimatePresence mode="wait">
+            {loading ? (
+              [1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-[2rem] w-full" />)
+            ) : filteredReports.length === 0 ? (
+              <div className="py-20 text-center">
+                <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-6">
+                  <FileText className="size-12 text-slate-300" />
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-2">Tidak ada laporan</h3>
+                <p className="text-slate-400">Belum ada laporan yang sesuai kriteria.</p>
+              </div>
+            ) : (
+              filteredReports.map((report) => (
+                <motion.div
+                  key={report.id}
+                  variants={itemVariants}
+                  className="group bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:border-[#7c3aed]/30 transition-all duration-300 relative overflow-hidden"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                    <div className="flex items-start gap-4">
+                      <div className={`p-4 rounded-2xl shrink-0 ${getStatusColor(report.status)}`}>
+                        <FileText size={24} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 border-none px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider">
+                            {report.project_name}
+                          </Badge>
+                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{format(new Date(report.created_at), 'dd MMM HH:mm', { locale: localeId })}</span>
+                        </div>
+                        <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2">{report.name}</h3>
+                        <div className="flex items-center gap-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                          <span className="flex items-center gap-1"><User size={12} /> {report.inspector_name}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 self-end md:self-center">
+                      <Button variant="outline" size="sm" onClick={() => window.open(report.url, '_blank')} className="rounded-xl h-10 px-4">
+                        <Download size={16} className="mr-2" />
+                        Unduh
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/project-lead/reports/${report.id}`)} className="rounded-xl h-10 px-4">
+                        <Eye size={16} className="mr-2" />
+                        Detail
+                      </Button>
+                      {report.status === 'verified_by_admin_team' && (
+                        <>
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white rounded-xl h-10 px-6 font-bold"
+                            onClick={() => { setSelectedReport(report); setApproveDialogOpen(true); }}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="bg-red-600 hover:bg-red-700 text-white rounded-xl h-10 px-6 font-bold"
+                            onClick={() => { setSelectedReport(report); setRejectDialogOpen(true); }}
+                          >
+                            Reject
+                          </Button>
+                        </>
+                      )}
+                      {report.status === 'approved_by_pl' && (
+                        <Badge className="bg-green-100 text-green-700 h-10 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border-none">
+                          <CheckCircle2 size={16} className="mr-2" /> Disetujui
+                        </Badge>
+                      )}
+                      {report.status === 'rejected_by_pl' && (
+                        <Badge className="bg-red-100 text-red-700 h-10 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border-none">
+                          <XCircle size={16} className="mr-2" /> Ditolak
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Dialogs */}
+        <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
+          <DialogContent className="rounded-[2rem] border-none bg-white dark:bg-[#1e293b]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black uppercase tracking-tight">Konfirmasi Approval</DialogTitle>
+            </DialogHeader>
+            <p className="text-slate-500">
+              Apakah Anda yakin ingin menyetujui laporan <strong>{selectedReport?.name}</strong>? Tindakan ini akan meneruskan status laporan.
+            </p>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setApproveDialogOpen(false)} className="rounded-xl font-bold">Batal</Button>
+              <Button onClick={() => handleApproveReport(selectedReport?.id)} className="bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold">Ya, Setujui</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+          <DialogContent className="rounded-[2rem] border-none bg-white dark:bg-[#1e293b]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black uppercase tracking-tight text-red-600">Konfirmasi Penolakan</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-slate-500">
+                Mohon berikan alasan penolakan untuk laporan <strong>{selectedReport?.name}</strong>. Feedback ini akan dikirimkan ke tim.
+              </p>
+              <Textarea
+                value={rejectionNotes}
+                onChange={e => setRejectionNotes(e.target.value)}
+                placeholder="Contoh: Dokumen kurang lengkap, mohon perbaiki bagian..."
+                className="min-h-[100px] rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 ring-red-500/20"
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setRejectDialogOpen(false)} className="rounded-xl font-bold">Batal</Button>
+              <Button onClick={() => handleRejectReport(selectedReport?.id)} className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold">Tolak Laporan</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+      </motion.div>
     </DashboardLayout>
   );
+}
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'verified_by_admin_team': return 'bg-orange-100 text-orange-600';
+    case 'approved_by_pl': return 'bg-green-100 text-green-600';
+    case 'rejected_by_pl': return 'bg-red-100 text-red-600';
+    default: return 'bg-slate-100 text-slate-600';
+  }
 }

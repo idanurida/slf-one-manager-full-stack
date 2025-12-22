@@ -8,12 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
-import { 
-  Trash2, 
-  Plus, 
-  Search, 
-  Eye, 
-  X, 
+import {
+  Trash2,
+  Plus,
+  Search,
+  Eye,
+  X,
   AlertCircle,
   Loader2
 } from "lucide-react";
@@ -197,7 +197,7 @@ export default function SuperadminProjectsPage() {
   // === FILTER ===
   useEffect(() => {
     let result = projects;
-    
+
     // Filter by search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -212,17 +212,17 @@ export default function SuperadminProjectsPage() {
           p.building_function?.toLowerCase().includes(term)
       );
     }
-    
+
     // Filter by status
     if (selectedStatus !== "all") {
       result = result.filter((p) => p.status === selectedStatus);
     }
-    
+
     // Filter by project lead
     if (selectedProjectLead !== "all") {
       result = result.filter((p) => p.project_lead_id === selectedProjectLead);
     }
-    
+
     setFilteredProjects(result);
   }, [searchTerm, selectedStatus, selectedProjectLead, projects]);
 
@@ -282,7 +282,7 @@ export default function SuperadminProjectsPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     toast({
       title: "Export Berhasil",
       description: "File CSV telah berhasil diunduh",
@@ -324,7 +324,7 @@ export default function SuperadminProjectsPage() {
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Projects");
       XLSX.writeFile(wb, "Daftar_Proyek.xlsx");
-      
+
       toast({
         title: "Export Berhasil",
         description: "File Excel telah berhasil diunduh",
@@ -391,7 +391,7 @@ export default function SuperadminProjectsPage() {
 
   return (
     <DashboardLayout title="Daftar Projects" user={user}>
-      <div className="p-4 md:p-6">
+      <div className="space-y-6">
         <div className="space-y-6">
           {/* Header - JUDUL UTAMA DIHAPUS karena duplikasi */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -608,8 +608,8 @@ export default function SuperadminProjectsPage() {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    {projects.length === 0 
-                      ? "Belum ada proyek dalam sistem." 
+                    {projects.length === 0
+                      ? "Belum ada proyek dalam sistem."
                       : "Tidak ditemukan proyek sesuai filter."
                     }
                   </AlertDescription>

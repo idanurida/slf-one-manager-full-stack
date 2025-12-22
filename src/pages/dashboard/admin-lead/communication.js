@@ -1,8 +1,8 @@
-// FILE: src/pages/dashboard/admin-lead/communication.js
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 // Components
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,16 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
 
 // Icons
-import { MessageCircle, Users, Building, Mail, Search, Filter, RefreshCw, Eye, Clock, CheckCircle2, AlertCircle, ArrowLeft, Phone, Calendar, Send, User } from "lucide-react";
+import {
+  MessageCircle, Users, Building, Mail, Search, Filter, RefreshCw, Eye, Clock,
+  CheckCircle2, AlertCircle, ArrowLeft, Phone, Calendar, Send, User,
+  MoreVertical, Menu, Sun, Moon, LogOut, Building2, LayoutDashboard, ChevronRight,
+  PlusCircle, UserPlus, Globe, FolderOpen, MapPin, Inbox, Paperclip, Smile, Loader2, Sparkles
+} from "lucide-react";
 
 // Utils & Context
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -26,399 +31,67 @@ import { useAuth } from "@/context/AuthContext";
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
 };
+
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+  visible: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "circOut" } }
 };
 
-// Helper functions
-export const getStatusColor = (status) => {
-  const colors = {
-    'active': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'completed': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-    'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-    'draft': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
-    'government_submitted': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-  };
-  return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
-};
-
-export const getStatusLabel = (status) => {
-  const labels = {
-    'draft': 'Draft',
-    'submitted': 'Submitted',
-    'project_lead_review': 'Project Lead Review',
-    'inspection_scheduled': 'Inspection Scheduled',
-    'inspection_in_progress': 'Inspection In Progress',
-    'report_draft': 'Report Draft',
-    'head_consultant_review': 'Head Consultant Review',
-    'client_review': 'Client Review',
-    'government_submitted': 'Government Submitted',
-    'slf_issued': 'SLF Issued',
-    'completed': 'Completed',
-    'cancelled': 'Cancelled'
-  };
-  return labels[status] || status;
-};
-
-// StatCard Component
-const StatCard = ({ label, value, icon: Icon, color, helpText, loading, trend, onClick }) => (
-  <TooltipProvider>
-    <div>
-      <Card
-        className={`cursor-pointer hover:shadow-md transition-shadow ${onClick ? 'hover:border-primary/50' : ''}`}
-        onClick={onClick}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className={`p-2 rounded-lg ${color} bg-opacity-10`}>
-                {Icon && <Icon className="w-4 h-4" />}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                <p className="text-2xl font-bold">
-                  {loading ? <Skeleton className="h-8 w-12" /> : value}
-                </p>
-              </div>
-            </div>
-            {trend !== undefined && (
-              <div className={`text-sm font-medium ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {trend >= 0 ? '↗' : '↘'} {Math.abs(trend)}%
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  </TooltipProvider>
-);
-
-// Message Thread Component
-// Modern Chat Thread Component
-const MessageThread = ({ messages, onSendMessage, loading, currentUser, project, client }) => {
-  const [newMessage, setNewMessage] = useState('');
-  const messagesEndRef = React.useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSend = () => {
-    if (newMessage.trim()) {
-      onSendMessage(newMessage.trim());
-      setNewMessage('');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full bg-slate-50 dark:bg-slate-900/50">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="text-sm text-muted-foreground">Memuat obrolan...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900/50">
-      {/* Chat Header */}
-      <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shadow-sm z-10">
-        <div>
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            {project?.name}
-            {project && <Badge className={getStatusColor(project.status)}>{getStatusLabel(project.status)}</Badge>}
-          </h3>
-          <p className="text-sm text-slate-500 flex items-center gap-1">
-            <User className="w-3 h-3" />
-            {client?.name || 'Client'}
-          </p>
-        </div>
-      </div>
-
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-slate-400">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-              <MessageCircle className="w-8 h-8" />
-            </div>
-            <p>Belum ada pesan di proyek ini</p>
-            <p className="text-sm">Mulai percakapan dengan mengirim pesan pertama.</p>
-          </div>
-        ) : (
-          messages.map((message, index) => {
-            const isMe = message.sender_id === currentUser.id;
-            const showTime = index === 0 || new Date(message.created_at) - new Date(messages[index - 1].created_at) > 300000;
-
-            return (
-              <div key={message.id || index} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                {showTime && (
-                  <div className="w-full flex justify-center mb-4">
-                    <span className="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
-                      {new Date(message.created_at).toLocaleDateString('id-ID', { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                )}
-
-                <div className={`flex max-w-[80%] ${isMe ? 'flex-row-reverse' : 'flex-row'} items-end gap-2`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shrink-0 
-                     ${isMe ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>
-                    {isMe ? 'You' : (client?.name?.[0] || 'C')}
-                  </div>
-
-                  <div
-                    className={`px-4 py-3 rounded-2xl text-sm shadow-sm
-                       ${isMe
-                        ? 'bg-blue-600 text-white rounded-tr-none'
-                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-700 rounded-tl-none'
-                      }`}
-                  >
-                    {message.message}
-                  </div>
-                </div>
-                <span className="text-[10px] text-slate-400 mt-1 px-12">
-                  {new Date(message.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Area */}
-      <div className="p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
-        <div className="flex gap-2 items-end max-w-4xl mx-auto">
-          <Textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Ketik pesan anda..."
-            className="min-h-[50px] max-h-[150px] resize-none border-slate-200 dark:border-slate-700 focus:ring-blue-500 rounded-xl"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-          />
-          <Button
-            onClick={handleSend}
-            disabled={!newMessage.trim()}
-            className="h-[50px] w-[50px] rounded-xl bg-blue-600 hover:bg-blue-700 flex-shrink-0"
-          >
-            <Send className="w-5 h-5" />
-          </Button>
-        </div>
-        <div className="text-center mt-2">
-          <span className="text-xs text-slate-400">Tekan Enter untuk mengirim, Shift + Enter untuk baris baru</span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Client Communication Card Component
-// Chat Sidebar Item
-const ChatSidebarItem = ({ project, client, unreadCount, lastMessage, isActive, onClick }) => {
-  return (
-    <div
-      onClick={() => onClick(project.id, project.client_id)}
-      className={`
-        w-full p-4 flex items-start space-x-3 cursor-pointer transition-all duration-200 border-b border-slate-100 dark:border-slate-800
-        ${isActive
-          ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-600'
-          : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border-l-4 border-l-transparent'
-        }
-      `}
-    >
-      <div className={`p-2 rounded-lg shrink-0 ${isActive ? 'bg-blue-200 dark:bg-blue-800' : 'bg-slate-100 dark:bg-slate-800'}`}>
-        <Building className={`w-5 h-5 ${isActive ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500'}`} />
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start mb-1">
-          <h4 className={`font-semibold text-sm truncate pr-2 ${isActive ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-slate-100'}`}>
-            {project.name}
-          </h4>
-          <span className="text-[10px] text-slate-400 shrink-0">
-            {lastMessage
-              ? new Date(lastMessage.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
-              : new Date(project.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
-            }
-          </span>
-        </div>
-
-        <p className="text-xs text-slate-500 mb-1 flex items-center">
-          <User className="w-3 h-3 mr-1" />
-          {client?.name || 'Client'}
-        </p>
-
-        <div className="flex justify-between items-center">
-          <p className={`text-xs truncate max-w-[140px] ${unreadCount > 0 ? 'font-bold text-slate-800 dark:text-slate-200' : 'text-slate-500'}`}>
-            {lastMessage ? lastMessage.message : 'Belum ada pesan'}
-          </p>
-          {unreadCount > 0 && (
-            <span className="h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow-sm">
-              {unreadCount}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Main Component
 export default function AdminLeadCommunicationPage() {
   const router = useRouter();
-  const { user, profile, loading: authLoading, isAdminLead } = useAuth();
+  const { user, profile, loading: authLoading, isAdminLead, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [stats, setStats] = useState({
-    totalProjects: 0,
-    activeProjects: 0,
-    completedProjects: 0,
-    clients: 0,
-    unreadMessages: 0,
-    pendingDocuments: 0,
-    upcomingSchedules: 0
-  });
   const [projects, setProjects] = useState([]);
-  const [clients, setClients] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [clientFilter, setClientFilter] = useState('all');
   const [selectedThread, setSelectedThread] = useState(null);
+  const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef(null);
 
-  // ✅ PERBAIKAN: Fetch data dengan query yang sesuai struktur database
+  // Real-time subscription ref
+  const subscriptionRef = useRef(null);
+
   const fetchData = useCallback(async () => {
+    if (!user?.id) return;
     setLoading(true);
-    setError(null);
-
     try {
-      console.log('🔄 Fetching communication data...');
-
-      // 1. Fetch semua projects dengan data client
+      // 1. Fetch my created or assigned projects
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
-        .select(`
-          *,
-          clients (
-            id,
-            name,
-            email,
-            phone
-          )
-        `)
-        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
-        .order('created_at', { ascending: false });
+        .select('*, clients (id, name, email, phone)')
+        .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id}`)
+        .order('updated_at', { ascending: false });
 
       if (projectsError) throw projectsError;
 
-      // 2. Fetch clients terpisah untuk filter
-      const { data: clientsData, error: clientsError } = await supabase
-        .from('clients')
-        .select('id, name, email, phone')
-        .order('name');
+      const myProjects = projectsData || [];
+      setProjects(myProjects);
 
-      if (clientsError) console.warn('Error fetching clients:', clientsError);
+      if (myProjects.length === 0) {
+        setMessages([]);
+        setLoading(false);
+        return;
+      }
 
-      // 3. ✅ PERBAIKAN: Fetch messages tanpa join yang bermasalah
+      const projectIds = myProjects.map(p => p.id);
+
+      // 2. Fetch messages ONLY for these projects
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
         .select('*')
-        .order('created_at', { ascending: false });
+        .in('project_id', projectIds)
+        .order('created_at', { ascending: true });
 
-      if (messagesError) {
-        console.error('Error fetching messages:', messagesError);
-        // Continue without messages
-      }
+      if (messagesError) throw messagesError;
 
-      // 4. ✅ PERBAIKAN: Fetch notifications tanpa join yang bermasalah
-      const { data: notificationsData, error: notificationsError } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('recipient_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (notificationsError) {
-        console.error('Error fetching notifications:', notificationsError);
-        // Continue without notifications
-      }
-
-      // 5. Hitung unread messages
-      const unreadMessagesCount = messagesData?.filter(msg =>
-        msg.recipient_id === user.id && !msg.is_read
-      ).length || 0;
-
-      // 6. Hitung unread notifications
-      const unreadNotificationsCount = notificationsData?.filter(notif =>
-        !notif.is_read
-      ).length || 0;
-
-      // 7. Fetch pending documents count
-      const { count: pendingDocsCount, error: docsError } = await supabase
-        .from('documents')
-        .select('*', { count: 'exact', head: true })
-        .or('status.eq.pending,compliance_status.eq.pending');
-
-      if (docsError) console.warn('Error fetching pending documents:', docsError);
-
-      // 8. Fetch upcoming schedules count
-      const sevenDaysFromNow = new Date();
-      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-      const { count: schedulesCount, error: schedError } = await supabase
-        .from('schedules')
-        .select('*', { count: 'exact', head: true })
-        .gte('schedule_date', new Date().toISOString())
-        .lte('schedule_date', sevenDaysFromNow.toISOString());
-
-      if (schedError) console.warn('Error fetching schedules:', schedError);
-
-      // Hitung stats
-      const totalProjects = projectsData?.length || 0;
-      const activeProjects = projectsData?.filter(p => !['completed', 'cancelled'].includes(p.status)).length || 0;
-      const completedProjects = projectsData?.filter(p => p.status === 'completed').length || 0;
-
-      const unreadMsgCount = (messagesData || []).filter(m => !m.read_at && m.sender_id !== user.id).length;
-
-      setStats({
-        totalProjects,
-        activeProjects,
-        completedProjects,
-        clients: clientsData?.length || 0,
-        unreadMessages: unreadMsgCount + unreadNotificationsCount,
-        pendingDocuments: pendingDocsCount || 0,
-        upcomingSchedules: schedulesCount || 0
-      });
-
-      setProjects(projectsData || []);
-      setClients(clientsData || []);
       setMessages(messagesData || []);
-      setNotifications(notificationsData || []);
-
-      console.log('✅ Communication data loaded successfully:', {
-        projects: projectsData?.length,
-        clients: clientsData?.length,
-        messages: messagesData?.length,
-        notifications: notificationsData?.length
-      });
-
     } catch (err) {
-      console.error('❌ Error fetching communication data:', err);
-      setError('Gagal memuat data komunikasi');
+      console.error('Error fetching communication data:', err);
       toast.error('Gagal memuat data komunikasi');
     } finally {
       setLoading(false);
@@ -426,227 +99,288 @@ export default function AdminLeadCommunicationPage() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (router.isReady && !authLoading && user && isAdminLead) {
+    if (user && isAdminLead) {
       fetchData();
-    } else if (!authLoading && user && !isAdminLead) {
-      router.replace('/dashboard');
-    }
-  }, [router.isReady, authLoading, user, isAdminLead, fetchData]);
 
-  // ✅ Handler untuk mengirim pesan
-  const handleSendMessage = async (content, projectId, recipientId) => {
+      // Simple real-time subscription for new messages in my projects
+      // Note: This listens to ALL messages, strict RLS on Supabase side is recommended for production security.
+      // Here we will just refetch for simplicity on changes.
+      subscriptionRef.current = supabase
+        .channel('public:messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+          // Ideally check if payload.new.project_id is in my projects list, but fetch is safe
+          fetchData();
+        })
+        .subscribe();
+
+      return () => {
+        if (subscriptionRef.current) supabase.removeChannel(subscriptionRef.current);
+      }
+    }
+  }, [user, isAdminLead, fetchData]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, selectedThread]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedThread) return;
+
     try {
       const { error } = await supabase
         .from('messages')
         .insert([{
-          message: content,
-          project_id: projectId,
+          message: newMessage.trim(),
+          project_id: selectedThread.projectId,
           sender_id: user.id,
-          message_type: 'message_to_client' // Or dynamic based on sender
+          message_type: 'message_to_client'
         }]);
 
       if (error) throw error;
-
-      toast.success('Pesan berhasil dikirim');
-      fetchData(); // Refresh data
+      setNewMessage('');
+      // Optimistic update or wait for subscription
+      fetchData();
     } catch (err) {
       console.error('Error sending message:', err);
       toast.error('Gagal mengirim pesan');
     }
   };
 
-  // ✅ Handler untuk menandai notifikasi sebagai dibaca
-  const handleMarkAsRead = async (notificationId) => {
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', notificationId);
+  const filteredProjects = projects.filter(p =>
+    p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-      if (error) throw error;
-
-      fetchData(); // Refresh data
-    } catch (err) {
-      console.error('Error marking notification as read:', err);
-    }
-  };
-
-  // ✅ Handler untuk kontak client
-  const handleContactClient = (method, client, project) => {
-    switch (method) {
-      case 'email':
-        if (client?.email) {
-          const subject = `Update Proyek: ${project.name}`;
-          const body = `Halo ${client.name || 'Client'},\n\nBerikut update terkini untuk proyek ${project.name}:\n\nStatus: ${getStatusLabel(project.status)}\n\nSalam,\n${profile?.full_name || 'Admin Lead'}`;
-          window.open(`mailto:${client.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
-        } else {
-          toast.error('Email client tidak tersedia');
-        }
-        break;
-
-      case 'whatsapp':
-        if (client?.phone) {
-          const message = `Halo, ini update untuk proyek *${project.name}*. Status saat ini: *${getStatusLabel(project.status)}*. Ada yang bisa saya bantu?`;
-          window.open(`https://wa.me/${client.phone.replace('+', '')}?text=${encodeURIComponent(message)}`, '_blank');
-        } else {
-          toast.error('Nomor WhatsApp client tidak tersedia');
-        }
-        break;
-
-      case 'meeting':
-        router.push(`/dashboard/admin-lead/schedules?project=${project.id}&client=${client.id}`);
-        break;
-
-      default:
-        break;
-    }
-  };
-
-  const handleViewThread = (projectId, clientId) => {
-    setSelectedThread({ projectId, clientId });
-  };
-
-  const handleRefresh = () => {
-    fetchData();
-    toast.success('Data diperbarui');
-  };
-
-  // Filter projects
-  const filteredProjects = projects.filter(p => {
-    const matchesSearch = p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.clients?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-    const matchesClient = clientFilter === 'all' || p.client_id === clientFilter;
-
-    return matchesSearch && matchesStatus && matchesClient;
-  });
-
-  // ✅ PERBAIKAN: Group messages by project (Simplified without recipient_id)
-  const getProjectMessages = (projectId) => {
-    return messages.filter(msg => msg.project_id === projectId);
-  };
-
-  // Get unread count for project thread
-  const getUnreadCount = (projectId) => {
-    return messages.filter(msg =>
-      msg.project_id === projectId &&
-      !msg.read_at &&
-      msg.sender_id !== user.id
-    ).length;
-  };
-
-  // Get last message for project thread
-  const getLastMessage = (projectId) => {
-    const threadMessages = getProjectMessages(projectId);
-    return threadMessages.length > 0 ? threadMessages[threadMessages.length - 1] : null;
-  };
+  const getThreadMessages = (projectId) => messages.filter(m => m.project_id === projectId);
 
   if (authLoading || (user && !isAdminLead)) {
     return (
-      <DashboardLayout title="Komunikasi dengan Client">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <Loader2 className="animate-spin h-10 w-10 text-[#7c3aed]" />
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Komunikasi & Pesan">
-      <div className="h-[calc(100vh-8rem)] bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden flex">
-
-        {/* Left Sidebar - Chat List */}
-        <div className="w-1/3 min-w-[320px] max-w-[400px] border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900">
-
-          {/* Sidebar Header */}
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Pesan</h2>
-              <Button size="icon" variant="ghost" onClick={handleRefresh} disabled={loading}>
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
+    <DashboardLayout>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="flex bg-white dark:bg-[#1e293b]/50 rounded-[2.5rem] border border-slate-100 dark:border-white/5 overflow-hidden h-[calc(100vh-140px)] min-h-[600px] shadow-2xl shadow-slate-200/50 dark:shadow-none"
+      >
+        {/* Sidebar */}
+        <div className="w-full md:w-[400px] flex flex-col border-r border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b]">
+          <header className="h-24 flex items-center justify-between px-8 border-b border-slate-100 dark:border-white/5 shrink-0">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">
+                  Live Connect
+                </Badge>
+                <span className="size-2 bg-emerald-500 rounded-full animate-pulse" />
+              </div>
+              <h2 className="text-2xl font-black uppercase tracking-tighter">Messages</h2>
             </div>
+            <Button
+              onClick={() => fetchData()}
+              variant="outline"
+              size="icon"
+              className="size-10 rounded-xl text-slate-400 hover:text-[#7c3aed] border-slate-100 dark:border-white/10"
+            >
+              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+            </Button>
+          </header>
 
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder="Cari project atau client..."
-                className="pl-9 bg-slate-50 dark:bg-slate-800 border-none"
+          <div className="p-6 pb-2 shrink-0">
+            <div className="relative group">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
+              <input
+                className="h-14 w-full rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-white/5 pl-14 pr-4 text-xs font-bold uppercase tracking-widest focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400"
+                placeholder="CARI PROJECT..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-
-            {/* Filter Tabs - Optional, keep simple for now or use Select */}
-            <div className="flex gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar">
-              {['all', 'active', 'completed'].map(status => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors
-                      ${statusFilter === status
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200'
-                    }`}
-                >
-                  {status === 'all' ? 'Semua' : (status === 'active' ? 'Aktif' : 'Selesai')}
-                </button>
-              ))}
-            </div>
           </div>
 
-          {/* Chat List */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-6 space-y-3 pb-6 scrollbar-hide">
             {loading ? (
-              <div className="p-4 space-y-4">
-                {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
-              </div>
+              Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-[2rem]" />)
             ) : filteredProjects.length === 0 ? (
-              <div className="p-8 text-center text-slate-500">
-                <p>Tidak ada proyek ditemukan</p>
+              <div className="flex flex-col items-center justify-center h-40 text-center text-slate-400">
+                <Inbox size={32} className="mb-2 opacity-50" />
+                <span className="font-bold text-[10px] uppercase tracking-widest">No Projects Found</span>
               </div>
             ) : (
-              filteredProjects.map((project) => (
-                <ChatSidebarItem
-                  key={project.id}
-                  project={project}
-                  client={project.clients}
-                  unreadCount={getUnreadCount(project.id)}
-                  lastMessage={getLastMessage(project.id)}
-                  isActive={selectedThread?.projectId === project.id}
-                  onClick={handleViewThread}
-                />
-              ))
+              filteredProjects.map(project => {
+                const threadMsgs = getThreadMessages(project.id);
+                const lastMsg = threadMsgs.length > 0 ? threadMsgs[threadMsgs.length - 1] : null;
+                const isActive = selectedThread?.projectId === project.id;
+
+                return (
+                  <motion.button
+                    variants={itemVariants}
+                    key={project.id}
+                    onClick={() => setSelectedThread({ projectId: project.id, client: project.clients, projectName: project.name })}
+                    className={`
+                      w-full p-5 rounded-[2rem] flex items-start gap-4 transition-all duration-300 border text-left group
+                      ${isActive
+                        ? 'bg-[#7c3aed] border-[#7c3aed] text-white shadow-xl shadow-[#7c3aed]/30 ring-4 ring-[#7c3aed]/10'
+                        : 'bg-white dark:bg-white/5 border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none'
+                      }
+                    `}
+                  >
+                    <div className={`size-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-colors ${isActive ? 'bg-white/20' : 'bg-slate-50 dark:bg-white/10 group-hover:bg-[#7c3aed]/5'}`}>
+                      <Building2 size={22} className={isActive ? 'text-white' : 'text-[#7c3aed]'} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-0.5">
+                        <span className={`text-[11px] font-black uppercase tracking-tight truncate pr-2 ${isActive ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{project.name}</span>
+                        {lastMsg && (
+                          <span className={`text-[9px] font-black uppercase tracking-widest ${isActive ? 'text-white/60' : 'text-slate-400'}`}>
+                            {new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
+                      <span className={`text-[9px] font-bold uppercase tracking-widest block mb-2 truncate ${isActive ? 'text-white/70' : 'text-slate-400'}`}>
+                        {project.clients?.name || 'Unknown Client'}
+                      </span>
+                      {lastMsg ? (
+                        <p className={`text-[11px] font-medium truncate ${isActive ? 'text-white/90' : 'text-slate-500'}`}>
+                          {lastMsg.sender_id === user.id && <span className="opacity-70 mr-1">You:</span>}
+                          {lastMsg.message}
+                        </p>
+                      ) : (
+                        <p className={`text-[10px] italic ${isActive ? 'text-white/50' : 'text-slate-400'}`}>Belum ada pesan</p>
+                      )}
+                    </div>
+                  </motion.button>
+                );
+              })
             )}
           </div>
         </div>
 
-        {/* Right Content - Chat Window */}
-        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900/50 relative">
+        {/* Chat Area */}
+        <div className="flex-1 flex flex-col bg-slate-50/50 dark:bg-[#0f172a]/50 relative">
           {selectedThread ? (
-            <MessageThread
-              messages={getProjectMessages(selectedThread.projectId)}
-              onSendMessage={(content) => handleSendMessage(content, selectedThread.projectId, selectedThread.clientId)}
-              loading={loading}
-              currentUser={user}
-              project={projects.find(p => p.id === selectedThread.projectId)}
-              client={projects.find(p => p.id === selectedThread.projectId)?.clients}
-            />
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-              <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
-                <MessageCircle className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+            <>
+              {/* Header */}
+              <header className="h-24 flex items-center justify-between px-10 border-b border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] shrink-0">
+                <div className="flex items-center gap-5">
+                  <div className="size-14 rounded-[1.2rem] bg-gradient-to-br from-[#7c3aed] to-violet-600 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-[#7c3aed]/20">
+                    {selectedThread.client?.name?.charAt(0) || 'C'}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black uppercase tracking-tight leading-none mb-1">{selectedThread.client?.name}</h3>
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <Building2 size={12} />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">{selectedThread.projectName}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" className="size-12 rounded-2xl text-slate-400 hover:text-[#7c3aed] hover:bg-slate-50">
+                    <Search size={20} />
+                  </Button>
+                  <Button variant="ghost" className="size-12 rounded-2xl text-slate-400 hover:text-[#7c3aed] hover:bg-slate-50">
+                    <MoreVertical size={20} />
+                  </Button>
+                </div>
+              </header>
+
+              {/* Feed */}
+              <div className="flex-1 overflow-y-auto p-10 space-y-8 scrollbar-hide pb-40">
+                <div className="flex justify-center">
+                  <Badge variant="outline" className="border-slate-200 dark:border-white/10 text-slate-400 text-[9px] font-black uppercase tracking-widest py-1 px-3 rounded-full">
+                    Start of conversation
+                  </Badge>
+                </div>
+
+                <AnimatePresence mode="popLayout">
+                  {getThreadMessages(selectedThread.projectId).map((m, i) => {
+                    const isMe = m.sender_id === user.id;
+                    return (
+                      <motion.div
+                        key={m.id || i}
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                          <div className={`
+                            px-8 py-5 text-sm font-medium shadow-sm transition-all relative group
+                            ${isMe
+                              ? 'bg-[#7c3aed] text-white rounded-[2rem] rounded-tr-sm'
+                              : 'bg-white dark:bg-[#1e293b] text-slate-800 dark:text-slate-200 rounded-[2rem] rounded-tl-sm border border-slate-100 dark:border-white/5'
+                            }
+                          `}>
+                            {m.message}
+                            <span className={`
+                               absolute bottom-0 text-[9px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap mb-[-20px]
+                               ${isMe ? 'right-2 text-slate-400' : 'left-2 text-slate-400'}
+                            `}>
+                              {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+                <div ref={messagesEndRef} />
               </div>
-              <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">Selamat Datang di Pesan</h3>
-              <p className="text-slate-500 max-w-md text-center">
-                Pilih salah satu proyek dari daftar di sebelah kiri untuk mulai berkomunikasi dengan Client.
-              </p>
+
+              {/* Input Area */}
+              <div className="absolute bottom-0 left-0 right-0 p-10 pt-0 bg-gradient-to-t from-slate-50/90 dark:from-[#0f172a]/90 to-transparent">
+                <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl p-3 pl-6 flex items-end gap-4">
+                  <div className="flex items-center gap-2 pb-3 text-slate-400">
+                    <button className="hover:text-[#7c3aed] transition-colors"><Paperclip size={20} /></button>
+                  </div>
+                  <Textarea
+                    className="flex-1 min-h-[50px] max-h-32 py-4 bg-transparent border-none focus:ring-0 text-sm font-medium placeholder-slate-400 resize-none"
+                    placeholder="Type a message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                  />
+                  <div className="flex items-center gap-2 pb-1 pr-1">
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim()}
+                      className="size-12 rounded-[1.5rem] bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-lg shadow-[#7c3aed]/20 disabled:opacity-50 transition-all font-black"
+                    >
+                      <Send size={20} className={!newMessage.trim() ? '' : 'ml-1'} />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-10 text-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(0deg,white,transparent)] dark:bg-grid-white/5" />
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="size-32 bg-white dark:bg-[#1e293b] rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none flex items-center justify-center text-[#7c3aed] mb-8 border border-slate-100 dark:border-white/5 animate-bounce-slow">
+                  <Sparkles size={48} />
+                </div>
+                <h3 className="text-4xl font-black uppercase tracking-tighter mb-4 text-slate-900 dark:text-white">Communication <span className="text-[#7c3aed]">Hub</span></h3>
+                <p className="text-slate-500 font-medium max-w-sm text-lg leading-relaxed">
+                  Pilih proyek di sidebar untuk memulai koordinasi real-time dengan client dan tim proyek.
+                </p>
+              </div>
             </div>
           )}
         </div>
-
-      </div>
+      </motion.div>
     </DashboardLayout>
   );
 }

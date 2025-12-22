@@ -62,7 +62,7 @@ const getStatusBadge = (status) => {
 export default function ProjectTimelinePage() {
   const router = useRouter();
   const { id: projectId } = router.query;
-  const { user, loading: authLoading, isAdminLead } = useAuth();
+  const { user, loading: authLoading, isAdminLead, isAdminTeam } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -94,7 +94,7 @@ export default function ProjectTimelinePage() {
         .from('projects')
         .select('*, clients(name)')
         .eq('id', projectId)
-        .eq('created_by', user.id) // ✅ MULTI-TENANCY CHECK
+        .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id},id.in.(select project_id from project_teams where user_id = '${user.id}')`) // ✅ STRICT MULTI-TENANCY: Creator OR Assigned Lead OR Team Member
         .single();
 
       if (projectError) throw projectError;
@@ -117,13 +117,13 @@ export default function ProjectTimelinePage() {
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, user]);
 
   useEffect(() => {
-    if (router.isReady && !authLoading && user) {
+    if (router.isReady && !authLoading && user && (isAdminLead || isAdminTeam)) {
       fetchData();
     }
-  }, [router.isReady, authLoading, user, fetchData]);
+  }, [router.isReady, authLoading, user, isAdminLead, isAdminTeam, fetchData]);
 
   // Open edit dialog
   const openEditDialog = (phase) => {
@@ -239,10 +239,9 @@ export default function ProjectTimelinePage() {
   if (authLoading || loading) {
     return (
       <DashboardLayout title="Timeline Proyek">
-        <div className="p-6 space-y-4">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-64 w-full" />
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+          <Loader2 className="w-8 h-8 animate-spin text-[#7c3aed]" />
+          <p className="mt-4 text-slate-600 dark:text-slate-400 font-medium tracking-wide">Memuat Timeline...</p>
         </div>
       </DashboardLayout>
     );
@@ -251,13 +250,15 @@ export default function ProjectTimelinePage() {
   if (error || !project) {
     return (
       <DashboardLayout title="Timeline Proyek">
-        <div className="p-6">
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error || 'Proyek tidak ditemukan'}</AlertDescription>
+        <div className="p-6 md:p-8 max-w-2xl mx-auto mt-10">
+          <Alert variant="destructive" className="rounded-2xl border-none shadow-xl bg-red-500/10 text-red-600">
+            <AlertTriangle className="h-5 w-5" />
+            <AlertTitle className="font-black uppercase tracking-widest text-sm ml-2">Error</AlertTitle>
+            <AlertDescription className="ml-2 font-medium mt-1 text-xs">
+              {error || 'Proyek tidak ditemukan'}
+            </AlertDescription>
           </Alert>
-          <Button onClick={() => router.back()} className="mt-4">
+          <Button onClick={() => router.back()} className="mt-6 rounded-xl h-12 px-8 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold uppercase tracking-widest text-xs">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali
           </Button>
@@ -269,207 +270,243 @@ export default function ProjectTimelinePage() {
   return (
     <DashboardLayout title="Timeline Proyek">
       <TooltipProvider>
-        <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
+        <div className="max-w-[1400px] mx-auto space-y-10 pb-20 p-6 md:p-0">
 
           {/* Header */}
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold">{project.name}</h1>
-              <p className="text-muted-foreground flex items-center gap-2">
-                <Building className="w-4 h-4" />
-                {project.clients?.name || '-'} • {project.application_type || 'SLF'}
-              </p>
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="flex items-start gap-6">
+              <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-2xl h-12 w-12 border border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] text-slate-400 hover:text-[#7c3aed] transition-all shadow-lg shadow-slate-200/30 dark:shadow-none">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">Timeline Editor</Badge>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{project.application_type || 'SLF'} Project</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">
+                  {project.name}
+                </h1>
+                <p className="text-slate-500 mt-2 font-medium flex items-center gap-2">
+                  <Building className="w-4 h-4" />
+                  {project.clients?.name || '-'}
+                </p>
+              </div>
             </div>
-            <Button variant="outline" onClick={fetchData}>
+            <Button variant="outline" onClick={fetchData} className="h-12 px-6 rounded-xl border-slate-200 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50">
               <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
+              Refresh Data
             </Button>
           </div>
 
-          {/* Progress Overview */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-medium">Progress Keseluruhan</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {phases.filter(p => p.status === 'completed').length} dari {phases.length} fase selesai
-                  </p>
-                </div>
-                <Badge variant="outline" className="text-lg px-4 py-1">
-                  {totalProgress}%
-                </Badge>
+          {/* Stats & Progress */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2 bg-gradient-to-br from-[#7c3aed] to-violet-600 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-[#7c3aed]/30 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-10">
+                <Calendar className="w-32 h-32" />
               </div>
-              <Progress value={totalProgress} className="h-3" />
-            </CardContent>
-          </Card>
+              <div className="relative z-10">
+                <h3 className="text-xl font-black uppercase tracking-tight mb-1">Total Progress</h3>
+                <p className="text-white/80 text-sm font-medium mb-6">Akumulasi penyelesaian fase proyek</p>
 
-          {/* Info */}
-          <Alert>
-            <Edit className="w-4 h-4" />
-            <AlertDescription>
-              Sebagai Admin Lead, Anda dapat mengedit durasi, tanggal, dan status setiap fase timeline.
-            </AlertDescription>
-          </Alert>
+                <div className="flex items-end gap-4 mb-4">
+                  <span className="text-6xl font-black tracking-tighter leading-none">{totalProgress}%</span>
+                  <span className="text-lg font-bold mb-2 opacity-80 uppercase tracking-widest">Completed</span>
+                </div>
 
-          {/* Timeline Phases */}
-          <div className="space-y-4">
+                <div className="h-3 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
+                  <div className="h-full bg-white rounded-full transition-all duration-1000 ease-out" style={{ width: `${totalProgress}%` }} />
+                </div>
+
+                <div className="flex gap-6 mt-6">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Fase Selesai</p>
+                    <p className="text-xl font-bold">{phases.filter(p => p.status === 'completed').length}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Total Fase</p>
+                    <p className="text-xl font-bold">{phases.length}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none flex flex-col justify-center gap-6">
+              <div>
+                <div className="size-12 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center mb-4">
+                  <Edit className="w-6 h-6" />
+                </div>
+                <h4 className="font-black uppercase tracking-tight text-lg">Edit Mode</h4>
+                <p className="text-slate-500 text-xs font-medium mt-2 leading-relaxed">
+                  Klik tombol edit pada setiap kartu fase untuk mengubah durasi, tanggal, atau catatan khusus.
+                </p>
+              </div>
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-xs text-slate-500 font-medium italic">
+                "Pastikan setiap perubahan tanggal dikomunikasikan dengan tim terkait."
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline Phases List */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 px-2">
+              <div className="h-8 w-1 bg-[#7c3aed] rounded-full" />
+              <h3 className="text-xl font-black uppercase tracking-widest text-slate-400">Project Phases</h3>
+            </div>
+
             {phases.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Belum Ada Fase</h3>
-                  <p className="text-muted-foreground">
-                    Timeline akan dibuat saat proyek dibuat
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="py-20 bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 rounded-[2.5rem] flex flex-col items-center justify-center text-center">
+                <Calendar className="w-16 h-16 text-slate-200 mb-6" />
+                <h3 className="text-lg font-black uppercase tracking-tight text-slate-400">Belum Ada Fase</h3>
+                <p className="text-slate-500 text-sm mt-2 font-medium">Timeline akan dibuat secara otomatis saat inisialisasi proyek.</p>
+              </div>
             ) : (
-              phases.map((phase, index) => {
-                const isActive = phase.status === 'in_progress';
-                const isCompleted = phase.status === 'completed';
-                const isPending = phase.status === 'pending';
+              <div className="grid grid-cols-1 gap-6">
+                {phases.map((phase, index) => {
+                  const isActive = phase.status === 'in_progress';
+                  const isCompleted = phase.status === 'completed';
+                  const isPending = phase.status === 'pending';
 
-                return (
-                  <Card
-                    key={phase.id}
-                    className={`border-l-4 ${isCompleted ? 'border-l-green-500' :
-                      isActive ? 'border-l-blue-500' :
-                        'border-l-muted'
-                      }`}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between gap-4">
-                        {/* Phase Info */}
-                        <div className="flex items-start gap-4 flex-1">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCompleted ? 'bg-green-100 text-green-600' :
-                            isActive ? 'bg-blue-100 text-blue-600' :
-                              'bg-muted text-muted-foreground'
+                  return (
+                    <div
+                      key={phase.id}
+                      className={`group relative bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border hover:shadow-xl transition-all duration-300 ${isActive ? 'border-[#7c3aed] shadow-lg shadow-[#7c3aed]/10' :
+                          isCompleted ? 'border-emerald-500/20' :
+                            'border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/30 dark:shadow-none'
+                        }`}
+                    >
+                      {/* Connector Line */}
+                      {index !== phases.length - 1 && (
+                        <div className="absolute left-12 top-[6rem] bottom-[-2rem] w-0.5 bg-slate-100 dark:bg-white/5 z-0" />
+                      )}
+
+                      <div className="relative z-10 flex flex-col md:flex-row gap-8">
+                        {/* Icon & Order */}
+                        <div className="flex flex-col items-center gap-3">
+                          <div className={`size-16 rounded-[1.5rem] flex items-center justify-center text-2xl font-black shadow-lg transition-transform group-hover:scale-110 ${isCompleted ? 'bg-emerald-500 text-white shadow-emerald-500/30' :
+                              isActive ? 'bg-[#7c3aed] text-white shadow-[#7c3aed]/30' :
+                                'bg-slate-100 dark:bg-white/10 text-slate-400'
                             }`}>
-                            {isCompleted ? (
-                              <CheckCircle2 className="w-5 h-5" />
-                            ) : isActive ? (
-                              <PlayCircle className="w-5 h-5" />
-                            ) : (
-                              <Clock className="w-5 h-5" />
-                            )}
+                            {phase.order_index}
                           </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold">
-                                Fase {phase.order_index}: {phase.phase_name}
-                              </h3>
-                              {getStatusBadge(phase.status)}
-                            </div>
-
-                            <p className="text-sm text-muted-foreground mb-3">
-                              {phase.description || '-'}
-                            </p>
-
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Durasi:</span>
-                                <p className="font-medium">{phase.estimated_duration || 7} hari</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Mulai:</span>
-                                <p className="font-medium">{formatDate(phase.start_date)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Selesai:</span>
-                                <p className="font-medium">{formatDate(phase.end_date)}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Progress:</span>
-                                <div className="flex items-center gap-2">
-                                  <Progress value={phase.progress || 0} className="h-2 flex-1" />
-                                  <span className="font-medium">{phase.progress || 0}%</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {phase.notes && (
-                              <p className="text-sm text-muted-foreground mt-2 italic">
-                                Catatan: {phase.notes}
-                              </p>
-                            )}
-                          </div>
+                          <Badge variant={isCompleted ? 'default' : isActive ? 'default' : 'outline'} className={`
+                              uppercase text-[9px] font-black tracking-widest py-1 px-3 border-none
+                              ${isCompleted ? 'bg-emerald-500/10 text-emerald-600' :
+                              isActive ? 'bg-[#7c3aed]/10 text-[#7c3aed]' :
+                                'bg-slate-100 text-slate-500'}
+                           `}>
+                            {phase.status?.replace(/_/g, ' ')}
+                          </Badge>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex flex-col gap-2">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 pt-2">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                            <div>
+                              <h3 className={`text-xl font-black uppercase tracking-tight ${isActive ? 'text-[#7c3aed]' : 'text-slate-900 dark:text-white'}`}>
+                                {phase.phase_name}
+                              </h3>
+                              <p className="text-sm font-medium text-slate-500 mt-1">{phase.description || 'Tidak ada deskripsi'}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" onClick={() => openEditDialog(phase)} className="h-10 w-10 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed]">
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit Detail Fase</TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                            <div>
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Durasi</span>
+                              <p className="font-bold text-slate-700 dark:text-slate-200">{phase.estimated_duration || 7} Hari</p>
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Mulai</span>
+                              <p className="font-bold text-slate-700 dark:text-slate-200">{formatDate(phase.start_date)}</p>
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Selesai</span>
+                              <p className="font-bold text-slate-700 dark:text-slate-200">{formatDate(phase.end_date)}</p>
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Progress</span>
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 h-1.5 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                  <div className={`h-full rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-[#7c3aed]'}`} style={{ width: `${phase.progress || 0}%` }} />
+                                </div>
+                                <span className="font-bold text-xs">{phase.progress || 0}%</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {phase.notes && (
+                            <div className="mt-4 flex gap-3 items-start p-3 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-900/20">
+                              <AlertTriangle className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                              <div>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-indigo-500 mb-0.5">Catatan</p>
+                                <p className="text-xs font-medium text-indigo-800 dark:text-indigo-300 italic">"{phase.notes}"</p>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex gap-3 mt-6">
+                            {isPending && index === phases.findIndex(p => p.status === 'pending') && (
                               <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openEditDialog(phase)}
+                                onClick={() => handlePhaseAction('start', phase)}
+                                disabled={saving}
+                                className="h-10 px-6 rounded-xl bg-[#7c3aed] text-white hover:bg-[#6d28d9] font-black text-[10px] uppercase tracking-widest shadow-lg shadow-[#7c3aed]/20"
                               >
-                                <Edit className="w-4 h-4 mr-1" />
-                                Edit
+                                <PlayCircle className="w-4 h-4 mr-2" /> Mulai Fase
                               </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit fase ini</TooltipContent>
-                          </Tooltip>
+                            )}
 
-                          {isPending && index === phases.findIndex(p => p.status === 'pending') && (
-                            <Button
-                              size="sm"
-                              onClick={() => handlePhaseAction('start', phase)}
-                              disabled={saving}
-                            >
-                              <PlayCircle className="w-4 h-4 mr-1" />
-                              Mulai
-                            </Button>
-                          )}
-
-                          {isActive && (
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="bg-green-600 hover:bg-green-700"
-                              onClick={() => handlePhaseAction('complete', phase)}
-                              disabled={saving}
-                            >
-                              <CheckCircle2 className="w-4 h-4 mr-1" />
-                              Selesai
-                            </Button>
-                          )}
+                            {isActive && (
+                              <Button
+                                onClick={() => handlePhaseAction('complete', phase)}
+                                disabled={saving}
+                                className="h-10 px-6 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-500/20"
+                              >
+                                <CheckCircle2 className="w-4 h-4 mr-2" /> Selesai
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
 
           {/* Edit Phase Dialog */}
           <Dialog open={editDialog.open} onOpenChange={(open) => !saving && setEditDialog({ open, phase: open ? editDialog.phase : null })}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Fase {editDialog.phase?.order_index}</DialogTitle>
-                <DialogDescription>
-                  Ubah detail fase {editDialog.phase?.phase_name}
+            <DialogContent className="bg-white dark:bg-[#1e293b] border-none rounded-[2.5rem] p-0 overflow-hidden max-w-md">
+              <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+                <DialogTitle className="text-xl font-black uppercase tracking-tight">Edit Detail Fase</DialogTitle>
+                <DialogDescription className="text-slate-500 font-medium">
+                  Ubah parameter untuk fase {editDialog.phase?.order_index}
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4">
+              <div className="p-8 space-y-5">
                 <div className="space-y-2">
-                  <Label>Nama Fase</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nama Fase</Label>
                   <Input
+                    className="h-12 rounded-xl bg-slate-50 border-slate-200 font-bold text-sm"
                     value={editForm.phase_name}
                     onChange={(e) => setEditForm({ ...editForm, phase_name: e.target.value })}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Deskripsi</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Deskripsi</Label>
                   <Textarea
+                    className="min-h-[80px] rounded-xl bg-slate-50 border-slate-200 font-medium text-sm p-4"
                     value={editForm.description}
                     onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                     rows={2}
@@ -478,19 +515,21 @@ export default function ProjectTimelinePage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Durasi (hari)</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Durasi (hari)</Label>
                     <Input
                       type="number"
                       min={1}
                       max={60}
+                      className="h-12 rounded-xl bg-slate-50 border-slate-200 font-bold"
                       value={editForm.estimated_duration}
                       onChange={(e) => setEditForm({ ...editForm, estimated_duration: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Tanggal Mulai</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal Mulai</Label>
                     <Input
                       type="date"
+                      className="h-12 rounded-xl bg-slate-50 border-slate-200 font-bold"
                       value={editForm.start_date}
                       onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })}
                     />
@@ -498,22 +537,23 @@ export default function ProjectTimelinePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Status</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Status</Label>
                   <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200 font-bold">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Menunggu</SelectItem>
-                      <SelectItem value="in_progress">Berjalan</SelectItem>
-                      <SelectItem value="completed">Selesai</SelectItem>
+                    <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                      <SelectItem value="pending" className="font-bold">Menunggu</SelectItem>
+                      <SelectItem value="in_progress" className="font-bold">Berjalan</SelectItem>
+                      <SelectItem value="completed" className="font-bold">Selesai</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Catatan (opsional)</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Catatan (opsional)</Label>
                   <Textarea
+                    className="min-h-[80px] rounded-xl bg-slate-50 border-slate-200 font-medium text-sm p-4"
                     value={editForm.notes}
                     onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
                     placeholder="Catatan tambahan..."
@@ -522,11 +562,11 @@ export default function ProjectTimelinePage() {
                 </div>
               </div>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setEditDialog({ open: false, phase: null })} disabled={saving}>
+              <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 text-right w-full flex justify-end gap-3">
+                <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest" onClick={() => setEditDialog({ open: false, phase: null })} disabled={saving}>
                   Batal
                 </Button>
-                <Button onClick={handleSavePhase} disabled={saving}>
+                <Button className="h-12 px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest bg-[#7c3aed] hover:bg-[#6d28d9] shadow-lg shadow-[#7c3aed]/20 text-white" onClick={handleSavePhase} disabled={saving}>
                   {saving ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />

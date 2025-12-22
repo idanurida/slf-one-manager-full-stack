@@ -31,13 +31,16 @@ import {
 } from "@/components/ui/alert";
 
 // Icons
-import { Calendar, Building, User, Clock, CheckCircle2, AlertTriangle, RefreshCw, Search, Filter, ArrowLeft, ExternalLink, Eye, AlertCircle, MapPin, FileText, TrendingUp, TrendingDown }
-from "lucide-react";
+import {
+  Calendar, Building, User, Clock, CheckCircle2, AlertTriangle, RefreshCw, Search, Filter, ArrowLeft, ExternalLink, Eye, AlertCircle, MapPin, FileText, TrendingUp, TrendingDown,
+  LayoutDashboard, FolderOpen, Users, Settings, LogOut, Moon, Sun, Bell, Menu, ChevronRight, ChevronDown, Home, CalendarDays, BarChart3
+} from "lucide-react";
 
 // Utils & Context
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "next-themes";
 
 // Animation variants
 const containerVariants = {
@@ -88,6 +91,7 @@ const getStatusLabel = (status) => {
 
 // Component Timeline Item
 const TimelineItem = ({ item }) => {
+  const router = useRouter();
   const isProjectEvent = item.type === 'project_status_change';
   const isScheduleEvent = item.type === 'schedule_event';
   const isDocumentEvent = item.type === 'document_status_change';
@@ -95,64 +99,66 @@ const TimelineItem = ({ item }) => {
   let icon, color, description, projectInfo, timestamp;
 
   if (isProjectEvent) {
-    icon = <Building className="w-4 h-4" />;
-    color = getStatusColor(item.status);
+    icon = <Building size={16} />;
+    color = 'bg-primary/10 text-primary border-primary/20';
     description = `Status proyek "${item.project_name}" berubah menjadi ${getStatusLabel(item.status)}`;
     projectInfo = item.project_name;
     timestamp = item.timestamp || item.created_at;
   } else if (isScheduleEvent) {
-    icon = <Calendar className="w-4 h-4" />;
-    color = 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+    icon = <Calendar size={16} />;
+    color = 'bg-blue-500/10 text-blue-600 border-blue-500/20';
     description = `Jadwal "${item.schedule_title}" (${item.schedule_type}) untuk "${item.project_name}"`;
     projectInfo = item.project_name;
     timestamp = item.schedule_date || item.created_at;
   } else if (isDocumentEvent) {
-    icon = <FileText className="w-4 h-4" />;
-    color = getStatusColor(item.doc_status);
+    icon = <FileText size={16} />;
+    color = 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
     description = `Dokumen "${item.document_name}" status berubah menjadi ${getStatusLabel(item.doc_status)}`;
     projectInfo = item.project_name;
     timestamp = item.timestamp || item.created_at;
   } else {
-    // Default for unknown event types
-    icon = <Clock className="w-4 h-4" />;
-    color = 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400';
+    icon = <Clock size={16} />;
+    color = 'bg-gray-500/10 text-gray-500 border-gray-500/20';
     description = item.description || 'Aktivitas tidak dikenal';
     projectInfo = item.project_name;
     timestamp = item.created_at;
   }
 
   return (
-    <div className="relative pl-8 pb-8">
-      <div className="absolute left-0 top-1 flex items-center justify-center">
-        <div className={`p-2 rounded-full ${color}`}>
+    <div className="relative pl-10 pb-8 last:pb-0">
+      <div className="absolute left-0 top-0 flex items-center justify-center">
+        <div className={`h-8 w-8 rounded-xl flex items-center justify-center border shadow-sm ${color} z-10`}>
           {icon}
         </div>
       </div>
-      <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-slate-900 dark:text-slate-100">{description}</p>
-              <div className="flex items-center text-sm text-slate-600 dark:text-slate-400 mt-1">
-                <Building className="w-3 h-3 mr-1" />
-                <span>{projectInfo}</span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {new Date(timestamp).toLocaleDateString('id-ID', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark p-6 shadow-sm hover:shadow-md transition-all group">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-bold text-primary">
+                {new Date(timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-gray-200 dark:bg-gray-700"></span>
+              <span className="text-[10px] font-medium text-text-secondary-light">
+                {new Date(timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+              </span>
             </div>
-            <Button variant="outline" size="sm" className="ml-4">
-              <Eye className="w-4 h-4" />
-            </Button>
+            <h4 className="text-sm font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-primary transition-colors">
+              {description}
+            </h4>
+            <div className="flex items-center gap-2 mt-2">
+              <Building size={12} className="text-text-secondary-light" />
+              <span className="text-[10px] font-medium text-text-secondary-light">{projectInfo}</span>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+          <button
+            className="flex items-center justify-center h-10 w-10 rounded-xl bg-gray-50 dark:bg-white/5 text-text-secondary-light hover:bg-primary hover:text-white transition-all shadow-sm flex-shrink-0"
+            onClick={() => router.push(`/dashboard/head-consultant/projects/${item.project_id}`)}
+          >
+            <Eye size={18} />
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -160,9 +166,11 @@ const TimelineItem = ({ item }) => {
 // Main Component
 export default function HeadConsultantTimelinePage() {
   const router = useRouter();
-  const { user, profile, loading: authLoading, isHeadConsultant } = useAuth();
+  const { user, profile, loading: authLoading, logout, isHeadConsultant } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [error, setError] = useState(null);
   const [timelineEvents, setTimelineEvents] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -286,18 +294,21 @@ export default function HeadConsultantTimelinePage() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (router.isReady && !authLoading && user && isHeadConsultant) {
+    if (router.isReady && user) {
       fetchData();
-    } else if (!authLoading && user && !isHeadConsultant) {
-      router.replace('/dashboard');
     }
-  }, [router.isReady, authLoading, user, isHeadConsultant, fetchData]);
+  }, [router.isReady, user, fetchData]);
+
+
+  if (!user) {
+    return null;
+  }
 
   // Filter events dengan safety check
   const filteredEvents = (timelineEvents || []).filter(event => {
     const matchesSearch = event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      event.project_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesProject = projectFilter === 'all' || event.project_id === projectFilter;
     const matchesStatus = statusFilter === 'all' || event.status === statusFilter || event.doc_status === statusFilter;
 
@@ -344,148 +355,121 @@ export default function HeadConsultantTimelinePage() {
 
   return (
     <DashboardLayout>
-      <TooltipProvider>
-        <motion.div
-          className="p-6 space-y-8 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+      <div className="flex flex-col gap-8">
+
+        {/* Page Heading & Actions */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl md:text-4xl font-display font-extrabold text-gray-900 dark:text-white tracking-tight">Timeline aktivitas</h1>
+            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-base">Pantau kronologi dan perkembangan seluruh inisiatif proyek dalam satu alur visual.</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center justify-center gap-2 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold text-xs px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
-            </Button>
-            <Button size="sm" onClick={() => router.push('/dashboard/head-consultant')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali
-            </Button>
-          </motion.div>
+            </button>
+          </div>
+        </div>
 
-          {/* Filters */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-slate-500" />
-                  Filter Timeline
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="relative md:col-span-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      placeholder="Cari deskripsi event atau nama proyek..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Select value={projectFilter} onValueChange={setProjectFilter}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Filter Proyek" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Proyek</SelectItem>
-                      {availableProjects.map(project => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Filter Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Status</SelectItem>
-                      <SelectItem value="head_consultant_review">Head Consultant Review</SelectItem>
-                      <SelectItem value="government_submitted">Government Submitted</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        {/* Filters */}
+        <div className="p-6 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="h-5 w-1 bg-primary rounded-full"></div>
+            <h4 className="text-xs font-bold text-primary uppercase tracking-wider">Saring aktivitas</h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="relative md:col-span-2">
+              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Pencarian aktivitas</span>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary-light" />
+                <input
+                  placeholder="Cari Deskripsi atau Nama Proyek..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-text-secondary-light/50 text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+            <div className="relative">
+              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Entitas proyek</span>
+              <div className="relative">
+                <select
+                  value={projectFilter}
+                  onChange={(e) => setProjectFilter(e.target.value)}
+                  className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-white outline-none transition-all"
+                >
+                  <option value="all">Semua Proyek</option>
+                  {availableProjects.map(project => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
+              </div>
+            </div>
+            <div className="relative">
+              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Tahapan status</span>
+              <div className="relative">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-white outline-none transition-all"
+                >
+                  <option value="all">Semua Status</option>
+                  <option value="head_consultant_review">HC Review</option>
+                  <option value="government_submitted">Gov Submission</option>
+                  <option value="completed">Completed</option>
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
+              </div>
+            </div>
+          </div>
+        </div>
 
-          {/* Timeline Events */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-purple-500" />
-                    Jalur Waktu ({filteredEvents.length} Event)
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="space-y-6">
-                    {[1, 2, 3, 4, 5].map(i => (
-                      <div key={i} className="relative pl-8 pb-8">
-                        <div className="absolute left-0 top-1 flex items-center justify-center">
-                          <div className="p-2 rounded-full bg-slate-200 dark:bg-slate-700">
-                            <Skeleton className="w-4 h-4" />
-                          </div>
-                        </div>
-                        <Skeleton className="h-20 w-full" />
-                      </div>
-                    ))}
-                  </div>
-                ) : filteredEvents.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Calendar className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4 opacity-50" />
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                      Tidak Ada Event
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      {searchTerm || projectFilter !== 'all' || statusFilter !== 'all'
-                        ? 'Tidak ada event yang cocok dengan filter.'
-                        : 'Belum ada event dalam timeline.'}
-                    </p>
-                    <Button onClick={handleRefresh} className="mt-4">
-                      Refresh Data
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    {/* Vertical Line */}
-                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700"></div>
-                    <div className="space-y-6">
-                      {filteredEvents.map((event) => (
-                        <TimelineItem key={event.id} item={event} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+        {/* Timeline Area */}
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm p-8 transition-all duration-300">
+          <div className="flex items-center gap-3 mb-10">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Clock size={20} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white tracking-tight">Kronologi proyek</h3>
+              <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Urutan peristiwa terbaru ({filteredEvents.length})</p>
+            </div>
+          </div>
 
-          {/* Info Card */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
-              <CardContent className="p-4">
-                <div className="flex">
-                  <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-medium text-blue-800 dark:text-blue-200">Catatan:</h3>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                      Timeline ini menampilkan peristiwa penting dari seluruh proyek dalam sistem, termasuk perubahan status, jadwal, dan perubahan dokumen.
-                      Ini memberikan gambaran menyeluruh untuk keperluan review dan supervisi oleh Head Consultant.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-      </TooltipProvider>
+          {loading ? (
+            <div className="flex flex-col items-center py-20 gap-4">
+              <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+              <span className="text-xs font-bold text-text-secondary-light">Menyinkronkan arus waktu...</span>
+            </div>
+          ) : filteredEvents.length === 0 ? (
+            <div className="flex flex-col items-center py-20 gap-4">
+              <div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
+                <Calendar size={40} className="text-text-secondary-light/20" />
+              </div>
+              <p className="font-bold text-sm text-text-secondary-light">Belum ada jejak aktivitas</p>
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="absolute left-[15px] top-2 bottom-2 w-0.5 bg-gray-100 dark:bg-gray-800"></div>
+              <div className="space-y-2">
+                {filteredEvents.map((event) => (
+                  <TimelineItem key={event.id} item={event} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </DashboardLayout>
   );
 }
+
+
+// Helper Components

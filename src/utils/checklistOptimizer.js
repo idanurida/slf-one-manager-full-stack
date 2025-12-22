@@ -156,8 +156,8 @@ export const batchSaveChecklistResponses = async (responses) => {
     }));
 
     const { data, error } = await supabase
-      .from('inspection_responses')
-      .insert(validatedResponses)
+      .from('checklist_responses')
+      .upsert(validatedResponses, { onConflict: ['inspection_id', 'item_id', 'responded_by'] })
       .select();
 
     if (error) throw error;
@@ -182,9 +182,10 @@ export const batchUpdateChecklistResponses = async (updates) => {
     const results = await Promise.all(
       updates.map(update =>
         supabase
-          .from('inspection_responses')
+          .from('checklist_responses')
           .update({ response: update.response, updated_at: new Date().toISOString() })
-          .eq('id', update.id)
+          .eq('item_id', update.item_id) // Assuming item_id is the unique marker here
+          .eq('inspection_id', update.inspection_id)
           .select()
       )
     );
@@ -287,7 +288,7 @@ export const fetchInspectionPageData = async (inspectionId, inspectorId) => {
 
       // 2. Existing responses for this inspection
       supabase
-        .from('inspection_responses')
+        .from('checklist_responses')
         .select('*')
         .eq('inspection_id', inspectionId),
 

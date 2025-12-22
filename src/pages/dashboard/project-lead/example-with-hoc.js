@@ -1,4 +1,4 @@
-// FILE: src/pages/dashboard/team-leader/example-with-hoc.js
+// FILE: src/pages/dashboard/project-lead/example-with-hoc.js
 // Contoh penggunaan withAuth HOC untuk auth protection
 // File ini bisa dihapus - hanya untuk demonstrasi
 

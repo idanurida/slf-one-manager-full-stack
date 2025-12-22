@@ -33,7 +33,7 @@ import {
 
 // Icons
 import {
-  Building, Users, MapPin, Calendar, FileText, CheckCircle2, Clock, AlertTriangle, Eye, Search, Filter, RefreshCw, ExternalLink, ArrowRight, TrendingUp, BarChart3
+  Building, Users, MapPin, Calendar, FileText, CheckCircle2, Clock, AlertTriangle, Eye, Search, Filter, RefreshCw, ExternalLink, ArrowRight, TrendingUp, BarChart3, Loader2
 } from "lucide-react";
 
 // Utils & Context
@@ -162,9 +162,9 @@ const ProjectProgressCard = ({ project, documents, schedules }) => {
           </div>
         </div>
 
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="w-full mt-4 flex items-center gap-2"
           onClick={() => window.open(`/dashboard/admin-lead/projects/${project.id}`, '_blank')}
         >
@@ -257,12 +257,12 @@ export default function AdminTeamProgressPage() {
   // Filter projects
   const filteredProjects = projectsData.filter(project => {
     const matchesSearch = project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.client_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      project.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.client_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    const matchesApplicationType = applicationTypeFilter === 'all' || 
-                                  project.application_type === applicationTypeFilter;
+    const matchesApplicationType = applicationTypeFilter === 'all' ||
+      project.application_type === applicationTypeFilter;
 
     return matchesSearch && matchesStatus && matchesApplicationType;
   });
@@ -278,224 +278,228 @@ export default function AdminTeamProgressPage() {
 
   if (authLoading || !user || !isAdminTeam) {
     return (
-      <DashboardLayout title="Progress Tracking">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="animate-spin h-10 w-10 text-[#7c3aed]" />
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Progress Tracking Proyek">
-      <TooltipProvider>
-        <motion.div 
-          className="p-6 space-y-6 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={loading}
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => router.push('/dashboard/admin-team')}
-            >
-              <ArrowRight className="w-4 h-4 rotate-180 mr-2" />
-              Kembali
-            </Button>
-          </motion.div>
+    <DashboardLayout>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-12 pb-20"
+      >
+        {/* Header Section */}
+        <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+              Lacak <span className="text-[#7c3aed]">Progress</span>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Monitoring performa teknis dan capaian administratif di seluruh proyek aktif.</p>
+          </div>
 
-          {/* Stats Overview */}
-          <motion.div variants={itemVariants}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Proyek</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{projectsData.length}</p>
-                    </div>
-                    <Building className="w-8 h-8 text-blue-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Rata-rata Progres</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {projectsData.length > 0 ? Math.round(projectsData.reduce((acc, p) => acc + (p.documents.length > 0 ? (p.documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length / p.documents.length) * 100 : 0), 0) / projectsData.length) : 0}%
-                      </p>
-                    </div>
-                    <TrendingUp className="w-8 h-8 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Dokumen Diverifikasi</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {projectsData.reduce((acc, p) => acc + p.documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length, 0)}
-                      </p>
-                    </div>
-                    <FileText className="w-8 h-8 text-purple-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Proyek Siap SIMBG</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {projectsData.filter(p => p.status !== 'government_submitted' && p.documents.length > 0 && p.documents.every(d => d.status === 'verified_by_admin_team' || d.status === 'approved')).length}
-                      </p>
-                    </div>
-                    <CheckCircle2 className="w-8 h-8 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            <div className="relative group flex-1 lg:min-w-[400px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
+              <input
+                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                placeholder="Cari Proyek atau Client..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-          </motion.div>
-
-          {/* Filters */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <label htmlFor="search" className="sr-only">Cari Proyek</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <Input
-                        id="search"
-                        placeholder="Cari nama project, lokasi, atau client..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="w-full sm:w-48">
-                    <label htmlFor="status-filter" className="sr-only">Filter Status</label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                        <SelectValue placeholder="Filter Status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                        <SelectItem value="all">Semua Status</SelectItem>
-                        {statuses.map(status => (
-                          <SelectItem key={status} value={status}>
-                            {getStatusLabel(status)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="w-full sm:w-48">
-                    <label htmlFor="type-filter" className="sr-only">Filter Tipe Aplikasi</label>
-                    <Select value={applicationTypeFilter} onValueChange={setApplicationTypeFilter}>
-                      <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                        <SelectValue placeholder="Filter Tipe" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                        <SelectItem value="all">Semua Tipe</SelectItem>
-                        {applicationTypes.map(type => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Error Alert */}
-          {error && (
-            <motion.div variants={itemVariants}>
-              <Alert variant="destructive" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle className="text-slate-900 dark:text-slate-100">Error</AlertTitle>
-                <AlertDescription className="text-slate-600 dark:text-slate-400">{error}</AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
-
-          {/* Projects Progress Grid */}
-          <motion.div variants={itemVariants}>
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <Card key={i} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                    <CardHeader>
-                      <Skeleton className="h-5 w-3/4 bg-slate-300 dark:bg-slate-600" />
-                      <Skeleton className="h-4 w-full bg-slate-300 dark:bg-slate-600" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-2 w-full bg-slate-300 dark:bg-slate-600 mb-4" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-1/2 bg-slate-300 dark:bg-slate-600" />
-                        <Skeleton className="h-4 w-1/2 bg-slate-300 dark:bg-slate-600" />
-                        <Skeleton className="h-4 w-1/2 bg-slate-300 dark:bg-slate-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : filteredProjects.length === 0 ? (
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-12 text-center">
-                  <BarChart3 className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                    Tidak ada progress
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-6">
-                    {searchTerm || statusFilter !== 'all' || applicationTypeFilter !== 'all'
-                      ? 'Tidak ada proyek yang sesuai dengan filter' 
-                      : 'Anda belum ditugaskan ke proyek mana pun'}
-                  </p>
-                  <Button onClick={() => router.push('/dashboard/admin-team')}>
-                    Kembali ke Dashboard
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProjects.map((project) => (
-                  <ProjectProgressCard
-                    key={project.id}
-                    project={project}
-                    documents={project.documents}
-                    schedules={project.schedules}
-                  />
-                ))}
-              </div>
-            )}
-          </motion.div>
+            <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10">
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            </button>
+          </div>
         </motion.div>
-      </TooltipProvider>
+
+        {/* Stats Section */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Total Proyek" value={projectsData.length} icon={<Building size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
+          <StatCard title="Avg Progress" value={`${projectsData.length > 0 ? Math.round(projectsData.reduce((acc, p) => acc + (p.documents.length > 0 ? (p.documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length / p.documents.length) * 100 : 0), 0) / projectsData.length) : 0}%`} icon={<TrendingUp size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Live" trendColor="text-emerald-500" />
+          <StatCard title="Total Berkas" value={projectsData.reduce((acc, p) => acc + p.documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length, 0)} icon={<FileText size={24} />} color="text-blue-500" bg="bg-blue-500/10" trend="Docs" trendColor="text-blue-500" />
+          <StatCard title="Siap SIMBG" value={projectsData.filter(p => p.status !== 'government_submitted' && p.documents.length > 0 && p.documents.every(d => d.status === 'verified_by_admin_team' || d.status === 'approved')).length} icon={<CheckCircle2 size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Ready" trendColor="text-orange-500" />
+        </motion.div>
+
+        {/* Filters and Search Results */}
+        <motion.div variants={itemVariants} className="space-y-8">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter size={14} className="text-slate-400" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Filter:</span>
+            </div>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Status Proyek" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Status</SelectItem>
+                {statuses.map(s => (
+                  <SelectItem key={s} value={s} className="uppercase text-[10px] font-bold">{getStatusLabel(s)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={applicationTypeFilter} onValueChange={setApplicationTypeFilter}>
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Tipe Aplikasi" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Tipe</SelectItem>
+                {applicationTypes.map(t => (
+                  <SelectItem key={t} value={t} className="uppercase text-[10px] font-bold">{t || 'Tanpa Tipe'}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <Skeleton key={i} className="h-64 rounded-[2.5rem] w-full" />
+              ))}
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+              <BarChart3 size={80} className="text-slate-300 dark:text-slate-700 opacity-30 mb-8" />
+              <h3 className="text-2xl font-black uppercase tracking-tighter">Data Nihil</h3>
+              <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Tidak ada rekaman progress yang ditemukan untuk kriteria pencarian Anda.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProjects.map((project) => (
+                <ProjectProgressCardPremium
+                  key={project.id}
+                  project={project}
+                  documents={project.documents}
+                  schedules={project.schedules}
+                />
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </motion.div>
     </DashboardLayout>
   );
 }
+
+// Sub-components
+function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
+  return (
+    <div className="relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+      <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
+        {React.cloneElement(icon, { size: 80 })}
+      </div>
+      <div className="relative flex items-center justify-between mb-4">
+        <div className={`size-12 rounded-2xl ${bg} ${color} flex items-center justify-center transition-all duration-300 group-hover:shadow-lg`}>
+          {icon}
+        </div>
+        {trend && (
+          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-white/5`}>
+            {trend}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col">
+        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-none mb-2">{title}</p>
+        <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+const ProjectProgressCardPremium = ({ project, documents, schedules }) => {
+  const getPhaseProgress = (status) => {
+    const phaseMap = {
+      'draft': 1, 'submitted': 1, 'project_lead_review': 1,
+      'inspection_scheduled': 2, 'inspection_in_progress': 2,
+      'report_draft': 3, 'head_consultant_review': 3,
+      'client_review': 4,
+      'government_submitted': 5, 'slf_issued': 5, 'completed': 5
+    };
+    return phaseMap[status] || 1;
+  };
+
+  const calculateProgress = () => {
+    const phase = getPhaseProgress(project.status);
+    const totalPhases = 5;
+    let progress = (phase / totalPhases) * 100;
+
+    const totalDocs = documents.length;
+    const verifiedDocs = documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length;
+    const docProgress = totalDocs > 0 ? (verifiedDocs / totalDocs) * 100 : 0;
+
+    return (progress * 0.4) + (docProgress * 0.6);
+  };
+
+  const overallProgress = calculateProgress();
+  const currentPhase = getPhaseProgress(project.status);
+
+  return (
+    <motion.div
+      layout
+      className="group bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300"
+    >
+      <div className="flex justify-between items-start mb-6">
+        <div className="max-w-[70%]">
+          <h3 className="text-xl font-black uppercase tracking-tight line-clamp-1 group-hover:text-[#7c3aed] transition-colors">{project.name}</h3>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 truncate">{project.client_name}</p>
+        </div>
+        <Badge className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border ${getStatusColor(project.status)}`}>
+          {getStatusLabel(project.status)}
+        </Badge>
+      </div>
+
+      <div className="space-y-6">
+        <div className="h-10 w-full bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center px-4 gap-3 border border-slate-100 dark:border-white/5">
+          <MapPin size={12} className="text-[#7c3aed]" />
+          <span className="text-[10px] font-black uppercase tracking-tight text-slate-500 truncate">{project.location || 'Lokasi Belum Diatur'}</span>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex justify-between items-end">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress Kumulatif</span>
+            <span className="text-2xl font-black text-[#7c3aed]">{Math.round(overallProgress)}%</span>
+          </div>
+          <div className="h-3 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden p-0.5">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${overallProgress}%` }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+              className="h-full bg-gradient-to-r from-[#7c3aed] to-purple-500 rounded-full"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5 text-center">
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1">Verifikasi</p>
+            <p className="text-xs font-black">{documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length}/{documents.length}</p>
+          </div>
+          <div className="bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5 text-center">
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1">Jadwal</p>
+            <p className="text-xs font-black">{schedules.filter(s => s.status === 'completed').length}/{schedules.length}</p>
+          </div>
+          <div className="bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5 text-center">
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1">Fase Proyek</p>
+            <p className="text-xs font-black">{currentPhase}/5</p>
+          </div>
+        </div>
+
+        <Button
+          onClick={() => window.open(`/dashboard/admin-lead/projects/${project.id}`, '_blank')}
+          className="w-full h-14 bg-[#7c3aed]/5 hover:bg-[#7c3aed]/10 text-[#7c3aed] border-none rounded-2xl font-black text-[10px] uppercase tracking-widest group-hover:bg-[#7c3aed] group-hover:text-white transition-all shadow-lg group-hover:shadow-[#7c3aed]/20"
+        >
+          Lihat Snapshot Lengkap <ArrowRight size={14} className="ml-2" />
+        </Button>
+      </div>
+    </motion.div>
+  );
+};

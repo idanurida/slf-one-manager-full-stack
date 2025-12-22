@@ -1,16 +1,15 @@
-// FILE: src/pages/dashboard/admin-lead/projects-tracking.js
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
+import { format } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
 
 // Components
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
@@ -22,7 +21,9 @@ import {
 import {
   Building, Users, Calendar, FileText, Clock, CheckCircle2, TrendingUp,
   RefreshCw, Search, Filter, Eye, DollarSign, AlertCircle, CreditCard,
-  UserCheck, MapPin, FileQuestion, Upload, Download, Check, X, ArrowLeft
+  UserCheck, MapPin, FileQuestion, Upload, Download, Check, X, ArrowLeft,
+  ChevronRight, LayoutDashboard, PlusCircle, Building2, FolderOpen, MoreVertical,
+  ArrowRight, Menu, Sun, Moon, LogOut, Loader2, CalendarDays, FileCheck
 } from "lucide-react";
 
 // Utils & Context
@@ -33,237 +34,60 @@ import { useAuth } from "@/context/AuthContext";
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
 };
+
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+  visible: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "circOut" } }
 };
 
 // Helper functions
-const getProjectPhase = (status) => {
-  const phaseMap = {
-    'draft': 1, 'submitted': 1, 'project_lead_review': 1,
-    'inspection_scheduled': 2, 'inspection_in_progress': 2,
-    'report_draft': 3, 'head_consultant_review': 3,
-    'client_review': 4,
-    'government_submitted': 5, 'slf_issued': 5, 'completed': 5
+const getStatusStyles = (status) => {
+  const styles = {
+    'draft': 'bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-400 border-slate-200 dark:border-slate-700',
+    'submitted': 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-400 border-blue-200 dark:border-blue-700',
+    'project_lead_review': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-400 border-amber-200 dark:border-amber-700',
+    'inspection_scheduled': 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-400 border-orange-200 dark:border-orange-700',
+    'inspection_in_progress': 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-400 border-orange-200 dark:border-orange-700',
+    'report_draft': 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-400 border-purple-200 dark:border-purple-700',
+    'head_consultant_review': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-400 border-indigo-200 dark:border-indigo-700',
+    'client_review': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-400 border-cyan-200 dark:border-cyan-700',
+    'government_submitted': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700',
+    'slf_issued': 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400 border-green-200 dark:border-green-700',
+    'completed': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700',
+    'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400 border-red-200 dark:border-red-700'
   };
-  return phaseMap[status] || 1;
-};
-
-const getStatusColor = (status) => {
-  const colors = {
-    'draft': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
-    'submitted': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-    'project_lead_review': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    'inspection_scheduled': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-    'inspection_in_progress': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-    'report_draft': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
-    'head_consultant_review': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
-    'client_review': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400',
-    'government_submitted': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'slf_issued': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400',
-    'completed': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-  };
-  return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+  return styles[status] || styles.draft;
 };
 
 const getStatusLabel = (status) => {
   const labels = {
     'draft': 'Draft',
     'submitted': 'Submitted',
-    'project_lead_review': 'Project Lead Review',
-    'inspection_scheduled': 'Inspection Scheduled',
-    'inspection_in_progress': 'Inspection In Progress',
-    'report_draft': 'Report Draft',
-    'head_consultant_review': 'Head Consultant Review',
+    'project_lead_review': 'PL Review',
+    'inspection_scheduled': 'Jadwal Inspeksi',
+    'inspection_in_progress': 'In-Progress',
+    'report_draft': 'Draft Laporan',
+    'head_consultant_review': 'HC Review',
     'client_review': 'Client Review',
-    'government_submitted': 'Government Submitted',
+    'government_submitted': 'Gov Submitted',
     'slf_issued': 'SLF Issued',
-    'completed': 'Completed',
-    'cancelled': 'Cancelled'
+    'completed': 'Selesai',
+    'cancelled': 'Dibatalkan'
   };
   return labels[status] || status;
 };
-
-const getPaymentStatusColor = (status) => {
-  const colors = {
-    'verified': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-    'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    'rejected': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-  };
-  return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
-};
-
-const getPaymentStatusLabel = (status) => {
-  const labels = {
-    'verified': 'Verified',
-    'pending': 'Pending',
-    'rejected': 'Rejected'
-  };
-  return labels[status] || status;
-};
-
-// Project Card Component
-const ProjectTrackingCard = ({ project, onViewDetails }) => {
-  // Hitung statistik per proyek
-  const totalDocs = project.document_counts?.total || 0;
-  const verifiedDocs = project.document_counts?.verified || 0;
-  const pendingDocs = project.document_counts?.pending || 0;
-
-  const hasInspection = project.schedule_counts?.inspection_scheduled > 0 ||
-    project.schedule_counts?.inspection_in_progress > 0;
-  const hasReport = project.report_count > 0;
-  const reportVerified = project.report_verified;
-
-  const paymentInfo = project.payment_info || {};
-
-  return (
-    <Card
-      className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
-      onClick={() => onViewDetails(project.id)}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{project.name}</h3>
-              <Badge className={getStatusColor(project.status)}>
-                {getStatusLabel(project.status)}
-              </Badge>
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1">
-              <UserCheck className="w-3 h-3" />
-              <span>{project.project_lead_name || 'N/A'}</span>
-              <span>•</span>
-              <span>{project.client_name || 'N/A'}</span>
-            </p>
-
-            {/* Progress Overview */}
-            <div className="space-y-2">
-              {/* Dokumen */}
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-slate-500" />
-                <div className="flex-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Dokumen</span>
-                    <span className="font-medium">
-                      {verifiedDocs}/{totalDocs}
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
-                    <div
-                      className="bg-blue-500 h-1.5 rounded-full"
-                      style={{ width: `${totalDocs > 0 ? (verifiedDocs / totalDocs) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Pembayaran */}
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-slate-500" />
-                <div className="flex-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Pembayaran</span>
-                    <Badge variant="outline" className={getPaymentStatusColor(paymentInfo.status)}>
-                      {getPaymentStatusLabel(paymentInfo.status)}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-slate-500">
-                    Rp{paymentInfo.amount?.toLocaleString('id-ID') || '0'}
-                  </p>
-                  {paymentInfo.status === 'verified' && paymentInfo.verified_by_name && (
-                    <p className="text-xs text-green-600 dark:text-green-400 truncate">
-                      ✅ Diverifikasi oleh {paymentInfo.verified_by_name}
-                      {paymentInfo.verified_at && (
-                        <span className="block text-slate-400 dark:text-slate-500">
-                          {new Date(paymentInfo.verified_at).toLocaleDateString('id-ID', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
-                      )}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-end space-y-1">
-            {/* Status Laporan */}
-            <div className="flex items-center gap-1 text-xs">
-              <FileQuestion className={`w-3 h-3 ${reportVerified ? 'text-green-500' : 'text-orange-500'}`} />
-              <span className={reportVerified ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}>
-                {reportVerified ? '✓ Verified' : hasReport ? 'Menunggu' : 'Belum ada'}
-              </span>
-            </div>
-
-            {/* Status Upload SIMBG */}
-            <div className="flex items-center gap-1 text-xs">
-              <Upload className={`w-3 h-3 ${project.simbg_uploaded ? 'text-green-500' : 'text-gray-500'}`} />
-              <span className={project.simbg_uploaded ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}>
-                {project.simbg_uploaded ? '✓ SIMBG' : 'Belum'}
-              </span>
-            </div>
-
-            <Button variant="outline" size="sm" className="mt-2">
-              <Eye className="w-3 h-3 mr-1" />
-              Detail
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-// StatCard Component
-const StatCard = ({ label, value, icon: Icon, color, helpText, loading, onClick }) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Card
-        className={`cursor-pointer hover:shadow-md transition-shadow ${onClick ? 'hover:border-primary/50' : ''}`}
-        onClick={onClick}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className={`p-2 rounded-lg ${color} bg-opacity-10`}>
-                {Icon && <Icon className="w-4 h-4" />}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                <p className="text-2xl font-bold">
-                  {loading ? <Skeleton className="h-8 w-12" /> : value}
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </TooltipTrigger>
-    {helpText && (
-      <TooltipContent>
-        <p>{helpText}</p>
-      </TooltipContent>
-    )}
-  </Tooltip>
-);
 
 // Main Component
 export default function AdminLeadProjectsTrackingPage() {
   const router = useRouter();
-  const { user, profile, loading: authLoading, isAdminLead } = useAuth();
+  const { user, profile, loading: authLoading, isAdminLead, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats] = useState({
     totalProjects: 0,
     activeProjects: 0,
@@ -277,6 +101,7 @@ export default function AdminLeadProjectsTrackingPage() {
 
   // Fetch data utama untuk tracking
   const fetchData = useCallback(async () => {
+    if (!user?.id) return;
     setLoading(true);
     setError(null);
 
@@ -285,168 +110,96 @@ export default function AdminLeadProjectsTrackingPage() {
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select(`
-          id, name, status, created_at, city,
-          clients (name),
-          project_lead:profiles!project_lead_id (full_name)
+          id, name, status, created_at, city, application_type, client_id,
+          clients (id, name),
+          project_teams (
+            user_id,
+            role,
+            profiles (full_name, avatar_url)
+          )
         `)
-        .eq('created_by', user.id) // ✅ MULTI-TENANCY FILTER
+        .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
       if (projectsError) throw projectsError;
 
       const projectIds = projectsData.map(p => p.id);
 
-      // 2. Ambil data tim (project_lead)
-      let teamsMap = {};
-      if (projectIds.length > 0) {
-        const { data: teamsData, error: teamsErr } = await supabase
-          .from('project_teams')
-          .select(`
-            project_id,
-            user_id,
-            role,
-            profiles!inner(full_name)
-          `)
-          .in('project_id', projectIds)
-          .eq('role', 'project_lead'); // Hanya ambil project lead
-
-        if (teamsErr) throw teamsErr;
-
-        teamsMap = teamsData.reduce((acc, team) => {
-          if (!acc[team.project_id]) acc[team.project_id] = {};
-          acc[team.project_id].project_lead_name = team.profiles?.full_name;
-          return acc;
-        }, {});
-      }
-
-      // 3. Hitung dokumen per proyek - PERBAIKAN: gunakan kolom yang ada
+      // 2. Hitung dokumen per proyek
       let docsMap = {};
       if (projectIds.length > 0) {
-        const { data: allDocs, error: docsErr } = await supabase
+        const { data: allDocs } = await supabase
           .from('documents')
           .select('project_id, status, compliance_status')
           .in('project_id', projectIds);
 
-        if (docsErr) throw docsErr;
-
-        docsMap = allDocs.reduce((acc, doc) => {
+        docsMap = allDocs?.reduce((acc, doc) => {
           if (!acc[doc.project_id]) acc[doc.project_id] = { total: 0, verified: 0, pending: 0 };
           acc[doc.project_id].total += 1;
-
-          // Gunakan status atau compliance_status yang tersedia
           if (doc.status === 'approved' || doc.compliance_status === 'approved') {
             acc[doc.project_id].verified += 1;
           } else if (doc.status === 'pending' || doc.compliance_status === 'pending') {
             acc[doc.project_id].pending += 1;
           }
           return acc;
-        }, {});
+        }, {}) || {};
       }
 
-      // 4. Hitung jadwal per proyek
-      let schedulesMap = {};
-      if (projectIds.length > 0) {
-        const { data: allSchedules, error: schedErr } = await supabase
-          .from('schedules')
-          .select('project_id, schedule_type')
-          .in('project_id', projectIds);
-
-        if (schedErr) throw schedErr;
-
-        schedulesMap = allSchedules.reduce((acc, sched) => {
-          if (!acc[sched.project_id]) acc[sched.project_id] = {};
-          acc[sched.project_id][sched.schedule_type] = (acc[sched.project_id][sched.schedule_type] || 0) + 1;
-          return acc;
-        }, {});
-      }
-
-      // 5. Hitung laporan inspector per proyek - PERBAIKAN: gunakan kolom yang ada
+      // 3. Hitung laporan inspector
       let reportsMap = {};
       if (projectIds.length > 0) {
-        const { data: reports, error: repErr } = await supabase
+        const { data: reports } = await supabase
           .from('documents')
-          .select('project_id, status, compliance_status, document_type')
+          .select('project_id, status, compliance_status')
           .eq('document_type', 'REPORT')
           .in('project_id', projectIds);
 
-        if (repErr) throw repErr;
-
-        reportsMap = reports.reduce((acc, rep) => {
+        reportsMap = reports?.reduce((acc, rep) => {
           if (!acc[rep.project_id]) acc[rep.project_id] = { count: 0, verified: false };
           acc[rep.project_id].count += 1;
-          // Gunakan status atau compliance_status untuk menentukan verified
           if (rep.status === 'approved' || rep.compliance_status === 'approved') {
             acc[rep.project_id].verified = true;
           }
           return acc;
-        }, {});
+        }, {}) || {};
       }
 
-      // 6. Ambil data pembayaran
+      // 4. Ambil data pembayaran
       let paymentsMap = {};
       if (projectIds.length > 0) {
-        const { data: payments, error: payErr } = await supabase
+        const { data: payments } = await supabase
           .from('payments')
-          .select(`
-            project_id,
-            status,
-            amount,
-            verified_by,
-            verified_at,
-            profiles!verified_by(full_name)
-          `)
+          .select(`project_id, status, amount, created_at, profiles!verified_by(full_name)`)
           .in('project_id', projectIds)
           .order('created_at', { ascending: false });
 
-        if (payErr) throw payErr;
-
-        // Ambil pembayaran terbaru per proyek
-        payments.forEach(p => {
+        payments?.forEach(p => {
           if (!paymentsMap[p.project_id] || new Date(p.created_at) > new Date(paymentsMap[p.project_id].created_at)) {
-            paymentsMap[p.project_id] = {
-              status: p.status,
-              amount: p.amount,
-              verified_by_id: p.verified_by,
-              verified_by_name: p.profiles?.full_name,
-              verified_at: p.verified_at,
-              created_at: p.created_at
-            };
+            paymentsMap[p.project_id] = p;
           }
         });
       }
 
-      // 7. Proses data akhir
+      // 5. Proses data akhir
       const processedProjects = projectsData.map(p => ({
         ...p,
         client_name: p.clients?.name || 'N/A',
-        project_lead_name: teamsMap[p.id]?.project_lead_name || 'N/A',
         document_counts: docsMap[p.id] || { total: 0, verified: 0, pending: 0 },
-        schedule_counts: schedulesMap[p.id] || {},
         report_count: reportsMap[p.id]?.count || 0,
-        report_verified: reportsMap[p.id]?.verified || false, // Diubah dari report_verified_by_admin_team
+        report_verified: reportsMap[p.id]?.verified || false,
         payment_info: paymentsMap[p.id] || {},
-        simbg_uploaded: p.status === 'government_submitted' || p.status === 'slf_issued' || p.status === 'completed'
+        simbg_uploaded: ['government_submitted', 'slf_issued', 'completed'].includes(p.status)
       }));
 
       setProjects(processedProjects);
 
-      // 8. Hitung statistik
-      const totalProjects = processedProjects.length;
-      const activeProjects = processedProjects.filter(p =>
-        !['completed', 'cancelled'].includes(p.status)
-      ).length;
-      const completedProjects = processedProjects.filter(p => p.status === 'completed').length;
-      const pendingPayments = processedProjects.filter(p => p.payment_info.status === 'pending').length;
-      const projectsWithPendingDocs = processedProjects.filter(p => p.document_counts.pending > 0).length;
-      const projectsWithVerifiedReports = processedProjects.filter(p => p.report_verified).length; // Diubah
-
       setStats({
-        totalProjects,
-        activeProjects,
-        completedProjects,
-        pendingPayments,
-        projectsWithPendingDocs,
-        projectsWithVerifiedReports
+        totalProjects: processedProjects.length,
+        activeProjects: processedProjects.filter(p => !['completed', 'cancelled'].includes(p.status)).length,
+        completedProjects: processedProjects.filter(p => p.status === 'completed').length,
+        pendingPayments: processedProjects.filter(p => p.payment_info?.status === 'pending').length,
+        projectsWithPendingDocs: processedProjects.filter(p => p.document_counts.pending > 0).length,
+        projectsWithVerifiedReports: processedProjects.filter(p => p.report_verified).length
       });
 
     } catch (err) {
@@ -456,208 +209,243 @@ export default function AdminLeadProjectsTrackingPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     if (router.isReady && !authLoading && user && isAdminLead) {
       fetchData();
-    } else if (!authLoading && user && !isAdminLead) {
-      router.replace('/dashboard');
     }
   }, [router.isReady, authLoading, user, isAdminLead, fetchData]);
 
-  // Filter projects
   const filteredProjects = projects.filter(p =>
     p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.project_lead_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    p.client_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const handleViewDetails = (projectId) => {
-    router.push(`/dashboard/admin-lead/projects/${projectId}`);
-  };
 
   const handleRefresh = () => {
     fetchData();
     toast.success('Data diperbarui');
   };
 
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/login');
+  };
+
   if (authLoading || (user && !isAdminLead)) {
     return (
-      <DashboardLayout title="Project Tracking">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="animate-spin h-10 w-10 text-[#7c3aed]" />
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Project Tracking">
-      <TooltipProvider>
-        <motion.div
-          className="p-6 space-y-8 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Header Actions */}
-          <motion.div variants={itemVariants} className="flex justify-between items-center">
-            <p className="text-slate-600 dark:text-slate-400">
-              Pantau dan kelola status keseluruhan semua proyek dalam sistem.
-            </p>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleRefresh}
-                disabled={loading}
-                className="flex items-center gap-2 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => router.push('/dashboard/admin-lead')}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Kembali ke Dashboard
-              </Button>
-            </div>
-          </motion.div>
+    <DashboardLayout>
+      <div className="max-w-[1400px] mx-auto space-y-10">
+        {/* Hero & Filter */}
+        <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white leading-none uppercase">Project <span className="text-[#7c3aed]">Tracking</span></h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Monitoring workflow SLF, dokumen client, dan status pembayaran tim secara real-time.</p>
+          </div>
 
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
-
-          {/* Stats Overview */}
-          <motion.section variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">
-              Ringkasan Proyek
-            </h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-6">
-              <StatCard
-                label="Total Proyek"
-                value={stats.totalProjects}
-                icon={Building}
-                color="text-blue-600 dark:text-blue-400"
-                helpText="Jumlah total proyek"
-                loading={loading}
-                onClick={() => router.push('/dashboard/admin-lead/projects')}
-              />
-              <StatCard
-                label="Proyek Aktif"
-                value={stats.activeProjects}
-                icon={TrendingUp}
-                color="text-green-600 dark:text-green-400"
-                helpText="Proyek dalam pengerjaan"
-                loading={loading}
-              />
-              <StatCard
-                label="Dokumen Tertunda"
-                value={stats.projectsWithPendingDocs}
-                icon={FileText}
-                color="text-red-600 dark:text-red-400"
-                helpText="Proyek dengan dokumen menunggu verifikasi"
-                loading={loading}
-                onClick={() => router.push('/dashboard/admin-lead/documents')}
-              />
-              <StatCard
-                label="Pembayaran Tertunda"
-                value={stats.pendingPayments}
-                icon={DollarSign}
-                color="text-purple-600 dark:text-purple-400"
-                helpText="Proyek dengan pembayaran belum diverifikasi"
-                loading={loading}
-                onClick={() => router.push('/dashboard/admin-lead/payments')}
-              />
-              <StatCard
-                label="Laporan Diverifikasi"
-                value={stats.projectsWithVerifiedReports}
-                icon={FileQuestion}
-                color="text-emerald-600 dark:text-emerald-400"
-                helpText="Proyek dengan laporan inspector sudah diverifikasi"
-                loading={loading}
-              />
-              <StatCard
-                label="Proyek Selesai"
-                value={stats.completedProjects}
-                icon={CheckCircle2}
-                color="text-green-600 dark:text-green-400"
-                helpText="Proyek yang telah diselesaikan"
-                loading={loading}
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            <div className="relative group flex-1 min-w-[300px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
+              <input
+                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                placeholder="Cari Proyek atau Klien..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-          </motion.section>
-
-          <Separator className="bg-slate-200 dark:bg-slate-700" />
-
-          {/* Filters & Search */}
-          <motion.section variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-slate-500" />
-                  Filter & Cari
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      placeholder="Cari nama proyek, client, atau PIC..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.section>
-
-          {/* Projects List */}
-          <motion.section variants={itemVariants}>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">
-              Daftar Proyek
-            </h2>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardContent className="p-0">
-                {loading ? (
-                  <div className="p-4 space-y-4">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="p-4 border-b border-slate-200 dark:border-slate-700 last:border-b-0">
-                        <Skeleton className="h-6 w-3/4 bg-slate-300 dark:bg-slate-600" />
-                        <Skeleton className="h-4 w-1/2 mt-2 bg-slate-300 dark:bg-slate-600" />
-                      </div>
-                    ))}
-                  </div>
-                ) : filteredProjects.length === 0 ? (
-                  <div className="text-center py-12">
-                    <FileText className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                      Tidak Ada Proyek
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      {searchTerm ? 'Tidak ada proyek yang cocok dengan pencarian.' : 'Belum ada proyek yang dibuat.'}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                    {filteredProjects.map((project) => (
-                      <ProjectTrackingCard
-                        key={project.id}
-                        project={project}
-                        onViewDetails={handleViewDetails}
-                      />
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.section>
+            <button className="h-14 w-14 flex items-center justify-center rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none text-slate-500 hover:text-[#7c3aed] transition-all">
+              <Filter size={20} />
+            </button>
+          </div>
         </motion.div>
-      </TooltipProvider>
+
+        {/* Stats Overview */}
+        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatSimple title="Total" value={stats.totalProjects} icon={<Building2 size={16} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" />
+          <StatSimple title="Aktif" value={stats.activeProjects} icon={<TrendingUp size={16} />} color="text-amber-500" bg="bg-amber-500/10" />
+          <StatSimple title="Docs" value={stats.projectsWithPendingDocs} icon={<FileText size={16} />} color="text-red-500" bg="bg-red-500/10" />
+          <StatSimple title="Bayar" value={stats.pendingPayments} icon={<DollarSign size={16} />} color="text-purple-500" bg="bg-purple-500/10" />
+          <StatSimple title="Laporan" value={stats.projectsWithVerifiedReports} icon={<CheckCircle2 size={16} />} color="text-emerald-500" bg="bg-emerald-500/10" />
+          <StatSimple title="Selesai" value={stats.completedProjects} icon={<Check size={16} />} color="text-blue-500" bg="bg-blue-500/10" />
+        </motion.div>
+
+        {/* Projects List Refined Table */}
+        <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 overflow-hidden transition-all duration-300">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-[0.15em] border-b border-slate-100 dark:border-white/5">
+                <tr>
+                  <th className="px-8 py-6">Informasi Proyek</th>
+                  <th className="px-8 py-6">Tim</th>
+                  <th className="px-8 py-6">Progress Dokumen</th>
+                  <th className="px-8 py-6">Status Portal</th>
+                  <th className="px-8 py-6">Eksternal</th>
+                  <th className="px-8 py-6 text-right">Kelola</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                {loading ? (
+                  <tr><td colSpan="6" className="px-8 py-20 text-center font-black uppercase text-xs tracking-widest text-slate-400">Syncing Tracking Data...</td></tr>
+                ) : filteredProjects.length === 0 ? (
+                  <tr><td colSpan="6" className="px-8 py-20 text-center flex flex-col items-center gap-4 text-slate-400">
+                    <Building2 size={48} className="opacity-20" />
+                    <span className="font-black uppercase text-xs tracking-widest">Tidak Ada Data Ditemukan</span>
+                  </td></tr>
+                ) : (
+                  filteredProjects.map(p => (
+                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col gap-1.5 cursor-pointer" onClick={() => router.push(`/dashboard/admin-lead/projects/${p.id}`)}>
+                          <span className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight group-hover:text-[#7c3aed] transition-colors">{p.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-black uppercase tracking-widest bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded text-slate-500">{p.application_type || 'SLF'}</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{p.client_name}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex -space-x-2">
+                          {p.project_teams?.slice(0, 3).map((tm, idx) => (
+                            <div key={idx} className="size-8 rounded-full border-2 border-white dark:border-slate-800 bg-slate-200 overflow-hidden shadow-sm" title={tm.profiles?.full_name}>
+                              {tm.profiles?.avatar_url ? (
+                                <img src={tm.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-[#7c3aed] text-white text-[8px] font-black uppercase">
+                                  {tm.profiles?.full_name?.charAt(0) || '?'}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          {(p.project_teams?.length || 0) > 3 && (
+                            <div className="size-8 rounded-full border-2 border-white dark:border-slate-800 bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-500 shadow-sm">
+                              +{(p.project_teams?.length || 0) - 3}
+                            </div>
+                          )}
+                          {(p.project_teams?.length || 0) === 0 && <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">No Team</span>}
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col gap-2 min-w-[150px]">
+                          <div className="flex justify-between items-end">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.document_counts.verified}/{p.document_counts.total} Files</span>
+                            <span className="text-[10px] font-black text-[#7c3aed]">{Math.round((p.document_counts.verified / (p.document_counts.total || 1)) * 100)}%</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${(p.document_counts.verified / (p.document_counts.total || 1)) * 100}%` }}
+                              className="h-full bg-gradient-to-r from-[#7c3aed] to-purple-500 rounded-full"
+                            ></motion.div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`inline-flex px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(p.status)}`}>
+                          {getStatusLabel(p.status)}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="flex flex-col items-center gap-1 group/icon">
+                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.payment_info?.status === 'verified' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-300'}`}>
+                              <CreditCard size={14} />
+                            </div>
+                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Finance</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1">
+                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.report_verified ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-500' : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-300'}`}>
+                              <FileCheck size={14} />
+                            </div>
+                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Report</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1">
+                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.simbg_uploaded ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-500' : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-300'}`}>
+                              <Upload size={14} />
+                            </div>
+                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">SIMBG</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <button onClick={() => router.push(`/dashboard/admin-lead/projects/${p.id}`)} className="size-10 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10 transition-all flex items-center justify-center ml-auto">
+                          <ArrowRight size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
+        {/* Tips Section */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] p-8 rounded-[2.5rem] text-white shadow-xl shadow-[#7c3aed]/20 relative overflow-hidden group">
+            <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
+              <TrendingUp size={200} />
+            </div>
+            <div className="relative z-10 flex flex-col gap-4">
+              <div className="size-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <AlertCircle size={24} />
+              </div>
+              <h4 className="text-xl font-black uppercase tracking-tight">Kesehatan Pipeline</h4>
+              <p className="text-white/80 font-medium">Periksa proyek dengan status PL Review yang mengendap lebih dari 3 hari untuk menjaga kualitas SLA Tim Drafter.</p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col gap-6">
+            <div className="flex items-center gap-4">
+              <div className="size-12 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center">
+                <CheckCircle2 size={24} />
+              </div>
+              <div>
+                <h4 className="font-black uppercase tracking-tight text-slate-900 dark:text-white">Review Portal</h4>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Sistem Otomasi SLF One</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="p-4 bg-slate-50 dark:bg-black/20 rounded-2xl flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Laporan Menunggu</span>
+                <span className="text-sm font-black text-[#7c3aed]">{stats.projectsWithPendingDocs}</span>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-black/20 rounded-2xl flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Invoice Pending</span>
+                <span className="text-sm font-black text-purple-500">{stats.pendingPayments}</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </DashboardLayout>
   );
 }
+
+// Sub-components
+function StatSimple({ title, value, icon, color, bg }) {
+  return (
+    <div className="flex items-center gap-3 bg-white dark:bg-[#1e293b] p-3 rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/30 dark:shadow-none transition-all hover:scale-105">
+      <div className={`size-8 rounded-lg flex items-center justify-center ${bg} ${color}`}>
+        {icon}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter leading-none">{title}</span>
+        <span className="text-xs font-black text-slate-900 dark:text-white leading-tight mt-0.5">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+// Additional Icons / Helpers
+// Items already imported from lucide-react: CalendarDays, FileCheck, Loader2
+
+

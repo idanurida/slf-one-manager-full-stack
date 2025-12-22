@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/use-toast';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
-import { 
-  AVAILABLE_ROLES, 
+import {
+  AVAILABLE_ROLES,
   INSPECTOR_SPECIALIZATIONS
 } from '@/constants/userRoles';
 
@@ -47,7 +47,7 @@ export default function CreateUserPage() {
     role: 'inspector',
     specialization: '',
   });
-  
+
   const [formErrors, setFormErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -55,7 +55,7 @@ export default function CreateUserPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [success, setSuccess] = useState(false);
-  
+
   // Hanya superadmin2@slf.com yang bisa akses
   const isSuperAdminCreator = user?.email === 'superadmin2@slf.com';
 
@@ -72,17 +72,17 @@ export default function CreateUserPage() {
         router.replace('/login');
         return;
       }
-      
+
       if (!isSuperAdminCreator) {
         setError('Akses ditolak. Hanya superadmin2@slf.com yang dapat membuat pengguna baru.');
         setAccessDenied(true);
-        
+
         toast({
           title: "Akses Ditolak",
           description: `Hanya superadmin2@slf.com yang dapat mengakses halaman ini.`,
           variant: "destructive",
         });
-        
+
         setTimeout(() => {
           router.push('/dashboard');
         }, 3000);
@@ -215,7 +215,7 @@ export default function CreateUserPage() {
 
       const response = await fetch('/api/superadmin/users', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData)
@@ -266,7 +266,7 @@ export default function CreateUserPage() {
 
     } catch (error) {
       console.error('[CreateUserPage] Create user error:', error);
-      
+
       setError(error.message);
       toast({
         title: "Gagal membuat pengguna",
@@ -285,10 +285,10 @@ export default function CreateUserPage() {
     for (let i = 0; i < 12; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    setForm(prev => ({ 
-      ...prev, 
+    setForm(prev => ({
+      ...prev,
       password: password,
-      confirmPassword: password 
+      confirmPassword: password
     }));
   };
 
@@ -333,7 +333,7 @@ export default function CreateUserPage() {
 
   return (
     <DashboardLayout title="Tambah Pengguna Baru">
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -563,7 +563,7 @@ export default function CreateUserPage() {
                           </div>
                         </SelectItem>
                       ))}
-                      
+
                       {/* Hanya tampilkan superadmin option jika yang login adalah superadmin2@slf.com */}
                       {isSuperAdminCreator && (
                         <SelectItem value="superadmin">
@@ -586,7 +586,7 @@ export default function CreateUserPage() {
                   {formErrors.role && (
                     <p className="text-sm text-destructive">{formErrors.role}</p>
                   )}
-                  
+
                   {/* Info role khusus */}
                   {form.role === 'superadmin' && (
                     <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
@@ -595,7 +595,7 @@ export default function CreateUserPage() {
                         <div>
                           <p className="text-sm font-medium text-amber-800">Perhatian!</p>
                           <p className="text-xs text-amber-700">
-                            Super Admin memiliki akses penuh ke seluruh sistem. 
+                            Super Admin memiliki akses penuh ke seluruh sistem.
                             Hanya buat superadmin baru jika benar-benar diperlukan.
                           </p>
                         </div>

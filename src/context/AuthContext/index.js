@@ -34,8 +34,10 @@ export const AuthProvider = ({ children }) => {
 
       if (error) {
         console.error("❌ Profile fetch error:", error.message);
-        // Return minimal data untuk mencegah crash
-        return { id: userId, status: 'error', email: 'unknown' };
+        // Return minimal data untuk mencegah crash & update state
+        const fallbackProfile = { id: userId, status: 'error', email: 'unknown', role: 'guest' };
+        setProfile(fallbackProfile);
+        return fallbackProfile;
       }
 
       if (!data) {

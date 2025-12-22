@@ -284,7 +284,7 @@ export default function CreateProjectPage() {
   // --- Render Utama ---
   return (
     <DashboardLayout title="Buat Proyek Baru" user={user} profile={profile}>
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="space-y-6">
         {/* Action Button */}
         <div className="flex justify-end">
           <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard/notifications')}>

@@ -10,6 +10,7 @@ import { useRouter } from "next/router";
 import { supabase } from "@/utils/supabaseClient";
 import { errorRecommendations } from "@/utils/errorRecommendations";
 import { recoveryActions } from "@/utils/recoveryActions";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 const RecoveryCenter = () => {
   const router = useRouter();
@@ -91,187 +92,184 @@ const RecoveryCenter = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header Section */}
-      {/* Action Buttons */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={handleBack}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Kembali
-        </Button>
-        <Button onClick={fetchLogs} variant="outline" size="sm" disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      </div>
+    <DashboardLayout title="Recovery Center">
+      <div className="space-y-6">
+        {/* Action Buttons */}
+        <div className="flex justify-end">
+          <Button onClick={fetchLogs} variant="outline" size="sm" disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-red-50 border-red-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-red-600">Critical Errors</p>
-                <p className="text-2xl font-bold text-red-700">{stats.criticalCount}</p>
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-red-600 dark:text-red-400">Critical Errors</p>
+                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">{stats.criticalCount}</p>
+                </div>
+                <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-orange-50 border-orange-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-orange-600">Errors</p>
-                <p className="text-2xl font-bold text-orange-700">{stats.errorCount}</p>
+          <Card className="bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-900/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Errors</p>
+                  <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{stats.errorCount}</p>
+                </div>
+                <AlertTriangle className="h-8 w-8 text-orange-600 dark:text-orange-400" />
               </div>
-              <AlertTriangle className="h-8 w-8 text-orange-600" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-yellow-50 border-yellow-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-yellow-600">Warnings</p>
-                <p className="text-2xl font-bold text-yellow-700">{stats.warningCount}</p>
+          <Card className="bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-900/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Warnings</p>
+                  <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{stats.warningCount}</p>
+                </div>
+                <AlertTriangle className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
               </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600">Fixable Issues</p>
-                <p className="text-2xl font-bold text-green-700">{stats.fixableCount}</p>
+          <Card className="bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-900/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400">Fixable Issues</p>
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">{stats.fixableCount}</p>
+                </div>
+                <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Main Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Error Log & Recovery Actions</CardTitle>
-          <CardDescription>
-            {logs.length > 0 
-              ? `Menampilkan ${logs.length} log error terbaru. ${stats.fixableCount} issue dapat diperbaiki otomatis.`
-              : 'Tidak ada log error yang tercatat.'
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="text-center">
-                <Loader2 className="h-12 w-12 animate-spin text-slate-400 mx-auto mb-4" />
-                <p className="text-slate-600">Memuat log error...</p>
+        {/* Main Content */}
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle>Log Error & Aksi Pemulihan</CardTitle>
+            <CardDescription>
+              {logs.length > 0
+                ? `Menampilkan ${logs.length} log error terbaru. ${stats.fixableCount} issue dapat diperbaiki otomatis.`
+                : 'Tidak ada log error yang tercatat.'
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <div className="text-center">
+                  <Loader2 className="h-12 w-12 animate-spin text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Memuat log error...</p>
+                </div>
               </div>
-            </div>
-          ) : logs.length === 0 ? (
-            <Alert>
-              <CheckCircle2 className="h-4 w-4" />
-              <AlertDescription>
-                Sistem berjalan dengan baik. Tidak ada error yang perlu ditangani.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <div className="border border-slate-200 rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader className="bg-slate-50">
-                  <TableRow>
-                    <TableHead className="w-[180px]">Waktu</TableHead>
-                    <TableHead className="w-[100px]">Tipe</TableHead>
-                    <TableHead>Pesan Error</TableHead>
-                    <TableHead className="w-[300px]">Rekomendasi Perbaikan</TableHead>
-                    <TableHead className="w-[120px] text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {logs.map((log) => {
-                    const rec = findRecommendation(log.message || "");
-                    return (
-                      <TableRow key={log.id} className="hover:bg-slate-50">
-                        <TableCell className="font-medium">
-                          <div className="flex flex-col">
-                            <span className="text-sm">
-                              {new Date(log.timestamp).toLocaleDateString('id-ID')}
-                            </span>
-                            <span className="text-xs text-slate-500">
-                              {new Date(log.timestamp).toLocaleTimeString('id-ID')}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getBadgeVariant(log.type)} className="capitalize">
-                            {log.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <p className="text-sm font-medium">{log.message}</p>
-                            {log.context && (
-                              <p className="text-xs text-slate-500">Context: {log.context}</p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {rec ? (
-                            <div className="space-y-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="flex items-start gap-2">
-                                <Wrench className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                                <div>
-                                  <p className="font-medium text-sm text-blue-900">{rec.title}</p>
-                                  <p className="text-xs text-blue-700 mt-1">{rec.description}</p>
+            ) : logs.length === 0 ? (
+              <Alert>
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertDescription>
+                  Sistem berjalan dengan baik. Tidak ada error yang perlu ditangani.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="border border-border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-muted/50">
+                    <TableRow>
+                      <TableHead className="w-[180px]">Waktu</TableHead>
+                      <TableHead className="w-[100px]">Tipe</TableHead>
+                      <TableHead>Pesan Error</TableHead>
+                      <TableHead className="w-[300px]">Rekomendasi Perbaikan</TableHead>
+                      <TableHead className="w-[120px] text-right">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {logs.map((log) => {
+                      const rec = findRecommendation(log.message || "");
+                      return (
+                        <TableRow key={log.id} className="hover:bg-accent/50 border-border">
+                          <TableCell className="font-medium">
+                            <div className="flex flex-col">
+                              <span className="text-sm">
+                                {new Date(log.timestamp).toLocaleDateString('id-ID')}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(log.timestamp).toLocaleTimeString('id-ID')}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={getBadgeVariant(log.type)} className="capitalize">
+                              {log.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1 text-slate-900 dark:text-slate-100">
+                              <p className="text-sm font-medium">{log.message}</p>
+                              {log.context && (
+                                <p className="text-xs text-muted-foreground">Context: {log.context}</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {rec ? (
+                              <div className="space-y-2 p-3 bg-blue-500/5 rounded-lg border border-blue-200/20">
+                                <div className="flex items-start gap-2">
+                                  <Wrench className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <p className="font-medium text-sm text-blue-900 dark:text-blue-200">{rec.title}</p>
+                                    <p className="text-xs text-blue-700/80 dark:text-blue-300/80 mt-1">{rec.description}</p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ) : (
-                            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                              <p className="text-slate-400 text-sm text-center">
-                                Tidak ada rekomendasi otomatis
-                              </p>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {rec ? (
-                            <Button
-                              onClick={() => handleApplyFix(rec.fixAction, log.id)}
-                              size="sm"
-                              className="gap-2 w-full"
-                              disabled={applyingFix === log.id}
-                            >
-                              {applyingFix === log.id ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                              ) : (
-                                <Wrench className="h-3 w-3" />
-                              )}
-                              {applyingFix === log.id ? 'Memperbaiki...' : 'Perbaiki'}
-                            </Button>
-                          ) : (
-                            <Button size="sm" variant="outline" disabled className="w-full">
-                              Manual
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                            ) : (
+                              <div className="p-3 bg-muted/30 rounded-lg border border-border">
+                                <p className="text-muted-foreground text-sm text-center">
+                                  Tidak ada rekomendasi otomatis
+                                </p>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {rec ? (
+                              <Button
+                                onClick={() => handleApplyFix(rec.fixAction, log.id)}
+                                size="sm"
+                                className="gap-2 w-full"
+                                disabled={applyingFix === log.id}
+                              >
+                                {applyingFix === log.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Wrench className="h-3 w-3" />
+                                )}
+                                {applyingFix === log.id ? 'Memperbaiki...' : 'Perbaiki'}
+                              </Button>
+                            ) : (
+                              <Button size="sm" variant="outline" disabled className="w-full">
+                                Manual
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
   );
 };
 

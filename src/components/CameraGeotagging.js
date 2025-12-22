@@ -203,7 +203,7 @@ const CameraGeotagging = ({
 
   // --- Capture ---
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
     if (!location) {
@@ -224,7 +224,14 @@ const CameraGeotagging = ({
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    drawWatermark(ctx, canvas.width, canvas.height, location);
+    // Fetch and draw static map inset
+    try {
+      const mapImage = await fetchStaticMap(location.lat, location.lng);
+      drawWatermark(ctx, canvas.width, canvas.height, location, mapImage);
+    } catch (err) {
+      console.warn("Failed to fetch static map inset, drawing text only:", err);
+      drawWatermark(ctx, canvas.width, canvas.height, location);
+    }
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
@@ -237,10 +244,40 @@ const CameraGeotagging = ({
     setMode('preview');
   };
 
-  const drawWatermark = (ctx, width, height, loc) => {
+  const fetchStaticMap = (lat, lng) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      // Using Yandex Static Maps as it's reliable for simple insets
+      const zoom = 16;
+      const size = "300,300";
+      // pt = point, pm2rdm = red medium pin
+      img.src = `https://static-maps.yandex.ru/1.x/?ll=${lng},${lat}&size=${size}&z=${zoom}&l=map&pt=${lng},${lat},pm2rdm`;
+
+      img.onload = () => resolve(img);
+      img.onerror = (e) => reject(e);
+      // Timeout after 3 seconds to not block capture too long
+      setTimeout(() => reject(new Error("Map timeout")), 3000);
+    });
+  };
+
+  const drawWatermark = (ctx, width, height, loc, mapImg = null) => {
+    const barHeight = height * 0.20;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    const barHeight = height * 0.18;
     ctx.fillRect(0, height - barHeight, width, barHeight);
+
+    // Draw Map Inset if provided
+    if (mapImg) {
+      const insetSize = barHeight * 0.8;
+      const insetX = width - insetSize - (barHeight * 0.1);
+      const insetY = height - barHeight + (barHeight * 0.1);
+
+      // Draw white border for map
+      ctx.fillStyle = 'white';
+      ctx.fillRect(insetX - 2, insetY - 2, insetSize + 4, insetSize + 4);
+
+      ctx.drawImage(mapImg, insetX, insetY, insetSize, insetSize);
+    }
 
     ctx.fillStyle = 'white';
     ctx.textBaseline = 'middle';

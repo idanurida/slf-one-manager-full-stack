@@ -42,7 +42,7 @@ import {
 import {
   FileText, Building, Users, Clock, AlertTriangle, CheckCircle2, BarChart3, Plus, Calendar, Eye, ArrowRight, TrendingUp,
   FolderOpen, DollarSign, ClipboardList, FileCheck, UserCheck, RefreshCw, Download, MessageCircle, MapPin, AlertCircle,
-  TrendingDown, FileQuestion, Upload, Send, ExternalLink, Search, Filter, X, User, FileSignature, FileWarning, FileSearch
+  TrendingDown, FileQuestion, Upload, Send, ExternalLink, Search, Filter, X, User, FileSignature, FileWarning, FileSearch, Loader2
 } from "lucide-react";
 
 // Utils & Context
@@ -89,153 +89,7 @@ const getStatusLabel = (status) => {
   return labels[status] || status;
 };
 
-// Report Item Component
-const ReportItem = ({ report, onVerify, onRevise, loading }) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [verificationNotes, setVerificationNotes] = useState('');
 
-  const handleConfirmVerify = () => {
-    onVerify(report.id, verificationNotes);
-    setIsDialogOpen(false);
-    setVerificationNotes('');
-  };
-
-  const handleConfirmRevise = () => {
-    onRevise(report.id, verificationNotes);
-    setIsDialogOpen(false);
-    setVerificationNotes('');
-  };
-
-  const handleDownload = () => {
-    if (report.url) {
-      window.open(report.url, '_blank');
-    } else {
-      toast.error('File tidak tersedia untuk diunduh');
-    }
-  };
-
-  return (
-    <>
-      <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
-                  {report.name}
-                </h3>
-                <Badge className={getStatusColor(report.status)}>
-                  {getStatusLabel(report.status)}
-                </Badge>
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
-                <span className="font-medium">Project:</span> {report.project_name}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-1 flex items-center gap-1">
-                <User className="w-3 h-3" />
-                <span>oleh {report.creator_name} ({report.specialization || 'Umum'})</span>
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {new Date(report.created_at).toLocaleDateString('id-ID', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
-              {report.admin_team_feedback && (
-                <p className="text-xs text-orange-600 dark:text-orange-400 mt-2 bg-orange-50 dark:bg-orange-900/10 p-2 rounded">
-                  <span className="font-medium">Feedback: </span> {report.admin_team_feedback}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownload}
-                className="h-8 w-8 p-0"
-              >
-                <Download className="w-4 h-4" />
-              </Button>
-              {report.status === 'submitted' && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsDialogOpen('verify')}
-                    disabled={loading === report.id}
-                    className="h-8 text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
-                  >
-                    {loading === report.id ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="w-4 h-4" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsDialogOpen('revise')}
-                    disabled={loading === report.id}
-                    className="h-8 text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
-                  >
-                    <AlertTriangle className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Dialog open={isDialogOpen} onOpenChange={() => setIsDialogOpen(false)}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-slate-100">
-              {isDialogOpen === 'verify' ? 'Verifikasi Laporan' : 'Minta Revisi Laporan'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-              {isDialogOpen === 'verify'
-                ? `Anda yakin ingin memverifikasi laporan "${report.name}"?`
-                : `Tentukan alasan revisi untuk laporan "${report.name}":`}
-            </p>
-            <Textarea
-              placeholder={isDialogOpen === 'verify' ? 'Catatan opsional...' : 'Alasan revisi...'}
-              value={verificationNotes}
-              onChange={(e) => setVerificationNotes(e.target.value)}
-              className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Batal
-            </Button>
-            <Button
-              onClick={isDialogOpen === 'verify' ? handleConfirmVerify : handleConfirmRevise}
-              disabled={loading === report.id}
-            >
-              {loading === report.id ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Memproses...
-                </>
-              ) : (
-                <>
-                  {isDialogOpen === 'verify' ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <AlertTriangle className="w-4 h-4 mr-2" />}
-                  {isDialogOpen === 'verify' ? 'Verifikasi' : 'Kirim Revisi'}
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-};
 
 // Main Component
 export default function AdminTeamReportsPage() {
@@ -417,9 +271,9 @@ export default function AdminTeamReportsPage() {
   // Filter reports
   const filteredReports = reports.filter(report => {
     const matchesSearch = report.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         report.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         report.creator_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      report.project_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.creator_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || report.status === statusFilter;
     const matchesProject = projectFilter === 'all' || report.project_id === projectFilter;
 
@@ -436,168 +290,301 @@ export default function AdminTeamReportsPage() {
 
   if (authLoading || !user || !isAdminTeam) {
     return (
-      <DashboardLayout title="Laporan Inspector">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-slate-600 dark:text-slate-400">Memuat...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="animate-spin h-10 w-10 text-[#7c3aed]" />
         </div>
       </DashboardLayout>
     );
   }
 
+  // Calculate stats
+  const totalReports = reports.length;
+  const pendingVerification = reports.filter(r => r.status === 'submitted').length;
+  const verifiedCount = reports.filter(r => r.status === 'verified_by_admin_team' || r.status === 'approved').length;
+  const revisionCount = reports.filter(r => r.status === 'revision_requested').length;
+
   return (
-    <DashboardLayout title="Laporan Inspector">
-      <TooltipProvider>
-        <motion.div 
-          className="p-6 space-y-6 bg-white dark:bg-slate-900 min-h-screen"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={loading}
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => router.push('/dashboard/admin-team')}
-            >
-              <ArrowRight className="w-4 h-4 rotate-180 mr-2" />
-              Kembali
-            </Button>
-          </motion.div>
+    <DashboardLayout>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-12 pb-20"
+      >
+        {/* Header Section */}
+        <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+              Laporan <span className="text-[#7c3aed]">Inspector</span>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Verifikasi dan validasi hasil inspeksi lapangan dari teknisi ahli.</p>
+          </div>
 
-          {/* Filters */}
-          <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <label htmlFor="search" className="sr-only">Cari Laporan</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <Input
-                        id="search"
-                        placeholder="Cari nama laporan, project, atau inspector..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="w-full sm:w-48">
-                    <label htmlFor="status-filter" className="sr-only">Filter Status</label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                        <SelectValue placeholder="Filter Status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                        <SelectItem value="all">Semua Status</SelectItem>
-                        {statuses.map(status => (
-                          <SelectItem key={status} value={status}>
-                            {getStatusLabel(status)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="w-full sm:w-48">
-                    <label htmlFor="project-filter" className="sr-only">Filter Project</label>
-                    <Select value={projectFilter} onValueChange={setProjectFilter}>
-                      <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
-                        <SelectValue placeholder="Filter Project" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                        <SelectItem value="all">Semua Project</SelectItem>
-                        {projects.map(project => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Error Alert */}
-          {error && (
-            <motion.div variants={itemVariants}>
-              <Alert variant="destructive" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle className="text-slate-900 dark:text-slate-100">Error</AlertTitle>
-                <AlertDescription className="text-slate-600 dark:text-slate-400">{error}</AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
-
-          {/* Reports List */}
-          <motion.div variants={itemVariants}>
-            {loading ? (
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <Card key={i} className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-5 w-3/4 bg-slate-300 dark:bg-slate-600" />
-                          <Skeleton className="h-4 w-1/2 bg-slate-300 dark:bg-slate-600" />
-                          <Skeleton className="h-3 w-full bg-slate-300 dark:bg-slate-600" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Skeleton className="h-8 w-8 rounded" />
-                          <Skeleton className="h-8 w-8 rounded" />
-                          <Skeleton className="h-8 w-8 rounded" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : filteredReports.length === 0 ? (
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <CardContent className="p-12 text-center">
-                  <FileSearch className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                    Tidak ada laporan
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-6">
-                    {searchTerm || statusFilter !== 'all' || projectFilter !== 'all'
-                      ? 'Tidak ada laporan yang sesuai dengan filter' 
-                      : 'Belum ada laporan dari inspector dalam proyek Anda'}
-                  </p>
-                  <Button onClick={() => router.push('/dashboard/admin-team')}>
-                    Kembali ke Dashboard
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {filteredReports.map((report) => (
-                  <ReportItem
-                    key={report.id}
-                    report={report}
-                    onVerify={handleVerifyReport}
-                    onRevise={handleReviseReport}
-                    loading={verifyingId}
-                  />
-                ))}
-              </div>
-            )}
-          </motion.div>
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            <div className="relative group flex-1 lg:min-w-[400px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
+              <input
+                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                placeholder="Cari Laporan, Proyek, atau Inspector..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10">
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            </button>
+          </div>
         </motion.div>
-      </TooltipProvider>
+
+        {/* Stats Section */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Total Laporan" value={totalReports} icon={<FileText size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
+          <StatCard title="Perlu Verifikasi" value={pendingVerification} icon={<ClipboardList size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Pending" trendColor="text-orange-500" />
+          <StatCard title="Terverifikasi" value={verifiedCount} icon={<CheckCircle2 size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Done" trendColor="text-emerald-500" />
+          <StatCard title="Minta Revisi" value={revisionCount} icon={<FileWarning size={24} />} color="text-red-500" bg="bg-red-500/10" trend="Action" trendColor="text-red-500" />
+        </motion.div>
+
+        {/* Filters and List */}
+        <motion.div variants={itemVariants} className="space-y-8">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter size={14} className="text-slate-400" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Filter:</span>
+            </div>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Status Laporan" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Status</SelectItem>
+                {statuses.map(s => (
+                  <SelectItem key={s} value={s} className="uppercase text-[10px] font-bold">{getStatusLabel(s)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={projectFilter} onValueChange={setProjectFilter}>
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Pilih Proyek" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Proyek</SelectItem>
+                {projects.map(p => (
+                  <SelectItem key={p.id} value={p.id} className="uppercase text-[10px] font-bold">{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {loading ? (
+            <div className="space-y-6">
+              {[1, 2, 3, 4, 5].map(i => (
+                <Skeleton key={i} className="h-40 rounded-[2.5rem] w-full" />
+              ))}
+            </div>
+          ) : filteredReports.length === 0 ? (
+            <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+              <FileSearch size={80} className="text-slate-300 dark:text-slate-700 opacity-30 mb-8" />
+              <h3 className="text-2xl font-black uppercase tracking-tighter">Laporan Kosong</h3>
+              <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Tidak ada laporan inspector yang ditemukan untuk filter ini.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {filteredReports.map((report) => (
+                <ReportItemPremium
+                  key={report.id}
+                  report={report}
+                  onVerify={handleVerifyReport}
+                  onRevise={handleReviseReport}
+                  loading={verifyingId}
+                />
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </motion.div>
     </DashboardLayout>
   );
 }
+
+// Sub-components
+function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
+  return (
+    <div className="relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+      <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
+        {React.cloneElement(icon, { size: 80 })}
+      </div>
+      <div className="relative flex items-center justify-between mb-4">
+        <div className={`size-12 rounded-2xl ${bg} ${color} flex items-center justify-center transition-all duration-300 group-hover:shadow-lg`}>
+          {icon}
+        </div>
+        {trend && (
+          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-white/5`}>
+            {trend}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col">
+        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-none mb-2">{title}</p>
+        <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [verificationNotes, setVerificationNotes] = useState('');
+
+  const handleConfirmVerify = () => {
+    onVerify(report.id, verificationNotes);
+    setIsDialogOpen(false);
+    setVerificationNotes('');
+  };
+
+  const handleConfirmRevise = () => {
+    onRevise(report.id, verificationNotes);
+    setIsDialogOpen(false);
+    setVerificationNotes('');
+  };
+
+  const handleDownload = () => {
+    if (report.url) {
+      window.open(report.url, '_blank');
+    } else {
+      toast.error('File tidak tersedia untuk diunduh');
+    }
+  };
+
+  return (
+    <>
+      <motion.div
+        layout
+        className="group bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 hover:ring-2 hover:ring-[#7c3aed]/20"
+      >
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div className="flex-1 min-w-0 space-y-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h3 className="text-xl font-black uppercase tracking-tight group-hover:text-[#7c3aed] transition-colors">{report.name}</h3>
+              <Badge className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusColor(report.status)}`}>
+                {getStatusLabel(report.status)}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
+                <div className="size-8 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center">
+                  <Building size={14} />
+                </div>
+                <div>
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Proyek</p>
+                  <p className="text-xs font-black truncate">{report.project_name}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
+                <div className="size-8 bg-[#7c3aed]/10 text-[#7c3aed] rounded-lg flex items-center justify-center">
+                  <User size={14} />
+                </div>
+                <div>
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Inspector</p>
+                  <p className="text-xs font-black truncate">{report.creator_name} ({report.specialization || 'Umum'})</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <div className="flex items-center gap-2">
+                <Calendar size={12} className="text-[#7c3aed]" />
+                {new Date(report.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={12} className="text-[#7c3aed]" />
+                {new Date(report.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </div>
+
+            {report.admin_team_feedback && (
+              <div className="bg-orange-500/5 border border-orange-500/10 p-4 rounded-2xl flex gap-3">
+                <AlertTriangle size={16} className="text-orange-500 shrink-0" />
+                <div>
+                  <p className="text-[9px] font-black text-orange-500 uppercase tracking-widest mb-1">Feedback Terakhir</p>
+                  <p className="text-xs font-medium text-orange-800 dark:text-orange-400">{report.admin_team_feedback}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-row lg:flex-col gap-3 shrink-0">
+            <Button
+              variant="outline"
+              onClick={handleDownload}
+              className="h-14 lg:w-48 bg-white dark:bg-white/5 hover:bg-slate-50 border-slate-100 dark:border-white/5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
+            >
+              <Download size={16} /> Unduh File
+            </Button>
+
+            {report.status === 'submitted' && (
+              <div className="flex gap-3 w-full">
+                <Button
+                  onClick={() => setIsDialogOpen('verify')}
+                  disabled={loading === report.id}
+                  className="h-14 flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                >
+                  {loading === report.id ? <RefreshCw className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
+                  Verifikasi
+                </Button>
+                <Button
+                  onClick={() => setIsDialogOpen('revise')}
+                  disabled={loading === report.id}
+                  className="h-14 flex-1 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
+                >
+                  <AlertTriangle size={16} /> Revisi
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+
+      <Dialog open={isDialogOpen} onOpenChange={() => setIsDialogOpen(false)}>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none rounded-[2.5rem] p-10 shadow-2xl overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#7c3aed] to-purple-500" />
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black uppercase tracking-tighter">
+              {isDialogOpen === 'verify' ? 'Verifikasi <span class="text-[#7c3aed]">Selesai</span>' : 'Minta <span class="text-orange-500">Revisi</span>'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-6 space-y-6">
+            <p className="text-slate-500 font-medium">
+              {isDialogOpen === 'verify'
+                ? `Apakah Anda telah memeriksa keseluruhan konten laporan "${report.name}" dan menyatakannya valid?`
+                : `Mohon tentukan alasan spesifik revisi agar Inspector dapat melakukan perbaikan yang tepat.`}
+            </p>
+            <Textarea
+              placeholder={isDialogOpen === 'verify' ? 'Catatan verifikasi (opsional)...' : 'Contoh: Lampiran foto kurang jelas, data teknis tidak sinkron...'}
+              value={verificationNotes}
+              onChange={(e) => setVerificationNotes(e.target.value)}
+              className="bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 rounded-2xl min-h-[120px] p-4 font-medium focus:ring-4 focus:ring-[#7c3aed]/10 transition-all outline-none"
+            />
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-4">
+            <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="flex-1 h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest">
+              Batal
+            </Button>
+            <Button
+              onClick={isDialogOpen === 'verify' ? handleConfirmVerify : handleConfirmRevise}
+              disabled={loading === report.id}
+              className={`flex-[2] h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest text-white shadow-xl transition-all ${isDialogOpen === 'verify' ? 'bg-[#7c3aed] hover:bg-[#6d28d9] shadow-[#7c3aed]/20' : 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20'}`}
+            >
+              {loading === report.id ? <RefreshCw className="animate-spin mr-2" /> : (isDialogOpen === 'verify' ? <CheckCircle2 className="mr-2" /> : <AlertTriangle className="mr-2" />)}
+              {isDialogOpen === 'verify' ? 'Konfirmasi Verifikasi' : 'Kirim Permintaan Revisi'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};

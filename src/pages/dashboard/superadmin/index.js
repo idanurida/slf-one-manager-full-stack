@@ -23,6 +23,44 @@ import {
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { motion } from "framer-motion";
+
+// Premium Stat Card Component
+const StatCard = ({ title, value, icon: Icon, trend, color = "blue", onClick }) => (
+  <motion.div
+    whileHover={{ y: -5 }}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    onClick={onClick}
+    className="cursor-pointer"
+  >
+    <Card className="relative overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 rounded-[2.5rem] bg-white dark:bg-slate-900/50 backdrop-blur-sm group">
+      <div className={`absolute top-0 right-0 w-32 h-32 -mr-8 -mt-8 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform duration-500`}>
+        <Icon className="w-full h-full" />
+      </div>
+      <CardContent className="p-7">
+        <div className="flex items-center justify-between mb-4">
+          <div className={`p-3.5 rounded-2xl bg-${color}-500/10 text-${color}-600 dark:text-${color}-400 group-hover:scale-110 transition-transform`}>
+            <Icon className="w-6 h-6" />
+          </div>
+          {trend && (
+            <Badge variant="outline" className="rounded-full px-2 py-0 border-green-200 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+              {trend}
+            </Badge>
+          )}
+        </div>
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-1">
+            {title}
+          </p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+            {value}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  </motion.div>
+);
 
 // Helpers
 const formatDate = (dateString) => {
@@ -37,13 +75,13 @@ const formatDate = (dateString) => {
 const getRoleBadge = (role) => {
   const config = {
     superadmin: { label: 'Superadmin', variant: 'destructive' },
-    head_consultant: { label: 'Head Consultant', variant: 'default' },
-    admin_lead: { label: 'Admin Lead', variant: 'default' },
-    project_lead: { label: 'Project Lead', variant: 'secondary' },
-    admin_team: { label: 'Admin Team', variant: 'secondary' },
-    inspector: { label: 'Inspector', variant: 'outline' },
+    head_consultant: { label: 'Kepala Konsultan', variant: 'default' },
+    admin_lead: { label: 'Kepala Admin', variant: 'default' },
+    project_lead: { label: 'Kepala Proyek', variant: 'secondary' },
+    admin_team: { label: 'Tim Admin', variant: 'secondary' },
+    inspector: { label: 'Inspektur', variant: 'outline' },
     drafter: { label: 'Drafter', variant: 'outline' },
-    client: { label: 'Client', variant: 'outline' },
+    client: { label: 'Klien', variant: 'outline' },
   };
   const { label, variant } = config[role] || { label: role, variant: 'secondary' };
   return <Badge variant={variant}>{label}</Badge>;
@@ -90,7 +128,7 @@ export default function SuperadminDashboard() {
       setStats({
         totalUsers: userCount || 0,
         totalProjects: projectCount || 0,
-        activeProjects: projectsList.filter(p => 
+        activeProjects: projectsList.filter(p =>
           p.status !== 'completed' && p.status !== 'cancelled'
         ).length,
         completedProjects: projectsList.filter(p => p.status === 'completed').length
@@ -117,7 +155,7 @@ export default function SuperadminDashboard() {
         <div className="p-6 space-y-6">
           <Skeleton className="h-8 w-64" />
           <div className="grid gap-4 md:grid-cols-4">
-            {[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
           </div>
           <Skeleton className="h-64" />
         </div>
@@ -143,7 +181,7 @@ export default function SuperadminDashboard() {
 
   return (
     <DashboardLayout title="Dashboard">
-      <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="space-y-6">
 
         {/* Welcome Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -155,7 +193,7 @@ export default function SuperadminDashboard() {
               Kelola pengguna dan sistem aplikasi
             </p>
           </div>
-          
+
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/dashboard/superadmin/users/new')}>
               <UserPlus className="w-4 h-4 mr-2" />
@@ -166,66 +204,39 @@ export default function SuperadminDashboard() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/superadmin/users')}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Pengguna</p>
-                  <p className="text-3xl font-bold">{stats.totalUsers}</p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                  <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/superadmin/projects')}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Proyek</p>
-                  <p className="text-3xl font-bold">{stats.totalProjects}</p>
-                </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-full">
-                  <Building className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/superadmin/projects')}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Proyek Aktif</p>
-                  <p className="text-3xl font-bold">{stats.activeProjects}</p>
-                </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
-                  <Activity className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/dashboard/superadmin/recovery-center')}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Recovery</p>
-                  <p className="text-3xl font-bold">-</p>
-                </div>
-                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
-                  <Database className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total Pengguna"
+            value={stats.totalUsers}
+            icon={Users}
+            color="blue"
+            onClick={() => router.push('/dashboard/superadmin/users')}
+          />
+          <StatCard
+            title="Total Proyek"
+            value={stats.totalProjects}
+            icon={Building}
+            color="purple"
+            onClick={() => router.push('/dashboard/superadmin/projects')}
+          />
+          <StatCard
+            title="Proyek Aktif"
+            value={stats.activeProjects}
+            icon={Activity}
+            color="green"
+            onClick={() => router.push('/dashboard/superadmin/projects')}
+          />
+          <StatCard
+            title="Recovery"
+            value="-"
+            icon={Database}
+            color="orange"
+            onClick={() => router.push('/dashboard/superadmin/recovery-center')}
+          />
         </div>
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
-          
+
           {/* Recent Users */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -233,8 +244,8 @@ export default function SuperadminDashboard() {
                 <Users className="w-5 h-5" />
                 Pengguna Terbaru
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/superadmin/users')}
               >
@@ -251,7 +262,7 @@ export default function SuperadminDashboard() {
               ) : (
                 <div className="space-y-3">
                   {recentUsers.map(userItem => (
-                    <div 
+                    <div
                       key={userItem.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                       onClick={() => router.push(`/dashboard/superadmin/users/${userItem.id}`)}
@@ -282,8 +293,8 @@ export default function SuperadminDashboard() {
                 <Building className="w-5 h-5" />
                 Proyek Terbaru
               </CardTitle>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/superadmin/projects')}
               >
@@ -300,7 +311,7 @@ export default function SuperadminDashboard() {
               ) : (
                 <div className="space-y-3">
                   {recentProjects.map(project => (
-                    <div 
+                    <div
                       key={project.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                       onClick={() => router.push(`/dashboard/superadmin/projects/${project.id}`)}
@@ -332,8 +343,8 @@ export default function SuperadminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="justify-start h-auto py-4"
                 onClick={() => router.push('/dashboard/superadmin/users')}
               >
@@ -344,8 +355,8 @@ export default function SuperadminDashboard() {
                 </div>
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="justify-start h-auto py-4"
                 onClick={() => router.push('/dashboard/superadmin/projects')}
               >
@@ -356,8 +367,8 @@ export default function SuperadminDashboard() {
                 </div>
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="justify-start h-auto py-4"
                 onClick={() => router.push('/dashboard/superadmin/recovery-center')}
               >

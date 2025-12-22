@@ -50,7 +50,7 @@ const StatCard = ({ title, value, icon: Icon, trend, color = "blue", onClick }) 
           )}
         </div>
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-1">
+          <p className="text-[10px] font-black tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-1">
             {title}
           </p>
           <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">

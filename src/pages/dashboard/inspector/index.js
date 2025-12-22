@@ -55,9 +55,9 @@ function StatCard({ title, value, icon: Icon, subtitle, color }) {
     <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
       <div className="flex items-start justify-between relative z-10">
         <div>
-          <p className="text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">{title}</p>
+          <p className="text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider">{title}</p>
           <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
-          {subtitle && <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70 uppercase tracking-widest">{subtitle}</p>}
+          {subtitle && <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70 tracking-widest">{subtitle}</p>}
         </div>
         <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 duration-300 ${color || 'text-primary'}`}>
           <Icon className="w-6 h-6" />
@@ -203,7 +203,7 @@ export default function InspectorDashboard() {
         {/* Welcome Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-2 border-b border-gray-100 dark:border-gray-800/50">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight text-gray-900 dark:text-white leading-tight uppercase">
+            <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight text-gray-900 dark:text-white leading-tight">
               Dashboard <span className="text-primary italic">Inspektur</span>
             </h1>
             <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-lg font-medium">

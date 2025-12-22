@@ -294,7 +294,7 @@ function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
     <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
       <div className="flex items-start justify-between relative z-10">
         <div>
-          <p className="text-xs font-bold text-text-secondary-light uppercase tracking-wider">{title}</p>
+          <p className="text-xs font-bold text-text-secondary-light tracking-wider">{title}</p>
           <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
           {subtitle && <p className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70">{subtitle}</p>}
         </div>

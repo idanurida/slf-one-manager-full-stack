@@ -160,7 +160,7 @@ export default function AdminLeadDashboard() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">
-              SELAMAT DATANG, <span className="text-[#7c3aed] uppercase">{profile?.full_name?.split(' ')[0] || 'PIMPINAN'}</span>
+              Selamat Datang, <span className="text-[#7c3aed] capitalize">{profile?.full_name?.split(' ')[0] || 'Pimpinan'}</span>
             </h2>
             <p className="text-slate-500 dark:text-slate-400 mt-3 text-lg font-medium flex items-center gap-2">
               Portal Manajemen SLF & PBG <span className="size-1.5 rounded-full bg-slate-300"></span> {format(new Date(), 'dd MMMM yyyy', { locale: localeId })}
@@ -168,7 +168,7 @@ export default function AdminLeadDashboard() {
           </div>
           <button
             onClick={() => router.push('/dashboard/admin-lead/projects/new')}
-            className="h-14 px-8 rounded-2xl flex items-center justify-center bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-xl shadow-[#7c3aed]/30 transition-all font-black uppercase tracking-widest text-[11px] gap-3 group"
+            className="h-14 px-8 rounded-2xl flex items-center justify-center bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-xl shadow-[#7c3aed]/30 transition-all font-black tracking-widest text-[11px] gap-3 group"
           >
             <Plus className="group-hover:rotate-90 transition-transform" />
             Proyek Baru
@@ -225,13 +225,13 @@ export default function AdminLeadDashboard() {
           {/* Recent Projects Table */}
           <div className="xl:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3 uppercase tracking-tight">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
                 <div className="w-1.5 h-8 bg-[#7c3aed] rounded-full"></div>
                 Proyek Terbaru
               </h3>
               <button
                 onClick={() => router.push('/dashboard/admin-lead/projects')}
-                className="text-[10px] font-black text-[#7c3aed] hover:bg-[#7c3aed]/5 px-4 py-2 rounded-xl uppercase tracking-widest transition-all"
+                className="text-[10px] font-black text-[#7c3aed] hover:bg-[#7c3aed]/5 px-4 py-2 rounded-xl tracking-widest transition-all"
               >
                 Lihat Semua
               </button>
@@ -240,7 +240,7 @@ export default function AdminLeadDashboard() {
             <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 overflow-hidden transition-all duration-300">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-[0.15em] border-b border-slate-100 dark:border-white/5">
+                  <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 font-black text-[10px] tracking-[0.15em] border-b border-slate-100 dark:border-white/5">
                     <tr>
                       <th className="px-8 py-5">Nama Proyek</th>
                       <th className="px-8 py-5">Tim</th>
@@ -250,10 +250,10 @@ export default function AdminLeadDashboard() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                     {loading ? (
-                      <tr><td colSpan="4" className="px-8 py-20 text-center font-black uppercase text-xs tracking-widest text-slate-400">Menyelaraskan...</td></tr>
+                      <tr><td colSpan="4" className="px-8 py-20 text-center font-black text-xs tracking-widest text-slate-400">Menyelaraskan...</td></tr>
                     ) : recentProjects.length === 0 ? (
                       <tr>
-                        <td colSpan="4" className="px-8 py-20 text-center font-black uppercase text-xs tracking-widest text-slate-400">
+                        <td colSpan="4" className="px-8 py-20 text-center font-black text-xs tracking-widest text-slate-400">
                           <div className="flex flex-col items-center gap-4">
                             <Building size={48} className="opacity-20" />
                             <span>Belum Ada Proyek Aktif</span>
@@ -269,8 +269,8 @@ export default function AdminLeadDashboard() {
                                 <Building2 size={20} />
                               </div>
                               <div className="flex flex-col overflow-hidden">
-                                <span className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight truncate group-hover:text-[#7c3aed] transition-colors">{p.name}</span>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{p.application_type || 'SLF'} • {p.city || '-'}</span>
+                                <span className="font-black text-sm text-slate-900 dark:text-white tracking-tight truncate group-hover:text-[#7c3aed] transition-colors">{p.name}</span>
+                                <span className="text-[10px] font-bold text-slate-400 tracking-widest mt-0.5">{p.application_type || 'SLF'} • {p.city || '-'}</span>
                               </div>
                             </div>
                           </td>
@@ -281,7 +281,7 @@ export default function AdminLeadDashboard() {
                                   {tm.profiles?.avatar_url ? (
                                     <img src={tm.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-[#7c3aed] text-white text-[8px] font-black uppercase">
+                                    <div className="w-full h-full flex items-center justify-center bg-[#7c3aed] text-white text-[8px] font-black">
                                       {tm.profiles?.full_name?.charAt(0) || '?'}
                                     </div>
                                   )}
@@ -292,11 +292,11 @@ export default function AdminLeadDashboard() {
                                   +{(p.project_teams?.length || 0) - 3}
                                 </div>
                               )}
-                              {(p.project_teams?.length || 0) === 0 && <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Tanpa Tim</span>}
+                              {(p.project_teams?.length || 0) === 0 && <span className="text-[10px] text-slate-400 font-bold tracking-widest">Tanpa Tim</span>}
                             </div>
                           </td>
                           <td className="px-8 py-5">
-                            <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(p.status)}`}>
+                            <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[9px] font-black tracking-widest border ${getStatusStyles(p.status)}`}>
                               {p.status || 'Draft'}
                             </span>
                           </td>
@@ -316,15 +316,15 @@ export default function AdminLeadDashboard() {
 
           {/* Recent Clients Section */}
           <div className="space-y-6">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3 uppercase tracking-tight">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
               <div className="w-1.5 h-8 bg-[#7c3aed] rounded-full"></div>
               Klien Terbaru
             </h3>
             <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 space-y-4">
               {loading ? (
-                <div className="py-10 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">Memuat Klien...</div>
+                <div className="py-10 text-center text-[10px] font-black text-slate-400 tracking-widest">Memuat Klien...</div>
               ) : recentClients.length === 0 ? (
-                <div className="py-10 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">Belum Ada Klien</div>
+                <div className="py-10 text-center text-[10px] font-black text-slate-400 tracking-widest">Belum Ada Klien</div>
               ) : (
                 recentClients.map(client => (
                   <div key={client.id} className="flex items-center justify-between p-4 rounded-3xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-transparent hover:border-slate-100 dark:hover:border-white/5 group">
@@ -333,8 +333,8 @@ export default function AdminLeadDashboard() {
                         {client.name?.charAt(0) || 'C'}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">{client.name}</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate max-w-[150px]">{client.email || 'No Email'}</span>
+                        <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{client.name}</span>
+                        <span className="text-[10px] font-bold text-slate-400 tracking-widest truncate max-w-[150px]">{client.email || 'No Email'}</span>
                       </div>
                     </div>
                     <button
@@ -349,7 +349,7 @@ export default function AdminLeadDashboard() {
 
               <button
                 onClick={() => router.push('/dashboard/admin-lead/clients')}
-                className="w-full py-4 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed] text-[10px] font-black uppercase tracking-widest border border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 transition-all mt-4"
+                className="w-full py-4 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed] text-[10px] font-black tracking-widest border border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 transition-all mt-4"
               >
                 Lihat Semua Klien
               </button>
@@ -362,14 +362,14 @@ export default function AdminLeadDashboard() {
                 className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-[#7c3aed] text-white hover:scale-105 transition-all shadow-lg shadow-[#7c3aed]/20"
               >
                 <Plus size={24} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Proyek</span>
+                <span className="text-[10px] font-black tracking-widest">Proyek</span>
               </button>
               <button
                 onClick={() => router.push('/dashboard/admin-lead/team')}
                 className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-white dark:bg-white/5 text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 hover:scale-105 transition-all shadow-md"
               >
                 <Users size={24} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Tim</span>
+                <span className="text-[10px] font-black tracking-widest">Tim</span>
               </button>
             </div>
           </div>
@@ -383,25 +383,25 @@ export default function AdminLeadDashboard() {
 
           <div className="space-y-6">
             <div className="bg-white dark:bg-gradient-to-br dark:from-[#1e293b] dark:to-[#0f172a] rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 dark:shadow-2xl dark:shadow-[#7c3aed]/10 border border-slate-100 dark:border-white/5 h-full flex flex-col">
-              <h3 className="text-lg font-black text-slate-900 dark:text-white mb-8 flex items-center gap-3 uppercase tracking-tight">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white mb-8 flex items-center gap-3 tracking-tight">
                 <Calendar size={20} className="text-[#7c3aed]" />
                 Jadwal Inspeksi
               </h3>
 
               <div className="flex-1 relative pl-8 border-l border-slate-100 dark:border-white/10 space-y-10">
                 {loading ? (
-                  <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest py-10">Memuat Kalender...</div>
+                  <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest py-10">Memuat Kalender...</div>
                 ) : upcomingSchedules.length === 0 ? (
-                  <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest py-10">Tidak Ada Jadwal Dekat</div>
+                  <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest py-10">Tidak Ada Jadwal Dekat</div>
                 ) : (
                   upcomingSchedules.map((schedule) => (
                     <div key={schedule.id} className="relative group">
                       <div className="absolute -left-[37px] top-1 size-4 rounded-full bg-[#7c3aed] border-4 border-white dark:border-[#1e293b] shadow-[0_0_15px_rgba(124,58,237,0.5)] group-hover:scale-125 transition-transform duration-300"></div>
                       <div className="bg-slate-50 dark:bg-white/5 p-5 rounded-3xl border border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10 hover:border-[#7c3aed]/30 transition-all duration-300">
-                        <p className="text-[10px] font-black text-[#7c3aed] uppercase tracking-widest mb-1.5">{formatDate(schedule.schedule_date)} • {schedule.schedule_type || 'SITE'}</p>
-                        <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight">{schedule.title || 'Inspeksi Lapangan'}</h4>
+                        <p className="text-[10px] font-black text-[#7c3aed] tracking-widest mb-1.5">{formatDate(schedule.schedule_date)} • {schedule.schedule_type || 'SITE'}</p>
+                        <h4 className="text-sm font-black text-slate-900 dark:text-white tracking-tight leading-tight">{schedule.title || 'Inspeksi Lapangan'}</h4>
                         <div className="flex items-center justify-between mt-4">
-                          <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate max-w-[150px]">{schedule.projects?.name}</p>
+                          <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-widest truncate max-w-[150px]">{schedule.projects?.name}</p>
                           <div className="flex -space-x-2">
                             <div className="size-6 rounded-full bg-[#7c3aed] flex items-center justify-center text-[8px] font-black text-white ring-2 ring-white dark:ring-[#0f172a]">PD</div>
                             <div className="size-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[8px] font-black text-slate-700 dark:text-white ring-2 ring-white dark:ring-[#0f172a]">+3</div>
@@ -415,7 +415,7 @@ export default function AdminLeadDashboard() {
 
               <button
                 onClick={() => router.push('/dashboard/admin-lead/schedules')}
-                className="w-full mt-10 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/70 hover:text-[#7c3aed] dark:hover:text-white text-[10px] font-black uppercase tracking-[0.2em] border border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/50 hover:bg-[#7c3aed]/5 dark:hover:bg-[#7c3aed]/10 transition-all duration-300"
+                className="w-full mt-10 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/70 hover:text-[#7c3aed] dark:hover:text-white text-[10px] font-black tracking-[0.2em] border border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/50 hover:bg-[#7c3aed]/5 dark:hover:bg-[#7c3aed]/10 transition-all duration-300"
               >
                 Buka Kalender Penuh
               </button>
@@ -439,15 +439,15 @@ function StatCard({ title, value, icon: Icon, trend, trendColor, color, bg, subt
           <Icon size={24} />
         </div>
         {trend && (
-          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-white/5`}>
+          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black tracking-wider px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-white/5`}>
             {trend}
           </span>
         )}
       </div>
       <div className="flex flex-col relative z-10">
-        <p className="text-text-secondary-light dark:text-text-secondary-dark text-[10px] font-black uppercase tracking-widest leading-none mb-2">{title}</p>
+        <p className="text-text-secondary-light dark:text-text-secondary-dark text-[10px] font-black tracking-widest leading-none mb-2">{title}</p>
         <p className="text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter leading-none">{value}</p>
-        {subtitle && <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-2 opacity-70 uppercase tracking-widest">{subtitle}</p>}
+        {subtitle && <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-2 opacity-70 tracking-widest">{subtitle}</p>}
       </div>
     </div>
   );
@@ -465,8 +465,8 @@ function QuickActionBtn({ icon: Icon, label, desc, primary, onClick }) {
           <Icon size={28} />
         </div>
         <div className="flex flex-col">
-          <span className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight group-hover:text-primary transition-colors">{label}</span>
-          <span className="text-[9px] font-bold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-widest mt-1">{desc}</span>
+          <span className="text-xs font-black text-gray-900 dark:text-white tracking-tight group-hover:text-primary transition-colors">{label}</span>
+          <span className="text-[9px] font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wide mt-1">{desc}</span>
         </div>
       </div>
     </button>

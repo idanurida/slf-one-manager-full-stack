@@ -186,6 +186,12 @@ export default function RegisterPage() {
         console.log('✅ Profile created successfully:', profileResult.profile);
       }
 
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('registered_email', formData.email);
+        localStorage.setItem('registered_fullName', formData.full_name);
+        localStorage.setItem('registered_role', formData.role);
+      }
+
       setSuccess(true);
       setError('');
 

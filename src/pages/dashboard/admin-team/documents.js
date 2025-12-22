@@ -464,7 +464,7 @@ export default function AdminTeamDocumentsPage() {
             <div>
               <p className="text-sm font-black uppercase tracking-tight text-[#7c3aed]">SOP Verifikasi Admin Team</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium leading-relaxed">
-                Tugas Anda adalah memastikan dokumen lengkap & valid. Status <span className="font-bold text-[#7c3aed]">VERIFIED BY ADMIN TEAM</span> diperlukan sebelum Project Lead melakukan persetujuan akhir.
+                Tugas Anda adalah memastikan dokumen lengkap & valid. Status <span className="font-bold text-[#7c3aed]">Verified by Admin Team</span> diperlukan sebelum Project Lead melakukan persetujuan akhir.
               </p>
             </div>
           </div>

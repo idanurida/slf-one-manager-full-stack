@@ -829,7 +829,7 @@ const DashboardLayout = ({
         {/* PAGE CONTENT */}
         <div className="flex-1 overflow-y-auto scroll-smooth">
           <div className={cn(
-            "flex flex-col mx-auto w-full px-4 md:px-8 lg:px-10 py-8 md:py-10 pb-32 lg:pb-12 transition-all",
+            "flex flex-col mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 py-6 md:py-10 pb-32 lg:pb-12 transition-all",
             fullWidth ? "max-w-full" : "max-w-[1600px]"
           )}>
             {children}

@@ -577,7 +577,7 @@ export default function ClientDashboard() {
         {/* Welcome Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-2 border-b border-gray-100 dark:border-gray-800/50">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight text-gray-900 dark:text-white leading-tight uppercase">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-display font-black tracking-tight text-gray-900 dark:text-white leading-tight uppercase">
               Dashboard <span className="text-primary italic">Klien</span>
             </h1>
             <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-lg font-medium">
@@ -634,7 +634,7 @@ export default function ClientDashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <StatCard
             title="Total Proyek"
             value={stats.totalProjects}

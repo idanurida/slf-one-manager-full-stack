@@ -496,7 +496,7 @@ export default function HeadConsultantProjectDetailPage() {
                                 <div className="flex flex-col gap-1 justify-center">
                                   <h5 className="font-bold text-xs text-primary uppercase tracking-widest">Prioritas review tinggi</h5>
                                   <p className="text-[11px] font-bold leading-relaxed text-text-secondary-light dark:text-text-secondary-dark">
-                                    Progres proyek terhenti di 70%. <span className="text-primary underline font-bold decoration-2 underline-offset-4 tracking-wider">KONFIRMASI ANDA</span> diperlukan untuk melepaskan laporan ke tahap pengajuan Pemerintah.
+                                    Progres proyek terhenti di 70%. <span className="text-primary underline font-bold decoration-2 underline-offset-4 tracking-wider">Konfirmasi Anda</span> diperlukan untuk melepaskan laporan ke tahap pengajuan Pemerintah.
                                   </p>
                                 </div>
                               </motion.div>

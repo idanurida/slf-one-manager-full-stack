@@ -66,6 +66,19 @@
     @apply bg-background text-foreground font-body antialiased;
   }
 
+  /* Global Typography Reset */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  button,
+  .button,
+  .btn {
+    text-transform: none !important;
+  }
+
   /* Custom Scrollbar for Sidebar and Containers */
   ::-webkit-scrollbar {
     width: 6px;

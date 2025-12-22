@@ -349,10 +349,10 @@ export default function NewInspectionReport() {
         </div>
 
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basic">Informasi Dasar</TabsTrigger>
-            <TabsTrigger value="findings">Temuan Checklist</TabsTrigger>
-            <TabsTrigger value="review">Review & Submit</TabsTrigger>
+          <TabsList className="bg-slate-100 dark:bg-[#1e293b] p-1 rounded-2xl h-auto w-full justify-start overflow-x-auto gap-1">
+            <TabsTrigger value="basic" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Informasi Dasar</TabsTrigger>
+            <TabsTrigger value="findings" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Temuan Checklist</TabsTrigger>
+            <TabsTrigger value="review" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Review & Submit</TabsTrigger>
           </TabsList>
 
           {/* Basic Information Tab */}
@@ -552,7 +552,7 @@ export default function NewInspectionReport() {
                                   Template: {item.checklist_items?.template_title}
                                 </p>
                                 {item.response && (
-                                  <div className="mt-2 p-2 bg-muted rounded text-sm">
+                                  <div className="mt-2 p-2 bg-slate-100 dark:bg-slate-800 rounded text-sm">
                                     <strong>Response:</strong> {JSON.stringify(item.response)}
                                   </div>
                                 )}
@@ -604,7 +604,7 @@ export default function NewInspectionReport() {
                       </div>
                     ))}
                     {photos.length > 6 && (
-                      <div className="flex items-center justify-center bg-muted rounded-md h-24">
+                      <div className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-md h-24">
                         <span className="text-sm text-muted-foreground">
                           +{photos.length - 6} foto lainnya
                         </span>
@@ -628,19 +628,19 @@ export default function NewInspectionReport() {
               <CardContent className="space-y-6">
                 {/* Summary */}
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="space-y-1 text-center p-4 bg-muted rounded-lg">
+                  <div className="space-y-1 text-center p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <div className="text-2xl font-bold text-foreground">
                       {checklistData.length}
                     </div>
                     <div className="text-sm text-muted-foreground">Total Checklist</div>
                   </div>
-                  <div className="space-y-1 text-center p-4 bg-muted rounded-lg">
+                  <div className="space-y-1 text-center p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <div className="text-2xl font-bold text-foreground">
                       {formData.selectedFindings.length}
                     </div>
                     <div className="text-sm text-muted-foreground">Temuan Dipilih</div>
                   </div>
-                  <div className="space-y-1 text-center p-4 bg-muted rounded-lg">
+                  <div className="space-y-1 text-center p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <div className="text-2xl font-bold text-foreground">
                       {photos.length}
                     </div>

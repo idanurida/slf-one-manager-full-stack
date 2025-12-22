@@ -122,8 +122,8 @@ const CustomTabsTrigger = ({ value, children, activeTab, setActiveTab, className
       className={cn(
         "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
         isActive
-          ? 'bg-background text-foreground shadow'
-          : 'text-muted-foreground hover:bg-background/50 hover:text-foreground',
+          ? 'bg-white !text-[#7c3aed] shadow-sm'
+          : 'text-slate-500 hover:bg-white/50 hover:text-[#7c3aed]',
         className
       )}
     >
@@ -234,7 +234,7 @@ const PhotoGallery = ({ photos, onDelete }) => {
                 <p className="text-sm text-muted-foreground mt-4">{selectedPhoto.caption}</p>
               )}
               {selectedPhoto.latitude && selectedPhoto.longitude && (
-                <div className="mt-2 p-3 bg-muted rounded-md">
+                <div className="mt-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-md">
                   <p className="text-sm font-medium">Informasi Geotag:</p>
                   <p className="text-xs text-muted-foreground">
                     Latitude: {selectedPhoto.latitude.toFixed(5)}
@@ -1168,17 +1168,17 @@ export default function InspectionDetailPage() {
 
         {/* Tabs - IMPROVED VERSION dengan prop handling yang lebih baik */}
         <CustomTabs defaultValue="checklist" className="space-y-6">
-          <CustomTabsList className="grid w-full grid-cols-4">
-            <CustomTabsTrigger value="checklist">
+          <CustomTabsList className="w-full justify-start overflow-x-auto gap-2">
+            <CustomTabsTrigger value="checklist" className="whitespace-nowrap">
               Checklist Items
             </CustomTabsTrigger>
-            <CustomTabsTrigger value="responses">
+            <CustomTabsTrigger value="responses" className="whitespace-nowrap">
               Responses ({allResponses.length})
             </CustomTabsTrigger>
-            <CustomTabsTrigger value="photos">
+            <CustomTabsTrigger value="photos" className="whitespace-nowrap">
               Photo Documentation ({allPhotos.length})
             </CustomTabsTrigger>
-            <CustomTabsTrigger value="summary">
+            <CustomTabsTrigger value="summary" className="whitespace-nowrap">
               Summary
             </CustomTabsTrigger>
           </CustomTabsList>
@@ -1279,7 +1279,7 @@ export default function InspectionDetailPage() {
 
                         {/* Display response data */}
                         {response.response_data && (
-                          <div className="p-3 bg-muted rounded-md">
+                          <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-md">
                             <div className="space-y-2">
                               {Object.entries(response.response_data).map(([key, value]) => {
                                 // Safely handle different value types (string, array, object)

@@ -227,10 +227,10 @@ export default function InspectorProjectDetail() {
 
                     <Tabs defaultValue="overview" className="space-y-6">
                         <motion.div variants={itemVariants}>
-                            <TabsList className="bg-slate-100 dark:bg-[#1e293b] p-1 rounded-2xl h-auto inline-flex">
-                                <TabsTrigger value="overview" className="rounded-xl px-6 py-3 font-bold text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-[#7c3aed] data-[state=active]:shadow-sm">Ringkasan</TabsTrigger>
-                                <TabsTrigger value="inspections" className="rounded-xl px-6 py-3 font-bold text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-[#7c3aed] data-[state=active]:shadow-sm">Jadwal ({schedules.length})</TabsTrigger>
-                                <TabsTrigger value="documents" className="rounded-xl px-6 py-3 font-bold text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-[#7c3aed] data-[state=active]:shadow-sm">Dokumen ({documents.length})</TabsTrigger>
+                            <TabsList className="bg-slate-100 dark:bg-[#1e293b] p-1 rounded-2xl h-auto w-full justify-start overflow-x-auto gap-1">
+                                <TabsTrigger value="overview" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Ringkasan</TabsTrigger>
+                                <TabsTrigger value="inspections" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Jadwal ({schedules.length})</TabsTrigger>
+                                <TabsTrigger value="documents" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Dokumen ({documents.length})</TabsTrigger>
                             </TabsList>
                         </motion.div>
 

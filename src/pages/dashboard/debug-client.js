@@ -49,7 +49,7 @@ export default function DebugClientPage() {
         <DashboardLayout title="Debug Client Access">
             <div className="p-6 space-y-6">
 
-                <div className="border p-4 rounded bg-white dark:bg-slate-800 border-blue-500">
+                <div className="border p-4 rounded bg-white dark:bg-slate-900 border-blue-500">
                     <h2 className="font-bold mb-2 text-blue-600">Current Logged In User</h2>
                     <pre className="text-xs overflow-auto bg-slate-100 p-2 rounded">
                         Profile: {JSON.stringify(currentUserInfo, null, 2)}
@@ -70,7 +70,7 @@ export default function DebugClientPage() {
                     )}
                 </div>
 
-                <div className="border p-4 rounded bg-white dark:bg-slate-800">
+                <div className="border p-4 rounded bg-white dark:bg-slate-900">
                     <h2 className="font-bold mb-2">Target Project (that fails)</h2>
                     <pre className="text-xs overflow-auto bg-slate-100 p-2 rounded">
                         {JSON.stringify(project, null, 2)}
@@ -80,7 +80,7 @@ export default function DebugClientPage() {
                     </p>
                 </div>
 
-                <div className="border p-4 rounded bg-white dark:bg-slate-800">
+                <div className="border p-4 rounded bg-white dark:bg-slate-900">
                     <h2 className="font-bold mb-2">All Client Profiles</h2>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">

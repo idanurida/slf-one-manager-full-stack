@@ -11,6 +11,14 @@ module.exports = {
   darkMode: "class",
 
   theme: {
+    screens: {
+      'xs': '475px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -49,9 +57,9 @@ module.exports = {
         },
         // Design Standard Extensions
         "background-light": "#f9f9fb",
-        "background-dark": "#111111",
+        "background-dark": "#020617",
         "surface-light": "#ffffff",
-        "surface-dark": "#1a1a1a",
+        "surface-dark": "#0f172a",
         "text-secondary-light": "#6b7280",
         "text-secondary-dark": "#9ca3af",
         "status-yellow": "#f59e0b",

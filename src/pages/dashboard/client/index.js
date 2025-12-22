@@ -702,7 +702,7 @@ export default function ClientDashboard() {
             <div className="p-6">
               <div className="space-y-4">
                 {recentProjects.length === 0 ? (
-                  <div className="text-center py-10 bg-gray-50 dark:bg-black/10 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
+                  <div className="text-center py-10 bg-gray-50 dark:bg-card/10 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
                     <FolderOpen className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-700 mb-3" />
                     <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary-light dark:text-text-secondary-dark">Belum ada proyek aktif</p>
                   </div>
@@ -714,7 +714,7 @@ export default function ClientDashboard() {
                       onClick={() => router.push(`/dashboard/client/projects/${project.id}`)}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="size-10 rounded-xl bg-gray-50 dark:bg-black/20 text-gray-400 group-hover/item:bg-primary/10 group-hover/item:text-primary flex items-center justify-center transition-colors">
+                        <div className="size-10 rounded-xl bg-gray-50 dark:bg-card/20 text-gray-400 group-hover/item:bg-primary/10 group-hover/item:text-primary flex items-center justify-center transition-colors">
                           <Building size={18} />
                         </div>
                         <div>
@@ -913,5 +913,6 @@ export default function ClientDashboard() {
     </DashboardLayout >
   );
 }
+
 
 

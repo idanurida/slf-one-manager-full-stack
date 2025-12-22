@@ -112,7 +112,7 @@ export default function IntroPage() {
           />
 
           {/* Taglines Container */}
-          <div className="h-16 md:h-20 lg:h-24 flex items-center justify-center w-full mb-6 md:mb-8">
+          <div className="h-[12vh] md:h-20 lg:h-24 flex items-center justify-center w-full mb-6 md:mb-8">
             <AnimatePresence mode="wait">
               {step === 2 && (
                 <motion.h2

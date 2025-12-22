@@ -80,7 +80,7 @@ const PremiumProjectCard = ({ project, onClick, onChecklist }) => (
   <motion.div
     variants={itemVariants}
     whileHover={{ y: -5 }}
-    className="group bg-white dark:bg-[#1e293b] rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/40 dark:shadow-none p-2 cursor-pointer transition-all hover:border-[#7c3aed]/50"
+    className="group bg-card rounded-[2rem] border border-border shadow-lg shadow-slate-200/40 dark:shadow-none p-2 cursor-pointer transition-all hover:border-[#7c3aed]/50"
     onClick={onClick}
   >
     <div className="p-6 relative">
@@ -88,7 +88,7 @@ const PremiumProjectCard = ({ project, onClick, onChecklist }) => (
         {getStatusBadge(project.status)}
       </div>
 
-      <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-[#7c3aed] group-hover:bg-[#7c3aed]/10 transition-colors mb-4">
+      <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-slate-400 group-hover:text-[#7c3aed] group-hover:bg-[#7c3aed]/10 transition-colors mb-4">
         <Building size={24} />
       </div>
 
@@ -107,7 +107,7 @@ const PremiumProjectCard = ({ project, onClick, onChecklist }) => (
 
       <div className="flex items-center gap-2 pt-2">
         <Button
-          className="flex-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase tracking-wider rounded-xl h-10 shadow-sm"
+          className="flex-1 bg-card border border-border hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase tracking-wider rounded-xl h-10 shadow-sm"
           onClick={(e) => { e.stopPropagation(); onChecklist(); }}
         >
           <ClipboardList className="w-3 h-3 mr-2" />
@@ -248,8 +248,8 @@ export default function InspectorProjects() {
                   Project Directory
                 </Badge>
               </div>
-              <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
-                Direktori <span className="text-[#7c3aed]">Proyek</span>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                Direktori <span className="text-[#7c3aed]">proyek</span>
               </h1>
               <p className="text-slate-500 font-medium mt-3 max-w-lg">
                 Daftar semua proyek yang ditugaskan kepada Anda untuk inspeksi dan pemantauan.
@@ -257,15 +257,15 @@ export default function InspectorProjects() {
             </div>
             <Button
               onClick={fetchProjects}
-              className="h-12 px-6 rounded-2xl bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/5 font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-slate-50 transition-all"
+              className="h-12 px-6 rounded-2xl bg-card text-slate-600 dark:text-slate-300 border border-border font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-slate-50 transition-all"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              Refresh data
             </Button>
           </motion.div>
 
           {/* Filters */}
-          <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-2 pr-4 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col md:flex-row items-center gap-4">
+          <motion.div variants={itemVariants} className="bg-card rounded-[2.5rem] p-2 pr-4 border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col md:flex-row items-center gap-4">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
@@ -281,11 +281,11 @@ export default function InspectorProjects() {
 
             <div className="w-full md:w-64">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-12 rounded-xl bg-slate-50 dark:bg-white/5 border-0 font-bold text-xs uppercase tracking-widest text-slate-600">
-                  <SelectValue placeholder="Status" />
+                <SelectTrigger className="h-12 rounded-xl bg-muted border-0 font-bold text-xs uppercase tracking-widest text-slate-600">
+                  <SelectValue placeholder="Semua status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Semua Status</SelectItem>
+                  <SelectItem value="all">Semua status</SelectItem>
                   <SelectItem value="active">Aktif</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="completed">Selesai</SelectItem>
@@ -314,12 +314,12 @@ export default function InspectorProjects() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-16 text-center border border-slate-100 dark:border-white/5 shadow-xl flex flex-col items-center"
+              className="bg-card rounded-[2.5rem] p-16 text-center border border-border shadow-xl flex flex-col items-center"
             >
               <div className="w-24 h-24 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-6">
                 <FolderOpen className="w-10 h-10 text-slate-300" />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight text-slate-800 dark:text-white">Proyek Tidak Ditemukan</h3>
+              <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Proyek tidak ditemukan</h3>
               <p className="text-slate-500 font-medium mt-2 max-w-md mb-8">
                 {projects.length === 0
                   ? 'Belum ada proyek yang ditugaskan kepada Anda.'
@@ -349,4 +349,5 @@ export default function InspectorProjects() {
     </DashboardLayout>
   );
 }
+
 

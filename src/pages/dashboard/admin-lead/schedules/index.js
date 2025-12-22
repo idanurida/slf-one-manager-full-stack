@@ -278,41 +278,44 @@ export default function AdminLeadSchedulesPage() {
                 Manajemen waktu terpusat untuk inspeksi, meeting, dan deadline proyek.
               </p>
             </div>
-            <div className="flex gap-4">
-              <Button onClick={fetchData} variant="outline" className="h-14 w-14 rounded-2xl border-slate-200 dark:border-white/10 hover:border-[#7c3aed] hover:text-[#7c3aed]" >
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+              <Button onClick={fetchData} variant="outline" className="h-14 w-full sm:w-14 rounded-2xl border-slate-200 dark:border-white/10 hover:border-[#7c3aed] hover:text-[#7c3aed] flex-shrink-0" >
                 <RefreshCw size={20} />
               </Button>
-              <Button onClick={handleNewSchedule} className="h-14 px-8 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-[#7c3aed]/20">
-                <Plus size={18} className="mr-2" /> Jadwal Baru
-              </Button>
+              <button
+                onClick={handleNewSchedule}
+                className="h-14 px-4 md:px-8 w-full sm:w-auto bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-[#7c3aed]/20 max-w-full truncate"
+              >
+                <Plus size={16} /> Jadwal Baru
+              </button>
             </div>
           </motion.div>
 
           {/* Stats */}
           <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <StatSimple
-              title="Total Agenda"
+              title="Total agenda"
               value={stats.totalSchedules}
               icon={<Calendar size={18} />}
               color="text-[#7c3aed]"
               bg="bg-[#7c3aed]/10"
             />
             <StatSimple
-              title="Upcoming"
+              title="Akan datang"
               value={stats.upcomingSchedules}
               icon={<Clock size={18} />}
               color="text-orange-500"
               bg="bg-orange-500/10"
             />
             <StatSimple
-              title="Completed"
+              title="Selesai"
               value={stats.completedSchedules}
               icon={<CheckCircle2 size={18} />}
               color="text-emerald-500"
               bg="bg-emerald-500/10"
             />
             <StatSimple
-              title="Inspeksi Fisik"
+              title="Inspeksi fisik"
               value={stats.inspections}
               icon={<MapPin size={18} />}
               color="text-rose-500"
@@ -329,14 +332,14 @@ export default function AdminLeadSchedulesPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
                   placeholder="Cari agenda atau proyek..."
-                  className="w-full h-14 pl-12 pr-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/20 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/20 text-sm font-medium"
+                  className="w-full h-14 pl-12 pr-4 bg-card rounded-2xl border border-border shadow-lg shadow-slate-200/20 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/20 text-sm font-medium"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                 />
               </div>
               <div className="flex gap-4 overflow-x-auto pb-2 md:pb-0">
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="h-14 min-w-[160px] rounded-2xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-xs uppercase tracking-wider">
+                  <SelectTrigger className="h-14 min-w-[160px] rounded-2xl bg-card border-border font-bold text-xs uppercase tracking-wider">
                     <SelectValue placeholder="Tipe Agenda" />
                   </SelectTrigger>
                   <SelectContent>
@@ -349,9 +352,9 @@ export default function AdminLeadSchedulesPage() {
 
                 <Tabs defaultValue="upcoming" value={activeTab} onValueChange={setActiveTab} className="bg-slate-100 dark:bg-white/5 p-1 rounded-2xl h-14 flex items-center">
                   <TabsList className="bg-transparent h-full">
-                    <TabsTrigger value="upcoming" className="h-11 rounded-xl px-6 data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:shadow-sm font-bold text-[10px] uppercase tracking-widest">Upcoming</TabsTrigger>
-                    <TabsTrigger value="completed" className="h-11 rounded-xl px-6 data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:shadow-sm font-bold text-[10px] uppercase tracking-widest">Completed</TabsTrigger>
-                    <TabsTrigger value="all" className="h-11 rounded-xl px-6 data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:shadow-sm font-bold text-[10px] uppercase tracking-widest">All History</TabsTrigger>
+                    <TabsTrigger value="upcoming" className="h-11 rounded-xl px-6 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:shadow-sm font-bold text-[10px] uppercase tracking-widest">Upcoming</TabsTrigger>
+                    <TabsTrigger value="completed" className="h-11 rounded-xl px-6 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:shadow-sm font-bold text-[10px] uppercase tracking-widest">Completed</TabsTrigger>
+                    <TabsTrigger value="all" className="h-11 rounded-xl px-6 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:shadow-sm font-bold text-[10px] uppercase tracking-widest">All History</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -369,13 +372,13 @@ export default function AdminLeadSchedulesPage() {
                     />
                   ))
                 ) : (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5">
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 bg-card rounded-[2.5rem] border border-border">
                     <div className="size-20 bg-slate-50 dark:bg-white/5 rounded-[2rem] flex items-center justify-center text-slate-300 mx-auto mb-6">
                       <Calendar size={32} />
                     </div>
-                    <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white">Tidak ada jadwal</h3>
+                    <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">Tidak ada jadwal</h3>
                     <p className="text-slate-500 mt-2 text-sm">Tidak ditemukan jadwal yang sesuai dengan filter Anda.</p>
-                    <Button onClick={handleNewSchedule} variant="link" className="mt-4 text-[#7c3aed]">Buat Jadwal Baru</Button>
+                    <Button onClick={handleNewSchedule} variant="link" className="mt-4 text-[#7c3aed]">Buat jadwal baru</Button>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -386,9 +389,9 @@ export default function AdminLeadSchedulesPage() {
         {/* Dialogs */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden bg-white dark:bg-slate-900 border-none max-w-lg">
-            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
-              <DialogTitle className="text-xl font-black uppercase tracking-tight">
-                {editingSchedule ? 'Edit Agenda' : 'Agenda Baru'}
+            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-border">
+              <DialogTitle className="text-xl font-black tracking-tight">
+                {editingSchedule ? 'Edit agenda' : 'Agenda baru'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmitSchedule}>
@@ -440,7 +443,7 @@ export default function AdminLeadSchedulesPage() {
                   <Textarea className="rounded-2xl" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                 </div>
               </div>
-              <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 gap-3">
+              <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-border gap-3">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="flex-1 rounded-xl hover:bg-slate-100">Batal</Button>
                 <Button type="submit" className="flex-1 rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white">Simpan</Button>
               </DialogFooter>
@@ -467,8 +470,8 @@ function ScheduleCard({ schedule, onEdit }) {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0 }}
       className={`
-            group relative bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border transition-all duration-300
-            ${isToday ? 'border-[#7c3aed] ring-2 ring-[#7c3aed]/10' : 'border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 hover:shadow-xl'}
+            group relative bg-card p-6 rounded-[2rem] border transition-all duration-300
+            ${isToday ? 'border-[#7c3aed] ring-2 ring-[#7c3aed]/10' : 'border-border hover:border-[#7c3aed]/30 hover:shadow-xl'}
          `}
     >
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
@@ -491,7 +494,7 @@ function ScheduleCard({ schedule, onEdit }) {
               {schedule.status === 'in_progress' ? 'On Going' : schedule.status}
             </Badge>
           </div>
-          <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white truncate mb-1 group-hover:text-[#7c3aed] transition-colors">{schedule.title}</h3>
+          <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white truncate mb-1 group-hover:text-[#7c3aed] transition-colors">{schedule.title}</h3>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-500">
             <span className="flex items-center gap-1.5 font-medium"><Clock size={14} /> {timeStr}</span>
             <span className="flex items-center gap-1.5 font-medium"><Building size={14} /> {schedule.projects?.name}</span>
@@ -512,7 +515,7 @@ function ScheduleCard({ schedule, onEdit }) {
 
 function StatSimple({ title, value, icon, color, bg }) {
   return (
-    <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-4 transition-all hover:scale-105">
+    <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-4 transition-all hover:scale-105">
       <div className={`size-12 rounded-2xl flex items-center justify-center ${bg} ${color} shadow-lg shadow-current/5`}>
         {icon}
       </div>
@@ -523,3 +526,4 @@ function StatSimple({ title, value, icon, color, bg }) {
     </div>
   );
 }
+

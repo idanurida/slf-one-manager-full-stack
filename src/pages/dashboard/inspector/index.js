@@ -52,14 +52,14 @@ const getStatusBadge = (status) => {
 
 function StatCard({ title, value, icon: Icon, subtitle, color }) {
   return (
-    <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+    <div className="rounded-2xl bg-card p-6 border border-border shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
       <div className="flex items-start justify-between relative z-10">
         <div>
           <p className="text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider">{title}</p>
           <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
           {subtitle && <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70 tracking-widest">{subtitle}</p>}
         </div>
-        <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 duration-300 ${color || 'text-primary'}`}>
+        <div className={`rounded-xl p-3 bg-muted border border-border transition-transform group-hover:scale-110 duration-300 ${color || 'text-primary'}`}>
           <Icon className="w-6 h-6" />
         </div>
       </div>
@@ -204,7 +204,7 @@ export default function InspectorDashboard() {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-2 border-b border-gray-100 dark:border-gray-800/50">
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight text-gray-900 dark:text-white leading-tight">
-              Dashboard <span className="text-primary italic">Inspektur</span>
+              Dashboard <span className="text-primary italic">inspektur</span>
             </h1>
             <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-lg font-medium">
               Selamat datang kembali, <span className="font-bold text-gray-900 dark:text-white">{profile?.full_name?.split(' ')[0] || 'Inspektur'}</span>. {recentProjects.length} proyek aktif menunggu Anda.
@@ -226,7 +226,7 @@ export default function InspectorDashboard() {
             )}
             <Button onClick={() => router.push('/dashboard/inspector/reports/new')}>
               <Plus className="w-4 h-4 mr-2" />
-              Buat Laporan
+              Buat laporan baru
             </Button>
           </div>
         </div>
@@ -238,7 +238,7 @@ export default function InspectorDashboard() {
             <AlertDescription className="flex items-center justify-between">
               <span>Ada <strong>{stats.pendingReports}</strong> laporan yang belum selesai</span>
               <Button size="sm" variant="outline" onClick={() => router.push('/dashboard/inspector/reports')}>
-                Kelola Laporan
+                Kelola laporan
               </Button>
             </AlertDescription>
           </Alert>
@@ -246,7 +246,7 @@ export default function InspectorDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
-            title="Total Inspeksi"
+            title="Total inspeksi"
             value={stats.totalInspections}
             icon={ClipboardList}
             color="text-blue-500"
@@ -254,7 +254,7 @@ export default function InspectorDashboard() {
           />
 
           <StatCard
-            title="Laporan Selesai"
+            title="Laporan selesai"
             value={stats.completedInspections}
             icon={CheckCircle}
             color="text-status-green"
@@ -262,7 +262,7 @@ export default function InspectorDashboard() {
           />
 
           <StatCard
-            title="Jadwal Dekat"
+            title="Jadwal dekat"
             value={stats.upcomingSchedules}
             icon={Calendar}
             color="text-orange-500"
@@ -270,7 +270,7 @@ export default function InspectorDashboard() {
           />
 
           <StatCard
-            title="Draft Laporan"
+            title="Draft laporan"
             value={stats.pendingReports}
             icon={FileText}
             color="text-purple-500"
@@ -286,14 +286,14 @@ export default function InspectorDashboard() {
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                Jadwal Mendatang
+                Jadwal mendatang
               </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/inspector/schedules')}
               >
-                Lihat Semua
+                Lihat semua
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </CardHeader>
@@ -334,7 +334,7 @@ export default function InspectorDashboard() {
           {/* Quick Actions */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Aksi Cepat</CardTitle>
+              <CardTitle className="text-lg">Aksi cepat</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-3">
@@ -345,7 +345,7 @@ export default function InspectorDashboard() {
                 >
                   <Calendar className="w-5 h-5 mr-3 text-blue-600 dark:text-blue-400" />
                   <div className="text-left">
-                    <p className="font-medium">Lihat Jadwal</p>
+                    <p className="font-medium">Lihat jadwal</p>
                     <p className="text-xs text-muted-foreground">Jadwal inspeksi dari Project Lead</p>
                   </div>
                 </Button>
@@ -357,7 +357,7 @@ export default function InspectorDashboard() {
                 >
                   <ClipboardList className="w-5 h-5 mr-3 text-purple-600 dark:text-purple-400" />
                   <div className="text-left">
-                    <p className="font-medium">Checklist Inspeksi</p>
+                    <p className="font-medium">Checklist inspeksi</p>
                     <p className="text-xs text-muted-foreground">Isi checklist dengan foto & GPS</p>
                   </div>
                 </Button>
@@ -369,7 +369,7 @@ export default function InspectorDashboard() {
                 >
                   <FileText className="w-5 h-5 mr-3 text-green-600 dark:text-green-400" />
                   <div className="text-left">
-                    <p className="font-medium">Buat Laporan</p>
+                    <p className="font-medium">Buat laporan</p>
                     <p className="text-xs text-muted-foreground">Buat laporan hasil inspeksi</p>
                   </div>
                 </Button>
@@ -381,7 +381,7 @@ export default function InspectorDashboard() {
                 >
                   <Building className="w-5 h-5 mr-3 text-orange-600 dark:text-orange-400" />
                   <div className="text-left">
-                    <p className="font-medium">Proyek Saya</p>
+                    <p className="font-medium">Proyek saya</p>
                     <p className="text-xs text-muted-foreground">Lihat proyek yang ditugaskan</p>
                   </div>
                 </Button>
@@ -396,14 +396,14 @@ export default function InspectorDashboard() {
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Building className="w-5 h-5" />
-                Proyek Aktif
+                Proyek aktif
               </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard/inspector/projects')}
               >
-                Lihat Semua
+                Lihat semua
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </CardHeader>

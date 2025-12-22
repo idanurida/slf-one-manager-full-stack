@@ -165,47 +165,47 @@ export default function TeamLeaderTeamPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <motion.div variants={itemVariants}>
-            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">
-              Tim <span className="text-[#7c3aed]">Proyek</span>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-gray-900 dark:text-white">
+              Tim <span className="text-primary">proyek</span>
             </h1>
-            <p className="text-slate-500 font-medium">Kelola dan pantau kinerja anggota tim Anda.</p>
+            <p className="text-muted-foreground font-medium">Kelola dan pantau kinerja anggota tim Anda.</p>
           </motion.div>
           <motion.div variants={itemVariants} className="flex gap-3">
             <Button variant="outline" size="sm" onClick={fetchData} className="rounded-xl h-10 px-4">
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              Refresh data
             </Button>
           </motion.div>
         </div>
 
         {/* Filters */}
-        <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex flex-col md:flex-row gap-4 relative z-10">
+        <motion.div variants={itemVariants} className="bg-card p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-border flex flex-col md:flex-row gap-4 relative z-10">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input
               placeholder="Cari anggota tim berdasarkan nama, email, atau proyek..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl text-base"
+              className="pl-12 h-12 bg-muted/50 border-transparent focus:border-primary rounded-xl text-base"
             />
           </div>
           <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="w-full md:w-[200px] h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl">
-              <SelectValue placeholder="Semua Role" />
+            <SelectTrigger className="w-full md:w-[200px] h-12 bg-muted/50 border-transparent focus:border-primary rounded-xl">
+              <SelectValue placeholder="Semua role" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="all">Semua Role</SelectItem>
+              <SelectItem value="all">Semua role</SelectItem>
               {availableRoles.map(role => (
                 <SelectItem key={role} value={role}>{role.replace(/_/g, ' ')}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={projectFilter} onValueChange={setProjectFilter}>
-            <SelectTrigger className="w-full md:w-[200px] h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl">
-              <SelectValue placeholder="Semua Proyek" />
+            <SelectTrigger className="w-full md:w-[200px] h-12 bg-muted/50 border-transparent focus:border-primary rounded-xl">
+              <SelectValue placeholder="Semua proyek" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="all">Semua Proyek</SelectItem>
+              <SelectItem value="all">Semua proyek</SelectItem>
               {projects.map(project => (
                 <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
               ))}
@@ -216,13 +216,13 @@ export default function TeamLeaderTeamPage() {
         {/* Team Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {loading ? (
-            [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-64 bg-slate-100 dark:bg-slate-800 rounded-[2rem] animate-pulse" />)
+            [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-64 bg-slate-100 dark:bg-slate-900 rounded-[2rem] animate-pulse" />)
           ) : filteredTeamMembers.length === 0 ? (
             <div className="col-span-full py-20 text-center">
-              <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-6">
+              <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mx-auto mb-6">
                 <Users className="size-12 text-slate-300" />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-2">Tidak ditemukan</h3>
+              <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white mb-2">Tidak ditemukan</h3>
               <p className="text-slate-400">Tidak ada anggota tim yang cocok dengan kriteria pencarian.</p>
             </div>
           ) : (
@@ -230,31 +230,31 @@ export default function TeamLeaderTeamPage() {
               <motion.div
                 key={member.id}
                 variants={itemVariants}
-                className="group relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:border-[#7c3aed]/30 transition-all duration-300 flex flex-col"
+                className="group relative bg-card rounded-[2rem] p-6 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 flex flex-col"
               >
                 <div className="flex items-start justify-between mb-6">
-                  <div className="size-16 rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden relative">
+                  <div className="size-16 rounded-2xl bg-muted overflow-hidden relative">
                     {/* Placeholder Avatar */}
-                    <div className="absolute inset-0 flex items-center justify-center text-slate-400 font-black text-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
+                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground font-black text-xl bg-gradient-to-br from-muted to-muted/80">
                       {member.full_name?.charAt(0) || 'U'}
                     </div>
                   </div>
-                  <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 border-none px-3 py-1 rounded-full uppercase text-[10px] font-bold tracking-widest">
+                  <Badge className="bg-muted text-muted-foreground hover:bg-muted/80 border-none px-3 py-1 rounded-full text-xs font-bold tracking-widest">
                     {getRoleLabel(member.role)}
                   </Badge>
                 </div>
 
                 <div className="mb-6 flex-1">
-                  <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white mb-1 group-hover:text-[#7c3aed] transition-colors">{member.full_name}</h3>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-4">{member.specialization || 'Generalist'}</p>
+                  <h3 className="text-lg font-black tracking-tight text-foreground mb-1 group-hover:text-primary transition-colors">{member.full_name}</h3>
+                  <p className="text-xs text-muted-foreground font-bold tracking-wider mb-4">{member.specialization || 'Generalist'}</p>
 
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs text-slate-500 font-medium bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg truncate">
-                      <Mail size={14} className="shrink-0 text-[#7c3aed]" />
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium bg-muted/50 p-2 rounded-lg truncate">
+                      <Mail size={14} className="shrink-0 text-primary" />
                       <span className="truncate">{member.email}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500 font-medium bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg truncat">
-                      <Briefcase size={14} className="shrink-0 text-[#7c3aed]" />
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium bg-muted/50 p-2 rounded-lg truncat">
+                      <Briefcase size={14} className="shrink-0 text-primary" />
                       <span className="truncate">{member.project_name}</span>
                     </div>
                   </div>
@@ -262,11 +262,11 @@ export default function TeamLeaderTeamPage() {
 
                 <div className="flex gap-2 mt-auto">
                   <Button
-                    className="flex-1 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                    className="flex-1 rounded-xl font-bold tracking-widest text-xs"
                     variant="outline"
                     onClick={() => toast.info('Fitur chat akan segera tersedia')}
                   >
-                    Message
+                    Pesan
                   </Button>
                   {/* Phone button removed as column is missing */}
                 </div>
@@ -284,3 +284,4 @@ const getRoleLabel = (role) => {
   const cleanRole = role?.replace(/_/g, ' ');
   return cleanRole === 'project lead' ? 'Team Leader' : cleanRole;
 }
+

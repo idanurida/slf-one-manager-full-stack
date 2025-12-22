@@ -248,7 +248,7 @@ export default function AdminLeadProjectsTrackingPage() {
         {/* Hero & Filter */}
         <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white leading-none uppercase">Project <span className="text-[#7c3aed]">Tracking</span></h1>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">Project <span className="text-[#7c3aed]">tracking</span></h1>
             <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Monitoring workflow SLF, dokumen client, dan status pembayaran tim secara real-time.</p>
           </div>
 
@@ -256,13 +256,13 @@ export default function AdminLeadProjectsTrackingPage() {
             <div className="relative group flex-1 min-w-[300px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
               <input
-                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
-                placeholder="Cari Proyek atau Klien..."
+                className="h-14 w-full rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                placeholder="Cari proyek atau klien..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className="h-14 w-14 flex items-center justify-center rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none text-slate-500 hover:text-[#7c3aed] transition-all">
+            <button className="h-14 w-14 flex items-center justify-center rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none text-slate-500 hover:text-[#7c3aed] transition-all">
               <Filter size={20} />
             </button>
           </div>
@@ -279,10 +279,10 @@ export default function AdminLeadProjectsTrackingPage() {
         </motion.div>
 
         {/* Projects List Refined Table */}
-        <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 overflow-hidden transition-all duration-300">
+        <motion.div variants={itemVariants} className="bg-card rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-border overflow-hidden transition-all duration-300">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-[0.15em] border-b border-slate-100 dark:border-white/5">
+              <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 font-bold text-[10px] tracking-[0.15em] border-b border-border">
                 <tr>
                   <th className="px-8 py-6">Informasi Proyek</th>
                   <th className="px-8 py-6">Tim</th>
@@ -294,28 +294,28 @@ export default function AdminLeadProjectsTrackingPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                 {loading ? (
-                  <tr><td colSpan="6" className="px-8 py-20 text-center font-black uppercase text-xs tracking-widest text-slate-400">Syncing Tracking Data...</td></tr>
+                  <tr><td colSpan="6" className="px-8 py-20 text-center font-bold text-xs tracking-widest text-slate-400">Syncing tracking data...</td></tr>
                 ) : filteredProjects.length === 0 ? (
                   <tr><td colSpan="6" className="px-8 py-20 text-center flex flex-col items-center gap-4 text-slate-400">
                     <Building2 size={48} className="opacity-20" />
-                    <span className="font-black uppercase text-xs tracking-widest">Tidak Ada Data Ditemukan</span>
+                    <span className="font-bold text-xs tracking-widest">Tidak ada data ditemukan</span>
                   </td></tr>
                 ) : (
                   filteredProjects.map(p => (
                     <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
                       <td className="px-8 py-6">
                         <div className="flex flex-col gap-1.5 cursor-pointer" onClick={() => router.push(`/dashboard/admin-lead/projects/${p.id}`)}>
-                          <span className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight group-hover:text-[#7c3aed] transition-colors">{p.name}</span>
+                          <span className="font-bold text-sm text-slate-900 dark:text-white tracking-tight group-hover:text-[#7c3aed] transition-colors">{p.name}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-[9px] font-black uppercase tracking-widest bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded text-slate-500">{p.application_type || 'SLF'}</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{p.client_name}</span>
+                            <span className="text-[9px] font-bold tracking-widest bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded text-slate-500">{p.application_type || 'SLF'}</span>
+                            <span className="text-[10px] font-bold text-slate-400 tracking-widest">{p.client_name}</span>
                           </div>
                         </div>
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex -space-x-2">
                           {p.project_teams?.slice(0, 3).map((tm, idx) => (
-                            <div key={idx} className="size-8 rounded-full border-2 border-white dark:border-slate-800 bg-slate-200 overflow-hidden shadow-sm" title={tm.profiles?.full_name}>
+                            <div key={idx} className="size-8 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 overflow-hidden shadow-sm" title={tm.profiles?.full_name}>
                               {tm.profiles?.avatar_url ? (
                                 <img src={tm.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
                               ) : (
@@ -326,18 +326,18 @@ export default function AdminLeadProjectsTrackingPage() {
                             </div>
                           ))}
                           {(p.project_teams?.length || 0) > 3 && (
-                            <div className="size-8 rounded-full border-2 border-white dark:border-slate-800 bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-500 shadow-sm">
+                            <div className="size-8 rounded-full border-2 border-white dark:border-slate-900 bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-500 shadow-sm">
                               +{(p.project_teams?.length || 0) - 3}
                             </div>
                           )}
-                          {(p.project_teams?.length || 0) === 0 && <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">No Team</span>}
+                          {(p.project_teams?.length || 0) === 0 && <span className="text-[10px] text-slate-400 font-bold tracking-widest">Tanpa tim</span>}
                         </div>
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex flex-col gap-2 min-w-[150px]">
                           <div className="flex justify-between items-end">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.document_counts.verified}/{p.document_counts.total} Files</span>
-                            <span className="text-[10px] font-black text-[#7c3aed]">{Math.round((p.document_counts.verified / (p.document_counts.total || 1)) * 100)}%</span>
+                            <span className="text-[10px] font-bold text-slate-400 tracking-widest">{p.document_counts.verified}/{p.document_counts.total} file</span>
+                            <span className="text-[10px] font-bold text-[#7c3aed]">{Math.round((p.document_counts.verified / (p.document_counts.total || 1)) * 100)}%</span>
                           </div>
                           <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                             <motion.div
@@ -349,29 +349,29 @@ export default function AdminLeadProjectsTrackingPage() {
                         </div>
                       </td>
                       <td className="px-8 py-6">
-                        <span className={`inline-flex px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(p.status)}`}>
+                        <span className={`inline-flex px-3 py-1.5 rounded-xl text-[9px] font-bold tracking-widest border ${getStatusStyles(p.status)}`}>
                           {getStatusLabel(p.status)}
                         </span>
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
                           <div className="flex flex-col items-center gap-1 group/icon">
-                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.payment_info?.status === 'verified' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-300'}`}>
+                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.payment_info?.status === 'verified' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-slate-50 dark:bg-white/5 border-border text-slate-300'}`}>
                               <CreditCard size={14} />
                             </div>
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Finance</span>
+                            <span className="text-[8px] font-bold text-slate-400 tracking-tighter">Finance</span>
                           </div>
                           <div className="flex flex-col items-center gap-1">
-                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.report_verified ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-500' : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-300'}`}>
+                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.report_verified ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-500' : 'bg-slate-50 dark:bg-white/5 border-border text-slate-300'}`}>
                               <FileCheck size={14} />
                             </div>
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Report</span>
+                            <span className="text-[8px] font-bold text-slate-400 tracking-tighter">Report</span>
                           </div>
                           <div className="flex flex-col items-center gap-1">
-                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.simbg_uploaded ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-500' : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-300'}`}>
+                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.simbg_uploaded ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-500' : 'bg-slate-50 dark:bg-white/5 border-border text-slate-300'}`}>
                               <Upload size={14} />
                             </div>
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">SIMBG</span>
+                            <span className="text-[8px] font-bold text-slate-400 tracking-tighter">SIMBG</span>
                           </div>
                         </div>
                       </td>
@@ -398,29 +398,29 @@ export default function AdminLeadProjectsTrackingPage() {
               <div className="size-12 bg-white/20 rounded-xl flex items-center justify-center">
                 <AlertCircle size={24} />
               </div>
-              <h4 className="text-xl font-black uppercase tracking-tight">Kesehatan Pipeline</h4>
+              <h4 className="text-xl font-bold tracking-tight">Kesehatan pipeline</h4>
               <p className="text-white/80 font-medium">Periksa proyek dengan status PL Review yang mengendap lebih dari 3 hari untuk menjaga kualitas SLA Tim Drafter.</p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col gap-6">
+          <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col gap-6">
             <div className="flex items-center gap-4">
               <div className="size-12 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center">
                 <CheckCircle2 size={24} />
               </div>
               <div>
-                <h4 className="font-black uppercase tracking-tight text-slate-900 dark:text-white">Review Portal</h4>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Sistem Otomasi SLF One</p>
+                <h4 className="font-bold tracking-tight text-slate-900 dark:text-white">Review portal</h4>
+                <p className="text-xs font-bold text-slate-400 tracking-widest mt-1">Sistem otomasi SLF One</p>
               </div>
             </div>
             <div className="space-y-3">
-              <div className="p-4 bg-slate-50 dark:bg-black/20 rounded-2xl flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Laporan Menunggu</span>
-                <span className="text-sm font-black text-[#7c3aed]">{stats.projectsWithPendingDocs}</span>
+              <div className="p-4 bg-slate-50 dark:bg-card/20 rounded-2xl flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-500 tracking-widest">Laporan menunggu</span>
+                <span className="text-sm font-bold text-[#7c3aed]">{stats.projectsWithPendingDocs}</span>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-black/20 rounded-2xl flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Invoice Pending</span>
-                <span className="text-sm font-black text-purple-500">{stats.pendingPayments}</span>
+              <div className="p-4 bg-slate-50 dark:bg-card/20 rounded-2xl flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-500 tracking-widest">Invoice pending</span>
+                <span className="text-sm font-bold text-purple-500">{stats.pendingPayments}</span>
               </div>
             </div>
           </div>
@@ -433,13 +433,13 @@ export default function AdminLeadProjectsTrackingPage() {
 // Sub-components
 function StatSimple({ title, value, icon, color, bg }) {
   return (
-    <div className="flex items-center gap-3 bg-white dark:bg-[#1e293b] p-3 rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/30 dark:shadow-none transition-all hover:scale-105">
+    <div className="flex items-center gap-3 bg-card p-3 rounded-2xl border border-border shadow-lg shadow-slate-200/30 dark:shadow-none transition-all hover:scale-105">
       <div className={`size-8 rounded-lg flex items-center justify-center ${bg} ${color}`}>
         {icon}
       </div>
       <div className="flex flex-col">
-        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter leading-none">{title}</span>
-        <span className="text-xs font-black text-slate-900 dark:text-white leading-tight mt-0.5">{value}</span>
+        <span className="text-[8px] font-bold text-slate-400 tracking-tighter leading-none">{title}</span>
+        <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight mt-0.5">{value}</span>
       </div>
     </div>
   );
@@ -447,5 +447,7 @@ function StatSimple({ title, value, icon, color, bg }) {
 
 // Additional Icons / Helpers
 // Items already imported from lucide-react: CalendarDays, FileCheck, Loader2
+
+
 
 

@@ -215,13 +215,13 @@ export default function TeamLeaderProjectDetailPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <motion.div variants={itemVariants}>
             <Button variant="ghost" className="pl-0 hover:bg-transparent text-slate-500 mb-2" onClick={() => router.push('/dashboard/project-lead')}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Kembali ke Daftar
+              <ArrowLeft className="mr-2 h-4 w-4" /> Kembali ke daftar
             </Button>
-            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-2">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-2">
               {loading ? <Skeleton className="h-12 w-96 rounded-xl" /> : project?.name}
             </h1>
             <div className="flex items-center gap-3">
-              <Badge className={`${getStatusColor(project?.status)} text-xs font-bold px-3 py-1 rounded-lg uppercase tracking-wider border-none`}>
+              <Badge className={`${getStatusColor(project?.status)} text-xs font-bold px-3 py-1 rounded-lg tracking-wider border-none`}>
                 {project?.status?.replace(/_/g, ' ')}
               </Badge>
               <span className="text-slate-500 font-medium flex items-center gap-1 text-sm">
@@ -240,19 +240,22 @@ export default function TeamLeaderProjectDetailPage() {
 
         {/* Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl w-full md:w-auto overflow-x-auto flex justify-start">
+          <TabsList className="bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl w-full md:w-auto overflow-x-auto flex justify-start">
             {['overview', 'schedules', 'documents', 'reports', 'actions'].map(tab => (
               <TabsTrigger
                 key={tab}
                 value={tab}
-                className="rounded-xl px-6 py-2.5 text-sm font-bold uppercase tracking-wide data-[state=active]:bg-white data-[state=active]:dark:bg-slate-700 data-[state=active]:shadow-lg transition-all"
+                className="rounded-xl px-6 py-2.5 text-sm font-bold tracking-wide data-[state=active]:bg-white data-[state=active]:dark:bg-slate-700 data-[state=active]:shadow-lg transition-all"
               >
                 {tab === 'overview' && <Eye className="w-4 h-4 mr-2" />}
                 {tab === 'schedules' && <CalendarIcon className="w-4 h-4 mr-2" />}
                 {tab === 'documents' && <FileText className="w-4 h-4 mr-2" />}
                 {tab === 'reports' && <FileBarChart className="w-4 h-4 mr-2" />}
                 {tab === 'actions' && <Activity className="w-4 h-4 mr-2" />}
-                {tab}
+                {tab === 'overview' ? 'Ringkasan' :
+                  tab === 'schedules' ? 'Jadwal' :
+                    tab === 'documents' ? 'Dokumen' :
+                      tab === 'reports' ? 'Laporan' : 'Aksi'}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -267,26 +270,26 @@ export default function TeamLeaderProjectDetailPage() {
             >
               {/* OVERVIEW TAB */}
               <TabsContent value="overview" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-[#1e293b] overflow-hidden">
+                <Card className="lg:col-span-2 rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-slate-950 overflow-hidden">
                   <CardHeader className="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 p-8">
-                    <CardTitle className="text-xl font-black uppercase tracking-tight">Detail Proyek</CardTitle>
+                    <CardTitle className="text-xl font-black tracking-tight">Detail proyek</CardTitle>
                   </CardHeader>
                   <CardContent className="p-8 space-y-6">
                     <div className="grid grid-cols-2 gap-8">
                       <div>
-                        <p className="text-xs uppercase font-bold text-slate-400 tracking-widest mb-1">Deskripsi</p>
+                        <p className="text-xs font-bold text-slate-400 tracking-widest mb-1">Deskripsi</p>
                         <p className="font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{project?.description || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase font-bold text-slate-400 tracking-widest mb-1">Tipe Bangunan</p>
+                        <p className="text-xs font-bold text-slate-400 tracking-widest mb-1">Tipe bangunan</p>
                         <p className="font-medium text-slate-700 dark:text-slate-300">{project?.building_type || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase font-bold text-slate-400 tracking-widest mb-1">Lokasi</p>
+                        <p className="text-xs font-bold text-slate-400 tracking-widest mb-1">Lokasi</p>
                         <p className="font-medium text-slate-700 dark:text-slate-300">{project?.location || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase font-bold text-slate-400 tracking-widest mb-1">Luas Area</p>
+                        <p className="text-xs font-bold text-slate-400 tracking-widest mb-1">Luas area</p>
                         <p className="font-medium text-slate-700 dark:text-slate-300">{project?.land_area ? `${project.land_area} m²` : '-'}</p>
                       </div>
                     </div>
@@ -294,21 +297,21 @@ export default function TeamLeaderProjectDetailPage() {
                 </Card>
 
                 <div className="space-y-6">
-                  <Card className="rounded-[2.5rem] border-none shadow-xl bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] text-white">
+                  <Card className="rounded-[2.5rem] border-none shadow-xl bg-primary text-primary-foreground">
                     <CardContent className="p-8">
-                      <h3 className="text-xl font-black uppercase tracking-tight mb-6">Tim Proyek</h3>
+                      <h3 className="text-xl font-black tracking-tight mb-6">Tim proyek</h3>
                       <div className="space-y-6">
                         <div className="flex items-center gap-4">
                           <div className="size-12 rounded-2xl bg-white/20 flex items-center justify-center font-black text-lg">TL</div>
                           <div>
-                            <p className="text-xs uppercase font-bold opacity-70 tracking-widest">Team Leader</p>
+                            <p className="text-xs font-bold opacity-70 tracking-widest">Team Leader</p>
                             <p className="font-bold text-lg">{project?.project_lead?.full_name}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="size-12 rounded-2xl bg-white/10 flex items-center justify-center font-bold">AL</div>
                           <div>
-                            <p className="text-xs uppercase font-bold opacity-70 tracking-widest">Admin Lead</p>
+                            <p className="text-xs font-bold opacity-70 tracking-widest">Admin Lead</p>
                             <p className="font-medium">{project?.admin_lead?.full_name}</p>
                           </div>
                         </div>
@@ -316,16 +319,16 @@ export default function TeamLeaderProjectDetailPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-[#1e293b]">
+                  <Card className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-slate-950">
                     <CardContent className="p-8">
-                      <h3 className="text-lg font-black uppercase tracking-tight mb-4">Target</h3>
+                      <h3 className="text-lg font-black tracking-tight mb-4">Target</h3>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-slate-500">Mulai</span>
                         <span className="font-bold">{project?.start_date ? format(new Date(project.start_date), 'dd MMM yyyy', { locale: localeId }) : '-'}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-slate-500">Selesai</span>
-                        <span className="font-bold text-[#7c3aed]">{project?.due_date ? format(new Date(project.due_date), 'dd MMM yyyy', { locale: localeId }) : '-'}</span>
+                        <span className="font-bold text-primary">{project?.due_date ? format(new Date(project.due_date), 'dd MMM yyyy', { locale: localeId }) : '-'}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -336,15 +339,15 @@ export default function TeamLeaderProjectDetailPage() {
               <TabsContent value="schedules">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {schedules.map((schedule) => (
-                    <Card key={schedule.id} className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-[#1e293b] hover:shadow-2xl transition-all">
+                    <Card key={schedule.id} className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-slate-950 hover:shadow-2xl transition-all">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-4">
                           <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl"><CalendarIcon size={20} /></div>
-                          <Badge className={`${schedule.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'} border-none uppercase tracking-wider text-[10px]`}>{schedule.status}</Badge>
+                          <Badge className={`${schedule.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'} border-none tracking-wider text-[10px]`}>{schedule.status}</Badge>
                         </div>
                         <h3 className="font-black text-lg mb-2">{schedule.title}</h3>
                         <p className="text-slate-500 text-sm mb-4 line-clamp-2">{schedule.description || 'Agenda inspeksi rutin.'}</p>
-                        <div className="space-y-2 text-xs font-bold text-slate-400 uppercase tracking-wide">
+                        <div className="space-y-2 text-xs font-bold text-slate-400 tracking-wide">
                           <div className="flex items-center gap-2"><Clock size={12} /> {format(new Date(schedule.schedule_date), 'dd MMM HH:mm', { locale: localeId })}</div>
                           <div className="flex items-center gap-2"><User size={12} /> {schedule.assigned_to_user?.full_name || 'Unassigned'}</div>
                         </div>
@@ -359,11 +362,11 @@ export default function TeamLeaderProjectDetailPage() {
               <TabsContent value="documents">
                 <div className="space-y-4">
                   {documents.map((doc) => (
-                    <Card key={doc.id} className="rounded-2xl border-none shadow-md bg-white dark:bg-[#1e293b] flex items-center p-4 gap-4 hover:bg-slate-50 transition-colors">
+                    <Card key={doc.id} className="rounded-2xl border-none shadow-md bg-white dark:bg-slate-950 flex items-center p-4 gap-4 hover:bg-slate-50 transition-colors">
                       <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl"><FileText size={20} /></div>
                       <div className="flex-1">
                         <h4 className="font-bold text-slate-900 dark:text-white">{doc.name}</h4>
-                        <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">{doc.document_type} • {format(new Date(doc.created_at), 'dd MMM yyyy')}</p>
+                        <p className="text-xs text-slate-500 font-bold tracking-wider">{doc.document_type} • {format(new Date(doc.created_at), 'dd MMM yyyy')}</p>
                       </div>
                       <Badge className={doc.status === 'approved' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-600'}>{doc.status}</Badge>
                       {doc.url && <Button size="icon" variant="ghost" asChild><a href={doc.url} target="_blank"><Download size={18} /></a></Button>}
@@ -377,7 +380,7 @@ export default function TeamLeaderProjectDetailPage() {
               <TabsContent value="reports">
                 <div className="grid grid-cols-1 gap-6">
                   {inspectionReports.map((report) => (
-                    <Card key={report.id} className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-[#1e293b] overflow-hidden">
+                    <Card key={report.id} className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-slate-950 overflow-hidden">
                       <CardContent className="p-8">
                         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
                           <div>
@@ -387,10 +390,10 @@ export default function TeamLeaderProjectDetailPage() {
                           <div className="flex items-center gap-2">
                             {!report.project_lead_reviewed ? (
                               <Button onClick={() => { setSelectedReport(report); setReviewReportOpen(true); }} className="bg-slate-900 text-white rounded-xl px-6 font-bold">
-                                Review Laporan
+                                Review laporan
                               </Button>
                             ) : (
-                              <Badge className={`h-10 px-4 rounded-xl text-xs font-bold uppercase tracking-widest ${report.project_lead_approved ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                              <Badge className={`h-10 px-4 rounded-xl text-xs font-bold tracking-widest ${report.project_lead_approved ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                                 {report.project_lead_approved ? 'Disetujui' : 'Ditolak'}
                               </Badge>
                             )}
@@ -422,25 +425,25 @@ export default function TeamLeaderProjectDetailPage() {
               {/* ACTIONS TAB */}
               <TabsContent value="actions">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-[#1e293b]">
+                  <Card className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-slate-950">
                     <CardHeader className="p-8 pb-0">
-                      <CardTitle className="text-xl font-black uppercase tracking-tight">Manajemen Proyek</CardTitle>
+                      <CardTitle className="text-xl font-black tracking-tight">Manajemen proyek</CardTitle>
                       <CardDescription>Aksi utama untuk mengelola alur kerja.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-8 space-y-4">
                       <Dialog open={assignInspectorOpen} onOpenChange={setAssignInspectorOpen}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" className="w-full h-auto py-4 justify-start px-6 rounded-2xl border-2 hover:border-[#7c3aed] hover:text-[#7c3aed] transition-all group" disabled={project?.status !== 'project_lead_review'}>
+                          <Button variant="outline" className="w-full h-auto py-4 justify-start px-6 rounded-2xl border-2 hover:border-primary hover:text-primary transition-all group" disabled={project?.status !== 'project_lead_review'}>
                             <div className="rounded-xl bg-blue-100 text-blue-600 p-2 mr-4 group-hover:scale-110 transition-transform"><Users2 size={20} /></div>
                             <div className="text-left">
-                              <span className="block font-bold">Assign Inspector</span>
+                              <span className="block font-bold">Assign inspector</span>
                               <span className="text-xs text-slate-400 font-medium">Tugaskan inspector untuk jadwal.</span>
                             </div>
                             <ChevronRight className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="rounded-[2rem]">
-                          <DialogHeader><DialogTitle>Pilih Inspector</DialogTitle></DialogHeader>
+                          <DialogHeader><DialogTitle>Pilih inspector</DialogTitle></DialogHeader>
                           <div className="py-4 space-y-4">
                             <Select value={selectedInspector} onValueChange={setSelectedInspector}>
                               <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Pilih user..." /></SelectTrigger>
@@ -455,17 +458,17 @@ export default function TeamLeaderProjectDetailPage() {
 
                       <Dialog open={submitReportOpen} onOpenChange={setSubmitReportOpen}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" className="w-full h-auto py-4 justify-start px-6 rounded-2xl border-2 hover:border-[#7c3aed] hover:text-[#7c3aed] transition-all group" disabled={project?.status !== 'inspection_completed'}>
+                          <Button variant="outline" className="w-full h-auto py-4 justify-start px-6 rounded-2xl border-2 hover:border-primary hover:text-primary transition-all group" disabled={project?.status !== 'inspection_completed'}>
                             <div className="rounded-xl bg-purple-100 text-purple-600 p-2 mr-4 group-hover:scale-110 transition-transform"><Send size={20} /></div>
                             <div className="text-left">
-                              <span className="block font-bold">Submit Final Report</span>
+                              <span className="block font-bold">Submit final report</span>
                               <span className="text-xs text-slate-400 font-medium">Kirim laporan ke Admin Lead.</span>
                             </div>
                             <ChevronRight className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="rounded-[2rem]">
-                          <DialogHeader><DialogTitle>Submit Laporan Final</DialogTitle></DialogHeader>
+                          <DialogHeader><DialogTitle>Submit laporan final</DialogTitle></DialogHeader>
                           <div className="py-4 space-y-4">
                             <Textarea placeholder="Catatan untuk Admin Lead..." value={reportNotes} onChange={e => setReportNotes(e.target.value)} className="rounded-xl" />
                           </div>
@@ -475,15 +478,15 @@ export default function TeamLeaderProjectDetailPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-[#1e293b]">
+                  <Card className="rounded-[2.5rem] border-none shadow-xl bg-white dark:bg-slate-950">
                     <CardHeader className="p-8 pb-0">
-                      <CardTitle className="text-xl font-black uppercase tracking-tight">Manual Status Override</CardTitle>
+                      <CardTitle className="text-xl font-black tracking-tight">Manual status override</CardTitle>
                       <CardDescription>Gunakan hanya jika diperlukan.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-8">
                       <div className="flex flex-wrap gap-2">
                         {['inspection_scheduled', 'inspection_in_progress', 'inspection_completed', 'cancelled'].map(status => (
-                          <Button key={status} variant="outline" size="sm" onClick={() => handleUpdateStatus(status)} className="rounded-lg text-xs font-bold uppercase tracking-wider">
+                          <Button key={status} variant="outline" size="sm" onClick={() => handleUpdateStatus(status)} className="rounded-lg text-xs font-bold tracking-wider">
                             {status.replace(/_/g, ' ')}
                           </Button>
                         ))}
@@ -500,7 +503,7 @@ export default function TeamLeaderProjectDetailPage() {
         {/* Global Dialogs */}
         <Dialog open={reviewReportOpen} onOpenChange={setReviewReportOpen}>
           <DialogContent className="rounded-[2rem]">
-            <DialogHeader><DialogTitle>Review Laporan</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Review laporan</DialogTitle></DialogHeader>
             <div className="space-y-4 py-4">
               <div className="p-4 bg-slate-50 rounded-xl text-sm space-y-2">
                 <p><strong>Inspector:</strong> {selectedReport?.inspector?.full_name}</p>

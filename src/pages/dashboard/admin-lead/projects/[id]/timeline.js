@@ -291,7 +291,7 @@ export default function ProjectTimelinePage() {
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="flex items-start gap-6">
-              <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-2xl h-12 w-12 border border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] text-slate-400 hover:text-[#7c3aed] transition-all shadow-lg shadow-slate-200/30 dark:shadow-none">
+              <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-2xl h-12 w-12 border border-border bg-card text-slate-400 hover:text-[#7c3aed] transition-all shadow-lg shadow-slate-200/30 dark:shadow-none">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
@@ -346,7 +346,7 @@ export default function ProjectTimelinePage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none flex flex-col justify-center gap-6">
+            <div className="bg-card rounded-[2.5rem] p-8 border border-border shadow-xl shadow-slate-200/30 dark:shadow-none flex flex-col justify-center gap-6">
               <div>
                 <div className="size-12 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center mb-4">
                   <Edit className="w-6 h-6" />
@@ -356,7 +356,7 @@ export default function ProjectTimelinePage() {
                   Klik tombol edit pada setiap kartu fase untuk mengubah durasi, tanggal, atau catatan khusus.
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-xs text-slate-500 font-medium italic">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-border text-xs text-slate-500 font-medium italic">
                 "Pastikan setiap perubahan tanggal dikomunikasikan dengan tim terkait."
               </div>
             </div>
@@ -370,7 +370,7 @@ export default function ProjectTimelinePage() {
             </div>
 
             {phases.length === 0 ? (
-              <div className="py-20 bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 rounded-[2.5rem] flex flex-col items-center justify-center text-center">
+              <div className="py-20 bg-card border border-border rounded-[2.5rem] flex flex-col items-center justify-center text-center">
                 <Calendar className="w-16 h-16 text-slate-200 mb-6" />
                 <h3 className="text-lg font-black uppercase tracking-tight text-slate-400">Belum Ada Fase</h3>
                 <p className="text-slate-500 text-sm mt-2 font-medium">Timeline akan dibuat secara otomatis saat inisialisasi proyek.</p>
@@ -385,9 +385,9 @@ export default function ProjectTimelinePage() {
                   return (
                     <div
                       key={phase.id}
-                      className={`group relative bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border hover:shadow-xl transition-all duration-300 ${isActive ? 'border-[#7c3aed] shadow-lg shadow-[#7c3aed]/10' :
+                      className={`group relative bg-card rounded-[2.5rem] p-8 border hover:shadow-xl transition-all duration-300 ${isActive ? 'border-[#7c3aed] shadow-lg shadow-[#7c3aed]/10' :
                         isCompleted ? 'border-emerald-500/20' :
-                          'border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/30 dark:shadow-none'
+                          'border-border shadow-lg shadow-slate-200/30 dark:shadow-none'
                         }`}
                     >
                       {/* Connector Line */}
@@ -435,7 +435,7 @@ export default function ProjectTimelinePage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-white/5 border border-border">
                             <div>
                               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Durasi</span>
                               <p className="font-bold text-slate-700 dark:text-slate-200">{phase.estimated_duration || 7} Hari</p>
@@ -501,8 +501,8 @@ export default function ProjectTimelinePage() {
 
           {/* Edit Phase Dialog */}
           <Dialog open={editDialog.open} onOpenChange={(open) => !saving && setEditDialog({ open, phase: open ? editDialog.phase : null })}>
-            <DialogContent className="bg-white dark:bg-[#1e293b] border-none rounded-[2.5rem] p-0 overflow-hidden max-w-md">
-              <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+            <DialogContent className="bg-card border-none rounded-[2.5rem] p-0 overflow-hidden max-w-md">
+              <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-border">
                 <DialogTitle className="text-xl font-black uppercase tracking-tight">Edit Detail Fase</DialogTitle>
                 <DialogDescription className="text-slate-500 font-medium">
                   Ubah parameter untuk fase {editDialog.phase?.order_index}
@@ -558,7 +558,7 @@ export default function ProjectTimelinePage() {
                     <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200 font-bold">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                    <SelectContent className="rounded-xl border-border">
                       <SelectItem value="pending" className="font-bold">Menunggu</SelectItem>
                       <SelectItem value="in_progress" className="font-bold">Berjalan</SelectItem>
                       <SelectItem value="completed" className="font-bold">Selesai</SelectItem>
@@ -578,7 +578,7 @@ export default function ProjectTimelinePage() {
                 </div>
               </div>
 
-              <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 text-right w-full flex justify-end gap-3">
+              <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-border text-right w-full flex justify-end gap-3">
                 <Button variant="ghost" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest" onClick={() => setEditDialog({ open: false, phase: null })} disabled={saving}>
                   Batal
                 </Button>

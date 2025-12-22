@@ -184,8 +184,8 @@ export default function InspectorReports() {
                     Reports Center
                   </Badge>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
-                  Laporan <span className="text-[#7c3aed]">Inspeksi</span>
+                <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                  Laporan <span className="text-[#7c3aed]">inspeksi</span>
                 </h1>
                 <p className="text-slate-500 font-medium mt-3 max-w-lg">
                   Kelola dan pantau semua laporan hasil inspeksi lapangan Anda di satu tempat.
@@ -194,16 +194,16 @@ export default function InspectorReports() {
               <div className="flex gap-3">
                 <Button
                   onClick={fetchReports}
-                  className="h-12 w-12 rounded-2xl bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/5 shadow-lg hover:bg-slate-50 transition-all p-0 flex items-center justify-center"
+                  className="h-12 w-12 rounded-2xl bg-card text-slate-600 dark:text-slate-300 border border-border shadow-lg hover:bg-slate-50 transition-all p-0 flex items-center justify-center"
                 >
                   <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                 </Button>
                 <Button
                   onClick={() => router.push('/dashboard/inspector/reports/new')}
-                  className="h-12 px-6 rounded-2xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-[#7c3aed]/20 transition-all hover:scale-105"
+                  className="h-12 px-6 rounded-2xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold text-[11px] tracking-widest shadow-lg shadow-[#7c3aed]/20 transition-all hover:scale-105"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Buat Laporan
+                  Buat laporan
                 </Button>
               </div>
             </motion.div>
@@ -217,7 +217,7 @@ export default function InspectorReports() {
                       <Clock size={24} />
                     </div>
                     <div>
-                      <h3 className="font-bold text-amber-700 dark:text-amber-400 text-lg">Menunggu Tindakan</h3>
+                      <h3 className="font-bold text-amber-700 dark:text-amber-400 text-lg">Menunggu tindakan</h3>
                       <p className="text-amber-600/80 dark:text-amber-400/80 font-medium">
                         Ada <span className="font-black text-amber-700 dark:text-amber-400">{pendingCount} laporan</span> yang masih dalam draft atau menunggu persetujuan.
                       </p>
@@ -228,7 +228,7 @@ export default function InspectorReports() {
             )}
 
             {/* Filters */}
-            <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-2 pr-4 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col md:flex-row items-center gap-4">
+            <motion.div variants={itemVariants} className="bg-card rounded-[2.5rem] p-2 pr-4 border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col md:flex-row items-center gap-4">
               <div className="relative flex-1 w-full">
                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
@@ -244,11 +244,11 @@ export default function InspectorReports() {
 
               <div className="w-full md:w-64">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="h-12 rounded-xl bg-slate-50 dark:bg-white/5 border-0 font-bold text-xs uppercase tracking-widest text-slate-600">
+                  <SelectTrigger className="h-12 rounded-xl bg-muted border-0 font-bold text-xs uppercase tracking-widest text-slate-600">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Semua Status</SelectItem>
+                    <SelectItem value="all">Semua status</SelectItem>
                     <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="submitted">Dikirim</SelectItem>
                     <SelectItem value="approved">Disetujui</SelectItem>
@@ -271,19 +271,19 @@ export default function InspectorReports() {
 
             {/* Reports List */}
             {loading ? (
-              <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 space-y-4 shadow-xl">
+              <div className="bg-card rounded-[2.5rem] p-8 border border-border space-y-4 shadow-xl">
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-2xl" />)}
               </div>
             ) : filteredReports.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-16 text-center border border-slate-100 dark:border-white/5 shadow-xl flex flex-col items-center"
+                className="bg-card rounded-[2.5rem] p-16 text-center border border-border shadow-xl flex flex-col items-center"
               >
-                <div className="w-24 h-24 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-6">
+                <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
                   <FileText className="w-10 h-10 text-slate-300" />
                 </div>
-                <h3 className="text-xl font-black uppercase tracking-tight text-slate-800 dark:text-white">Laporan Tidak Ditemukan</h3>
+                <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Laporan tidak ditemukan</h3>
                 <p className="text-slate-500 font-medium mt-2 max-w-md mb-8">
                   {reports.length === 0
                     ? 'Anda belum membuat laporan inspeksi apapun.'
@@ -299,14 +299,14 @@ export default function InspectorReports() {
                 )}
               </motion.div>
             ) : (
-              <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+              <motion.div variants={itemVariants} className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+                    <thead className="bg-slate-50/50 dark:bg-white/5 border-b border-border">
                       <tr>
-                        <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Judul & Proyek</th>
+                        <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Judul & proyek</th>
                         <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                        <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal Dibuat</th>
+                        <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal dibuat</th>
                         <th className="px-8 py-6 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Aksi</th>
                       </tr>
                     </thead>
@@ -320,11 +320,11 @@ export default function InspectorReports() {
                               </div>
                               <div>
                                 <p className="font-bold text-sm text-slate-800 dark:text-white group-hover:text-[#7c3aed] transition-colors line-clamp-1">
-                                  {report.title || report.name || 'Laporan Tanpa Judul'}
+                                  {report.title || report.name || 'Laporan tanpa judul'}
                                 </p>
                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1 flex items-center gap-1">
                                   <Building className="w-3 h-3" />
-                                  {report.projects?.name || 'Proyek N/A'}
+                                  {report.projects?.name || 'Proyek n/a'}
                                 </p>
                               </div>
                             </div>
@@ -351,7 +351,7 @@ export default function InspectorReports() {
                                     <Eye className="w-4 h-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Lihat Detail</TooltipContent>
+                                <TooltipContent>Lihat detail</TooltipContent>
                               </Tooltip>
                               {report.status === 'draft' && (
                                 <Tooltip>
@@ -365,7 +365,7 @@ export default function InspectorReports() {
                                       <Edit className="w-4 h-4" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Edit Laporan</TooltipContent>
+                                  <TooltipContent>Edit laporan</TooltipContent>
                                 </Tooltip>
                               )}
                             </div>
@@ -383,3 +383,4 @@ export default function InspectorReports() {
     </DashboardLayout>
   );
 }
+

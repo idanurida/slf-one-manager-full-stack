@@ -216,7 +216,7 @@ const ProjectProgressOverview = ({ project, documents, inspections }) => {
         bg="bg-blue-500/10"
         subValue="Verifikasi Dokumen"
       />
-      <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-center gap-4 transition-all col-span-1 md:col-span-2 lg:col-span-1">
+      <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-center gap-4 transition-all col-span-1 md:col-span-2 lg:col-span-1">
         <PremiumProgressBar value={progressPercentage} label="Overall Progress" />
       </div>
     </div>
@@ -261,7 +261,7 @@ const QuickActions = ({ project, onManageTimeline, onManageTeam, onViewDocuments
       {actions.map((action, index) => (
         <Card
           key={action.label}
-          className="cursor-pointer border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-lg transition-all"
+          className="cursor-pointer border border-border bg-card hover:shadow-lg transition-all"
           onClick={action.onClick}
         >
           <CardContent className="p-4">
@@ -498,7 +498,7 @@ export default function AdminLeadProjectDetailPage() {
           {/* Header Section */}
           <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="flex items-start gap-6">
-              <button onClick={handleBack} className="mt-2 size-12 rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-lg shadow-slate-200/30 dark:shadow-none">
+              <button onClick={handleBack} className="mt-2 size-12 rounded-2xl bg-card border border-border flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-lg shadow-slate-200/30 dark:shadow-none">
                 <ArrowLeft size={20} />
               </button>
               <div>
@@ -514,14 +514,14 @@ export default function AdminLeadProjectDetailPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-4">
-              <button onClick={fetchData} className="size-14 bg-white dark:bg-[#1e293b] text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-white/10 transition-all border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none">
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+              <button onClick={fetchData} className="size-14 w-full sm:w-14 bg-card text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-white/10 transition-all border border-border shadow-xl shadow-slate-200/30 dark:shadow-none flex-shrink-0">
                 <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
               </button>
               {isAdminLead && (
                 <button
                   onClick={() => router.push(`/dashboard/admin-lead/projects/${id}/edit`)}
-                  className="h-14 px-8 bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] tracking-widest transition-all shadow-xl shadow-slate-200/30 dark:shadow-none hover:bg-slate-50"
+                  className="h-14 px-4 md:px-8 w-full sm:w-auto bg-card text-slate-900 dark:text-white border border-border rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] tracking-widest transition-all shadow-xl shadow-slate-200/30 dark:shadow-none hover:bg-slate-50 max-w-full truncate"
                 >
                   <Settings size={16} /> Edit Settings
                 </button>
@@ -541,7 +541,7 @@ export default function AdminLeadProjectDetailPage() {
           {/* Content Area */}
           <motion.div variants={itemVariants} className="space-y-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 dark:border-white/5 pb-8">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-border pb-8">
                 <TabsList className="bg-transparent h-auto p-0 flex flex-wrap gap-2 lg:gap-8">
                   {[
                     { id: 'overview', label: 'Spesifikasi', icon: <Briefcase size={14} /> },
@@ -581,7 +581,7 @@ export default function AdminLeadProjectDetailPage() {
 
               {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-6">
-                <Card className="border border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] rounded-[2.5rem] shadow-xl shadow-slate-200/30 dark:shadow-none overflow-hidden">
+                <Card className="border border-border bg-card rounded-[2.5rem] shadow-xl shadow-slate-200/30 dark:shadow-none overflow-hidden">
                   <CardContent className="p-10">
                     <div className="space-y-12">
                       <div className="flex items-center gap-4">
@@ -642,7 +642,7 @@ export default function AdminLeadProjectDetailPage() {
 
               {/* Timeline Tab */}
               <TabsContent value="timeline">
-                <Card className="border border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] rounded-[2.5rem] shadow-xl shadow-slate-200/30 dark:shadow-none overflow-hidden">
+                <Card className="border border-border bg-card rounded-[2.5rem] shadow-xl shadow-slate-200/30 dark:shadow-none overflow-hidden">
                   <CardContent className="p-0">
                     <SimplePhaseTracker projectId={id} />
                   </CardContent>
@@ -651,7 +651,7 @@ export default function AdminLeadProjectDetailPage() {
 
               {/* Documents Tab */}
               <TabsContent value="documents" className="space-y-6">
-                <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-300">
+                <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-300">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-[0.15em] border-b border-slate-100 dark:border-white/5">
@@ -707,7 +707,7 @@ export default function AdminLeadProjectDetailPage() {
 
               {/* Inspections Tab */}
               <TabsContent value="inspections" className="space-y-6">
-                <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-300">
+                <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-300">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-[0.15em] border-b border-slate-100 dark:border-white/5">
@@ -763,7 +763,7 @@ export default function AdminLeadProjectDetailPage() {
 // Sub-components
 function StatSimple({ title, value, icon, color, bg, subValue }) {
   return (
-    <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-6 transition-all hover:translate-y-[-5px]">
+    <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-6 transition-all hover:translate-y-[-5px]">
       <div className={`size-14 rounded-2xl flex items-center justify-center ${bg} ${color} shadow-lg shadow-current/5`}>
         {icon}
       </div>

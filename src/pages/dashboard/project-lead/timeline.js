@@ -253,14 +253,14 @@ export default function TeamLeaderTimelinePage() {
         {/* Simple Header */}
         <div className="flex items-center justify-between shrink-0">
           <div>
-            <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">
-              Project <span className="text-[#7c3aed]">Timeline</span>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-gray-900 dark:text-white">
+              Timeline <span className="text-primary">proyek</span>
             </h1>
-            <p className="text-slate-500 font-medium text-sm">Monitor riwayat dan progres proyek secara real-time.</p>
+            <p className="text-muted-foreground font-medium text-sm">Monitor riwayat dan progres proyek secara real-time.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => fetchAssignedProjects()} className="rounded-xl">
-              <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+              <RefreshCw className="mr-2 h-4 w-4" /> Refresh data
             </Button>
             <Button size="sm" onClick={() => router.push('/dashboard/project-lead')} className="rounded-xl">
               <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
@@ -272,19 +272,19 @@ export default function TeamLeaderTimelinePage() {
         <div className="flex flex-col lg:flex-row gap-6 h-full min-h-0">
 
           {/* Left Sidebar: Project List */}
-          <motion.div variants={itemVariants} className="w-full lg:w-[350px] shrink-0 flex flex-col gap-4 bg-white dark:bg-[#1e293b] rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden h-full">
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 shrink-0 bg-white dark:bg-[#1e293b] z-10 space-y-4">
+          <motion.div variants={itemVariants} className="w-full lg:w-[350px] shrink-0 flex flex-col gap-4 bg-card rounded-[2rem] border border-border shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden h-full">
+            <div className="p-6 border-b border-border shrink-0 bg-card z-10 space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   placeholder="Cari proyek..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl"
+                  className="pl-9 bg-muted/50 border-transparent focus:border-primary rounded-xl"
                 />
               </div>
-              <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <span>Daftar Proyek</span>
+              <div className="flex items-center justify-between text-xs font-bold text-slate-400 tracking-widest">
+                <span>Daftar proyek</span>
                 <span className="bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-slate-600 dark:text-slate-300">{filteredProjects.length}</span>
               </div>
             </div>
@@ -301,21 +301,21 @@ export default function TeamLeaderTimelinePage() {
                       key={project.id}
                       onClick={() => handleSelectProject(project.id)}
                       className={`p-4 rounded-xl cursor-pointer transition-all border ${selectedProjectId === project.id
-                        ? 'bg-[#7c3aed] border-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/20'
-                        : 'bg-slate-50 dark:bg-slate-800/50 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-200'
+                        ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20'
+                        : 'bg-muted/30 border-transparent hover:bg-muted text-foreground'
                         }`}
                     >
                       <div className="flex justify-between items-start mb-1">
                         <h4 className="font-bold text-sm line-clamp-1">{project.name}</h4>
                       </div>
-                      <p className={`text-xs mb-2 ${selectedProjectId === project.id ? 'text-white/80' : 'text-slate-500'}`}>{project.client_name}</p>
+                      <p className={`text-xs mb-2 ${selectedProjectId === project.id ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>{project.client_name}</p>
                       <div className="flex items-center justify-between">
-                        <span className={`text-[10px] uppercase font-bold tracking-wider ${selectedProjectId === project.id ? 'text-white/60' : 'text-slate-400'}`}>
+                        <span className={`text-[10px] font-bold tracking-wider ${selectedProjectId === project.id ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
                           {format(new Date(project.created_at), 'dd MMM yyyy', { locale: localeId })}
                         </span>
                         <Badge className={`text-[9px] px-1.5 h-5 ${selectedProjectId === project.id
                           ? 'bg-white/20 text-white hover:bg-white/30 border-none'
-                          : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300'
+                          : 'bg-card border-border text-muted-foreground'
                           }`}>
                           {project.status === 'inspection_scheduled' ? 'Insp. Scheduled' : project.status?.replace(/_/g, ' ')}
                         </Badge>
@@ -328,40 +328,41 @@ export default function TeamLeaderTimelinePage() {
           </motion.div>
 
           {/* Right Content: Timeline Visualization */}
-          <motion.div variants={itemVariants} className="flex-1 bg-white dark:bg-[#1e293b] rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden h-full flex flex-col relative">
+          <motion.div variants={itemVariants} className="flex-1 bg-card rounded-[2rem] border border-border shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden h-full flex flex-col relative">
 
             {selectedProject ? (
               <>
                 {/* Sticky Header */}
-                <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] z-20 shrink-0 flex justify-between items-start backdrop-blur-md">
+                <div className="p-6 md:p-8 border-b border-border bg-card z-20 shrink-0 flex justify-between items-start backdrop-blur-md">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-none px-3 py-1 rounded-full uppercase text-[10px] font-bold tracking-widest">
-                        {selectedProject.application_type?.replace(/_/g, ' ') || 'PROJECT'}
+                      <Badge className="bg-blue-500/10 text-blue-600 border-none px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
+                        {selectedProject.application_type?.replace(/_/g, ' ') || 'proyek'}
                       </Badge>
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                      <span className="text-xs font-bold text-slate-400 tracking-widest flex items-center gap-1">
                         <Building size={12} /> {selectedProject.city || 'Lokasi N/A'}
                       </span>
                     </div>
-                    <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight max-w-2xl">
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-tight max-w-2xl">
                       {selectedProject.name}
                     </h2>
                   </div>
+
                   <Button
                     onClick={() => router.push(`/dashboard/project-lead/projects/${selectedProject.id}`)}
-                    className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold uppercase tracking-widest text-xs hidden md:flex"
+                    className="bg-primary text-primary-foreground rounded-xl font-bold tracking-widest text-xs hidden md:flex"
                   >
-                    Detail Proyek
+                    Detail proyek
                   </Button>
                 </div>
 
                 {/* Timeline Content */}
                 <ScrollArea className="flex-1 p-6 md:p-8">
                   {timelineLoading ? (
-                    <div className="space-y-8 pl-8 border-l-2 border-slate-100 dark:border-slate-800 ml-4 py-8">
+                    <div className="space-y-8 pl-8 border-l-2 border-slate-100 dark:border-slate-900 ml-4 py-8">
                       {[1, 2, 3].map(i => (
                         <div key={i} className="relative pl-8">
-                          <div className="absolute -left-[11px] top-0 size-5 rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-white dark:border-[#1e293b]"></div>
+                          <div className="absolute -left-[11px] top-0 size-5 rounded-full bg-slate-200 dark:bg-slate-900 border-4 border-white dark:border-slate-950"></div>
                           <Skeleton className="h-24 w-full rounded-2xl" />
                         </div>
                       ))}
@@ -387,7 +388,7 @@ export default function TeamLeaderTimelinePage() {
                             className="relative pl-12 md:pl-16 group"
                           >
                             {/* Dot Indicator */}
-                            <div className={`absolute left-[11px] top-0 size-5 rounded-full border-4 border-white dark:border-[#1e293b] z-10 transition-all duration-300 group-hover:scale-125
+                            <div className={`absolute left-[11px] top-0 size-5 rounded-full border-4 border-white dark:border-slate-950 z-10 transition-all duration-300 group-hover:scale-125
                                           ${event.status === 'completed' || event.status === 'approved' ? 'bg-green-500' :
                                 event.status === 'in_progress' ? 'bg-blue-500' :
                                   event.status === 'pending' ? 'bg-orange-500' : 'bg-slate-400'}
@@ -406,23 +407,23 @@ export default function TeamLeaderTimelinePage() {
 
                               {/* Card Content */}
                               <div className={`flex-1 p-5 rounded-2xl border transition-all duration-300 relative
-                                             ${event.type === 'schedule' ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/20' :
-                                  event.type === 'report' ? 'bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-900/20' :
-                                    'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}
+                                             ${event.type === 'schedule' ? 'bg-blue-500/5 border-blue-500/10' :
+                                  event.type === 'report' ? 'bg-status-yellow/5 border-status-yellow/10' :
+                                    'bg-card border-border'}
                                           `}>
                                 <div className="flex items-start gap-4">
                                   <div className={`p-2.5 rounded-xl shrink-0 
-                                                   ${event.type === 'schedule' ? 'bg-blue-100 text-blue-600' :
-                                      event.type === 'report' ? 'bg-orange-100 text-orange-600' :
-                                        'bg-slate-100 text-slate-600'}
+                                                   ${event.type === 'schedule' ? 'bg-blue-500/10 text-blue-600' :
+                                      event.type === 'report' ? 'bg-status-yellow/10 text-status-yellow' :
+                                        'bg-muted text-muted-foreground'}
                                                 `}>
                                     {React.createElement(event.icon, { size: 18 })}
                                   </div>
                                   <div>
-                                    <h4 className="font-bold text-slate-900 dark:text-white mb-1">{event.title}</h4>
-                                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{event.description}</p>
+                                    <h4 className="font-bold text-foreground mb-1">{event.title}</h4>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">{event.description}</p>
                                     <div className="mt-3 flex gap-2">
-                                      <Badge variant="outline" className="bg-white/50 border-black/5 text-[10px] uppercase font-bold tracking-wider">
+                                      <Badge variant="outline" className="bg-card border-border text-[10px] font-bold tracking-wider text-muted-foreground">
                                         {event.status?.replace(/_/g, ' ')}
                                       </Badge>
                                     </div>
@@ -439,10 +440,10 @@ export default function TeamLeaderTimelinePage() {
               </>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <div className="size-32 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-6 animate-pulse">
-                  <TrendingUp className="size-12 text-slate-300 dark:text-slate-600" />
+                <div className="size-32 rounded-full bg-muted flex items-center justify-center mb-6 animate-pulse">
+                  <TrendingUp className="size-12 text-muted-foreground" />
                 </div>
-                <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-2">Pilih Proyek</h2>
+                <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-2">Pilih proyek</h2>
                 <p className="text-slate-500 dark:text-slate-400 max-w-sm">
                   Pilih salah satu proyek dari daftar di sebelah kiri untuk melihat detail timeline dan riwayat aktivitasnya.
                 </p>
@@ -450,7 +451,8 @@ export default function TeamLeaderTimelinePage() {
             )}
           </motion.div>
         </div>
-      </motion.div>
-    </DashboardLayout>
+      </motion.div >
+    </DashboardLayout >
   );
 }
+

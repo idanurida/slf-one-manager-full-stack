@@ -137,7 +137,7 @@ export default function NewClientPage() {
                         {/* Header Section */}
                         <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
                             <div className="flex items-start gap-6">
-                                <button onClick={() => router.back()} className="mt-2 size-12 rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-xl shadow-slate-200/30 dark:shadow-none">
+                                <button onClick={() => router.back()} className="mt-2 size-12 rounded-2xl bg-card border border-border flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-xl shadow-slate-200/30 dark:shadow-none">
                                     <ArrowLeft size={20} />
                                 </button>
                                 <div>
@@ -168,7 +168,7 @@ export default function NewClientPage() {
                                         </motion.div>
                                     )}
 
-                                    <div className="bg-white dark:bg-[#1e293b] rounded-[3rem] p-10 border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none space-y-10">
+                                    <div className="bg-card rounded-[3rem] p-10 border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none space-y-10">
                                         <div className="flex items-center gap-4 mb-2">
                                             <div className="size-12 rounded-2xl bg-[#7c3aed]/10 text-[#7c3aed] flex items-center justify-center">
                                                 <Sparkles size={20} />
@@ -375,3 +375,4 @@ export default function NewClientPage() {
         </DashboardLayout>
     );
 }
+

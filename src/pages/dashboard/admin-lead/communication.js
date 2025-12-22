@@ -165,25 +165,30 @@ export default function AdminLeadCommunicationPage() {
     );
   }
 
+  // ... (rest of the file content until return)
+
   return (
     <DashboardLayout>
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex bg-white dark:bg-[#1e293b]/50 rounded-[2.5rem] border border-slate-100 dark:border-white/5 overflow-hidden h-[calc(100vh-140px)] min-h-[600px] shadow-2xl shadow-slate-200/50 dark:shadow-none"
+        className="flex bg-card/50 md:rounded-[2.5rem] border-t md:border border-border overflow-hidden h-[calc(100vh-64px)] md:h-[calc(100vh-140px)] min-h-[600px] shadow-2xl shadow-slate-200/50 dark:shadow-none -mx-4 -mb-4 md:mx-0 md:mb-0 relative"
       >
-        {/* Sidebar */}
-        <div className="w-full md:w-[400px] flex flex-col border-r border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b]">
-          <header className="h-24 flex items-center justify-between px-8 border-b border-slate-100 dark:border-white/5 shrink-0">
+        {/* Sidebar - Hidden on mobile if thread selected */}
+        <div className={`
+          w-full md:w-[400px] flex flex-col border-r border-border bg-card
+          ${selectedThread ? 'hidden md:flex' : 'flex'}
+        `}>
+          <header className="h-16 md:h-24 flex items-center justify-between px-6 md:px-8 border-b border-border shrink-0">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">
-                  Live Connect
+                <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-bold tracking-wide">
+                  Live connect
                 </Badge>
                 <span className="size-2 bg-emerald-500 rounded-full animate-pulse" />
               </div>
-              <h2 className="text-2xl font-black uppercase tracking-tighter">Messages</h2>
+              <h2 className="text-xl md:text-2xl font-bold tracking-tight">Pusat komunikasi</h2>
             </div>
             <Button
               onClick={() => fetchData()}
@@ -195,25 +200,25 @@ export default function AdminLeadCommunicationPage() {
             </Button>
           </header>
 
-          <div className="p-6 pb-2 shrink-0">
+          <div className="p-4 md:p-6 pb-2 shrink-0">
             <div className="relative group">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
               <input
-                className="h-14 w-full rounded-2xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-white/5 pl-14 pr-4 text-xs font-bold uppercase tracking-widest focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400"
-                placeholder="CARI PROJECT..."
+                className="h-12 md:h-14 w-full rounded-2xl bg-slate-50 dark:bg-card/20 border border-border pl-14 pr-4 text-sm font-medium focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400"
+                placeholder="Cari proyek..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 space-y-3 pb-6 scrollbar-hide">
+          <div className="flex-1 overflow-y-auto px-4 md:px-6 space-y-3 pb-6 scrollbar-hide">
             {loading ? (
               Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-[2rem]" />)
             ) : filteredProjects.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-center text-slate-400">
                 <Inbox size={32} className="mb-2 opacity-50" />
-                <span className="font-bold text-[10px] uppercase tracking-widest">No Projects Found</span>
+                <span className="font-medium text-xs">Tidak ada proyek ditemukan</span>
               </div>
             ) : (
               filteredProjects.map(project => {
@@ -227,10 +232,10 @@ export default function AdminLeadCommunicationPage() {
                     key={project.id}
                     onClick={() => setSelectedThread({ projectId: project.id, client: project.clients, projectName: project.name })}
                     className={`
-                      w-full p-5 rounded-[2rem] flex items-start gap-4 transition-all duration-300 border text-left group
+                      w-full p-5 rounded-[2rem] flex items-start gap-4 transition-all duration-300 border text-left group touch-target
                       ${isActive
                         ? 'bg-[#7c3aed] border-[#7c3aed] text-white shadow-xl shadow-[#7c3aed]/30 ring-4 ring-[#7c3aed]/10'
-                        : 'bg-white dark:bg-white/5 border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none'
+                        : 'bg-white dark:bg-white/5 border-border hover:border-[#7c3aed]/30 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none'
                       }
                     `}
                   >
@@ -239,19 +244,19 @@ export default function AdminLeadCommunicationPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start mb-0.5">
-                        <span className={`text-[11px] font-black uppercase tracking-tight truncate pr-2 ${isActive ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{project.name}</span>
+                        <span className={`text-sm font-bold tracking-tight truncate pr-2 ${isActive ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{project.name}</span>
                         {lastMsg && (
-                          <span className={`text-[9px] font-black uppercase tracking-widest ${isActive ? 'text-white/60' : 'text-slate-400'}`}>
+                          <span className={`text-[10px] font-medium ${isActive ? 'text-white/60' : 'text-slate-400'}`}>
                             {new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
                       </div>
-                      <span className={`text-[9px] font-bold uppercase tracking-widest block mb-2 truncate ${isActive ? 'text-white/70' : 'text-slate-400'}`}>
-                        {project.clients?.name || 'Unknown Client'}
+                      <span className={`text-[11px] font-medium block mb-2 truncate ${isActive ? 'text-white/70' : 'text-slate-400'}`}>
+                        {project.clients?.name || 'Klien tidak dikenal'}
                       </span>
                       {lastMsg ? (
                         <p className={`text-[11px] font-medium truncate ${isActive ? 'text-white/90' : 'text-slate-500'}`}>
-                          {lastMsg.sender_id === user.id && <span className="opacity-70 mr-1">You:</span>}
+                          {lastMsg.sender_id === user.id && <span className="opacity-70 mr-1">Anda:</span>}
                           {lastMsg.message}
                         </p>
                       ) : (
@@ -265,39 +270,44 @@ export default function AdminLeadCommunicationPage() {
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-slate-50/50 dark:bg-[#0f172a]/50 relative">
+        {/* Chat Area - Hidden on mobile if NO thread selected */}
+        <div className={`
+          flex-1 flex flex-col bg-slate-50/50 dark:bg-[#0f172a]/50 relative w-full
+          ${!selectedThread ? 'hidden md:flex' : 'flex fixed inset-0 z-50 md:static'}
+        `}>
           {selectedThread ? (
             <>
               {/* Header */}
-              <header className="h-24 flex items-center justify-between px-10 border-b border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] shrink-0">
-                <div className="flex items-center gap-5">
-                  <div className="size-14 rounded-[1.2rem] bg-gradient-to-br from-[#7c3aed] to-violet-600 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-[#7c3aed]/20">
+              <header className="h-20 md:h-24 flex items-center justify-between px-4 md:px-10 border-b border-border bg-card shrink-0 pt-safe">
+                <div className="flex items-center gap-3 md:gap-5">
+                  {/* Mobile Back Button */}
+                  <Button onClick={() => setSelectedThread(null)} variant="ghost" size="icon" className="md:hidden rounded-full -ml-2 text-slate-500">
+                    <ArrowLeft size={24} />
+                  </Button>
+
+                  <div className="size-10 md:size-14 rounded-[1.2rem] bg-gradient-to-br from-[#7c3aed] to-violet-600 flex items-center justify-center text-white font-black text-lg md:text-2xl shadow-lg shadow-[#7c3aed]/20">
                     {selectedThread.client?.name?.charAt(0) || 'C'}
                   </div>
                   <div>
-                    <h3 className="text-xl font-black uppercase tracking-tight leading-none mb-1">{selectedThread.client?.name}</h3>
+                    <h3 className="text-base md:text-xl font-bold tracking-tight leading-none mb-1">{selectedThread.client?.name}</h3>
                     <div className="flex items-center gap-2 text-slate-500">
                       <Building2 size={12} />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">{selectedThread.projectName}</span>
+                      <span className="text-xs font-medium truncate max-w-[150px] md:max-w-none">{selectedThread.projectName}</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Button variant="ghost" className="size-12 rounded-2xl text-slate-400 hover:text-[#7c3aed] hover:bg-slate-50">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <Button variant="ghost" className="size-10 md:size-12 rounded-2xl text-slate-400 hover:text-[#7c3aed] hover:bg-slate-50">
                     <Search size={20} />
-                  </Button>
-                  <Button variant="ghost" className="size-12 rounded-2xl text-slate-400 hover:text-[#7c3aed] hover:bg-slate-50">
-                    <MoreVertical size={20} />
                   </Button>
                 </div>
               </header>
 
               {/* Feed */}
-              <div className="flex-1 overflow-y-auto p-10 space-y-8 scrollbar-hide pb-40">
+              <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 md:space-y-8 scrollbar-hide pb-32 md:pb-40 bg-slate-50 dark:bg-[#0f172a]">
                 <div className="flex justify-center">
-                  <Badge variant="outline" className="border-slate-200 dark:border-white/10 text-slate-400 text-[9px] font-black uppercase tracking-widest py-1 px-3 rounded-full">
-                    Start of conversation
+                  <Badge variant="outline" className="border-slate-200 dark:border-white/10 text-slate-400 text-[10px] font-medium py-1 px-3 rounded-full">
+                    Awal percakapan
                   </Badge>
                 </div>
 
@@ -311,18 +321,18 @@ export default function AdminLeadCommunicationPage() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div className={`max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                        <div className={`max-w-[85%] md:max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                           <div className={`
-                            px-8 py-5 text-sm font-medium shadow-sm transition-all relative group
+                            px-5 py-3 md:px-8 md:py-5 text-sm font-medium shadow-sm transition-all relative group
                             ${isMe
-                              ? 'bg-[#7c3aed] text-white rounded-[2rem] rounded-tr-sm'
-                              : 'bg-white dark:bg-[#1e293b] text-slate-800 dark:text-slate-200 rounded-[2rem] rounded-tl-sm border border-slate-100 dark:border-white/5'
+                              ? 'bg-[#7c3aed] text-white rounded-[1.5rem] rounded-tr-sm'
+                              : 'bg-card text-slate-800 dark:text-slate-200 rounded-[1.5rem] rounded-tl-sm border border-border'
                             }
                           `}>
                             {m.message}
                             <span className={`
-                               absolute bottom-0 text-[9px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap mb-[-20px]
-                               ${isMe ? 'right-2 text-slate-400' : 'left-2 text-slate-400'}
+                               block text-[10px] font-medium opacity-60 mt-1
+                               ${isMe ? 'text-white text-right' : 'text-slate-400 text-left'}
                             `}>
                               {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
@@ -336,14 +346,11 @@ export default function AdminLeadCommunicationPage() {
               </div>
 
               {/* Input Area */}
-              <div className="absolute bottom-0 left-0 right-0 p-10 pt-0 bg-gradient-to-t from-slate-50/90 dark:from-[#0f172a]/90 to-transparent">
-                <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl p-3 pl-6 flex items-end gap-4">
-                  <div className="flex items-center gap-2 pb-3 text-slate-400">
-                    <button className="hover:text-[#7c3aed] transition-colors"><Paperclip size={20} /></button>
-                  </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 md:p-10 md:pt-0 bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md md:bg-transparent md:backdrop-blur-none border-t border-border md:border-none">
+                <div className="bg-card rounded-[2rem] md:rounded-[2.5rem] border border-border shadow-2xl p-2 pl-4 md:p-3 md:pl-6 flex items-end gap-2 md:gap-4">
                   <Textarea
-                    className="flex-1 min-h-[50px] max-h-32 py-4 bg-transparent border-none focus:ring-0 text-sm font-medium placeholder-slate-400 resize-none"
-                    placeholder="Type a message..."
+                    className="flex-1 min-h-[44px] max-h-24 py-3 bg-transparent border-none focus:ring-0 text-sm font-medium placeholder-slate-400 resize-none"
+                    placeholder="Ketik pesan..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => {
@@ -357,9 +364,9 @@ export default function AdminLeadCommunicationPage() {
                     <Button
                       onClick={handleSendMessage}
                       disabled={!newMessage.trim()}
-                      className="size-12 rounded-[1.5rem] bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-lg shadow-[#7c3aed]/20 disabled:opacity-50 transition-all font-black"
+                      className="size-10 md:size-12 rounded-full md:rounded-[1.5rem] bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-lg shadow-[#7c3aed]/20 disabled:opacity-50 transition-all font-black touch-target"
                     >
-                      <Send size={20} className={!newMessage.trim() ? '' : 'ml-1'} />
+                      <Send size={18} className={!newMessage.trim() ? '' : 'ml-1'} />
                     </Button>
                   </div>
                 </div>
@@ -367,14 +374,15 @@ export default function AdminLeadCommunicationPage() {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-10 text-center relative overflow-hidden">
+              {/* Same empty state as before */}
               <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(0deg,white,transparent)] dark:bg-grid-white/5" />
               <div className="relative z-10 flex flex-col items-center">
-                <div className="size-32 bg-white dark:bg-[#1e293b] rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none flex items-center justify-center text-[#7c3aed] mb-8 border border-slate-100 dark:border-white/5 animate-bounce-slow">
+                <div className="size-32 bg-card rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none flex items-center justify-center text-[#7c3aed] mb-8 border border-border animate-bounce-slow">
                   <Sparkles size={48} />
                 </div>
-                <h3 className="text-4xl font-black uppercase tracking-tighter mb-4 text-slate-900 dark:text-white">Communication <span className="text-[#7c3aed]">Hub</span></h3>
-                <p className="text-slate-500 font-medium max-w-sm text-lg leading-relaxed">
-                  Pilih proyek di sidebar untuk memulai koordinasi real-time dengan client dan tim proyek.
+                <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">Pusat <span className="text-[#7c3aed]">komunikasi</span></h3>
+                <p className="text-slate-500 font-medium max-w-sm text-sm md:text-lg leading-relaxed">
+                  Pilih proyek di sidebar untuk memulai koordinasi real-time.
                 </p>
               </div>
             </div>
@@ -384,3 +392,5 @@ export default function AdminLeadCommunicationPage() {
     </DashboardLayout>
   );
 }
+
+

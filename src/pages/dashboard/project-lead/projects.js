@@ -144,7 +144,7 @@ export default function ProjectLeadProjectsPage() {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-screen">
-          <RefreshCw className="animate-spin size-10 text-[#7c3aed]" />
+          <RefreshCw className="animate-spin size-10 text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -161,38 +161,38 @@ export default function ProjectLeadProjectsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <motion.div variants={itemVariants}>
-            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">
-              Kelola <span className="text-[#7c3aed]">Proyek</span>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-gray-900 dark:text-white">
+              Kelola <span className="text-primary">proyek</span>
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium mt-2">
+            <p className="text-muted-foreground font-medium mt-2">
               Daftar semua proyek yang ditugaskan kepada Anda.
             </p>
           </motion.div>
           <motion.div variants={itemVariants} className="flex gap-3">
             <Button variant="outline" onClick={handleRefresh} disabled={loading} className="rounded-xl border-slate-200 dark:border-white/10">
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              Refresh data
             </Button>
           </motion.div>
         </div>
 
         {/* Filters and Search */}
-        <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex flex-col md:flex-row gap-4">
+        <motion.div variants={itemVariants} className="bg-card p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-border flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input
               placeholder="Cari proyek berdasarkan nama, lokasi, atau klien..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl text-base"
+              className="pl-12 h-12 bg-muted/50 border-transparent focus:border-primary rounded-xl text-base"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-[200px] h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger className="w-full md:w-[200px] h-12 bg-muted/50 border-transparent focus:border-primary rounded-xl">
+              <SelectValue placeholder="Semua status" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="all">Semua Status</SelectItem>
+              <SelectItem value="all">Semua status</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="inspection_scheduled">Terjadwal</SelectItem>
               <SelectItem value="inspection_in_progress">Berjalan</SelectItem>
@@ -232,21 +232,21 @@ export default function ProjectLeadProjectsPage() {
 function ProjectCard({ project }) {
   const router = useRouter();
   return (
-    <motion.div variants={itemVariants} className="group relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:border-[#7c3aed]/30 transition-all duration-300">
+    <motion.div variants={itemVariants} className="group relative bg-card rounded-[2rem] p-6 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300">
       <div className="flex justify-between items-start mb-6">
-        <div className="size-12 rounded-2xl bg-[#7c3aed]/10 text-[#7c3aed] flex items-center justify-center">
+        <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
           <Building size={24} />
         </div>
-        <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 border-none px-3 py-1 rounded-full uppercase text-[10px] font-bold tracking-widest">
+        <Badge className="bg-muted text-muted-foreground hover:bg-muted/80 border-none px-3 py-1 rounded-full text-xs font-bold tracking-widest">
           {project.status?.replace(/_/g, ' ')}
         </Badge>
       </div>
 
       <div className="mb-6 space-y-1">
-        <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white line-clamp-2 min-h-[3.5rem] group-hover:text-[#7c3aed] transition-colors">
+        <h3 className="text-lg font-black tracking-tight text-foreground line-clamp-2 min-h-[3.5rem] group-hover:text-primary transition-colors">
           {project.name}
         </h3>
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+        <p className="text-sm font-bold text-muted-foreground tracking-widest flex items-center gap-2">
           <User size={12} /> {project.client_name}
         </p>
       </div>
@@ -264,9 +264,9 @@ function ProjectCard({ project }) {
 
       <Button
         onClick={() => router.push(`/dashboard/project-lead/projects/${project.id}`)}
-        className="w-full h-12 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-[#7c3aed] dark:hover:bg-[#7c3aed] hover:text-white dark:hover:text-white transition-all shadow-lg shadow-slate-900/20"
+        className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-bold tracking-widest text-sm hover:bg-primary/90 transition-all shadow-sm"
       >
-        Lihat Detail
+        Lihat detail
       </Button>
     </motion.div>
   )
@@ -275,10 +275,10 @@ function ProjectCard({ project }) {
 function EmptyState({ searchTerm }) {
   return (
     <motion.div variants={itemVariants} className="col-span-full py-20 text-center">
-      <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-6">
+      <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mx-auto mb-6">
         <Search className="size-12 text-slate-300" />
       </div>
-      <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-2">Tidak ditemukan</h3>
+      <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white mb-2">Tidak ditemukan</h3>
       <p className="text-slate-400">Tidak ada proyek yang cocok dengan "{searchTerm}" atau filter yang dipilih.</p>
     </motion.div>
   )
@@ -288,8 +288,9 @@ function LoadingGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {[1, 2, 3, 4, 5, 6].map(i => (
-        <div key={i} className="h-[320px] bg-slate-100 dark:bg-slate-800 rounded-[2rem] animate-pulse"></div>
+        <div key={i} className="h-[320px] bg-slate-100 dark:bg-slate-900 rounded-[2rem] animate-pulse"></div>
       ))}
     </div>
   )
 }
+

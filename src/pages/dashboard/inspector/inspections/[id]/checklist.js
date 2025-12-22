@@ -78,7 +78,7 @@ const CategoryButton = ({ active, label, count, onClick, icon: Icon }) => (
       "w-full flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-300 group",
       active
         ? "bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/30 border-0"
-        : "bg-white dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 hover:bg-slate-50"
+        : "bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 hover:bg-slate-50"
     )}
   >
     <div className="flex items-center gap-3">
@@ -135,7 +135,7 @@ const ChecklistCard = ({ item, response, onSave, requiresPhoto, photoCount, onCa
                     "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border",
                     currentOption === opt
                       ? "bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed]"
-                      : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-[#7c3aed]/30"
+                      : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-[#7c3aed]/30"
                   )}
                 >
                   {opt}
@@ -186,12 +186,12 @@ const ChecklistCard = ({ item, response, onSave, requiresPhoto, photoCount, onCa
 
   return (
     <motion.div variants={itemVariants}>
-      <Card className="rounded-[2rem] border-0 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-[#1e293b] overflow-hidden group">
+      <Card className="rounded-[2rem] border-0 shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-950 overflow-hidden group">
         <div className="p-1 h-2 bg-gradient-to-r from-[#7c3aed] to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
         <CardHeader className="pb-4">
           <div className="flex justify-between items-start gap-4">
             <div className="space-y-1">
-              <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:bg-slate-100 border-0 text-[10px] font-black tracking-widest uppercase">
+              <Badge className="bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-500 hover:bg-slate-100 border-0 text-[10px] font-black tracking-widest uppercase">
                 {item.section_id || 'GENERAL'} • {item.subsection_title || 'Item Detail'}
               </Badge>
               <CardTitle className="text-xl font-bold text-slate-800 dark:text-white leading-tight">
@@ -217,7 +217,7 @@ const ChecklistCard = ({ item, response, onSave, requiresPhoto, photoCount, onCa
             ))}
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-900">
             <div className="flex items-center gap-3">
               {requiresPhoto && (
                 <Button
@@ -428,7 +428,7 @@ export default function InspectorInspectionChecklistPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="max-w-2xl mx-auto mt-20 p-8 text-center bg-white dark:bg-[#1e293b] rounded-[3rem] shadow-xl">
+        <div className="max-w-2xl mx-auto mt-20 p-8 text-center bg-white dark:bg-slate-950 rounded-[3rem] shadow-xl">
           <AlertTriangle size={64} className="mx-auto text-amber-500 mb-6" />
           <h2 className="text-2xl font-black uppercase tracking-tighter mb-4">Terjadi Kesalahan</h2>
           <p className="text-slate-500 mb-8">{error}</p>
@@ -457,7 +457,7 @@ export default function InspectorInspectionChecklistPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => router.back()}
-                  className="rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200"
+                  className="rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200"
                 >
                   <ArrowLeft size={18} />
                 </Button>
@@ -505,7 +505,7 @@ export default function InspectorInspectionChecklistPage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
             {/* Nav Sidebar */}
             <motion.div variants={itemVariants} className="space-y-4 lg:sticky lg:top-10 self-start">
-              <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none space-y-6">
+              <div className="bg-white dark:bg-slate-950 p-6 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none space-y-6">
                 <div>
                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-2 pl-2">
                     <Filter size={12} /> Kategori Pemeriksaan

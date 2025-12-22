@@ -160,7 +160,7 @@ export default function TeamLeaderDashboard() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center p-20">
-          <RefreshCw className="animate-spin h-10 w-10 text-[#7c3aed]" />
+          <RefreshCw className="animate-spin h-10 w-10 text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -174,9 +174,9 @@ export default function TeamLeaderDashboard() {
           <div className="bg-red-100 dark:bg-red-900/20 p-6 rounded-full mb-6">
             <AlertTriangle className="h-12 w-12 text-red-600 dark:text-red-400" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-2">Akses Ditolak</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white mb-2">Akses ditolak</h1>
           <p className="text-slate-500 max-w-md">Hanya Team Leader yang dapat mengakses halaman ini.</p>
-          <button onClick={() => router.push('/dashboard')} className="mt-8 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold tracking-widest text-xs">Kembali ke Dashboard</button>
+          <button onClick={() => router.push('/dashboard')} className="mt-8 px-6 py-3 bg-primary text-white rounded-xl font-bold tracking-widest text-sm">Kembali ke dashboard</button>
         </div>
       </DashboardLayout>
     );
@@ -193,15 +193,15 @@ export default function TeamLeaderDashboard() {
         {/* Header Section */}
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-gray-100 dark:border-gray-800/50">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl md:text-5xl font-display font-black tracking-tighter leading-none text-slate-900 dark:text-white">
-              Ketua <span className="text-[#7c3aed]">Tim</span>
+            <h1 className="text-2xl md:text-3xl font-display font-black tracking-tighter leading-none text-slate-900 dark:text-white">
+              Ketua <span className="text-primary">Tim</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">
               Halo, {profile?.full_name?.split(' ')[0] || 'Ketua'}. Kelola tim dan pantau progres proyek Anda hari ini.
             </p>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => router.push('/dashboard/project-lead/reports')} className="h-12 px-6 bg-[#f59e0b] hover:bg-[#d97706] text-white rounded-xl font-black text-[10px] tracking-widest shadow-xl shadow-orange-500/20 transition-all flex items-center gap-2">
+            <button onClick={() => router.push('/dashboard/project-lead/reports')} className="h-10 px-6 bg-status-yellow hover:bg-status-yellow/90 text-white rounded-xl font-bold text-xs tracking-widest shadow-xl shadow-orange-500/20 transition-all flex items-center gap-2">
               <FileText size={16} /> Persetujuan
               {stats.pendingReports > 0 && <span className="bg-white/20 px-2 py-0.5 rounded-full">{stats.pendingReports}</span>}
             </button>
@@ -211,15 +211,15 @@ export default function TeamLeaderDashboard() {
         {/* Stats Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
-            title="Total Proyek"
+            title="Total proyek"
             value={stats.totalProjects}
             icon={Building}
-            color="text-[#7c3aed]"
-            bg="bg-[#7c3aed]/10"
+            color="text-primary"
+            bg="bg-primary/10"
             subtitle="Seluruh penugasan"
           />
           <StatCard
-            title="Proyek Aktif"
+            title="Proyek aktif"
             value={stats.activeProjects}
             icon={Clock}
             color="text-blue-500"
@@ -228,7 +228,7 @@ export default function TeamLeaderDashboard() {
             trend="+2"
           />
           <StatCard
-            title="Anggota Tim"
+            title="Anggota tim"
             value={stats.teamMembers}
             icon={Users}
             color="text-emerald-500"
@@ -236,7 +236,7 @@ export default function TeamLeaderDashboard() {
             subtitle="Total personil"
           />
           <StatCard
-            title="Menunggu Tinjauan"
+            title="Menunggu tinjauan"
             value={stats.pendingReports}
             icon={AlertCircle}
             color="text-orange-500"
@@ -253,18 +253,18 @@ export default function TeamLeaderDashboard() {
           <motion.div variants={itemVariants} className="lg:col-span-2 space-y-8">
 
             {/* My Projects Section */}
-            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden flex flex-col">
-              <div className="p-8 border-b border-slate-100 dark:border-white/5 flex justify-between items-center">
+            <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden flex flex-col">
+              <div className="p-8 border-b border-border flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="size-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
                     <Building size={20} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black tracking-tighter">Proyek Saya</h3>
-                    <p className="text-[10px] font-bold text-slate-400 tracking-widest">Daftar proyek yang Anda pimpin</p>
+                    <h3 className="text-base font-black tracking-tighter">Proyek saya</h3>
+                    <p className="text-xs font-bold text-muted-foreground tracking-widest">Daftar proyek yang Anda pimpin</p>
                   </div>
                 </div>
-                <button onClick={() => router.push('/dashboard/project-lead/projects')} className="text-[10px] font-black tracking-widest text-[#7c3aed] hover:text-[#6d28d9] transition-colors">Lihat Semua</button>
+                <button onClick={() => router.push('/dashboard/project-lead/projects')} className="text-xs font-black tracking-widest text-primary hover:text-primary-hover transition-colors">Lihat semua</button>
               </div>
 
               <div className="p-6 space-y-4">
@@ -275,17 +275,17 @@ export default function TeamLeaderDashboard() {
                   </div>
                 ) : (
                   myProjects.map((project) => (
-                    <div key={project.id} onClick={() => router.push(`/dashboard/project-lead/projects/${project.id}`)} className="group flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-transparent hover:border-[#7c3aed]/30 hover:bg-white dark:hover:bg-black/20 transition-all cursor-pointer">
+                    <div key={project.id} onClick={() => router.push(`/dashboard/project-lead/projects/${project.id}`)} className="group flex items-center justify-between p-4 rounded-2xl bg-card border border-transparent hover:border-primary/30 hover:bg-muted transition-all cursor-pointer">
                       <div className="flex items-center gap-4">
-                        <div className="size-10 rounded-full bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 flex items-center justify-center text-slate-400 group-hover:text-[#7c3aed] transition-colors">
+                        <div className="size-10 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
                           <Building size={16} />
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-[#7c3aed] transition-colors">{project.name}</h4>
-                          <p className="text-[10px] font-medium text-slate-400 tracking-widest mt-0.5">{project.clients?.name || 'Klien Umum'}</p>
+                          <h4 className="text-sm font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">{project.name}</h4>
+                          <p className="text-xs font-medium text-muted-foreground tracking-widest mt-0.5">{project.clients?.name || 'Klien Umum'}</p>
                         </div>
                       </div>
-                      <Badge className="bg-white dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-white border-slate-200 dark:border-white/10">{project.status?.replace(/_/g, ' ')}</Badge>
+                      <Badge className="bg-card text-foreground hover:bg-muted border-border">{project.status?.replace(/_/g, ' ')}</Badge>
                     </div>
                   ))
                 )}
@@ -293,18 +293,18 @@ export default function TeamLeaderDashboard() {
             </div>
 
             {/* Pending Reports Section */}
-            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden flex flex-col">
-              <div className="p-8 border-b border-slate-100 dark:border-white/5 flex justify-between items-center">
+            <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden flex flex-col">
+              <div className="p-8 border-b border-border flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="size-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
                     <FileText size={20} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black tracking-tighter">Persetujuan Laporan</h3>
-                    <p className="text-[10px] font-bold text-slate-400 tracking-widest">Dokumen menunggu tinjauan</p>
+                    <h3 className="text-base font-black tracking-tighter">Persetujuan laporan</h3>
+                    <p className="text-xs font-bold text-muted-foreground tracking-widest">Dokumen menunggu tinjauan</p>
                   </div>
                 </div>
-                <button onClick={() => router.push('/dashboard/project-lead/reports')} className="text-[10px] font-black tracking-widest text-[#7c3aed] hover:text-[#6d28d9] transition-colors">Lihat Semua</button>
+                <button onClick={() => router.push('/dashboard/project-lead/reports')} className="text-xs font-black tracking-widest text-primary hover:text-primary-hover transition-colors">Lihat semua</button>
               </div>
 
               <div className="p-6 space-y-4">
@@ -315,17 +315,17 @@ export default function TeamLeaderDashboard() {
                   </div>
                 ) : (
                   pendingReports.map(report => (
-                    <div key={report.id} onClick={() => router.push('/dashboard/project-lead/reports')} className="group flex items-center justify-between p-4 rounded-2xl bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/20 hover:bg-white dark:hover:bg-black/20 hover:border-[#7c3aed]/30 transition-all cursor-pointer">
+                    <div key={report.id} onClick={() => router.push('/dashboard/project-lead/reports')} className="group flex items-center justify-between p-4 rounded-2xl bg-card border border-border hover:bg-muted hover:border-primary/30 transition-all cursor-pointer">
                       <div className="flex items-center gap-4">
-                        <div className="size-10 rounded-full bg-white dark:bg-[#1e293b] flex items-center justify-center text-orange-500">
+                        <div className="size-10 rounded-full bg-card flex items-center justify-center text-orange-500">
                           <AlertCircle size={18} />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold tracking-tight text-slate-900 dark:text-white">{report.name}</h4>
-                          <p className="text-[9px] font-medium text-slate-500 mt-0.5 tracking-widest">{formatDate(report.created_at)} • {report.projects?.name}</p>
+                          <h4 className="text-sm font-bold tracking-tight text-foreground">{report.name}</h4>
+                          <p className="text-xs font-medium text-muted-foreground mt-0.5 tracking-widest">{formatDate(report.created_at)} • {report.projects?.name}</p>
                         </div>
                       </div>
-                      <button className="size-8 rounded-full bg-white dark:bg-white/10 flex items-center justify-center text-slate-400 group-hover:text-[#7c3aed] group-hover:scale-110 transition-all">
+                      <button className="size-8 rounded-full bg-card flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:scale-110 transition-all">
                         <ArrowUpRight size={14} />
                       </button>
                     </div>
@@ -340,16 +340,16 @@ export default function TeamLeaderDashboard() {
           <motion.div variants={itemVariants} className="space-y-8">
 
             {/* Quick Actions */}
-            <div className="bg-[#7c3aed] rounded-[2.5rem] p-8 text-white relative overflow-hidden">
+            <div className="bg-primary rounded-[2.5rem] p-8 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-              <h3 className="text-lg font-black tracking-tighter relative z-10 mb-6">Akses Cepat</h3>
+              <h3 className="text-base font-black tracking-tighter relative z-10 mb-6">Akses cepat</h3>
               <div className="grid grid-cols-1 gap-4 relative z-10">
                 <button onClick={() => router.push('/dashboard/project-lead/team')} className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-all border border-white/10 text-left group">
-                  <div className="size-10 rounded-xl bg-white text-[#7c3aed] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="size-10 rounded-xl bg-white text-primary flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                     <Users size={20} />
                   </div>
                   <div>
-                    <p className="text-xs font-black tracking-widest">Kelola Tim</p>
+                    <p className="text-xs font-black tracking-widest">Kelola tim</p>
                     <p className="text-[10px] opacity-70 mt-1">Atur penugasan & workload</p>
                   </div>
                 </button>
@@ -358,7 +358,7 @@ export default function TeamLeaderDashboard() {
                     <Calendar size={20} />
                   </div>
                   <div>
-                    <p className="text-xs font-black tracking-widest">Jadwal Inspeksi</p>
+                    <p className="text-xs font-black tracking-widest">Jadwal inspeksi</p>
                     <p className="text-[10px] opacity-70 mt-1">Monitoring kegiatan lapangan</p>
                   </div>
                 </button>
@@ -375,8 +375,8 @@ export default function TeamLeaderDashboard() {
             </div>
 
             {/* Upcoming Schedules */}
-            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden p-8">
-              <h3 className="text-sm font-black tracking-widest text-slate-400 mb-6">Agenda Mendatang</h3>
+            <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden p-8">
+              <h3 className="text-sm font-black tracking-widest text-slate-400 mb-6">Agenda mendatang</h3>
               <div className="space-y-6 relative">
                 {/* Vertical Line */}
                 <div className="absolute left-[19px] top-2 bottom-2 w-px bg-slate-100 dark:bg-white/5"></div>
@@ -386,14 +386,14 @@ export default function TeamLeaderDashboard() {
                 ) : (
                   upcomingSchedules.map((schedule, idx) => (
                     <div key={schedule.id} className="relative z-10 flex gap-4">
-                      <div className="size-10 rounded-full border-4 border-white dark:border-[#1e293b] bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm z-10">
+                      <div className="size-10 rounded-full border-4 border-white dark:border-slate-950 bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm z-10">
                         {idx + 1}
                       </div>
                       <div className="flex-1 pt-1">
-                        <h5 className="text-xs font-bold text-slate-900 dark:text-white tracking-tight">{schedule.projects?.name}</h5>
+                        <h5 className="text-sm font-bold text-foreground tracking-tight">{schedule.projects?.name}</h5>
                         <div className="flex items-center gap-2 mt-1">
-                          <Clock size={12} className="text-[#7c3aed]" />
-                          <span className="text-[10px] font-medium text-slate-500">{formatDate(schedule.scheduled_date)}</span>
+                          <Clock size={12} className="text-primary" />
+                          <span className="text-xs font-medium text-muted-foreground">{formatDate(schedule.scheduled_date)}</span>
                         </div>
                       </div>
                     </div>
@@ -414,13 +414,13 @@ export default function TeamLeaderDashboard() {
 function StatCard({ title, value, icon: Icon, color, bg, subtitle, trend, isAlert }) {
   return (
     <div className={`
-      bg-surface-light dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 transition-all duration-300
+      bg-surface-light dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-border transition-all duration-300
       hover:shadow-md cursor-default group relative overflow-hidden
       ${isAlert ? 'ring-1 ring-consultant-red/20' : ''}
     `}>
       <div className="flex items-start justify-between relative z-10">
         <div>
-          <p className="text-text-secondary-light dark:text-text-secondary-dark text-[10px] font-black tracking-wider mb-2">{title}</p>
+          <p className="text-text-secondary-light dark:text-text-secondary-dark text-[10px] font-bold tracking-wider mb-2">{title}</p>
           <h3 className={`text-3xl font-display font-black tracking-tighter ${isAlert ? 'text-consultant-red' : 'text-gray-900 dark:text-white'}`}>{value}</h3>
           {subtitle && <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70 tracking-widest">{subtitle}</p>}
         </div>
@@ -435,7 +435,7 @@ function StatCard({ title, value, icon: Icon, color, bg, subtitle, trend, isAler
             <TrendingUp size={12} />
             {trend}
           </span>
-          <span className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark opacity-60 tracking-wider italic">momentum</span>
+          <span className="text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark opacity-60 tracking-wider italic">momentum</span>
         </div>
       )}
 
@@ -458,5 +458,6 @@ const formatDate = (dateString) => {
 
 const getStatusBadge = (status) => {
   // Legacy helper if needed
-  return <span className="text-[10px] font-bold uppercase">{status}</span>
+  return <span className="text-[10px] font-bold">{status}</span>
 };
+

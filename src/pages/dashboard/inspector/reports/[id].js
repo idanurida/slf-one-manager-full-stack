@@ -308,7 +308,7 @@ export default function ReportDetail() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-slate-100 dark:bg-[#1e293b] p-1 rounded-2xl h-auto w-full justify-start overflow-x-auto gap-1">
+          <TabsList className="bg-muted p-1 rounded-2xl h-auto w-full justify-start overflow-x-auto gap-1">
             <TabsTrigger value="overview" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Ringkasan</TabsTrigger>
             <TabsTrigger value="findings" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Temuan Detail</TabsTrigger>
             <TabsTrigger value="photos" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Dokumentasi</TabsTrigger>

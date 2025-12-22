@@ -491,7 +491,7 @@ const InspectorChecklistDashboard = () => {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Navigation className="w-5 h-5" />
-                Konfirmasi Lokasi Inspeksi
+                Konfirmasi lokasi inspeksi
               </DialogTitle>
               <DialogDescription>
                 Untuk {currentInspection?.projects?.name || 'inspeksi ini'}, konfirmasi lokasi Anda.
@@ -512,7 +512,7 @@ const InspectorChecklistDashboard = () => {
                       <MapPin className="w-5 h-5 text-green-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium">Gunakan GPS Lokasi</p>
+                      <p className="font-medium">Gunakan GPS lokasi</p>
                       <p className="text-sm text-muted-foreground">
                         Dapatkan koordinat GPS saat ini
                       </p>
@@ -537,7 +537,7 @@ const InspectorChecklistDashboard = () => {
                         <WifiOff className="w-5 h-5 text-orange-600" />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium">Lokasi Manual</p>
+                        <p className="font-medium">Lokasi manual</p>
                         <p className="text-sm text-muted-foreground">
                           Tidak ada sinyal GPS
                         </p>
@@ -584,7 +584,7 @@ const InspectorChecklistDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-primary text-sm font-medium mb-1">Total Inspeksi</p>
+                  <p className="text-primary text-sm font-medium mb-1">Total inspeksi</p>
                   <p className="text-2xl font-bold text-foreground">{stats.total}</p>
                   <p className="text-muted-foreground text-xs mt-1">Semua penugasan aktif</p>
                 </div>
@@ -600,7 +600,7 @@ const InspectorChecklistDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-secondary text-sm font-medium mb-1">Hari Ini</p>
+                  <p className="text-secondary text-sm font-medium mb-1">Hari ini</p>
                   <p className="text-2xl font-bold text-foreground">{stats.today}</p>
                   <p className="text-muted-foreground text-xs mt-1">Jadwal hari ini</p>
                 </div>
@@ -659,10 +659,10 @@ const InspectorChecklistDashboard = () => {
               </div>
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                 <SelectTrigger className="w-full sm:w-[180px] bg-background">
-                  <SelectValue placeholder="Filter Status" />
+                  <SelectValue placeholder="Filter status" />
                 </SelectTrigger>
                 <SelectContent className="select-content">
-                  <SelectItem value="all" className="select-item">Semua Status</SelectItem>
+                  <SelectItem value="all" className="select-item">Semua status</SelectItem>
                   <SelectItem value="scheduled" className="select-item">Terjadwal</SelectItem>
                   <SelectItem value="in_progress" className="select-item">Berlangsung</SelectItem>
                 </SelectContent>
@@ -677,7 +677,7 @@ const InspectorChecklistDashboard = () => {
             <div className="p-6 border-b border-border">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">Daftar Inspeksi</h2>
+                  <h2 className="text-xl font-semibold text-foreground">Daftar inspeksi</h2>
                   <p className="text-muted-foreground text-sm mt-1">
                     {filteredInspections.length} dari {inspections.length} inspeksi
                   </p>

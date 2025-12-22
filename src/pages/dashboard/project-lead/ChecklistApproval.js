@@ -175,23 +175,23 @@ const ChecklistApproval = ({ projectId }) => { // projectId props for embedded u
       {/* Stats Cards */}
       {!projectId && (
         <div className="grid grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex items-center justify-between group hover:border-yellow-200 transition-colors">
+          <div className="bg-card p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-border flex items-center justify-between group hover:border-yellow-200 transition-colors">
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Perlu Review</p>
+              <p className="text-[10px] font-bold text-slate-400 tracking-widest mb-1">Perlu review</p>
               <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.submitted}</h3>
             </div>
             <div className="size-12 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform"><Clock size={24} /></div>
           </div>
-          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex items-center justify-between group hover:border-green-200 transition-colors">
+          <div className="bg-card p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-border flex items-center justify-between group hover:border-green-200 transition-colors">
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Disetujui</p>
+              <p className="text-[10px] font-bold text-slate-400 tracking-widest mb-1">Disetujui</p>
               <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.approved}</h3>
             </div>
             <div className="size-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform"><CheckCircle2 size={24} /></div>
           </div>
-          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex items-center justify-between group hover:border-red-200 transition-colors">
+          <div className="bg-card p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-border flex items-center justify-between group hover:border-red-200 transition-colors">
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Ditolak</p>
+              <p className="text-[10px] font-bold text-slate-400 tracking-widest mb-1">Ditolak</p>
               <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.rejected}</h3>
             </div>
             <div className="size-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center group-hover:scale-110 transition-transform"><XCircle size={24} /></div>
@@ -200,18 +200,18 @@ const ChecklistApproval = ({ projectId }) => { // projectId props for embedded u
       )}
 
       {/* Filters */}
-      <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] p-4 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex flex-col md:flex-row gap-4">
+      <motion.div variants={itemVariants} className="bg-card p-4 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-border flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             placeholder="Cari item checklist, catatan, atau inspector..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl"
+            className="pl-12 h-12 bg-muted/50 border-transparent focus:border-primary rounded-xl"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full md:w-[200px] h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-full md:w-[200px] h-12 bg-muted/50 border-transparent focus:border-primary rounded-xl"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent className="rounded-xl">
             <SelectItem value="all">Semua</SelectItem>
             <SelectItem value="submitted">Perlu Review</SelectItem>
@@ -228,10 +228,10 @@ const ChecklistApproval = ({ projectId }) => { // projectId props for embedded u
             [1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-[2rem] w-full" />)
           ) : filteredChecklists.length === 0 ? (
             <div className="py-20 text-center">
-              <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-6">
+              <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mx-auto mb-6">
                 <FileCheck className="size-12 text-slate-300" />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-2">Tidak ada data</h3>
+              <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white mb-2">Tidak ada data</h3>
               <p className="text-slate-400">Tidak ada checklist yang sesuai.</p>
             </div>
           ) : (
@@ -239,7 +239,7 @@ const ChecklistApproval = ({ projectId }) => { // projectId props for embedded u
               <motion.div
                 key={item.id}
                 variants={itemVariants}
-                className="group bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:border-[#7c3aed]/30 transition-all duration-300 relative overflow-hidden"
+                className="group bg-card rounded-[2rem] p-6 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 relative overflow-hidden"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                   <div className="flex items-start gap-4">
@@ -248,14 +248,14 @@ const ChecklistApproval = ({ projectId }) => { // projectId props for embedded u
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-1">
-                        <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 border-none px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider">
+                        <Badge className="bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-300 border-none px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider">
                           {item.project_name}
                         </Badge>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{format(new Date(item.responded_at), 'dd MMM HH:mm', { locale: localeId })}</span>
+                        <span className="text-[10px] text-slate-400 font-bold tracking-widest">{format(new Date(item.responded_at), 'dd MMM HH:mm', { locale: localeId })}</span>
                       </div>
                       <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 capitalize">{item.item_id.replace(/_/g, ' ')}</h3>
                       <p className="text-slate-500 text-sm mb-2">{item.notes || 'Tidak ada catatan khusus.'}</p>
-                      <div className="flex items-center gap-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                      <div className="flex items-center gap-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wide">
                         <span className="flex items-center gap-1"><User size={12} /> {item.inspector_name}</span>
                       </div>
                     </div>
@@ -282,12 +282,12 @@ const ChecklistApproval = ({ projectId }) => { // projectId props for embedded u
                       </>
                     )}
                     {item.status === 'project_lead_approved' && (
-                      <Badge className="bg-green-100 text-green-700 h-10 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border-none">
+                      <Badge className="bg-green-100 text-green-700 h-10 px-4 rounded-xl text-xs font-bold tracking-wider border-none">
                         <CheckCircle2 size={16} className="mr-2" /> Disetujui
                       </Badge>
                     )}
                     {item.status === 'rejected' && (
-                      <Badge className="bg-red-100 text-red-700 h-10 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border-none">
+                      <Badge className="bg-red-100 text-red-700 h-10 px-4 rounded-xl text-xs font-bold tracking-wider border-none">
                         <XCircle size={16} className="mr-2" /> Ditolak
                       </Badge>
                     )}
@@ -301,8 +301,8 @@ const ChecklistApproval = ({ projectId }) => { // projectId props for embedded u
 
       {/* Dialogs */}
       <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
-        <DialogContent className="rounded-[2rem] border-none bg-white dark:bg-[#1e293b]">
-          <DialogHeader><DialogTitle className="text-2xl font-black uppercase tracking-tight">Konfirmasi Approval</DialogTitle></DialogHeader>
+        <DialogContent className="rounded-[2rem] border-none bg-card">
+          <DialogHeader><DialogTitle className="text-2xl font-black tracking-tight">Konfirmasi persetujuan</DialogTitle></DialogHeader>
           <p className="text-slate-500">Anda yakin ingin menyetujui item checklist ini?</p>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setApproveDialogOpen(false)} className="rounded-xl font-bold">Batal</Button>
@@ -312,8 +312,8 @@ const ChecklistApproval = ({ projectId }) => { // projectId props for embedded u
       </Dialog>
 
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <DialogContent className="rounded-[2rem] border-none bg-white dark:bg-[#1e293b]">
-          <DialogHeader><DialogTitle className="text-2xl font-black uppercase tracking-tight text-red-600">Konfirmasi Penolakan</DialogTitle></DialogHeader>
+        <DialogContent className="rounded-[2rem] border-none bg-card">
+          <DialogHeader><DialogTitle className="text-2xl font-black tracking-tight text-red-600">Konfirmasi penolakan</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <p className="text-slate-500">Berikan alasan penolakan untuk inspector:</p>
             <Textarea value={rejectionNotes} onChange={e => setRejectionNotes(e.target.value)} placeholder="Alasan penolakan..." className="min-h-[100px] rounded-xl bg-slate-50 dark:bg-slate-900 border-none" />
@@ -340,3 +340,4 @@ const getStatusColor = (status) => {
 };
 
 export default ChecklistApproval;
+

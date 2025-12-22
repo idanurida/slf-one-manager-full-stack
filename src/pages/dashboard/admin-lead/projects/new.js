@@ -323,7 +323,7 @@ export default function NewProjectPage() {
           {/* Header Section */}
           <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="flex items-start gap-6">
-              <button type="button" onClick={() => router.back()} className="mt-2 size-12 rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-xl shadow-slate-200/30 dark:shadow-none">
+              <button type="button" onClick={() => router.back()} className="mt-2 size-12 rounded-2xl bg-card border border-border flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-xl shadow-slate-200/30 dark:shadow-none">
                 <ArrowLeft size={20} />
               </button>
               <div>
@@ -341,13 +341,13 @@ export default function NewProjectPage() {
           </motion.div>
 
           {/* Stepper Infrastructure */}
-          <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col md:flex-row items-center gap-8 justify-between relative overflow-hidden">
+          <motion.div variants={itemVariants} className="bg-card p-8 rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col md:flex-row items-center gap-8 justify-between relative overflow-hidden">
             <div className="flex flex-wrap justify-center md:justify-start gap-12 relative z-10">
               {FORM_STEPS.map((step, index) => (
                 <div key={step} className="flex flex-col items-center gap-4 group cursor-help" onClick={() => index < currentStep && setCurrentStep(index)}>
                   <div className={`size-12 rounded-2xl flex items-center justify-center font-black text-xs transition-all duration-500 ${index < currentStep ? 'bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/20 scale-100' :
-                      index === currentStep ? 'bg-[#7c3aed]/10 text-[#7c3aed] ring-2 ring-[#7c3aed]/20 scale-110' :
-                        'bg-slate-50 dark:bg-white/5 text-slate-300'
+                    index === currentStep ? 'bg-[#7c3aed]/10 text-[#7c3aed] ring-2 ring-[#7c3aed]/20 scale-110' :
+                      'bg-slate-50 dark:bg-white/5 text-slate-300'
                     }`}>
                     {index < currentStep ? <CheckCircle2 size={20} /> : index + 1}
                   </div>
@@ -382,7 +382,7 @@ export default function NewProjectPage() {
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  className="bg-white dark:bg-[#1e293b] rounded-[3rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none p-10 md:p-14"
+                  className="bg-card rounded-[3rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none p-10 md:p-14"
                 >
                   {/* Step 0: Detail Proyek */}
                   {currentStep === 0 && (
@@ -413,7 +413,7 @@ export default function NewProjectPage() {
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl border-none shadow-2xl">
                               <SelectItem value="SLF" className="font-black uppercase text-[10px] py-4">SLF (Sertifikat Laik Fungsi)</SelectItem>
-                              <SelectItem value="PBG" className="font-black uppercase text-[10px] py-4 text-emerald-500 border-t border-slate-100 dark:border-white/5">PBG (Persetujuan Bangunan Gedung)</SelectItem>
+                              <SelectItem value="PBG" className="font-black uppercase text-[10px] py-4 text-emerald-500 border-t border-border">PBG (Persetujuan Bangunan Gedung)</SelectItem>
                             </SelectContent>
                           </Select>
                           {errors.application_category && <p className="text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.application_category}</p>}
@@ -487,8 +487,8 @@ export default function NewProjectPage() {
                               type="button"
                               onClick={() => handleChange('priority', p)}
                               className={`h-14 rounded-2xl font-black uppercase text-[9px] tracking-[0.2em] transition-all ${formData.priority === p
-                                  ? 'bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/20 scale-105'
-                                  : 'bg-slate-50 dark:bg-white/5 text-slate-400 hover:bg-slate-100'
+                                ? 'bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/20 scale-105'
+                                : 'bg-slate-50 dark:bg-white/5 text-slate-400 hover:bg-slate-100'
                                 }`}
                             >
                               {p}
@@ -536,7 +536,7 @@ export default function NewProjectPage() {
                         <Button
                           type="button"
                           variant="outline"
-                          className="h-14 px-10 rounded-2xl border-slate-100 dark:border-white/5 font-black uppercase text-[10px] tracking-widest hover:bg-[#7c3aed] hover:text-white transition-all shadow-xl shadow-slate-200/20"
+                          className="h-14 px-10 rounded-2xl border-border font-black uppercase text-[10px] tracking-widest hover:bg-[#7c3aed] hover:text-white transition-all shadow-xl shadow-slate-200/20"
                           onClick={() => router.push('/dashboard/admin-lead/clients/new?returnUrl=/dashboard/admin-lead/projects/new')}
                         >
                           <Plus className="w-4 h-4 mr-3" /> Tambah Klien Baru
@@ -558,14 +558,14 @@ export default function NewProjectPage() {
                       <div className="space-y-6">
                         {formData.phases.map((phase, index) => (
                           <div key={phase.phase} className="flex flex-col md:flex-row items-start md:items-center gap-6 p-8 bg-slate-50 dark:bg-white/5 rounded-[2rem] border border-transparent hover:border-[#7c3aed]/20 transition-all group">
-                            <div className="size-14 rounded-2xl bg-white dark:bg-[#1e293b] flex items-center justify-center font-black text-[#7c3aed] text-lg shadow-xl shadow-slate-200/30 dark:shadow-none transition-all group-hover:scale-110">
+                            <div className="size-14 rounded-2xl bg-card flex items-center justify-center font-black text-[#7c3aed] text-lg shadow-xl shadow-slate-200/30 dark:shadow-none transition-all group-hover:scale-110">
                               {phase.phase}
                             </div>
                             <div className="flex-1 space-y-1">
                               <p className="font-black text-sm uppercase tracking-tight text-slate-900 dark:text-white">{phase.name}</p>
                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{phase.description}</p>
                             </div>
-                            <div className="flex items-center gap-4 bg-white dark:bg-[#1e293b] p-3 rounded-2xl shadow-inner-sm">
+                            <div className="flex items-center gap-4 bg-card p-3 rounded-2xl shadow-inner-sm">
                               <input
                                 type="number"
                                 min={1}
@@ -593,7 +593,7 @@ export default function NewProjectPage() {
                   {/* Step 3: Tim Proyek */}
                   {currentStep === 3 && (
                     <div className="space-y-12">
-                      <div className="flex items-center gap-6 pb-6 border-b border-slate-100 dark:border-white/5">
+                      <div className="flex items-center gap-6 pb-6 border-b border-border">
                         <div className="size-16 rounded-[1.5rem] bg-[#7c3aed]/10 text-[#7c3aed] flex items-center justify-center shadow-inner">
                           <Users size={24} />
                         </div>
@@ -680,7 +680,7 @@ export default function NewProjectPage() {
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Pastikan semua data infrastruktur proyek sudah akurat.</p>
                       </div>
 
-                      <div className="grid md:grid-cols-2 gap-y-10 gap-x-12 p-10 bg-slate-50 dark:bg-white/5 rounded-[3rem] border border-slate-100 dark:border-white/5">
+                      <div className="grid md:grid-cols-2 gap-y-10 gap-x-12 p-10 bg-slate-50 dark:bg-white/5 rounded-[3rem] border border-border">
                         <div className="space-y-2">
                           <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Project Architect</Label>
                           <p className="font-black text-lg uppercase tracking-tight leading-none h-14 flex items-center">{formData.name}</p>
@@ -746,7 +746,7 @@ export default function NewProjectPage() {
                     type="button"
                     size="lg"
                     onClick={nextStep}
-                    className="h-16 px-14 rounded-2xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 font-black uppercase text-[10px] tracking-[0.2em] shadow-xl hover:shadow-[#7c3aed]/10 group transition-all"
+                    className="h-16 px-14 rounded-2xl bg-card text-slate-900 dark:text-white border border-border font-black uppercase text-[10px] tracking-[0.2em] shadow-xl hover:shadow-[#7c3aed]/10 group transition-all"
                   >
                     Next Step <ArrowRight className="w-4 h-4 ml-4 transition-transform group-hover:translate-x-2 text-[#7c3aed]" />
                   </Button>
@@ -809,7 +809,7 @@ export default function NewProjectPage() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-10 border border-slate-100 dark:border-white/5 space-y-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
+              <div className="bg-card rounded-[2.5rem] p-10 border border-border space-y-6 shadow-xl shadow-slate-200/40 dark:shadow-none">
                 <div className="flex items-center gap-4">
                   <div className="size-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                     <Clock size={20} />
@@ -827,3 +827,4 @@ export default function NewProjectPage() {
     </DashboardLayout>
   );
 }
+

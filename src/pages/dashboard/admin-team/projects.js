@@ -197,8 +197,8 @@ export default function AdminTeamProjectsPage() {
         {/* Header Section */}
         <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
-              Monitoring <span className="text-[#7c3aed]">Proyek</span>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+              Monitoring <span className="text-[#7c3aed]">proyek</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Dashboard pemantauan progress teknis dan administratif proyek yang Anda tangani.</p>
           </div>
@@ -207,14 +207,14 @@ export default function AdminTeamProjectsPage() {
             <div className="relative group flex-1 lg:min-w-[400px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
               <input
-                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
-                placeholder="Cari Nama Proyek, Lokasi, atau Client..."
+                className="h-14 w-full rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                placeholder="Cari nama proyek, lokasi, atau klien..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10">
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            <button onClick={handleRefresh} className="h-14 px-6 bg-card text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-border hover:bg-slate-50 dark:hover:bg-white/10">
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh data
             </button>
           </div>
         </motion.div>
@@ -227,11 +227,11 @@ export default function AdminTeamProjectsPage() {
           </div>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+            <SelectTrigger className="w-[180px] h-11 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest shadow-sm">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-              <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Status</SelectItem>
+            <SelectContent className="rounded-xl border-border">
+              <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua status</SelectItem>
               {statuses.map(s => (
                 <SelectItem key={s} value={s} className="uppercase text-[10px] font-bold">{getStatusLabel(s)}</SelectItem>
               ))}
@@ -239,13 +239,13 @@ export default function AdminTeamProjectsPage() {
           </Select>
 
           <Select value={applicationTypeFilter} onValueChange={setApplicationTypeFilter}>
-            <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
-              <SelectValue placeholder="Tipe Aplikasi" />
+            <SelectTrigger className="w-[180px] h-11 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest shadow-sm">
+              <SelectValue placeholder="Tipe aplikasi" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-              <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Tipe</SelectItem>
+            <SelectContent className="rounded-xl border-border">
+              <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua tipe</SelectItem>
               {applicationTypes.map(t => (
-                <SelectItem key={t} value={t} className="uppercase text-[10px] font-bold">{t || 'Tanpa Tipe'}</SelectItem>
+                <SelectItem key={t} value={t} className="uppercase text-[10px] font-bold">{t || 'Tanpa tipe'}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -256,7 +256,7 @@ export default function AdminTeamProjectsPage() {
               onClick={() => { setStatusFilter('all'); setApplicationTypeFilter('all'); setSearchTerm(''); }}
               className="text-[10px] font-black uppercase tracking-widest text-[#7c3aed] hover:bg-[#7c3aed]/5 rounded-xl h-11"
             >
-              Reset Filter
+              Reset filter
             </Button>
           )}
         </motion.div>
@@ -268,11 +268,11 @@ export default function AdminTeamProjectsPage() {
               {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-72 rounded-[2.5rem] w-full" />)}
             </div>
           ) : filteredProjects.length === 0 ? (
-            <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+            <div className="py-32 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center p-10">
               <Building size={80} className="text-slate-300 dark:text-slate-700 opacity-30 mb-8" />
-              <h3 className="text-2xl font-black uppercase tracking-tighter">Proyek Tidak Ditemukan</h3>
+              <h3 className="text-2xl font-black tracking-tighter">Proyek tidak ditemukan</h3>
               <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Tidak ada proyek yang sesuai dengan kriteria filter Anda saat ini.</p>
-              <Button onClick={() => { setStatusFilter('all'); setApplicationTypeFilter('all'); setSearchTerm(''); }} className="mt-8 bg-[#7c3aed] hover:bg-[#6d28d9] font-black uppercase px-8 rounded-xl h-12 shadow-lg shadow-[#7c3aed]/20 transition-all">Tampilkan Semua Proyek</Button>
+              <Button onClick={() => { setStatusFilter('all'); setApplicationTypeFilter('all'); setSearchTerm(''); }} className="mt-8 bg-[#7c3aed] hover:bg-[#6d28d9] font-black uppercase px-8 rounded-xl h-12 shadow-lg shadow-[#7c3aed]/20 transition-all">Tampilkan semua proyek</Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -316,7 +316,7 @@ const ProjectCardPremium = ({ project, onViewDetails }) => {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -8 }}
-      className="group bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col justify-between transition-all duration-300 cursor-pointer"
+      className="group bg-card rounded-[2.5rem] p-8 border border-border shadow-xl shadow-slate-200/50 dark:shadow-none flex flex-col justify-between transition-all duration-300 cursor-pointer"
       onClick={() => onViewDetails(project)}
     >
       <div>
@@ -331,16 +331,16 @@ const ProjectCardPremium = ({ project, onViewDetails }) => {
 
         <div className="space-y-4">
           <div>
-            <h3 className="text-xl font-black uppercase tracking-tight leading-tight group-hover:text-[#7c3aed] transition-colors line-clamp-2 min-h-[3.5rem]">{project.name}</h3>
+            <h3 className="text-xl font-black tracking-tight leading-tight group-hover:text-[#7c3aed] transition-colors line-clamp-2 min-h-[3.5rem]">{project.name}</h3>
             <div className="flex items-center gap-2 mt-2 text-slate-400">
               <MapPin size={14} className="shrink-0" />
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{project.location || 'Lokasi tidak diset'}</p>
             </div>
           </div>
 
-          <div className="pt-2 bg-slate-50 dark:bg-white/5 rounded-2xl p-4 border border-slate-100 dark:border-white/5">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] mb-1">Client Utama</p>
-            <p className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-tight truncate">{project.client_name}</p>
+          <div className="pt-2 bg-slate-50 dark:bg-white/5 rounded-2xl p-4 border border-border">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] mb-1">Klien utama</p>
+            <p className="text-sm font-black text-slate-700 dark:text-slate-200 tracking-tight truncate">{project.client_name}</p>
           </div>
         </div>
       </div>
@@ -350,7 +350,7 @@ const ProjectCardPremium = ({ project, onViewDetails }) => {
         <div className="space-y-3">
           <div className="flex justify-between items-end">
             <div>
-              <p className="text-[9px] font-black text-[#7c3aed] uppercase tracking-widest mb-0.5">Progress Tahapan</p>
+              <p className="text-[9px] font-black text-[#7c3aed] uppercase tracking-widest mb-0.5">Progress tahapan</p>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Phase {currentPhase} of 5</p>
             </div>
             <span className="text-xl font-black text-[#7c3aed]">{Math.round(progress)}%</span>
@@ -365,7 +365,7 @@ const ProjectCardPremium = ({ project, onViewDetails }) => {
           </div>
         </div>
 
-        <div className="pt-6 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+        <div className="pt-6 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{new Date(project.created_at).getFullYear()}</span>
@@ -383,3 +383,4 @@ const ProjectCardPremium = ({ project, onViewDetails }) => {
     </motion.div>
   );
 };
+

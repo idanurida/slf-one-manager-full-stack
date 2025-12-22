@@ -232,24 +232,24 @@ export default function AdminTeamSubmissionsPage() {
           {/* Header Section */}
           <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
                 Portal <span className="text-[#7c3aed]">SIMBG</span>
               </h1>
               <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Sinkronisasi dokumen final ke portal pemerintah (Sistem Informasi Manajemen Bangunan Gedung).</p>
             </div>
 
-            <div className="flex gap-4">
-              <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10 shadow-lg shadow-slate-200/40 dark:shadow-none">
-                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+              <button onClick={handleRefresh} className="h-14 px-6 w-full sm:w-auto bg-card text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-border hover:bg-slate-50 dark:hover:bg-white/10 shadow-lg shadow-slate-200/40 dark:shadow-none">
+                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh data
               </button>
             </div>
           </motion.div>
 
           {/* Stats Section */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard title="Siap Konfirmasi" value={projects.length} icon={<Upload size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Action" trendColor="text-orange-500" />
-            <StatCard title="Verifikasi Dokumen" value="100%" icon={<CheckCircle2 size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Safe" trendColor="text-emerald-500" />
-            <StatCard title="Notifikasi Stakeholder" value="Aktif" icon={<Send size={24} />} color="text-blue-500" bg="bg-blue-500/10" trend="Live" trendColor="text-blue-500" />
+            <StatCard title="Siap konfirmasi" value={projects.length} icon={<Upload size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Action" trendColor="text-orange-500" />
+            <StatCard title="Verifikasi dokumen" value="100%" icon={<CheckCircle2 size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Safe" trendColor="text-emerald-500" />
+            <StatCard title="Notifikasi stakeholder" value="Aktif" icon={<Send size={24} />} color="text-blue-500" bg="bg-blue-500/10" trend="Live" trendColor="text-blue-500" />
           </motion.div>
 
           {/* Info Banner */}
@@ -258,7 +258,7 @@ export default function AdminTeamSubmissionsPage() {
               <AlertCircle size={32} />
             </div>
             <div className="flex-1 text-center md:text-left">
-              <h4 className="text-lg font-black uppercase tracking-tighter text-orange-600 mb-2">Penting: Alur Manual Portal SIMBG</h4>
+              <h4 className="text-lg font-black tracking-tighter text-orange-600 mb-2">Penting: Alur manual portal SIMBG</h4>
               <p className="text-sm font-medium text-orange-800/60 dark:text-orange-400/60 leading-relaxed max-w-3xl">
                 Pastikan Anda telah mengunggah semua dokumen final ke situs <a href="https://simbg.pu.go.id" target="_blank" className="font-bold underline decoration-2 underline-offset-4 hover:text-orange-700 transition-colors">simbg.pu.go.id</a> secara manual sebelum menekan tombol konfirmasi. Tindakan ini akan memicu notifikasi otomatis ke seluruh tim teknis dan klien.
               </p>
@@ -269,8 +269,8 @@ export default function AdminTeamSubmissionsPage() {
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-black uppercase tracking-tighter">Proyek Siap Lapor</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Menunggu Konfirmasi Upload</p>
+                <h3 className="text-xl font-black tracking-tighter">Proyek siap lapor</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Menunggu konfirmasi upload</p>
               </div>
             </div>
 
@@ -279,14 +279,14 @@ export default function AdminTeamSubmissionsPage() {
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-64 w-full rounded-[2.5rem]" />)}
               </div>
             ) : projects.length === 0 ? (
-              <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+              <div className="py-32 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center p-10">
                 <div className="size-24 bg-slate-50 dark:bg-white/5 rounded-[2rem] flex items-center justify-center mb-8">
                   <ClipboardList size={40} className="text-slate-300 dark:text-slate-700" />
                 </div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter">Belum Ada Proyek Siap</h3>
+                <h3 className="text-2xl font-black tracking-tighter">Belum ada proyek siap</h3>
                 <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Proyek akan muncul di sini setelah semua langkah verifikasi dokumen dan laporan inspeksi dinyatakan lengkap.</p>
                 <button onClick={() => router.push('/dashboard/admin-team/documents')} className="mt-8 h-12 px-8 bg-[#7c3aed] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-[#7c3aed]/20">
-                  Mulai Verifikasi Dokumen
+                  Mulai verifikasi dokumen
                 </button>
               </div>
             ) : (
@@ -312,7 +312,7 @@ export default function AdminTeamSubmissionsPage() {
               <div className="size-16 bg-orange-500/10 text-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-2">
                 <Upload size={32} />
               </div>
-              <DialogTitle className="text-3xl font-black uppercase tracking-tighter text-center">
+              <DialogTitle className="text-3xl font-black tracking-tighter text-center">
                 Konfirmasi <span className="text-orange-500">SIMBG</span>
               </DialogTitle>
               <DialogDescription className="text-slate-500 dark:text-slate-400 text-center font-medium">
@@ -322,7 +322,7 @@ export default function AdminTeamSubmissionsPage() {
 
             <div className="py-8 space-y-6">
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-widest text-[#7c3aed]">Nomor Registrasi SIMBG</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#7c3aed]">Nomor registrasi SIMBG</label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors"><FileText size={18} /></div>
                   <input
@@ -358,7 +358,7 @@ export default function AdminTeamSubmissionsPage() {
                 className="h-14 flex-[2] bg-orange-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 transition-all shadow-xl shadow-orange-500/20 disabled:opacity-50 disabled:scale-95 flex items-center justify-center gap-2"
               >
                 {submitLoading ? <RefreshCw className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
-                {submitLoading ? 'Memproses...' : 'Konfirmasi & Kirim'}
+                {submitLoading ? 'Memproses...' : 'Konfirmasi & kirim'}
               </button>
             </DialogFooter>
           </DialogContent>
@@ -371,7 +371,7 @@ export default function AdminTeamSubmissionsPage() {
 // Sub-components
 function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
   return (
-    <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center justify-between gap-6 transition-all hover:translate-y-[-5px] group overflow-hidden relative">
+    <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center justify-between gap-6 transition-all hover:translate-y-[-5px] group overflow-hidden relative">
       <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
         {React.cloneElement(icon, { size: 80 })}
       </div>
@@ -397,7 +397,7 @@ function ProjectSIMBGCardPremium({ project, onConfirm }) {
   return (
     <motion.div
       whileHover={{ y: -10 }}
-      className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none p-8 flex flex-col h-full overflow-hidden relative group"
+      className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none p-8 flex flex-col h-full overflow-hidden relative group"
     >
       <div className="absolute -top-12 -right-12 size-32 bg-orange-500/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
 
@@ -412,7 +412,7 @@ function ProjectSIMBGCardPremium({ project, onConfirm }) {
 
       <div className="flex-1 space-y-4">
         <div>
-          <h4 className="text-lg font-black uppercase tracking-tighter leading-tight group-hover:text-[#7c3aed] transition-colors">{project.name}</h4>
+          <h4 className="text-lg font-black tracking-tighter leading-tight group-hover:text-[#7c3aed] transition-colors">{project.name}</h4>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{project.location}</p>
         </div>
 
@@ -421,7 +421,7 @@ function ProjectSIMBGCardPremium({ project, onConfirm }) {
             <div className="size-6 bg-slate-100 dark:bg-white/5 rounded-lg flex items-center justify-center shrink-0">
               <CheckCircle2 size={12} className="text-emerald-500" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-tight text-slate-600 dark:text-slate-400">Verifikasi Dokumen Lengkap</span>
+            <span className="text-[10px] font-bold uppercase tracking-tight text-slate-600 dark:text-slate-400">Verifikasi dokumen lengkap</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="size-6 bg-slate-100 dark:bg-white/5 rounded-lg flex items-center justify-center shrink-0">
@@ -437,7 +437,7 @@ function ProjectSIMBGCardPremium({ project, onConfirm }) {
           onClick={() => onConfirm(project.id)}
           className="h-12 flex-1 bg-emerald-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 hover:scale-105 transition-all flex items-center justify-center gap-2"
         >
-          <Upload size={14} /> Konfirmasi
+          <Upload size={14} /> Konfirmasi SIMBG
         </button>
         <button
           onClick={() => window.open('https://simbg.pu.go.id', '_blank')}

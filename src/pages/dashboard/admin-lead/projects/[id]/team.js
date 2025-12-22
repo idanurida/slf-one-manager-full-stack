@@ -253,7 +253,7 @@ export default function ProjectTeamPage() {
                         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                     >
                         {teamMembers.length === 0 ? (
-                            <div className="col-span-full py-24 flex flex-col items-center justify-center text-center bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 rounded-[2.5rem] shadow-xl shadow-slate-200/40 dark:shadow-none">
+                            <div className="col-span-full py-24 flex flex-col items-center justify-center text-center bg-card border border-border rounded-[2.5rem] shadow-xl shadow-slate-200/40 dark:shadow-none">
                                 <div className="size-24 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 mb-6">
                                     <Users size={48} />
                                 </div>
@@ -275,7 +275,7 @@ export default function ProjectTeamPage() {
                                     <motion.div
                                         key={member.id}
                                         variants={itemVariants}
-                                        className="group bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none hover:border-[#7c3aed]/50 hover:shadow-[#7c3aed]/10 transition-all relative overflow-hidden flex flex-col h-full"
+                                        className="group bg-card rounded-[2rem] p-6 border border-border shadow-xl shadow-slate-200/30 dark:shadow-none hover:border-[#7c3aed]/50 hover:shadow-[#7c3aed]/10 transition-all relative overflow-hidden flex flex-col h-full"
                                     >
                                         <div className="flex justify-between items-start mb-6">
                                             <div className={`p-3 rounded-2xl flex items-center justify-center ${config.bg} ${config.color} border ${config.border}`}>
@@ -299,12 +299,12 @@ export default function ProjectTeamPage() {
                                                 {member.profiles?.email}
                                             </p>
 
-                                            <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+                                            <div className="flex items-center justify-between pt-4 border-t border-border">
                                                 <Badge className={`border-0 ${config.bg} ${config.color} text-[8px] font-black uppercase tracking-widest py-1 px-2`}>
                                                     {config.label}
                                                 </Badge>
                                                 {member.profiles?.specialization && (
-                                                    <span className="text-[9px] font-bold text-slate-400 capitalize bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                                                    <span className="text-[9px] font-bold text-slate-400 capitalize bg-slate-50 dark:bg-muted px-2 py-1 rounded-lg">
                                                         {member.profiles.specialization.replace(/_/g, ' ')}
                                                     </span>
                                                 )}
@@ -319,8 +319,8 @@ export default function ProjectTeamPage() {
 
                 {/* Assign Dialog */}
                 <Dialog open={assignDialog} onOpenChange={setAssignDialog}>
-                    <DialogContent className="bg-white dark:bg-[#1e293b] border-none rounded-[2.5rem] p-0 overflow-hidden max-w-md shadow-2xl">
-                        <DialogHeader className="p-8 pb-6 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+                    <DialogContent className="bg-card border-none rounded-[2.5rem] p-0 overflow-hidden max-w-md shadow-2xl">
+                        <DialogHeader className="p-8 pb-6 bg-slate-50/50 dark:bg-white/5 border-b border-border">
                             <DialogTitle className="flex items-center gap-3 text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
                                 <div className="p-2 bg-[#7c3aed]/10 rounded-xl text-[#7c3aed]">
                                     <UserPlus size={20} />
@@ -381,7 +381,7 @@ export default function ProjectTeamPage() {
                             </div>
                         </div>
 
-                        <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 flex gap-3">
+                        <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-border flex gap-3">
                             <Button
                                 variant="ghost"
                                 onClick={() => setAssignDialog(false)}

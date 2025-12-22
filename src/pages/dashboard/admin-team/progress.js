@@ -122,7 +122,7 @@ const ProjectProgressCard = ({ project, documents, schedules }) => {
   const progress = calculateProgress();
 
   return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg truncate">{project.name}</CardTitle>
@@ -297,8 +297,8 @@ export default function AdminTeamProgressPage() {
         {/* Header Section */}
         <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
-              Lacak <span className="text-[#7c3aed]">Progress</span>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+              Lacak <span className="text-[#7c3aed]">progress</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Monitoring performa teknis dan capaian administratif di seluruh proyek aktif.</p>
           </div>
@@ -307,23 +307,23 @@ export default function AdminTeamProgressPage() {
             <div className="relative group flex-1 lg:min-w-[400px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
               <input
-                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                className="h-14 w-full rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
                 placeholder="Cari Proyek atau Client..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10">
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            <button onClick={handleRefresh} className="h-14 px-6 bg-card text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-border hover:bg-slate-50 dark:hover:bg-white/10">
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh data
             </button>
           </div>
         </motion.div>
 
         {/* Stats Section */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Total Proyek" value={projectsData.length} icon={<Building size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
-          <StatCard title="Avg Progress" value={`${projectsData.length > 0 ? Math.round(projectsData.reduce((acc, p) => acc + (p.documents.length > 0 ? (p.documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length / p.documents.length) * 100 : 0), 0) / projectsData.length) : 0}%`} icon={<TrendingUp size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Live" trendColor="text-emerald-500" />
-          <StatCard title="Total Berkas" value={projectsData.reduce((acc, p) => acc + p.documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length, 0)} icon={<FileText size={24} />} color="text-blue-500" bg="bg-blue-500/10" trend="Docs" trendColor="text-blue-500" />
+          <StatCard title="Total proyek" value={projectsData.length} icon={<Building size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
+          <StatCard title="Rata-rata progress" value={`${projectsData.length > 0 ? Math.round(projectsData.reduce((acc, p) => acc + (p.documents.length > 0 ? (p.documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length / p.documents.length) * 100 : 0), 0) / projectsData.length) : 0}%`} icon={<TrendingUp size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Live" trendColor="text-emerald-500" />
+          <StatCard title="Total berkas" value={projectsData.reduce((acc, p) => acc + p.documents.filter(d => d.status === 'verified_by_admin_team' || d.status === 'approved').length, 0)} icon={<FileText size={24} />} color="text-blue-500" bg="bg-blue-500/10" trend="Docs" trendColor="text-blue-500" />
           <StatCard title="Siap SIMBG" value={projectsData.filter(p => p.status !== 'government_submitted' && p.documents.length > 0 && p.documents.every(d => d.status === 'verified_by_admin_team' || d.status === 'approved')).length} icon={<CheckCircle2 size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Ready" trendColor="text-orange-500" />
         </motion.div>
 
@@ -336,11 +336,11 @@ export default function AdminTeamProgressPage() {
             </div>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
-                <SelectValue placeholder="Status Proyek" />
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Status proyek" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Status</SelectItem>
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua status</SelectItem>
                 {statuses.map(s => (
                   <SelectItem key={s} value={s} className="uppercase text-[10px] font-bold">{getStatusLabel(s)}</SelectItem>
                 ))}
@@ -348,11 +348,11 @@ export default function AdminTeamProgressPage() {
             </Select>
 
             <Select value={applicationTypeFilter} onValueChange={setApplicationTypeFilter}>
-              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
-                <SelectValue placeholder="Tipe Aplikasi" />
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Tipe aplikasi" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Tipe</SelectItem>
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua tipe</SelectItem>
                 {applicationTypes.map(t => (
                   <SelectItem key={t} value={t} className="uppercase text-[10px] font-bold">{t || 'Tanpa Tipe'}</SelectItem>
                 ))}
@@ -367,9 +367,9 @@ export default function AdminTeamProgressPage() {
               ))}
             </div>
           ) : filteredProjects.length === 0 ? (
-            <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+            <div className="py-32 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center p-10">
               <BarChart3 size={80} className="text-slate-300 dark:text-slate-700 opacity-30 mb-8" />
-              <h3 className="text-2xl font-black uppercase tracking-tighter">Data Nihil</h3>
+              <h3 className="text-2xl font-black tracking-tighter">Data nihil</h3>
               <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Tidak ada rekaman progress yang ditemukan untuk kriteria pencarian Anda.</p>
             </div>
           ) : (
@@ -393,7 +393,7 @@ export default function AdminTeamProgressPage() {
 // Sub-components
 function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
   return (
-    <div className="relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+    <div className="relative bg-card rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
       <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
         {React.cloneElement(icon, { size: 80 })}
       </div>
@@ -445,11 +445,11 @@ const ProjectProgressCardPremium = ({ project, documents, schedules }) => {
   return (
     <motion.div
       layout
-      className="group bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300"
+      className="group bg-card rounded-[2.5rem] p-8 border border-border shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300"
     >
       <div className="flex justify-between items-start mb-6">
         <div className="max-w-[70%]">
-          <h3 className="text-xl font-black uppercase tracking-tight line-clamp-1 group-hover:text-[#7c3aed] transition-colors">{project.name}</h3>
+          <h3 className="text-xl font-black tracking-tight line-clamp-1 group-hover:text-[#7c3aed] transition-colors">{project.name}</h3>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 truncate">{project.client_name}</p>
         </div>
         <Badge className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border ${getStatusColor(project.status)}`}>
@@ -460,12 +460,12 @@ const ProjectProgressCardPremium = ({ project, documents, schedules }) => {
       <div className="space-y-6">
         <div className="h-10 w-full bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center px-4 gap-3 border border-slate-100 dark:border-white/5">
           <MapPin size={12} className="text-[#7c3aed]" />
-          <span className="text-[10px] font-black uppercase tracking-tight text-slate-500 truncate">{project.location || 'Lokasi Belum Diatur'}</span>
+          <span className="text-[10px] font-black uppercase tracking-tight text-slate-500 truncate">{project.location || 'Lokasi belum diatur'}</span>
         </div>
 
         <div className="space-y-3">
           <div className="flex justify-between items-end">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress Kumulatif</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress kumulatif</span>
             <span className="text-2xl font-black text-[#7c3aed]">{Math.round(overallProgress)}%</span>
           </div>
           <div className="h-3 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden p-0.5">
@@ -488,7 +488,7 @@ const ProjectProgressCardPremium = ({ project, documents, schedules }) => {
             <p className="text-xs font-black">{schedules.filter(s => s.status === 'completed').length}/{schedules.length}</p>
           </div>
           <div className="bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5 text-center">
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1">Fase Proyek</p>
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1">Fase proyek</p>
             <p className="text-xs font-black">{currentPhase}/5</p>
           </div>
         </div>
@@ -497,7 +497,7 @@ const ProjectProgressCardPremium = ({ project, documents, schedules }) => {
           onClick={() => window.open(`/dashboard/admin-lead/projects/${project.id}`, '_blank')}
           className="w-full h-14 bg-[#7c3aed]/5 hover:bg-[#7c3aed]/10 text-[#7c3aed] border-none rounded-2xl font-black text-[10px] uppercase tracking-widest group-hover:bg-[#7c3aed] group-hover:text-white transition-all shadow-lg group-hover:shadow-[#7c3aed]/20"
         >
-          Lihat Snapshot Lengkap <ArrowRight size={14} className="ml-2" />
+          Lihat snapshot lengkap <ArrowRight size={14} className="ml-2" />
         </Button>
       </div>
     </motion.div>

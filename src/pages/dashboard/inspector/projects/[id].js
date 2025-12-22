@@ -227,7 +227,7 @@ export default function InspectorProjectDetail() {
 
                     <Tabs defaultValue="overview" className="space-y-6">
                         <motion.div variants={itemVariants}>
-                            <TabsList className="bg-slate-100 dark:bg-[#1e293b] p-1 rounded-2xl h-auto w-full justify-start overflow-x-auto gap-1">
+                            <TabsList className="bg-slate-100 dark:bg-card p-1 rounded-2xl h-auto w-full justify-start overflow-x-auto gap-1">
                                 <TabsTrigger value="overview" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Ringkasan</TabsTrigger>
                                 <TabsTrigger value="inspections" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Jadwal ({schedules.length})</TabsTrigger>
                                 <TabsTrigger value="documents" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Dokumen ({documents.length})</TabsTrigger>
@@ -239,7 +239,7 @@ export default function InspectorProjectDetail() {
                             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                                 {/* Client Info */}
-                                <Card className="rounded-[2.5rem] border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                                <Card className="rounded-[2.5rem] border-slate-100 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-none">
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-3 text-lg font-bold">
                                             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
@@ -265,7 +265,7 @@ export default function InspectorProjectDetail() {
                                 </Card>
 
                                 {/* Project Details */}
-                                <Card className="rounded-[2.5rem] border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                                <Card className="rounded-[2.5rem] border-slate-100 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-none">
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-3 text-lg font-bold">
                                             <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
@@ -308,7 +308,7 @@ export default function InspectorProjectDetail() {
                         {/* Inspections Tab */}
                         <TabsContent value="inspections">
                             <motion.div variants={itemVariants}>
-                                <Card className="rounded-[2.5rem] border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                                <Card className="rounded-[2.5rem] border-slate-100 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-none">
                                     <CardHeader>
                                         <CardTitle className="text-lg font-bold">Daftar Jadwal Inspeksi</CardTitle>
                                         <CardDescription>
@@ -382,7 +382,7 @@ export default function InspectorProjectDetail() {
                         {/* Documents Tab */}
                         <TabsContent value="documents">
                             <motion.div variants={itemVariants}>
-                                <Card className="rounded-[2.5rem] border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none">
+                                <Card className="rounded-[2.5rem] border-slate-100 dark:border-border shadow-xl shadow-slate-200/40 dark:shadow-none">
                                     <CardHeader>
                                         <CardTitle className="text-lg font-bold">Dokumen Proyek</CardTitle>
                                         <CardDescription>
@@ -403,7 +403,7 @@ export default function InspectorProjectDetail() {
                                         ) : (
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 {documents.map((doc) => (
-                                                    <div key={doc.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-[#7c3aed] transition-colors group cursor-pointer">
+                                                    <div key={doc.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border hover:border-[#7c3aed] transition-colors group cursor-pointer">
                                                         <div className="flex items-start justify-between">
                                                             <div className="p-2 bg-white dark:bg-black/20 rounded-xl shadow-sm">
                                                                 <FileText className="w-6 h-6 text-blue-600" />

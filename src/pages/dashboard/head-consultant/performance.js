@@ -308,7 +308,7 @@ export default function HeadConsultantPerformancePage() {
     return (
       <DashboardLayout>
         <div className="p-4 md:p-6">
-          <Alert variant="destructive" className="mb-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <Alert variant="destructive" className="mb-4 bg-background border-border">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
@@ -326,14 +326,14 @@ export default function HeadConsultantPerformancePage() {
         {/* Page Heading & Actions */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl md:text-4xl font-display font-extrabold text-gray-900 dark:text-white tracking-tight">Eksplorasi kinerja</h1>
-            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-base">Pantau metrik efisiensi dan kualitas output seluruh personil dalam ekosistem proyek.</p>
+            <h1 className="text-2xl md:text-3xl font-display font-extrabold text-foreground tracking-tight">Eksplorasi kinerja</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Pantau metrik efisiensi dan kualitas output seluruh personil dalam ekosistem proyek.</p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="flex items-center justify-center gap-2 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold text-xs px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-card border border-border text-foreground font-bold text-sm px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-muted disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
@@ -374,31 +374,31 @@ export default function HeadConsultantPerformancePage() {
         </div>
 
         {/* Filters */}
-        <div className="p-6 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <div className="h-5 w-1 bg-primary rounded-full"></div>
-            <h4 className="text-xs font-black text-primary uppercase tracking-wider">Saring anggota</h4>
+            <h4 className="text-sm font-black text-primary">Saring anggota</h4>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="relative md:col-span-2">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Pencarian anggota</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Pencarian anggota</span>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary-light" />
                 <input
                   placeholder="Cari Nama atau Spesialisasi..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-text-secondary-light/50 text-gray-900 dark:text-white"
+                  className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-text-secondary-light/50 text-foreground"
                 />
               </div>
             </div>
             <div className="relative">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Kategori peran</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Kategori peran</span>
               <div className="relative">
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-white outline-none transition-all"
+                  className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
                 >
                   <option value="inspector">Inspector</option>
                   <option value="project_lead">Project Lead</option>
@@ -409,12 +409,12 @@ export default function HeadConsultantPerformancePage() {
               </div>
             </div>
             <div className="relative">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Jendela waktu</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Jendela waktu</span>
               <div className="relative">
                 <select
                   value={periodFilter}
                   onChange={(e) => setPeriodFilter(e.target.value)}
-                  className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-white outline-none transition-all"
+                  className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
                 >
                   <option value="this_month">Bulan Ini</option>
                   <option value="last_month">Bulan Lalu</option>
@@ -428,15 +428,15 @@ export default function HeadConsultantPerformancePage() {
         </div>
 
         {/* Table Area */}
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden transition-all duration-300">
-          <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-white/5 flex items-center justify-between">
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300">
+          <div className="px-8 py-6 border-b border-border bg-muted/30 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 <BarChart3 size={20} />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white tracking-tight">Peringkat efektivitas {getRoleLabel(roleFilter)}</h3>
-                <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Key performance indicators</p>
+                <h3 className="text-sm font-bold text-foreground tracking-tight">Peringkat efektivitas {getRoleLabel(roleFilter)}</h3>
+                <p className="text-sm font-bold text-text-secondary-light">Key performance indicators</p>
               </div>
             </div>
           </div>
@@ -444,17 +444,17 @@ export default function HeadConsultantPerformancePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Anggota & spesialisasi</th>
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Indeks performa</th>
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase text-right">Manajemen</th>
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Anggota & spesialisasi</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Indeks performa</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark text-right">Manajemen</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+              <tbody className="divide-y divide-border">
                 {loading ? (
-                  <tr><td colSpan="4" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-xs font-bold text-text-secondary-light">Mengomputasi metrik...</span></div></td></tr>
+                  <tr><td colSpan="4" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-sm font-bold text-text-secondary-light">Mengomputasi metrik...</span></div></td></tr>
                 ) : filteredData.length === 0 ? (
-                  <tr><td colSpan="4" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 mb-4"><BarChart3 size={40} className="text-text-secondary-light/20" /></div><p className="font-bold text-sm text-text-secondary-light">Data tidak ditemukan</p></td></tr>
+                  <tr><td colSpan="4" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-muted mb-4"><BarChart3 size={40} className="text-text-secondary-light/20" /></div><p className="font-bold text-sm text-text-secondary-light">Data tidak ditemukan</p></td></tr>
                 ) : (
                   filteredData.map(member => (
                     <tr key={member.id} className="group hover:bg-primary/5 transition-all duration-300">
@@ -464,26 +464,26 @@ export default function HeadConsultantPerformancePage() {
                             {member.full_name?.[0]}
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-primary transition-colors cursor-pointer text-sm">
+                            <span className="font-bold text-foreground tracking-tight group-hover:text-primary transition-colors cursor-pointer text-sm">
                               {member.full_name}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-gray-900 dark:text-gray-200">
+                              <span className="text-sm font-bold text-foreground">
                                 {roleFilter === 'inspector' ? member.total_reports :
                                   roleFilter === 'admin_lead' ? member.total_projects :
                                     member.total_projects || member.documents_verified}
                               </span>
-                              <span className="text-[10px] font-medium text-text-secondary-light">Total selesai</span>
+                              <span className="text-sm font-medium text-text-secondary-light">Total selesai</span>
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex flex-col gap-2 w-48">
-                          <span className="text-[10px] font-bold text-gray-900 dark:text-gray-300 leading-none">
+                          <span className="text-sm font-bold text-foreground leading-none">
                             {Math.round(member.completion_rate || member.success_rate || member.accuracy_rate || 0)}% Efektivitas
                           </span>
-                          <div className="w-full bg-gray-100 dark:bg-white/5 rounded-full h-2 overflow-hidden border border-gray-200 dark:border-gray-800">
+                          <div className="w-full bg-muted rounded-full h-2 overflow-hidden border border-border">
                             <div
                               className="bg-gradient-to-r from-primary to-primary-hover h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(124,58,237,0.3)]"
                               style={{ width: `${member.completion_rate || member.success_rate || member.accuracy_rate || 0}%` }}
@@ -494,7 +494,7 @@ export default function HeadConsultantPerformancePage() {
                       <td className="px-8 py-6 text-right">
                         <button
                           onClick={() => router.push(`/dashboard/head-consultant/team/${member.id}/performance`)}
-                          className="h-10 px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-gray-50/50 hover:bg-primary hover:text-white dark:bg-white/5 dark:hover:bg-primary text-text-secondary-light transition-all shadow-sm text-[10px] font-bold border border-gray-200 dark:border-gray-800"
+                          className="h-10 px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-muted/50 hover:bg-primary hover:text-white dark:bg-white/5 dark:hover:bg-primary text-text-secondary-light transition-all shadow-sm text-sm font-bold border border-border"
                         >
                           <Eye size={16} />
                           Lihat detail
@@ -514,24 +514,24 @@ export default function HeadConsultantPerformancePage() {
 
 function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
   return (
-    <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+    <div className="rounded-2xl bg-card p-6 border border-border shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
       <div className="flex items-start justify-between relative z-10">
         <div>
-          <p className="text-xs font-bold text-text-secondary-light uppercase tracking-wider">{title}</p>
-          <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
-          {subtitle && <p className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70">{subtitle}</p>}
+          <p className="text-sm font-bold text-text-secondary-light">{title}</p>
+          <h3 className="mt-2 text-3xl font-display font-black text-foreground tracking-tighter">{value}</h3>
+          {subtitle && <p className="text-sm font-medium text-muted-foreground mt-1 opacity-70">{subtitle}</p>}
         </div>
-        <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 ${color}`}>
+        <div className={`rounded-xl p-3 bg-muted border border-border transition-transform group-hover:scale-110 ${color}`}>
           <Icon size={20} />
         </div>
       </div>
       {trend && (
         <div className="mt-4 flex items-center gap-1.5 relative z-10">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-[10px] font-bold border border-status-green/20">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-xs font-bold border border-status-green/20">
             <TrendingUp size={12} />
             <span>+{trend}%</span>
           </div>
-          <span className="text-[10px] font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
+          <span className="text-xs font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
         </div>
       )}
       <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-[2.5] translate-x-1/4 translate-y-1/4 ${color}`}>

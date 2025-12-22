@@ -445,7 +445,7 @@ export default function PendingDocumentsPage() {
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
           <Loader2 className="w-12 h-12 animate-spin text-[#7c3aed]" />
-          <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Syncing Verification Hub...</p>
+          <p className="mt-6 text-[10px] font-bold tracking-[0.3em] text-slate-400 animate-pulse">Syncing verification hub...</p>
         </div>
       </DashboardLayout>
     );
@@ -461,32 +461,42 @@ export default function PendingDocumentsPage() {
           animate="visible"
           className="flex flex-col lg:flex-row lg:items-end justify-between gap-8"
         >
-          <motion.div variants={itemVariants}>
-            <div className="flex items-center gap-3 mb-2">
-              <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">
-                Process Management
+          <motion.div variants={itemVariants} className="flex flex-col items-start">
+            <div className="flex items-center gap-3 mb-4">
+              <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-bold tracking-widest px-2 py-0.5 rounded-md">
+                Process management
               </Badge>
               <div className="w-1 h-1 rounded-full bg-slate-300" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Incoming Files</span>
+              <span className="text-[10px] font-bold tracking-widest text-slate-400">Incoming files</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
-              Pending <span className="text-[#7c3aed]">Documents</span>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+              Pending <span className="text-[#7c3aed]">documents</span>
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium max-w-2xl">
+            <p className="text-slate-500 dark:text-slate-400 mt-4 text-sm md:text-lg font-medium max-w-2xl leading-relaxed">
               Hub sentral untuk meninjau berkas masuk dari partner dan meneruskannya ke proyek aktif.
             </p>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-            <div className="relative group flex-1 min-w-[320px]">
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-stretch">
+            <div className="relative group flex-1 min-w-full sm:min-w-[400px]">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={20} />
               <input
-                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-14 pr-6 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-bold"
-                placeholder="Cari Client, PIC, atau Gedung..."
+                className="h-14 w-full rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none pl-14 pr-6 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-bold"
+                placeholder="Cari client, PIC, atau gedung..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <Button className="h-14 px-8 rounded-2xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold text-[10px] tracking-widest shadow-xl shadow-[#7c3aed]/20 border-none shrink-0 w-auto self-start sm:self-auto">
+              Cari berkas
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              className="h-14 w-14 rounded-2xl border-slate-200 dark:border-white/10 text-slate-500 hover:text-[#7c3aed] flex items-center justify-center bg-white dark:bg-slate-900 shadow-sm shrink-0 w-auto self-start sm:self-auto"
+            >
+              <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+            </Button>
           </motion.div>
         </motion.div>
 
@@ -495,10 +505,10 @@ export default function PendingDocumentsPage() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
         >
           <StatSimple
-            title="Total Pending"
+            title="Total pending"
             value={documents.length}
             icon={<FileText size={18} />}
             color="text-[#7c3aed]"
@@ -506,7 +516,7 @@ export default function PendingDocumentsPage() {
             delay={0.1}
           />
           <StatSimple
-            title="Clients Queued"
+            title="Client mengantri"
             value={Object.keys(groupedByClient).length}
             icon={<Building2 size={18} />}
             color="text-blue-500"
@@ -514,7 +524,7 @@ export default function PendingDocumentsPage() {
             delay={0.2}
           />
           <StatSimple
-            title="Selection"
+            title="Terpilih"
             value={selectedDocuments.length}
             icon={<CheckCircle2 size={18} />}
             color="text-emerald-500"
@@ -522,8 +532,8 @@ export default function PendingDocumentsPage() {
             delay={0.3}
           />
           <StatSimple
-            title="System Status"
-            value="Standing By"
+            title="Status sistem"
+            value="Siaga"
             icon={<RefreshCw size={18} />}
             color="text-slate-500"
             bg="bg-slate-500/10"
@@ -543,20 +553,20 @@ export default function PendingDocumentsPage() {
               {[1, 2].map(i => <Skeleton key={i} className="h-64 w-full rounded-[2.5rem]" />)}
             </div>
           ) : filteredClients.length === 0 ? (
-            <div className="bg-white dark:bg-[#1e293b] rounded-[3rem] p-20 text-center border border-slate-100 dark:border-white/5 flex flex-col items-center gap-6 shadow-2xl shadow-slate-200/40 dark:shadow-none">
+            <div className="bg-card rounded-[3rem] p-20 text-center border border-border flex flex-col items-center gap-6 shadow-2xl shadow-slate-200/40 dark:shadow-none">
               <div className="size-24 rounded-[2rem] bg-emerald-500/10 text-emerald-500 flex items-center justify-center animate-pulse">
                 <CheckCircle2 size={40} />
               </div>
               <div>
-                <h3 className="text-3xl font-black uppercase tracking-tighter mb-2">Queue Clear</h3>
+                <h3 className="text-3xl font-black tracking-tighter mb-2">Queue clear</h3>
                 <p className="text-slate-500 font-medium max-w-md mx-auto">Tidak ada dokumen pending dari client Anda saat ini. Semua dokumen telah diproses atau belum ada upload baru.</p>
               </div>
               <Button
                 variant="outline"
                 onClick={handleRefresh}
-                className="h-14 px-8 rounded-2xl border-slate-200 dark:border-white/10 text-slate-500 hover:text-[#7c3aed] font-black uppercase text-[10px] tracking-widest"
+                className="h-12 px-8 rounded-xl border-slate-200 dark:border-white/10 text-slate-500 hover:text-[#7c3aed] font-bold text-[10px] tracking-widest"
               >
-                Refresh System
+                Refresh system
               </Button>
             </div>
           ) : (
@@ -569,9 +579,9 @@ export default function PendingDocumentsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                     key={clientId}
-                    className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none overflow-hidden"
+                    className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/40 dark:shadow-none overflow-hidden"
                   >
-                    <div className="p-8 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
+                    <div className="p-8 border-b border-border bg-slate-50/50 dark:bg-white/[0.02]">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-start gap-5">
                           <div className="size-16 rounded-2xl bg-[#7c3aed] text-white flex items-center justify-center shadow-lg shadow-[#7c3aed]/20">
@@ -579,29 +589,29 @@ export default function PendingDocumentsPage() {
                           </div>
                           <div>
                             <div className="flex items-center gap-3 mb-1">
-                              <h3 className="text-xl font-black uppercase tracking-tight">{data.clientIdentity?.company_name || 'Individual Partner'}</h3>
-                              <Badge className="bg-[#7c3aed] text-white border-none text-[9px] font-black uppercase tracking-widest">{data.applicationType || 'SLF'}</Badge>
+                              <h3 className="text-xl font-bold tracking-tight">{data.clientIdentity?.company_name || 'Individual partner'}</h3>
+                              <Badge className="bg-[#7c3aed] text-white border-none text-[9px] font-bold tracking-widest">{data.applicationType || 'SLF'}</Badge>
                             </div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <p className="text-xs font-bold text-slate-400 tracking-widest flex items-center gap-2">
                               <User size={12} /> PIC: {data.clientIdentity?.name || data.clientUser?.full_name || 'N/A'}
                             </p>
                           </div>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
-                          <Button onClick={() => openCreateProjectDialog(clientId)} className="h-12 px-6 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-[#7c3aed]/20">
-                            <PlusCircle size={16} className="mr-2" /> Buat Proyek
+                          <Button onClick={() => openCreateProjectDialog(clientId)} className="h-10 px-6 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl font-bold text-[10px] tracking-widest shadow-lg shadow-[#7c3aed]/20">
+                            <PlusCircle size={16} className="mr-2" /> Buat proyek
                           </Button>
-                          <Button onClick={() => openLinkToProjectDialog(clientId)} variant="outline" className="h-12 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest border-slate-200 dark:border-white/10 hover:bg-slate-100">
+                          <Button onClick={() => openLinkToProjectDialog(clientId)} variant="outline" className="h-10 px-6 rounded-xl font-bold text-[10px] tracking-widest border-slate-200 dark:border-white/10 hover:bg-slate-100">
                             <Link2 size={16} className="mr-2" /> Tautkan
                           </Button>
                           <Button
                             onClick={() => selectAllFromClient(clientId)}
                             variant="ghost"
-                            className="h-12 px-4 rounded-xl text-slate-500 hover:text-[#7c3aed]"
+                            className="h-10 px-4 rounded-xl text-slate-500 hover:text-[#7c3aed] bg-slate-100 dark:bg-white/5"
                           >
-                            <Checkbox checked={allSelected} className="mr-2" />
-                            <span className="font-black text-[10px] uppercase tracking-widest">{allSelected ? 'Batal' : 'Pilih Semua'}</span>
+                            <Checkbox checked={allSelected} className="mr-2 rounded-[4px]" />
+                            <span className="font-bold text-[10px] tracking-widest">{allSelected ? 'Batal' : 'Pilih semua'}</span>
                           </Button>
                         </div>
                       </div>
@@ -609,91 +619,146 @@ export default function PendingDocumentsPage() {
 
                     <div className="p-8">
                       {data.buildingInfo && (
-                        <div className="mb-8 p-6 bg-slate-50 dark:bg-black/20 rounded-3xl border border-slate-100 dark:border-white/5 grid md:grid-cols-3 gap-8">
+                        <div className="mb-8 p-6 bg-slate-50 dark:bg-card/20 rounded-3xl border border-border grid md:grid-cols-3 gap-8">
                           <div>
-                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Nama Gedung</p>
+                            <p className="text-[9px] font-bold tracking-widest text-slate-400 mb-2">Nama gedung</p>
                             <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{data.buildingInfo.buildingName}</p>
                           </div>
                           <div>
-                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Lokasi Pembangunan</p>
+                            <p className="text-[9px] font-bold tracking-widest text-slate-400 mb-2">Lokasi pembangunan</p>
                             <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{data.buildingInfo.buildingCity}, {data.buildingInfo.buildingAddress}</p>
                           </div>
                           <div>
-                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Catatan Tambahan</p>
+                            <p className="text-[9px] font-bold tracking-widest text-slate-400 mb-2">Catatan tambahan</p>
                             <p className="text-sm font-medium text-slate-500 italic">"{data.buildingInfo.notes || '-'}"</p>
                           </div>
                         </div>
                       )}
 
-                      <div className="border border-slate-100 dark:border-white/5 rounded-3xl overflow-hidden">
-                        <Table>
-                          <TableHeader className="bg-slate-50/50 dark:bg-white/5">
-                            <TableRow className="border-b border-slate-100 dark:border-white/5">
-                              <TableHead className="w-16 text-center">
-                                <span className="sr-only">Select</span>
-                              </TableHead>
-                              <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-5">Identitas Dokumen</TableHead>
-                              <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-5">Kategori & Type</TableHead>
-                              <TableHead className="font-black text-[10px] uppercase tracking-widest text-slate-400 py-5">Metadata</TableHead>
-                              <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-slate-400 py-5 pr-8">Preview</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {data.documents.map(doc => (
-                              <TableRow key={doc.id} className="border-b border-slate-100 dark:border-white/5 last:border-0 hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-colors">
-                                <TableCell className="text-center">
-                                  <Checkbox
-                                    checked={selectedDocuments.includes(doc.id)}
-                                    onCheckedChange={() => toggleDocumentSelection(doc.id)}
-                                    className="data-[state=checked]:bg-[#7c3aed] border-slate-300"
-                                  />
-                                </TableCell>
-                                <TableCell className="py-2">
-                                  <div className="flex flex-col gap-1">
-                                    <span className="font-bold text-xs text-slate-700 dark:text-slate-200">{doc.name}</span>
-                                    <span className="text-[10px] text-slate-400 truncate max-w-[250px]">{doc.metadata?.original_name}</span>
+                      <div className="border border-border rounded-3xl overflow-hidden transition-all">
+                        {/* Mobile Card View */}
+                        <div className="md:hidden bg-slate-50/50 dark:bg-white/[0.02]">
+                          {data.documents.map(doc => (
+                            <div key={doc.id} className="p-4 border-b border-border last:border-0 hover:bg-white dark:hover:bg-white/5 transition-colors">
+                              <div className="flex items-start gap-3">
+                                <Checkbox
+                                  checked={selectedDocuments.includes(doc.id)}
+                                  onCheckedChange={() => toggleDocumentSelection(doc.id)}
+                                  className="mt-1 data-[state=checked]:bg-[#7c3aed] border-slate-300 rounded-[4px]"
+                                />
+                                <div className="flex-1 min-w-0 space-y-2">
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <Badge variant="outline" className="border-slate-200 dark:border-white/10 text-slate-500 text-[9px] font-bold tracking-widest px-1.5 py-0">
+                                        {doc.metadata?.category || 'Umum'}
+                                      </Badge>
+                                      <span className="text-[10px] font-medium text-slate-400">{formatDate(doc.created_at)}</span>
+                                    </div>
+                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{doc.name}</p>
+                                    <p className="text-[10px] text-slate-400 truncate">{doc.metadata?.original_name}</p>
                                   </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="border-slate-200 dark:border-white/10 text-slate-500 text-[9px] font-black uppercase tracking-widest">
-                                      {doc.metadata?.category || 'Umum'}
-                                    </Badge>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex flex-col gap-1">
+
+                                  <div className="flex items-center justify-between pt-2 border-t border-border">
                                     <span className="text-[10px] font-bold text-slate-500">{doc.type} &bull; {formatFileSize(doc.metadata?.size)}</span>
-                                    <span className="text-[9px] font-medium text-slate-400">{formatDate(doc.created_at)}</span>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm" variant="ghost"
+                                        onClick={() => window.open(doc.url, '_blank')}
+                                        className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10"
+                                      >
+                                        <Eye size={14} />
+                                      </Button>
+                                      <Button
+                                        size="sm" variant="ghost"
+                                        onClick={() => {
+                                          const link = document.createElement('a');
+                                          link.href = doc.url;
+                                          link.download = doc.metadata?.original_name || doc.name;
+                                          link.click();
+                                        }}
+                                        className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10"
+                                      >
+                                        <Download size={14} />
+                                      </Button>
+                                    </div>
                                   </div>
-                                </TableCell>
-                                <TableCell className="text-right pr-8">
-                                  <div className="flex justify-end gap-2">
-                                    <Button
-                                      size="sm" variant="ghost"
-                                      onClick={() => window.open(doc.url, '_blank')}
-                                      className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10"
-                                    >
-                                      <Eye size={14} />
-                                    </Button>
-                                    <Button
-                                      size="sm" variant="ghost"
-                                      onClick={() => {
-                                        const link = document.createElement('a');
-                                        link.href = doc.url;
-                                        link.download = doc.metadata?.original_name || doc.name;
-                                        link.click();
-                                      }}
-                                      className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10"
-                                    >
-                                      <Download size={14} />
-                                    </Button>
-                                  </div>
-                                </TableCell>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto relative scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+                          <Table className="min-w-[800px]">
+                            <TableHeader className="bg-slate-50/50 dark:bg-white/5">
+                              <TableRow className="border-b border-border">
+                                <TableHead className="w-16 text-center">
+                                  <span className="sr-only">Select</span>
+                                </TableHead>
+                                <TableHead className="font-bold text-[10px] tracking-widest text-slate-400 py-5">Identitas dokumen</TableHead>
+                                <TableHead className="font-bold text-[10px] tracking-widest text-slate-400 py-5">Kategori & tipe</TableHead>
+                                <TableHead className="font-bold text-[10px] tracking-widest text-slate-400 py-5">Metadata</TableHead>
+                                <TableHead className="text-right font-bold text-[10px] tracking-widest text-slate-400 py-5 pr-8">Preview</TableHead>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                            </TableHeader>
+                            <TableBody>
+                              {data.documents.map(doc => (
+                                <TableRow key={doc.id} className="border-b border-border last:border-0 hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-colors">
+                                  <TableCell className="text-center">
+                                    <Checkbox
+                                      checked={selectedDocuments.includes(doc.id)}
+                                      onCheckedChange={() => toggleDocumentSelection(doc.id)}
+                                      className="data-[state=checked]:bg-[#7c3aed] border-slate-300 rounded-[4px]"
+                                    />
+                                  </TableCell>
+                                  <TableCell className="py-2">
+                                    <div className="flex flex-col gap-1">
+                                      <span className="font-bold text-xs text-slate-700 dark:text-slate-200 truncate max-w-[200px]">{doc.name}</span>
+                                      <span className="text-[10px] text-slate-400 truncate max-w-[200px]">{doc.metadata?.original_name}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="outline" className="border-slate-200 dark:border-white/10 text-slate-500 text-[9px] font-bold tracking-widest">
+                                        {doc.metadata?.category || 'Umum'}
+                                      </Badge>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex flex-col gap-1">
+                                      <span className="text-[10px] font-bold text-slate-500">{doc.type} &bull; {formatFileSize(doc.metadata?.size)}</span>
+                                      <span className="text-[9px] font-medium text-slate-400">{formatDate(doc.created_at)}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-right pr-8">
+                                    <div className="flex justify-end gap-2">
+                                      <Button
+                                        size="sm" variant="ghost"
+                                        onClick={() => window.open(doc.url, '_blank')}
+                                        className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10"
+                                      >
+                                        <Eye size={14} />
+                                      </Button>
+                                      <Button
+                                        size="sm" variant="ghost"
+                                        onClick={() => {
+                                          const link = document.createElement('a');
+                                          link.href = doc.url;
+                                          link.download = doc.metadata?.original_name || doc.name;
+                                          link.click();
+                                        }}
+                                        className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10"
+                                      >
+                                        <Download size={14} />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -706,14 +771,14 @@ export default function PendingDocumentsPage() {
 
       {/* Premium Dialogs */}
       <Dialog open={createProjectDialog} onOpenChange={setCreateProjectDialog}>
-        <DialogContent className="sm:max-w-xl bg-white dark:bg-[#1e293b] border-none rounded-[3rem] p-0 overflow-hidden shadow-2xl">
+        <DialogContent className="sm:max-w-xl bg-card border-none rounded-[3rem] p-0 overflow-hidden shadow-2xl">
           <div className="bg-gradient-to-br from-[#7c3aed] to-purple-600 px-10 py-8 text-white relative">
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <PlusCircle size={120} strokeWidth={1} />
             </div>
             <DialogHeader>
-              <Badge className="w-fit bg-white/20 hover:bg-white/20 text-white border-none text-[9px] font-black uppercase tracking-widest mb-4">New Workflow</Badge>
-              <DialogTitle className="text-3xl font-black uppercase tracking-tighter leading-none">Inisiasi <span className="opacity-70">Proyek Baru</span></DialogTitle>
+              <Badge className="w-fit bg-white/20 hover:bg-white/20 text-white border-none text-[9px] font-bold tracking-widest mb-4">New workflow</Badge>
+              <DialogTitle className="text-3xl font-bold tracking-tighter leading-none">Inisiasi <span className="opacity-70">proyek baru</span></DialogTitle>
               <DialogDescription className="text-white/80 font-medium text-sm mt-2 max-w-sm">
                 Membuat environment kerja baru dan secara otomatis menautkan {selectedDocuments.length} dokumen yang dipilih.
               </DialogDescription>
@@ -723,20 +788,20 @@ export default function PendingDocumentsPage() {
           <div className="p-10 space-y-8">
             <div className="grid gap-6">
               <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-[#7c3aed] px-1">Nama Proyek *</Label>
+                <Label className="text-[10px] font-bold tracking-widest text-[#7c3aed] px-1">Nama proyek *</Label>
                 <Input
-                  className="h-14 bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 rounded-2xl px-6 focus:ring-4 focus:ring-[#7c3aed]/10 transition-all font-black uppercase text-xs tracking-tight placeholder:font-bold"
+                  className="h-14 bg-slate-50 dark:bg-white/5 border-border rounded-2xl px-6 focus:ring-4 focus:ring-[#7c3aed]/10 transition-all font-bold text-xs tracking-tight placeholder:font-bold"
                   placeholder="Contoh: Gedung Perkantoran ABC"
                   value={projectForm.name}
                   onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Jenis Layanan</Label>
+                  <Label className="text-[10px] font-bold tracking-widest text-slate-400 px-1">Jenis layanan</Label>
                   <Select value={projectForm.application_type} onValueChange={(v) => setProjectForm({ ...projectForm, application_type: v })}>
-                    <SelectTrigger className="h-14 bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 rounded-2xl px-6 font-black uppercase text-[10px] tracking-widest">
+                    <SelectTrigger className="h-14 bg-slate-50 dark:bg-white/5 border-border rounded-2xl px-6 font-bold text-[10px] tracking-widest">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl">
@@ -746,9 +811,9 @@ export default function PendingDocumentsPage() {
                   </Select>
                 </div>
                 <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Kota</Label>
+                  <Label className="text-[10px] font-bold tracking-widest text-slate-400 px-1">Kota</Label>
                   <Input
-                    className="h-14 bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 rounded-2xl px-6 font-black uppercase text-xs tracking-tight"
+                    className="h-14 bg-slate-50 dark:bg-white/5 border-border rounded-2xl px-6 font-bold text-xs tracking-tight"
                     value={projectForm.city}
                     onChange={(e) => setProjectForm({ ...projectForm, city: e.target.value })}
                   />
@@ -756,9 +821,9 @@ export default function PendingDocumentsPage() {
               </div>
 
               <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Alamat Bangunan</Label>
+                <Label className="text-[10px] font-bold tracking-widest text-slate-400 px-1">Alamat bangunan</Label>
                 <Textarea
-                  className="min-h-[100px] bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#7c3aed]/10 transition-all font-bold text-xs"
+                  className="min-h-[100px] bg-slate-50 dark:bg-white/5 border-border rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#7c3aed]/10 transition-all font-bold text-xs"
                   placeholder="Alamat lengkap..."
                   value={projectForm.address}
                   onChange={(e) => setProjectForm({ ...projectForm, address: e.target.value })}
@@ -766,11 +831,11 @@ export default function PendingDocumentsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-white/5">
-              <Button variant="ghost" onClick={() => setCreateProjectDialog(false)} className="flex-1 h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-600">Batal Operasi</Button>
-              <Button onClick={handleCreateProject} disabled={creating || !projectForm.name} className="flex-[2] h-14 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-[#7c3aed]/20 transition-all">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4 border-t border-border">
+              <Button variant="ghost" onClick={() => setCreateProjectDialog(false)} className="w-full sm:flex-1 h-14 rounded-2xl font-bold text-[10px] tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-600">Batal operasi</Button>
+              <Button onClick={handleCreateProject} disabled={creating || !projectForm.name} className="w-full sm:flex-[2] h-14 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl font-bold text-[10px] tracking-widest shadow-xl shadow-[#7c3aed]/20 transition-all">
                 {creating ? <Loader2 className="animate-spin mr-2" size={16} /> : <Sparkles className="mr-2" size={16} />}
-                Create & Link Data
+                Create & link data
               </Button>
             </div>
           </div>
@@ -778,14 +843,14 @@ export default function PendingDocumentsPage() {
       </Dialog>
 
       <Dialog open={linkToProjectDialog} onOpenChange={setLinkToProjectDialog}>
-        <DialogContent className="sm:max-w-xl bg-white dark:bg-[#1e293b] border-none rounded-[3rem] p-0 overflow-hidden shadow-2xl">
+        <DialogContent className="sm:max-w-xl bg-card border-none rounded-[3rem] p-0 overflow-hidden shadow-2xl">
           <div className="bg-gradient-to-br from-[#7c3aed] to-purple-600 px-10 py-8 text-white relative">
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <Link2 size={120} strokeWidth={1} />
             </div>
             <DialogHeader>
-              <Badge className="w-fit bg-white/20 hover:bg-white/20 text-white border-none text-[9px] font-black uppercase tracking-widest mb-4">Extend Workflow</Badge>
-              <DialogTitle className="text-3xl font-black uppercase tracking-tighter leading-none">Tautkan <span className="opacity-70">Satu Sistem</span></DialogTitle>
+              <Badge className="w-fit bg-white/20 hover:bg-white/20 text-white border-none text-[9px] font-bold tracking-widest mb-4">Extend workflow</Badge>
+              <DialogTitle className="text-3xl font-bold tracking-tighter leading-none">Tautkan <span className="opacity-70">satu sistem</span></DialogTitle>
               <DialogDescription className="text-white/80 font-medium text-sm mt-2 max-w-sm">
                 Menghubungkan {selectedDocuments.length} dokumen baru ke proyek yang sudah berjalan di database.
               </DialogDescription>
@@ -794,12 +859,12 @@ export default function PendingDocumentsPage() {
 
           <div className="p-10 space-y-8">
             <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-[#7c3aed] px-1 pb-2 block">Pilih Proyek Aktif</Label>
+              <Label className="text-[10px] font-bold tracking-widest text-[#7c3aed] px-1 pb-2 block">Pilih proyek aktif</Label>
               {existingProjects.length === 0 ? (
                 <div className="p-8 bg-red-50 dark:bg-red-500/10 rounded-2xl border border-red-100 dark:border-red-500/20 flex flex-col items-center gap-4 text-center text-red-600">
                   <AlertCircle size={32} />
                   <div>
-                    <span className="text-xs font-black uppercase tracking-tight block">Tidak ada proyek aktif</span>
+                    <span className="text-xs font-black tracking-tight block">Tidak ada proyek aktif</span>
                     <span className="text-[10px] opacity-80">Untuk client ini, anda belum membuat proyek apapun. Silahkan buat proyek baru.</span>
                   </div>
                 </div>
@@ -809,11 +874,11 @@ export default function PendingDocumentsPage() {
                     <div
                       key={p.id}
                       onClick={() => setSelectedProjectToLink(p.id)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between group ${selectedProjectToLink === p.id ? 'bg-[#7c3aed]/5 border-[#7c3aed] shadow-lg shadow-[#7c3aed]/10' : 'bg-white dark:bg-white/5 border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30'}`}
+                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between group ${selectedProjectToLink === p.id ? 'bg-[#7c3aed]/5 border-[#7c3aed] shadow-lg shadow-[#7c3aed]/10' : 'bg-white dark:bg-white/5 border-border hover:border-[#7c3aed]/30'}`}
                     >
                       <div>
-                        <h4 className={`font-black uppercase text-xs tracking-tight mb-1 ${selectedProjectToLink === p.id ? 'text-[#7c3aed]' : 'text-slate-700 dark:text-white'}`}>{p.name}</h4>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{p.city}</p>
+                        <h4 className={`font-bold text-xs tracking-tight mb-1 ${selectedProjectToLink === p.id ? 'text-[#7c3aed]' : 'text-slate-700 dark:text-white'}`}>{p.name}</h4>
+                        <p className="text-[9px] font-bold text-slate-400 tracking-widest">{p.city}</p>
                       </div>
                       {selectedProjectToLink === p.id && <CheckCircle2 size={18} className="text-[#7c3aed]" />}
                     </div>
@@ -822,9 +887,9 @@ export default function PendingDocumentsPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-white/5">
-              <Button variant="ghost" onClick={() => setLinkToProjectDialog(false)} className="flex-1 h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-400 hover:bg-slate-50">Batal</Button>
-              <Button onClick={handleLinkToProject} disabled={creating || !selectedProjectToLink || selectedDocuments.length === 0} className="flex-[2] h-14 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-[#7c3aed]/20 transition-all">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4 border-t border-border">
+              <Button variant="ghost" onClick={() => setLinkToProjectDialog(false)} className="w-full sm:flex-1 h-14 rounded-2xl font-bold text-[10px] tracking-widest text-slate-400 hover:bg-slate-50">Batal</Button>
+              <Button onClick={handleLinkToProject} disabled={creating || !selectedProjectToLink || selectedDocuments.length === 0} className="w-full sm:flex-[2] h-14 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl font-bold text-[10px] tracking-widest shadow-xl shadow-[#7c3aed]/20 transition-all">
                 {creating ? <Loader2 className="animate-spin mr-2" size={16} /> : <Link2 className="mr-2" size={16} />}
                 Confirm Link
               </Button>
@@ -843,15 +908,17 @@ function StatSimple({ title, value, icon, color, bg, delay = 0 }) {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: delay, duration: 0.4 }}
-      className="flex items-center gap-4 bg-white dark:bg-[#1e293b] p-5 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none transition-all hover:scale-105 group"
+      className="flex items-center gap-4 bg-card p-5 rounded-[2rem] border border-border shadow-xl shadow-slate-200/30 dark:shadow-none transition-all hover:scale-105 group"
     >
       <div className={`size-12 rounded-2xl flex items-center justify-center ${bg} ${color} group-hover:scale-110 transition-transform`}>
         {icon}
       </div>
       <div className="flex flex-col">
-        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{title}</span>
+        <span className="text-[9px] font-bold text-slate-400 tracking-widest leading-none mb-1">{title}</span>
         <span className="text-2xl font-black leading-none tracking-tighter text-slate-900 dark:text-white">{value}</span>
       </div>
     </motion.div>
   );
 }
+
+

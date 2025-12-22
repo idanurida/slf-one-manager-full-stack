@@ -73,7 +73,7 @@ const itemVariants = {
 
 // Premium Components
 const PremiumStat = ({ label, value, icon: Icon, color, subValue }) => (
-  <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-5 transition-transform hover:scale-[1.02]">
+  <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-5 transition-transform hover:scale-[1.02]">
     <div className={`p-4 rounded-2xl ${color} bg-opacity-10 dark:bg-opacity-20 flex items-center justify-center shrink-0`}>
       <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
     </div>
@@ -211,8 +211,8 @@ export default function InspectorSchedules() {
                 Schedule Management
               </Badge>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
-              Jadwal <span className="text-[#7c3aed]">Inspeksi</span>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+              Jadwal <span className="text-[#7c3aed]">inspeksi</span>
             </h1>
             <p className="text-slate-500 font-medium mt-3 max-w-lg">
               Pantau timeline inspeksi lapangan dan pastikan semua berjalan sesuai rencana.
@@ -220,42 +220,42 @@ export default function InspectorSchedules() {
           </div>
           <Button
             onClick={loadSchedules}
-            className="h-12 px-6 rounded-2xl bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/5 font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-slate-50 transition-all"
+            className="h-12 px-6 rounded-2xl bg-card text-slate-600 dark:text-slate-300 border border-border font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-slate-50 transition-all"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh Data
+            Refresh data
           </Button>
         </motion.div>
 
         {/* Stats Overview */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <PremiumStat
-            label="Total Jadwal"
+            label="Total jadwal"
             value={schedules.length}
             icon={Calendar}
             color="bg-blue-500"
-            subValue="Semua Agenda"
+            subValue="Semua agenda"
           />
           <PremiumStat
-            label="Akan Datang"
+            label="Akan datang"
             value={schedules.filter(s => s.status === 'scheduled').length}
             icon={Clock}
             color="bg-orange-500"
-            subValue="Perlu Persiapan"
+            subValue="Perlu persiapan"
           />
           <PremiumStat
-            label="Dalam Proses"
+            label="Dalam proses"
             value={schedules.filter(s => s.status === 'in_progress').length}
             icon={Loader2}
             color="bg-indigo-500"
-            subValue="Sedang Berlangsung"
+            subValue="Sedang berlangsung"
           />
           <PremiumStat
             label="Selesai"
             value={schedules.filter(s => s.status === 'completed').length}
             icon={CheckCircle2}
             color="bg-emerald-500"
-            subValue="Telah Dilaporkan"
+            subValue="Telah dilaporkan"
           />
         </motion.div>
 
@@ -270,18 +270,18 @@ export default function InspectorSchedules() {
                 placeholder="Cari nama proyek atau klien..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/20 font-medium text-slate-700 dark:text-white transition-all"
+                className="w-full h-14 pl-12 pr-4 rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/20 font-medium text-slate-700 dark:text-white transition-all"
               />
             </div>
             <div className="w-full md:w-64">
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="h-14 rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none font-bold text-xs uppercase tracking-widest text-slate-600">
-                  <SelectValue placeholder="Filter Status" />
+                <SelectTrigger className="h-14 rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none font-bold text-xs uppercase tracking-widest text-slate-600">
+                  <SelectValue placeholder="Filter status" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-                  <SelectItem value="all" className="font-bold text-xs uppercase tracking-wider">Semua Status</SelectItem>
+                <SelectContent className="rounded-xl border-border">
+                  <SelectItem value="all" className="font-bold text-xs uppercase tracking-wider">Semua status</SelectItem>
                   <SelectItem value="scheduled" className="font-bold text-xs uppercase tracking-wider">Dijadwalkan</SelectItem>
-                  <SelectItem value="in_progress" className="font-bold text-xs uppercase tracking-wider">Dalam Proses</SelectItem>
+                  <SelectItem value="in_progress" className="font-bold text-xs uppercase tracking-wider">Dalam proses</SelectItem>
                   <SelectItem value="completed" className="font-bold text-xs uppercase tracking-wider">Selesai</SelectItem>
                   <SelectItem value="cancelled" className="font-bold text-xs uppercase tracking-wider">Dibatalkan</SelectItem>
                 </SelectContent>
@@ -291,15 +291,15 @@ export default function InspectorSchedules() {
 
           {/* Premium Table Layout */}
           {loading ? (
-            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 space-y-4 shadow-xl">
+            <div className="bg-card rounded-[2.5rem] p-8 border border-border space-y-4 shadow-xl">
               {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-2xl" />)}
             </div>
           ) : filteredSchedules.length === 0 ? (
-            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-16 text-center border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col items-center">
-              <div className="w-24 h-24 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-6">
+            <div className="bg-card rounded-[2.5rem] p-16 text-center border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col items-center">
+              <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
                 <Calendar className="h-10 w-10 text-slate-300" />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight text-slate-800 dark:text-white">Jadwal Tidak Ditemukan</h3>
+              <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white">Jadwal tidak ditemukan</h3>
               <p className="text-slate-500 font-medium mt-2 max-w-md">
                 {schedules.length === 0 ? "Belum ada jadwal yang ditugaskan kepada Anda saat ini." : "Tidak ada jadwal yang cocok dengan filter pencarian Anda."}
               </p>
@@ -307,17 +307,17 @@ export default function InspectorSchedules() {
                 onClick={loadSchedules}
                 className="mt-8 bg-[#7c3aed] text-white rounded-xl px-8 font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-[#7c3aed]/20"
               >
-                Refresh Data
+                Refresh data
               </Button>
             </div>
           ) : (
-            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+            <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+                  <thead className="bg-slate-50/50 dark:bg-white/5 border-b border-border">
                     <tr>
-                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Proyek & Klien</th>
-                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Waktu & Tanggal</th>
+                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Proyek & klien</th>
+                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Waktu & tanggal</th>
                       <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Lokasi</th>
                       <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
                       <th className="px-8 py-6 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Aksi</th>
@@ -333,11 +333,11 @@ export default function InspectorSchedules() {
                             </div>
                             <div>
                               <p className="font-bold text-sm text-slate-800 dark:text-white group-hover:text-[#7c3aed] transition-colors">
-                                {schedule.projects?.name || 'Proyek Tanpa Nama'}
+                                {schedule.projects?.name || 'Proyek tanpa nama'}
                               </p>
                               <p className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-1">
                                 <Users size={12} />
-                                {schedule.projects?.clients?.name || 'Klien N/A'}
+                                {schedule.projects?.clients?.name || 'Klien n/a'}
                               </p>
                             </div>
                           </div>
@@ -399,3 +399,4 @@ export default function InspectorSchedules() {
     </DashboardLayout>
   );
 }
+

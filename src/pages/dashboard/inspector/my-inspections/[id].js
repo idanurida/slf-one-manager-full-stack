@@ -396,11 +396,11 @@ export default function MyInspectionDetail() {
               </div>
               <div>
                 <span className="font-medium">ID Inspeksi:</span>{' '}
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-2 py-1 rounded">{inspection.id}</code>
+                <code className="text-xs bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 px-2 py-1 rounded">{inspection.id}</code>
               </div>
               <div>
                 <span className="font-medium">ID Proyek:</span>{' '}
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-2 py-1 rounded">{inspection.project_id}</code>
+                <code className="text-xs bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 px-2 py-1 rounded">{inspection.project_id}</code>
               </div>
             </div>
           </CardContent>

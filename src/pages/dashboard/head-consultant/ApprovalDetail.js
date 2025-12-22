@@ -138,23 +138,23 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
     <div className="flex flex-col gap-8">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
+        <Card className="rounded-2xl border-border bg-card shadow-sm">
           <CardContent className="p-6">
             <div className="flex flex-col space-y-2">
-              <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">Identitas Proyek</span>
+              <span className="text-sm font-black text-primary leading-none">Identitas Proyek</span>
               <h3 className="text-lg font-display font-extrabold text-gray-900 dark:text-white leading-tight">{project.name}</h3>
-              <p className="text-[10px] font-medium text-text-secondary-light">Client ID: {project.client_id?.substring(0, 8)}...</p>
+              <p className="text-xs font-medium text-text-secondary-light">Client ID: {project.client_id?.substring(0, 8)}...</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
+        <Card className="rounded-2xl border-border bg-card shadow-sm">
           <CardContent className="p-6">
             <div className="flex flex-col space-y-2">
-              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Status Laporan</span>
+              <span className="text-sm font-bold text-primary">Status Laporan</span>
               <div className="flex flex-col gap-2">
                 <StatusBadge status={status} />
-                <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">
+                <p className="text-xs font-bold text-text-secondary-light">
                   Dikirim: {formatDateSafely(approval.submitted_at)}
                 </p>
               </div>
@@ -162,10 +162,10 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
+        <Card className="rounded-2xl border-border bg-card shadow-sm">
           <CardContent className="p-6">
             <div className="flex flex-col space-y-2">
-              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Catatan Project Lead</span>
+              <span className="text-sm font-bold text-primary">Catatan Project Lead</span>
               <p className="text-xs font-medium text-gray-900 dark:text-gray-200 leading-relaxed italic">
                 "{approval.project_lead_notes || 'Tidak ada catatan dari Project Lead.'}"
               </p>
@@ -175,15 +175,15 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
       </div>
 
       {/* Checklist Detail */}
-      <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden">
-        <CardHeader className="px-8 py-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-white/5 flex flex-row items-center justify-between">
+      <Card className="rounded-2xl border-border bg-card shadow-sm overflow-hidden">
+        <CardHeader className="px-8 py-6 border-b border-border bg-muted/30 flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <FileText className="w-5 h-5" />
             </div>
             <div>
               <CardTitle className="text-sm font-black text-gray-900 dark:text-white tracking-tight">Detail checklist temuan</CardTitle>
-              <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Hasil inspeksi lapangan oleh tim teknis</p>
+              <p className="text-xs font-bold text-text-secondary-light">Hasil inspeksi lapangan oleh tim teknis</p>
             </div>
           </div>
         </CardHeader>
@@ -191,19 +191,19 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
           <div className="w-full overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                  <TableHead className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Item inspeksi</TableHead>
-                  <TableHead className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase w-[180px]">Status kepatuhan</TableHead>
-                  <TableHead className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Catatan verifikator</TableHead>
-                  <TableHead className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase w-[100px] text-right">Lampiran</TableHead>
+                <TableRow className="bg-muted/50 border-b border-border">
+                  <TableHead className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Item inspeksi</TableHead>
+                  <TableHead className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark w-[180px]">Status kepatuhan</TableHead>
+                  <TableHead className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Catatan verifikator</TableHead>
+                  <TableHead className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark w-[100px] text-right">Lampiran</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody className="divide-y divide-gray-200 dark:divide-gray-800">
+              <TableBody className="divide-y divide-border">
                 {checklist_items && checklist_items.map((item, index) => (
                   <TableRow key={index} className="group hover:bg-primary/5 transition-all duration-300">
                     <TableCell className="px-8 py-6 font-bold text-sm text-gray-900 dark:text-white tracking-tight leading-tight">{item.item_name}</TableCell>
                     <TableCell className="px-8 py-6">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold border shadow-sm ${item.is_compliant
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-bold border shadow-sm ${item.is_compliant
                         ? 'bg-status-green/10 text-status-green border-status-green/20'
                         : 'bg-consultant-red/10 text-consultant-red border-consultant-red/20'
                         }`}>
@@ -211,12 +211,12 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
                         {item.is_compliant ? 'SESUAI' : 'TIDAK SESUAI'}
                       </span>
                     </TableCell>
-                    <TableCell className="px-8 py-6 text-xs font-medium text-gray-700 dark:text-gray-300 leading-relaxed">{item.notes || '-'}</TableCell>
+                    <TableCell className="px-8 py-6 text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">{item.notes || '-'}</TableCell>
                     <TableCell className="px-8 py-6 text-right">
                       {item.file_url ? (
                         <button
                           onClick={() => window.open(item.file_url, '_blank')}
-                          className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 text-text-secondary-light hover:bg-primary hover:text-white transition-all shadow-sm"
+                          className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-muted/50 text-text-secondary-light hover:bg-primary hover:text-white transition-all shadow-sm"
                         >
                           <Eye className="w-5 h-5" />
                         </button>
@@ -244,7 +244,7 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
                 </div>
                 <div className="flex items-center gap-3">
                   <button
-                    className="px-6 py-3 rounded-xl border border-consultant-red/30 text-consultant-red font-bold text-xs uppercase tracking-widest hover:bg-consultant-red hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                    className="px-6 py-3 rounded-xl border border-consultant-red/30 text-consultant-red font-bold text-sm uppercase tracking-widest hover:bg-consultant-red hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2"
                     onClick={() => openReviewModal('rejected')}
                     disabled={actionLoading.rejected}
                   >
@@ -252,7 +252,7 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
                     Tolak Revisi
                   </button>
                   <button
-                    className="px-8 py-3 rounded-xl bg-primary text-white font-bold text-xs uppercase tracking-widest hover:bg-primary-hover transition-all shadow-lg shadow-primary/30 active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                    className="px-8 py-3 rounded-xl bg-primary text-white font-bold text-sm uppercase tracking-widest hover:bg-primary-hover transition-all shadow-lg shadow-primary/30 active:scale-95 disabled:opacity-50 flex items-center gap-2"
                     onClick={() => openReviewModal('approved')}
                     disabled={actionLoading.approved}
                   >
@@ -274,7 +274,7 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
               <AlertTriangle className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <h4 className="text-sm font-bold text-consultant-red uppercase tracking-widest">Laporan Ditolak Oleh HC</h4>
+              <h4 className="text-sm font-bold text-consultant-red">Laporan Ditolak Oleh HC</h4>
               <p className="text-xs font-medium text-gray-900 dark:text-gray-200 leading-relaxed italic">
                 "{approval.head_consultant_rejection_notes}"
               </p>
@@ -289,7 +289,7 @@ const ApprovalDetail = ({ approval, onApprove, onReject, toast }) => {
               <CheckCircle className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <h4 className="text-sm font-bold text-status-green uppercase tracking-widest">Laporan Telah Disetujui</h4>
+              <h4 className="text-sm font-bold text-status-green">Laporan Telah Disetujui</h4>
               <p className="text-xs font-medium text-gray-900 dark:text-gray-200">
                 Divalidasi secara teknis oleh Head Consultant pada {formatDateSafely(approval.head_consultant_review_at)}.
               </p>
@@ -368,7 +368,7 @@ function StatusBadge({ status }) {
   const config = configs[status] || { label: status?.replace(/_/g, ' ') || 'UNKNOWN', class: 'bg-gray-400/10 text-gray-500 border-gray-400/20' };
 
   return (
-    <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold border shadow-sm ${config.class}`}>
+    <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-sm font-bold border shadow-sm ${config.class}`}>
       <Zap size={10} className="mr-1.5" />
       {config.label}
     </span>

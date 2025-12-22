@@ -433,8 +433,8 @@ export default function AdminTeamDocumentsPage() {
         {/* Header Section */}
         <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
-              Verifikasi <span className="text-[#7c3aed]">Berkas</span>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+              Verifikasi <span className="text-[#7c3aed]">berkas</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Validasi dokumen persyaratan SLF dan laporan inspeksi lapangan secara berkala.</p>
           </div>
@@ -443,14 +443,14 @@ export default function AdminTeamDocumentsPage() {
             <div className="relative group flex-1 lg:min-w-[400px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
               <input
-                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
-                placeholder="Cari Dokumen, Proyek, atau Pengirim..."
+                className="h-14 w-full rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                placeholder="Cari dokumen, proyek, atau pengirim..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10">
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            <button onClick={handleRefresh} className="h-14 px-6 bg-card text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-border hover:bg-slate-50 dark:hover:bg-white/10">
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh data
             </button>
           </div>
         </motion.div>
@@ -472,12 +472,12 @@ export default function AdminTeamDocumentsPage() {
 
         {/* Stats Section */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-          <StatCard title="Total Berkas" value={stats.totalDocuments} icon={<FileText size={20} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="Files" trendColor="text-[#7c3aed]" />
-          <StatCard title="Berkas Pending" value={stats.pendingDocuments} icon={<Clock size={20} />} color="text-orange-500" bg="bg-orange-500/10" trend="Alert" trendColor="text-orange-500" />
-          <StatCard title="Berkas Verified" value={stats.verifiedDocuments} icon={<CheckCircle2 size={20} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Done" trendColor="text-emerald-500" />
-          <StatCard title="Total Laporan" value={stats.totalReports} icon={<FolderOpen size={20} />} color="text-blue-500" bg="bg-blue-500/10" trend="Reports" trendColor="text-blue-500" />
-          <StatCard title="Laporan Pending" value={stats.pendingReports} icon={<AlertTriangle size={20} />} color="text-red-500" bg="bg-red-500/10" trend="Action" trendColor="text-red-500" />
-          <StatCard title="Laporan Verified" value={stats.verifiedReports} icon={<CheckCircle2 size={20} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Safe" trendColor="text-emerald-500" />
+          <StatCard title="Total berkas" value={stats.totalDocuments} icon={<FileText size={20} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="Files" trendColor="text-[#7c3aed]" />
+          <StatCard title="Berkas pending" value={stats.pendingDocuments} icon={<Clock size={20} />} color="text-orange-500" bg="bg-orange-500/10" trend="Alert" trendColor="text-orange-500" />
+          <StatCard title="Berkas verified" value={stats.verifiedDocuments} icon={<CheckCircle2 size={20} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Done" trendColor="text-emerald-500" />
+          <StatCard title="Total laporan" value={stats.totalReports} icon={<FolderOpen size={20} />} color="text-blue-500" bg="bg-blue-500/10" trend="Reports" trendColor="text-blue-500" />
+          <StatCard title="Laporan pending" value={stats.pendingReports} icon={<AlertTriangle size={20} />} color="text-red-500" bg="bg-red-500/10" trend="Action" trendColor="text-red-500" />
+          <StatCard title="Laporan verified" value={stats.verifiedReports} icon={<CheckCircle2 size={20} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Safe" trendColor="text-emerald-500" />
         </motion.div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
@@ -485,14 +485,14 @@ export default function AdminTeamDocumentsPage() {
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="flex items-center justify-between px-2">
               <div>
-                <h3 className="text-xl font-black uppercase tracking-tighter">Persyaratan Client</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Status Verifikasi Saat Ini</p>
+                <h3 className="text-xl font-black tracking-tighter">Persyaratan klien</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Status verifikasi saat ini</p>
               </div>
               <Select value={projectFilter} onValueChange={setProjectFilter}>
-                <SelectTrigger className="w-[180px] h-10 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest">
-                  <SelectValue placeholder="Semua Proyek" />
+                <SelectTrigger className="w-[180px] h-10 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest">
+                  <SelectValue placeholder="Semua proyek" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
+                <SelectContent className="rounded-xl border-border">
                   <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Proyek</SelectItem>
                   {projects.map(p => (
                     <SelectItem key={p.id} value={p.id} className="uppercase text-[10px] font-bold">{p.name}</SelectItem>
@@ -503,9 +503,9 @@ export default function AdminTeamDocumentsPage() {
 
             <Tabs value={filterTab} onValueChange={setFilterTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-slate-100 dark:bg-white/5 p-1 rounded-2xl h-14">
-                <TabsTrigger value="pending" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:text-[#7c3aed] data-[state=active]:shadow-lg">Pending ({stats.pendingDocuments})</TabsTrigger>
-                <TabsTrigger value="verified" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:text-[#7c3aed] data-[state=active]:shadow-lg">Verified ({stats.verifiedDocuments})</TabsTrigger>
-                <TabsTrigger value="revision_requested" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:text-[#7c3aed] data-[state=active]:shadow-lg">Revisi ({stats.revisionRequested})</TabsTrigger>
+                <TabsTrigger value="pending" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-[#7c3aed] data-[state=active]:shadow-lg">Pending ({stats.pendingDocuments})</TabsTrigger>
+                <TabsTrigger value="verified" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-[#7c3aed] data-[state=active]:shadow-lg">Verified ({stats.verifiedDocuments})</TabsTrigger>
+                <TabsTrigger value="revision_requested" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-[#7c3aed] data-[state=active]:shadow-lg">Revisi ({stats.revisionRequested})</TabsTrigger>
               </TabsList>
 
               <div className="mt-8">
@@ -514,9 +514,9 @@ export default function AdminTeamDocumentsPage() {
                     {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 rounded-[2.5rem] w-full" />)}
                   </div>
                 ) : filteredDocuments.length === 0 ? (
-                  <div className="py-20 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+                  <div className="py-20 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center p-10">
                     <CheckCircle2 size={60} className="text-emerald-500 opacity-20 mb-6" />
-                    <h3 className="text-xl font-black uppercase">Data Kosong</h3>
+                    <h3 className="text-xl font-black">Data kosong</h3>
                     <p className="text-slate-500 mt-2 font-medium">Tidak ada dokumen yang sesuai dengan kategori ini.</p>
                   </div>
                 ) : (
@@ -539,16 +539,16 @@ export default function AdminTeamDocumentsPage() {
           <motion.div variants={itemVariants} className="space-y-6">
             <div className="flex items-center justify-between px-2">
               <div>
-                <h3 className="text-xl font-black uppercase tracking-tighter text-purple-600">Laporan Lapangan</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Inspeksi Teknis & Rekomendasi</p>
+                <h3 className="text-xl font-black tracking-tighter text-purple-600">Laporan lapangan</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Inspeksi teknis & rekomendasi</p>
               </div>
             </div>
 
             <Tabs value={reportFilterTab} onValueChange={setReportFilterTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-slate-100 dark:bg-white/5 p-1 rounded-2xl h-14">
-                <TabsTrigger value="pending" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:text-purple-600 data-[state=active]:shadow-lg">Pending ({stats.pendingReports})</TabsTrigger>
-                <TabsTrigger value="verified" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:text-purple-600 data-[state=active]:shadow-lg">Verified ({stats.verifiedReports})</TabsTrigger>
-                <TabsTrigger value="revision_requested" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:text-purple-600 data-[state=active]:shadow-lg">Revisi</TabsTrigger>
+                <TabsTrigger value="pending" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-purple-600 data-[state=active]:shadow-lg">Pending ({stats.pendingReports})</TabsTrigger>
+                <TabsTrigger value="verified" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-purple-600 data-[state=active]:shadow-lg">Verified ({stats.verifiedReports})</TabsTrigger>
+                <TabsTrigger value="revision_requested" className="rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-purple-600 data-[state=active]:shadow-lg">Revisi</TabsTrigger>
               </TabsList>
 
               <div className="mt-8">
@@ -557,9 +557,9 @@ export default function AdminTeamDocumentsPage() {
                     {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 rounded-[2.5rem] w-full" />)}
                   </div>
                 ) : filteredReports.length === 0 ? (
-                  <div className="py-20 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+                  <div className="py-20 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center p-10">
                     <FileQuestion size={60} className="text-purple-500 opacity-20 mb-6" />
-                    <h3 className="text-xl font-black uppercase">Laporan Nihil</h3>
+                    <h3 className="text-xl font-black">Laporan nihil</h3>
                     <p className="text-slate-500 mt-2 font-medium">Belum ada laporan dari inspector untuk diverifikasi.</p>
                   </div>
                 ) : (
@@ -587,7 +587,7 @@ export default function AdminTeamDocumentsPage() {
 // Sub-components
 function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
   return (
-    <div className="relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+    <div className="relative bg-card rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
       <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
         {React.cloneElement(icon, { size: 80 })}
       </div>
@@ -596,7 +596,7 @@ function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
           {icon}
         </div>
         {trend && (
-          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-white/5`}>
+          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-border`}>
             {trend}
           </span>
         )}
@@ -638,7 +638,7 @@ const DocumentVerificationItemPremium = ({ document, onStatusUpdate, loading, is
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-6 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl hover:shadow-[#7c3aed]/10 transition-all duration-300"
+      className="group bg-card rounded-[2.5rem] p-6 border border-border shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl hover:shadow-[#7c3aed]/10 transition-all duration-300"
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-start gap-5">
@@ -647,7 +647,7 @@ const DocumentVerificationItemPremium = ({ document, onStatusUpdate, loading, is
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <h4 className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white truncate max-w-[300px]">{document.name}</h4>
+              <h4 className="text-lg font-black tracking-tight text-slate-900 dark:text-white truncate max-w-[300px]">{document.name}</h4>
               <Badge variant="outline" className={`text-[9px] font-black uppercase tracking-widest rounded-lg ${getDocumentTypeColor(document.document_type)}`}>
                 {getDocumentTypeLabel(document.document_type)}
               </Badge>
@@ -693,7 +693,7 @@ const DocumentVerificationItemPremium = ({ document, onStatusUpdate, loading, is
             <button
               onClick={() => window.open(document.url, '_blank')}
               disabled={!document.url}
-              className="flex-1 sm:flex-none h-11 px-5 bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10 transition-all rounded-xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest border border-slate-100 dark:border-white/5"
+              className="flex-1 sm:flex-none h-11 px-5 bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10 transition-all rounded-xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest border border-border"
             >
               <Download size={16} /> Unduh
             </button>
@@ -722,16 +722,16 @@ const DocumentVerificationItemPremium = ({ document, onStatusUpdate, loading, is
 
       {/* Verify/Reject Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 rounded-[2.5rem] max-w-md p-0 overflow-hidden outline-none">
+        <DialogContent className="bg-card border-border rounded-[2.5rem] max-w-md p-0 overflow-hidden outline-none">
           <div className={`h-24 flex items-center px-8 text-white ${dialogAction === 'approve' ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : 'bg-gradient-to-r from-orange-500 to-red-600'}`}>
             <div className="size-12 bg-white/20 rounded-2xl flex items-center justify-center mr-4">
               {dialogAction === 'approve' ? <CheckCircle2 size={24} /> : <AlertTriangle size={24} />}
             </div>
             <div>
-              <h3 className="text-xl font-black uppercase tracking-tighter">
-                {dialogAction === 'approve' ? 'Verifikasi' : 'Minta Revisi'}
+              <h3 className="text-xl font-black tracking-tighter">
+                {dialogAction === 'approve' ? 'Verifikasi' : 'Minta revisi'}
               </h3>
-              <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Konfirmasi Aksi Admin</p>
+              <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Konfirmasi aksi admin</p>
             </div>
           </div>
 
@@ -749,7 +749,7 @@ const DocumentVerificationItemPremium = ({ document, onStatusUpdate, loading, is
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={dialogAction === 'approve' ? 'Tambahkan catatan jika diperlukan...' : 'Contoh: Lampiran foto kurang jelas, silakan upload ulang...'}
-                className="min-h-[120px] rounded-2xl bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 focus:ring-4 focus:ring-[#7c3aed]/10 pt-4 font-medium"
+                className="min-h-[120px] rounded-2xl bg-slate-50 dark:bg-white/5 border-border focus:ring-4 focus:ring-[#7c3aed]/10 pt-4 font-medium"
               />
             </div>
 
@@ -780,3 +780,4 @@ const DocumentVerificationItemPremium = ({ document, onStatusUpdate, loading, is
     </motion.div>
   );
 };
+

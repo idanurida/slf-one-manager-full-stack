@@ -216,7 +216,7 @@ export default function HeadConsultantTeamPage() {
     return (
       <DashboardLayout title="Tim Proyek">
         <div className="p-4 md:p-6">
-          <Alert variant="destructive" className="mb-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <Alert variant="destructive" className="mb-4 bg-background border-border">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
@@ -234,14 +234,14 @@ export default function HeadConsultantTeamPage() {
         {/* Page Heading & Actions */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl md:text-4xl font-display font-black text-gray-900 dark:text-white tracking-tight">Manajemen tim</h1>
-            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-base">Kelola hak akses dan pantau kontribusi personil dalam ekosistem proyek.</p>
+            <h1 className="text-2xl md:text-3xl font-display font-black text-foreground tracking-tight">Manajemen tim</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Kelola hak akses dan pantau kontribusi personil dalam ekosistem proyek.</p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="flex items-center justify-center gap-2 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold text-xs px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-card border border-border text-foreground font-bold text-sm px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-muted disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
@@ -250,31 +250,31 @@ export default function HeadConsultantTeamPage() {
         </div>
 
         {/* Filters */}
-        <div className="p-6 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <div className="h-5 w-1 bg-primary rounded-full"></div>
-            <h4 className="text-xs font-bold text-primary uppercase tracking-wider">Saring personel</h4>
+            <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Saring personel</h4>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="relative md:col-span-2">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Pencarian cepat</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Pencarian cepat</span>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary-light" />
                 <input
                   placeholder="Nama, spesialisasi, atau nama proyek..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-text-secondary-light/50"
+                  className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-text-secondary-light/50"
                 />
               </div>
             </div>
             <div className="relative">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Unit kerja</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Unit kerja</span>
               <div className="relative">
                 <select
                   value={projectFilter}
                   onChange={(e) => setProjectFilter(e.target.value)}
-                  className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-white outline-none transition-all"
+                  className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
                 >
                   <option value="all">Semua proyek</option>
                   {projects.map(project => (
@@ -287,12 +287,12 @@ export default function HeadConsultantTeamPage() {
               </div>
             </div>
             <div className="relative">
-              <span className="absolute -top-2 left-3 px-1 bg-white dark:bg-slate-900 text-xs font-bold text-primary z-10">Fungsi jabatan</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Fungsi jabatan</span>
               <div className="relative">
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="appearance-none w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-black/20 py-3 pl-4 pr-10 text-xs font-bold focus:ring-2 focus:ring-primary cursor-pointer text-slate-900 dark:text-white outline-none transition-all"
+                  className="appearance-none w-full rounded-2xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
                 >
                   <option value="all">Semua role</option>
                   {[...new Set(teamMembers.map(m => m.role).filter(Boolean))].map(role => (
@@ -319,7 +319,7 @@ export default function HeadConsultantTeamPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-bold">
                 {filteredTeamMembers.length} Personel
               </span>
             </div>
@@ -329,15 +329,15 @@ export default function HeadConsultantTeamPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Informasi personil</th>
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Peran & spesialisasi</th>
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Kontak & keamanan</th>
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase text-right">Manajemen</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Informasi personil</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Peran & spesialisasi</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Kontak & keamanan</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark text-right">Manajemen</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {loading ? (
-                  <tr><td colSpan="4" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-xs font-bold text-text-secondary-light">Menghimpun direktorat...</span></div></td></tr>
+                  <tr><td colSpan="4" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-sm font-bold text-text-secondary-light">Menghimpun direktorat...</span></div></td></tr>
                 ) : filteredTeamMembers.length === 0 ? (
                   <tr><td colSpan="4" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 mb-4"><Users size={40} className="text-text-secondary-light/20" /></div><p className="font-bold text-sm text-text-secondary-light">Database tim kosong</p></td></tr>
                 ) : (
@@ -352,7 +352,7 @@ export default function HeadConsultantTeamPage() {
                             <span className="font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-primary transition-colors cursor-pointer text-sm">
                               {member.full_name}
                             </span>
-                            <span className="text-[10px] font-medium text-text-secondary-light">{member.email}</span>
+                            <span className="text-sm font-medium text-text-secondary-light">{member.email}</span>
                           </div>
                         </div>
                       </td>
@@ -361,12 +361,12 @@ export default function HeadConsultantTeamPage() {
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold text-gray-900 dark:text-gray-200 tracking-tight leading-none">{member.project_name}</span>
-                          <span className="text-[10px] font-bold text-primary mt-1">Verified assignment</span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-gray-200 tracking-tight leading-none">{member.project_name}</span>
+                          <span className="text-sm font-bold text-primary mt-1">Verified assignment</span>
                         </div>
                       </td>
                       <td className="px-8 py-6 text-right">
-                        <span className="inline-flex items-center px-3 py-1 rounded-lg bg-gray-50/50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark">
+                        <span className="inline-flex items-center px-3 py-1 rounded-lg bg-gray-50/50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">
                           <Zap size={10} className="mr-1.5" />
                           {member.specialization || 'Umum'}
                         </span>
@@ -397,9 +397,10 @@ function RoleBadge({ role }) {
   const config = configs[role] || { label: role?.toUpperCase() || 'UNKNOWN', class: 'bg-gray-400/10 text-gray-500 border-gray-400/20' };
 
   return (
-    <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold border shadow-sm ${config.class}`}>
+    <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-sm font-bold border shadow-sm ${config.class}`}>
       <UserCheck size={10} className="mr-1.5" />
       {config.label}
     </span>
   );
 }
+

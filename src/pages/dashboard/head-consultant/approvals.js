@@ -344,14 +344,14 @@ export default function HeadConsultantApprovalsPage() {
         {/* Page Heading & Actions */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl md:text-4xl font-display font-black text-gray-900 dark:text-white tracking-tight">Validasi laporan</h1>
+            <h1 className="text-2xl md:text-3xl font-display font-black text-gray-900 dark:text-white tracking-tight">Validasi laporan</h1>
             <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-base">Tinjau dan berikan persetujuan akhir pada dokumen teknis sebelum penerbitan sertifikat.</p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="flex items-center justify-center gap-2 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold text-xs px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-card border border-border text-foreground font-bold text-sm px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-muted disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
@@ -360,30 +360,30 @@ export default function HeadConsultantApprovalsPage() {
         </div>
 
         {/* Filters */}
-        <div className="p-6 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <div className="h-5 w-1 bg-primary rounded-full"></div>
-            <h4 className="text-xs font-bold text-primary uppercase tracking-wider">Saring berkas laporan</h4>
+            <h4 className="text-sm font-bold text-primary">Saring berkas laporan</h4>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="relative md:col-span-2">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Pencarian cepat</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-xs font-bold text-primary z-10">Pencarian cepat</span>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary-light" />
                 <input
                   placeholder="Nama laporan, proyek, atau inspektor..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-text-secondary-light/50 text-gray-900 dark:text-white"
+                  className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-text-secondary-light/50 text-foreground"
                 />
               </div>
             </div>
             <div className="relative">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Status persetujuan</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-xs font-bold text-primary z-10">Status persetujuan</span>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-gray-100 outline-none transition-all"
+                className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
               >
                 <option value="all">Semua status</option>
                 <option value="approved_by_admin_lead">Siap disetujui</option>
@@ -394,11 +394,11 @@ export default function HeadConsultantApprovalsPage() {
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
             </div>
             <div className="relative">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Entitas proyek</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-xs font-bold text-primary z-10">Entitas proyek</span>
               <select
                 value={projectFilter}
                 onChange={(e) => setProjectFilter(e.target.value)}
-                className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-gray-100 outline-none transition-all"
+                className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
               >
                 <option value="all">Semua proyek</option>
                 {projects.map(project => (
@@ -413,19 +413,19 @@ export default function HeadConsultantApprovalsPage() {
         </div>
 
         {/* Table Area */}
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden transition-all duration-300">
-          <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-white/5 flex items-center justify-between">
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300">
+          <div className="px-8 py-6 border-b border-border bg-muted/30 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 <FileText size={20} />
               </div>
               <div>
-                <h3 className="text-sm font-black text-gray-900 dark:text-white tracking-tight">Antrean laporan</h3>
-                <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Membutuhkan verifikasi HC</p>
+                <h3 className="text-base font-black text-gray-900 dark:text-white tracking-tight">Antrean laporan</h3>
+                <p className="text-xs font-bold text-text-secondary-light">Membutuhkan verifikasi HC</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-bold">
                 {filteredReports.length} Berkas
               </span>
             </div>
@@ -434,39 +434,39 @@ export default function HeadConsultantApprovalsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Identitas laporan</th>
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Informasi laporan</th>
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Proyek terkait</th>
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Progress review</th>
-                  <th className="px-8 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase text-right">Aksi</th>
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Identitas laporan</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Informasi laporan</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Proyek terkait</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Progress review</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+              <tbody className="divide-y divide-border">
                 {loading ? (
                   <tr><td colSpan="5" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-xs font-bold text-text-secondary-light">Sinkronisasi dokumen...</span></div></td></tr>
                 ) : filteredReports.length === 0 ? (
-                  <tr><td colSpan="5" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 mb-4"><FolderOpen size={40} className="text-text-secondary-light/20" /></div><p className="font-bold text-sm text-text-secondary-light">Tidak ada laporan menunggu</p></td></tr>
+                  <tr><td colSpan="5" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-muted mb-4"><FolderOpen size={40} className="text-text-secondary-light/20" /></div><p className="font-bold text-sm text-text-secondary-light">Tidak ada laporan menunggu</p></td></tr>
                 ) : (
                   filteredReports.map(report => (
                     <tr key={report.id} className="group hover:bg-primary/5 transition-all duration-300">
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-text-secondary-light group-hover:bg-primary group-hover:text-white transition-all transition-transform group-hover:scale-105">
+                          <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-muted flex items-center justify-center text-text-secondary-light group-hover:bg-primary group-hover:text-white transition-all transition-transform group-hover:scale-105">
                             <FileText size={18} />
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-primary transition-colors cursor-pointer text-sm">
+                            <span className="font-bold text-foreground tracking-tight group-hover:text-primary transition-colors cursor-pointer text-sm">
                               {report.name}
                             </span>
-                            <span className="text-[10px] font-bold text-text-secondary-light">Diperbarui: {formatDateSafely(report.updated_at)}</span>
+                            <span className="text-xs font-bold text-text-secondary-light">Diperbarui: {formatDateSafely(report.updated_at)}</span>
                           </div>
                         </div>
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex flex-col">
-                          <span className="text-sm font-bold text-gray-900 dark:text-gray-200 tracking-tight">{report.project_name}</span>
-                          <span className="text-[10px] font-bold text-primary">Proyek utama</span>
+                          <span className="text-sm font-bold text-foreground tracking-tight">{report.project_name}</span>
+                          <span className="text-xs font-bold text-primary">Proyek utama</span>
                         </div>
                       </td>
                       <td className="px-8 py-6">
@@ -475,8 +475,8 @@ export default function HeadConsultantApprovalsPage() {
                             {(report.inspector_name || 'I')[0]}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-xs font-bold text-gray-900 dark:text-gray-300 leading-none">{report.inspector_name}</span>
-                            <span className="text-[10px] font-medium text-text-secondary-light">{report.inspector_specialization}</span>
+                            <span className="text-xs font-bold text-foreground leading-none">{report.inspector_name}</span>
+                            <span className="text-xs font-medium text-text-secondary-light">{report.inspector_specialization}</span>
                           </div>
                         </div>
                       </td>
@@ -487,7 +487,7 @@ export default function HeadConsultantApprovalsPage() {
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => handleDownloadReport(report.url)}
-                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 text-text-secondary-light hover:bg-primary hover:text-white transition-all shadow-sm"
+                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-muted/50 text-text-secondary-light hover:bg-primary hover:text-white transition-all shadow-sm"
                             title="Pratinjau Berkas"
                           >
                             <Eye size={18} />
@@ -566,7 +566,7 @@ function StatusBadge({ status }) {
   const config = configs[status] || configs.draft;
 
   return (
-    <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold border shadow-sm ${config.class}`}>
+    <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-sm font-bold border shadow-sm ${config.class}`}>
       <Zap size={10} className="mr-1.5" />
       {config.label}
     </span>

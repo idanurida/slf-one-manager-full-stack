@@ -102,7 +102,7 @@ const ProjectCard = ({ project, onViewProject }) => {
   const StatusIcon = getStatusIcon(project.status);
 
   return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+    <Card className="border border-slate-200 dark:border-border bg-white dark:bg-card hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex-1">
@@ -184,7 +184,7 @@ export default function AdminLeadClientDetailPage() {
     return (
       <DashboardLayout>
         <div className="max-w-[1400px] mx-auto p-6 md:p-0 min-h-[60vh] flex items-center justify-center">
-          <div className="bg-white dark:bg-[#1e293b] rounded-[3rem] p-12 border border-slate-100 dark:border-white/5 shadow-2xl max-w-md text-center">
+          <div className="bg-white dark:bg-card rounded-[3rem] p-12 border border-slate-100 dark:border-border shadow-2xl max-w-md text-center">
             <div className="size-20 bg-red-500/10 rounded-[2rem] flex items-center justify-center mx-auto mb-8">
               <AlertCircle className="w-10 h-10 text-red-500" />
             </div>
@@ -212,7 +212,7 @@ export default function AdminLeadClientDetailPage() {
           {/* Header Section */}
           <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="flex items-start gap-6">
-              <button onClick={handleBack} className="mt-2 size-12 rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-xl shadow-slate-200/30 dark:shadow-none">
+              <button onClick={handleBack} className="mt-2 size-12 rounded-2xl bg-white dark:bg-card border border-slate-100 dark:border-border flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-xl shadow-slate-200/30 dark:shadow-none">
                 <ArrowLeft size={20} />
               </button>
               <div>
@@ -229,7 +229,7 @@ export default function AdminLeadClientDetailPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button onClick={handleRefresh} className="size-14 bg-white dark:bg-[#1e293b] text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-white/10 transition-all border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none">
+              <button onClick={handleRefresh} className="size-14 bg-white dark:bg-card text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-white/10 transition-all border border-slate-100 dark:border-border shadow-xl shadow-slate-200/30 dark:shadow-none">
                 <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
               </button>
               <button
@@ -243,7 +243,7 @@ export default function AdminLeadClientDetailPage() {
 
           {/* Metrics Grid */}
           <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-between group overflow-hidden relative">
+            <div className="bg-white dark:bg-card p-8 rounded-[2.5rem] border border-slate-100 dark:border-border shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-between group overflow-hidden relative">
               <div className="absolute -top-6 -right-6 size-20 bg-[#7c3aed]/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
               <div className="space-y-1 relative z-10">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Total Engagements</p>
@@ -257,7 +257,7 @@ export default function AdminLeadClientDetailPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-between group overflow-hidden relative">
+            <div className="bg-white dark:bg-card p-8 rounded-[2.5rem] border border-slate-100 dark:border-border shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-between group overflow-hidden relative">
               <div className="absolute -top-6 -right-6 size-20 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
               <div className="space-y-1 relative z-10">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Completed Tasks</p>
@@ -292,14 +292,14 @@ export default function AdminLeadClientDetailPage() {
             {/* Tab System */}
             <div className="lg:col-span-8 space-y-8">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-                <TabsList className="w-full h-16 bg-slate-100 dark:bg-white/5 rounded-[1.5rem] p-1.5 flex gap-1 border border-slate-100 dark:border-white/5">
-                  <TabsTrigger value="overview" className="flex-1 rounded-2xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:shadow-lg text-[10px] font-black uppercase tracking-widest transition-all">Identity</TabsTrigger>
-                  <TabsTrigger value="projects" className="flex-1 rounded-2xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:shadow-lg text-[10px] font-black uppercase tracking-widest transition-all">Assignments</TabsTrigger>
-                  <TabsTrigger value="history" className="flex-1 rounded-2xl data-[state=active]:bg-white dark:data-[state=active]:bg-[#1e293b] data-[state=active]:shadow-lg text-[10px] font-black uppercase tracking-widest transition-all">Audit Trail</TabsTrigger>
+                <TabsList className="w-full h-16 bg-slate-100 dark:bg-white/5 rounded-[1.5rem] p-1.5 flex gap-1 border border-slate-100 dark:border-border">
+                  <TabsTrigger value="overview" className="flex-1 rounded-2xl data-[state=active]:bg-white dark:data-[state=active]:bg-card data-[state=active]:shadow-lg text-[10px] font-black uppercase tracking-widest transition-all">Identity</TabsTrigger>
+                  <TabsTrigger value="projects" className="flex-1 rounded-2xl data-[state=active]:bg-white dark:data-[state=active]:bg-card data-[state=active]:shadow-lg text-[10px] font-black uppercase tracking-widest transition-all">Assignments</TabsTrigger>
+                  <TabsTrigger value="history" className="flex-1 rounded-2xl data-[state=active]:bg-white dark:data-[state=active]:bg-card data-[state=active]:shadow-lg text-[10px] font-black uppercase tracking-widest transition-all">Audit Trail</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-8 mt-0 focus-visible:outline-none">
-                  <div className="bg-white dark:bg-[#1e293b] rounded-[3rem] p-10 border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none">
+                  <div className="bg-white dark:bg-card rounded-[3rem] p-10 border border-slate-100 dark:border-border shadow-2xl shadow-slate-200/50 dark:shadow-none">
                     <div className="flex items-center gap-4 mb-10">
                       <div className="size-12 rounded-2xl bg-[#7c3aed]/10 text-[#7c3aed] flex items-center justify-center font-black">
                         ID
@@ -319,7 +319,7 @@ export default function AdminLeadClientDetailPage() {
                       <InfoItem icon={<FileText />} label="Tax Compliance" value={client?.npwp} />
                     </div>
 
-                    <div className="mt-12 pt-10 border-t border-slate-100 dark:border-white/5">
+                    <div className="mt-12 pt-10 border-t border-slate-100 dark:border-border">
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Official HQ Address</p>
                       <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-3xl text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed border border-transparent hover:border-[#7c3aed]/20 transition-all">
                         {client?.address || 'No primary address recorded in central database.'}
@@ -330,7 +330,7 @@ export default function AdminLeadClientDetailPage() {
 
                 <TabsContent value="projects" className="space-y-6 mt-0 focus-visible:outline-none">
                   {projects.length === 0 ? (
-                    <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[3rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+                    <div className="py-32 bg-white dark:bg-card rounded-[3rem] border border-slate-100 dark:border-border flex flex-col items-center justify-center text-center p-10">
                       <div className="size-20 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-8">
                         <Briefcase size={32} className="text-slate-300 dark:text-slate-700" />
                       </div>
@@ -344,7 +344,7 @@ export default function AdminLeadClientDetailPage() {
                         <motion.div
                           key={project.id}
                           whileHover={{ x: 10 }}
-                          className="bg-white dark:bg-[#1e293b] rounded-[2rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none group flex items-center justify-between transition-all"
+                          className="bg-white dark:bg-card rounded-[2rem] p-8 border border-slate-100 dark:border-border shadow-xl shadow-slate-200/30 dark:shadow-none group flex items-center justify-between transition-all"
                         >
                           <div className="flex items-center gap-6">
                             <div className="size-14 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-[#7c3aed]/10 group-hover:text-[#7c3aed] transition-all">
@@ -370,7 +370,7 @@ export default function AdminLeadClientDetailPage() {
                 </TabsContent>
 
                 <TabsContent value="history" className="mt-0 focus-visible:outline-none">
-                  <div className="py-20 bg-white dark:bg-[#1e293b] rounded-[3rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10 grayscale opacity-40">
+                  <div className="py-20 bg-white dark:bg-card rounded-[3rem] border border-slate-100 dark:border-border flex flex-col items-center justify-center text-center p-10 grayscale opacity-40">
                     <RefreshCw size={40} className="text-slate-300 mb-6" />
                     <h3 className="text-xl font-black uppercase tracking-tighter">System Node Pending</h3>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2 px-10">Audit trail logs currently being established in secondary backup cluster.</p>
@@ -381,7 +381,7 @@ export default function AdminLeadClientDetailPage() {
 
             {/* Sidebar Overview */}
             <div className="lg:col-span-4 space-y-8">
-              <div className="bg-white dark:bg-[#1e293b] rounded-[3rem] p-10 border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none space-y-8">
+              <div className="bg-white dark:bg-card rounded-[3rem] p-10 border border-slate-100 dark:border-border shadow-2xl shadow-slate-200/50 dark:shadow-none space-y-8">
                 <h3 className="text-xl font-black uppercase tracking-tighter">Partner <span className="text-[#7c3aed]">Snapshot</span></h3>
 
                 <div className="space-y-6">
@@ -397,7 +397,7 @@ export default function AdminLeadClientDetailPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-white/5">
+                    <div className="flex items-center justify-between p-4 bg-white dark:bg-card rounded-2xl border border-slate-100 dark:border-border">
                       <div className="flex items-center gap-3">
                         <div className="size-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
                           <Clock size={16} />
@@ -406,7 +406,7 @@ export default function AdminLeadClientDetailPage() {
                       </div>
                       <span className="text-xs font-black text-orange-500">98%</span>
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-white/5">
+                    <div className="flex items-center justify-between p-4 bg-white dark:bg-card rounded-2xl border border-slate-100 dark:border-border">
                       <div className="flex items-center gap-3">
                         <div className="size-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
                           <Users size={16} />
@@ -418,7 +418,7 @@ export default function AdminLeadClientDetailPage() {
                   </div>
                 </div>
 
-                <div className="pt-8 border-t border-slate-100 dark:border-white/5">
+                <div className="pt-8 border-t border-slate-100 dark:border-border">
                   <button onClick={() => router.push('/dashboard/admin-lead/clients/new')} className="w-full h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95">Update Client Record</button>
                 </div>
               </div>

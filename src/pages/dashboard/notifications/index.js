@@ -187,7 +187,7 @@ export default function NotificationCenter() {
 
         {/* Stats Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-950 p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between">
             <div>
               <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Total</p>
               <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.total}</h3>
@@ -196,7 +196,7 @@ export default function NotificationCenter() {
               <Bell size={24} />
             </div>
           </div>
-          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-950 p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between">
             <div>
               <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Unread</p>
               <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.unread}</h3>
@@ -205,7 +205,7 @@ export default function NotificationCenter() {
               <AlertCircle size={24} />
             </div>
           </div>
-          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-950 p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between">
             <div>
               <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Read</p>
               <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.read}</h3>
@@ -217,7 +217,7 @@ export default function NotificationCenter() {
         </motion.div>
 
         {/* Filters */}
-        <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex flex-col md:flex-row gap-4 relative z-10">
+        <motion.div variants={itemVariants} className="bg-white dark:bg-slate-950 p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex flex-col md:flex-row gap-4 relative z-10">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input
@@ -258,7 +258,7 @@ export default function NotificationCenter() {
               [1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full rounded-[2rem]" />)
             ) : filteredNotifications.length === 0 ? (
               <div className="py-20 text-center">
-                <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-6">
+                <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mx-auto mb-6">
                   <Bell className="size-12 text-slate-300" />
                 </div>
                 <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-2">Tidak ada notifikasi</h3>
@@ -275,8 +275,8 @@ export default function NotificationCenter() {
                   className={`
                     group relative p-6 rounded-[2rem] border transition-all duration-300 hover:shadow-lg
                     ${notif.is_read
-                      ? 'bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 opacity-70 hover:opacity-100'
-                      : 'bg-white dark:bg-[#1e293b] border-[#7c3aed]/20 shadow-xl shadow-[#7c3aed]/5 ring-1 ring-[#7c3aed]/10'}
+                      ? 'bg-white dark:bg-slate-950 border-slate-100 dark:border-white/5 opacity-70 hover:opacity-100'
+                      : 'bg-white dark:bg-slate-950 border-[#7c3aed]/20 shadow-xl shadow-[#7c3aed]/5 ring-1 ring-[#7c3aed]/10'}
                   `}
                 >
                   <div className="flex items-start gap-4">

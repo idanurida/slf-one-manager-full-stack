@@ -289,13 +289,13 @@ export default function AdminLeadPaymentsPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input
                 placeholder="Cari transaksi, proyek, atau klien..."
-                className="w-full h-14 pl-12 pr-4 bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/20 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/20 text-sm font-medium"
+                className="w-full h-14 pl-12 pr-4 bg-card rounded-2xl border border-border shadow-lg shadow-slate-200/20 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/20 text-sm font-medium"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-14 w-full md:w-[200px] rounded-2xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-xs uppercase tracking-wider">
+              <SelectTrigger className="h-14 w-full md:w-[200px] rounded-2xl bg-card border-border font-bold text-xs uppercase tracking-wider">
                 <SelectValue placeholder="Status Filter" />
               </SelectTrigger>
               <SelectContent>
@@ -308,10 +308,10 @@ export default function AdminLeadPaymentsPage() {
           </motion.div>
 
           {/* Premium Table */}
-          <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none">
+          <motion.div variants={itemVariants} className="bg-card rounded-[2.5rem] border border-border overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-widest border-b border-slate-100 dark:border-white/5">
+                <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-widest border-b border-border">
                   <tr>
                     <th className="px-8 py-6">Proyek details</th>
                     <th className="px-8 py-6">Client</th>
@@ -403,7 +403,7 @@ export default function AdminLeadPaymentsPage() {
         {/* View Dialog */}
         <Dialog open={viewDialog.open} onOpenChange={(open) => setViewDialog({ open, payment: open ? viewDialog.payment : null })}>
           <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden bg-white dark:bg-slate-900 border-none max-w-lg">
-            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-border">
               <DialogTitle className="text-xl font-black uppercase tracking-tight">Payment Detail</DialogTitle>
             </DialogHeader>
             {viewDialog.payment && (
@@ -441,7 +441,7 @@ export default function AdminLeadPaymentsPage() {
                 )}
               </div>
             )}
-            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5">
+            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-border">
               <Button onClick={() => setViewDialog({ open: false, payment: null })} className="w-full rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold">Close Details</Button>
             </DialogFooter>
           </DialogContent>
@@ -450,7 +450,7 @@ export default function AdminLeadPaymentsPage() {
         {/* Verify Dialog */}
         <Dialog open={verifyDialog.open} onOpenChange={(open) => { setVerifyDialog({ open, payment: open ? verifyDialog.payment : null }); if (!open) setVerifyNotes(''); }}>
           <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden bg-white dark:bg-slate-900 border-none max-w-lg">
-            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-border">
               <DialogTitle className="text-xl font-black uppercase tracking-tight">Verifikasi Pembayaran</DialogTitle>
               <DialogDescription className="text-xs font-bold uppercase tracking-widest text-slate-400">
                 {verifyDialog.payment?.project_name}
@@ -466,12 +466,12 @@ export default function AdminLeadPaymentsPage() {
                 <Textarea
                   value={verifyNotes}
                   onChange={e => setVerifyNotes(e.target.value)}
-                  className="rounded-xl bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 min-h-[100px]"
+                  className="rounded-xl bg-slate-50 dark:bg-card/20 border-slate-200 dark:border-white/10 min-h-[100px]"
                   placeholder="Tambahkan catatan verifikasi..."
                 />
               </div>
             </div>
-            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 gap-3">
+            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-border gap-3">
               <Button variant="outline" onClick={() => setVerifyDialog({ open: false, payment: null })} className="flex-1 rounded-xl h-12 font-bold hover:bg-slate-100">Cancel</Button>
               <Button variant="destructive" onClick={() => handleVerify('reject')} disabled={verifying} className="flex-1 rounded-xl h-12 font-bold bg-rose-500 hover:bg-rose-600 text-white">
                 {verifying ? <Loader2 className="animate-spin" /> : 'Tolak'}
@@ -490,7 +490,7 @@ export default function AdminLeadPaymentsPage() {
 
 function StatSimple({ title, value, icon, color, bg, isCurrency }) {
   return (
-    <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-4 transition-all hover:scale-105">
+    <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-4 transition-all hover:scale-105">
       <div className={`size-12 rounded-2xl flex items-center justify-center ${bg} ${color} shadow-lg shadow-current/5`}>
         {icon}
       </div>
@@ -501,3 +501,5 @@ function StatSimple({ title, value, icon, color, bg, isCurrency }) {
     </div>
   );
 }
+
+

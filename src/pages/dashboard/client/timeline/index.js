@@ -130,7 +130,7 @@ const ProjectTimelineCard = ({ project, onView, isSelected }) => {
   const progress = calculateProgress(project.status);
 
   return (
-    <Card className={`border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-lg transition-all cursor-pointer ${isSelected ? 'ring-2 ring-blue-500' : ''
+    <Card className={`border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:shadow-lg transition-all cursor-pointer ${isSelected ? 'ring-2 ring-blue-500' : ''
       }`}>
       <CardContent className="p-6" onClick={() => onView(project)}>
         <div className="flex items-start justify-between mb-4">
@@ -406,7 +406,7 @@ export default function ClientTimeline() {
           {/* Stats Overview */}
           <motion.div variants={itemVariants}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -418,7 +418,7 @@ export default function ClientTimeline() {
                 </CardContent>
               </Card>
 
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -430,7 +430,7 @@ export default function ClientTimeline() {
                 </CardContent>
               </Card>
 
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -442,7 +442,7 @@ export default function ClientTimeline() {
                 </CardContent>
               </Card>
 
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -458,7 +458,7 @@ export default function ClientTimeline() {
 
           {/* Filters */}
           <motion.div variants={itemVariants}>
-            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+            <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
               <CardContent className="p-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="flex-1">
@@ -481,7 +481,7 @@ export default function ClientTimeline() {
                       <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
                         <SelectValue placeholder="Filter Status" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                      <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
                         <SelectItem value="all">Semua Status</SelectItem>
                         {statuses.map(status => (
                           <SelectItem key={status} value={status}>
@@ -498,7 +498,7 @@ export default function ClientTimeline() {
                       <SelectTrigger className="bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600">
                         <SelectValue placeholder="Filter Tipe" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                      <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
                         <SelectItem value="all">Semua Tipe</SelectItem>
                         {applicationTypes.map(type => (
                           <SelectItem key={type} value={type}>
@@ -516,7 +516,7 @@ export default function ClientTimeline() {
           {/* Error Alert */}
           {error && (
             <motion.div variants={itemVariants}>
-              <Alert variant="destructive" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <Alert variant="destructive" className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle className="text-slate-900 dark:text-slate-100">Error</AlertTitle>
                 <AlertDescription className="text-slate-600 dark:text-slate-400">{error}</AlertDescription>
@@ -528,7 +528,7 @@ export default function ClientTimeline() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Projects List */}
             <motion.div variants={itemVariants} className="lg:col-span-1">
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                 <CardHeader>
                   <CardTitle className="text-slate-900 dark:text-slate-100">
                     Daftar Project Saya
@@ -578,7 +578,7 @@ export default function ClientTimeline() {
 
             {/* Timeline Detail */}
             <motion.div variants={itemVariants} className="lg:col-span-2">
-              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                 <CardHeader>
                   <CardTitle className="text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-blue-500" />

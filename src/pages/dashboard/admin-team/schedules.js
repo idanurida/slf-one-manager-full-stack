@@ -227,8 +227,8 @@ export default function AdminTeamSchedulesPage() {
         {/* Header Section */}
         <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
-              Agenda <span className="text-[#7c3aed]">Proyek</span>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+              Agenda <span className="text-[#7c3aed]">proyek</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Manajemen waktu dan koordinasi kegiatan operasional di lapangan.</p>
           </div>
@@ -237,21 +237,21 @@ export default function AdminTeamSchedulesPage() {
             <div className="relative group flex-1 lg:min-w-[400px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
               <input
-                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
-                placeholder="Cari Agenda atau Proyek..."
+                className="h-14 w-full rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                placeholder="Cari agenda atau proyek..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10">
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            <button onClick={handleRefresh} className="h-14 px-6 bg-card text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-border hover:bg-slate-50 dark:hover:bg-white/10">
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh data
             </button>
           </div>
         </motion.div>
 
         {/* Stats Section */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Total Agenda" value={totalSchedules} icon={<Calendar size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
+          <StatCard title="Total agenda" value={totalSchedules} icon={<Calendar size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
           <StatCard title="Mendatang" value={upcomingCount} icon={<Clock size={24} />} color="text-blue-500" bg="bg-blue-500/10" trend="Soon" trendColor="text-blue-500" />
           <StatCard title="Berjalan" value={activeCount} icon={<TrendingUp size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Live" trendColor="text-orange-500" />
           <StatCard title="Selesai" value={completedCount} icon={<CheckCircle2 size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Done" trendColor="text-emerald-500" />
@@ -266,23 +266,23 @@ export default function AdminTeamSchedulesPage() {
             </div>
 
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
-                <SelectValue placeholder="Tipe Agenda" />
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Tipe agenda" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Tipe</SelectItem>
+              <SelectContent className="rounded-xl border-border">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua tipe</SelectItem>
                 {availableTypes.map(t => (
-                  <SelectItem key={t} value={t} className="uppercase text-[10px] font-bold">{t?.replace(/_/g, ' ') || 'Tanpa Tipe'}</SelectItem>
+                  <SelectItem key={t} value={t} className="uppercase text-[10px] font-bold">{t?.replace(/_/g, ' ') || 'Tanpa tipe'}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest shadow-sm">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Status</SelectItem>
+              <SelectContent className="rounded-xl border-border">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua status</SelectItem>
                 {availableStatuses.map(s => (
                   <SelectItem key={s} value={s} className="uppercase text-[10px] font-bold">{getScheduleStatusLabel(s)}</SelectItem>
                 ))}
@@ -290,11 +290,11 @@ export default function AdminTeamSchedulesPage() {
             </Select>
 
             <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
-                <SelectValue placeholder="Pilih Proyek" />
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Pilih proyek" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Proyek</SelectItem>
+              <SelectContent className="rounded-xl border-border">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua proyek</SelectItem>
                 {projects.map(p => (
                   <SelectItem key={p.id} value={p.id} className="uppercase text-[10px] font-bold">{p.name}</SelectItem>
                 ))}
@@ -303,24 +303,24 @@ export default function AdminTeamSchedulesPage() {
           </div>
 
           {loading ? (
-            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 space-y-4">
+            <div className="bg-card rounded-[2.5rem] p-8 border border-border space-y-4">
               {[1, 2, 3, 4, 5].map(i => (
                 <Skeleton key={i} className="h-16 w-full rounded-2xl" />
               ))}
             </div>
           ) : filteredSchedules.length === 0 ? (
-            <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+            <div className="py-32 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center p-10">
               <Calendar size={80} className="text-slate-300 dark:text-slate-700 opacity-30 mb-8" />
-              <h3 className="text-2xl font-black uppercase tracking-tighter">Agenda Kosong</h3>
+              <h3 className="text-2xl font-black tracking-tighter">Agenda kosong</h3>
               <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Tidak ada jadwal yang ditemukan untuk filter ini.</p>
             </div>
           ) : (
-            <div className="bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden mt-8">
+            <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden mt-8">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-50 dark:border-white/5">
-                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Kegiatan & Deskripsi</th>
+                      <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Kegiatan & deskripsi</th>
                       <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Proyek</th>
                       <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Waktu</th>
                       <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
@@ -381,7 +381,7 @@ export default function AdminTeamSchedulesPage() {
               <Info size={24} />
             </div>
             <div>
-              <h4 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-2">Informasi Agenda</h4>
+              <h4 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-2">Informasi agenda</h4>
               <p className="text-sm font-medium text-blue-800/60 dark:text-blue-400/60 leading-relaxed">
                 Agenda ini merupakan sinkronisasi dari Project Lead dan Admin Lead. Sebagai Admin Team, Anda berkewajiban memantau ketepatan waktu pelaksanaan setiap kegiatan untuk memastikan verifikasi dokumen berjalan sesuai target timeline.
               </p>
@@ -396,7 +396,7 @@ export default function AdminTeamSchedulesPage() {
 // Sub-components
 function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
   return (
-    <div className="relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+    <div className="relative bg-card rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
       <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
         {React.cloneElement(icon, { size: 80 })}
       </div>
@@ -405,7 +405,7 @@ function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
           {icon}
         </div>
         {trend && (
-          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-white/5`}>
+          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-border`}>
             {trend}
           </span>
         )}
@@ -417,3 +417,4 @@ function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
     </div>
   );
 }
+

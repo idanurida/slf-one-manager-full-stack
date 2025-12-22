@@ -315,8 +315,8 @@ export default function AdminTeamReportsPage() {
         {/* Header Section */}
         <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
-              Laporan <span className="text-[#7c3aed]">Inspector</span>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+              Laporan <span className="text-[#7c3aed]">inspector</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">Verifikasi dan validasi hasil inspeksi lapangan dari teknisi ahli.</p>
           </div>
@@ -325,24 +325,24 @@ export default function AdminTeamReportsPage() {
             <div className="relative group flex-1 lg:min-w-[400px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
               <input
-                className="h-14 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                className="h-14 w-full rounded-2xl bg-card border border-border shadow-xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
                 placeholder="Cari Laporan, Proyek, atau Inspector..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button onClick={handleRefresh} className="h-14 px-6 bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/10">
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            <button onClick={handleRefresh} className="h-14 px-6 bg-card text-slate-600 dark:text-slate-400 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all border border-border hover:bg-slate-50 dark:hover:bg-white/10">
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh data
             </button>
           </div>
         </motion.div>
 
         {/* Stats Section */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Total Laporan" value={totalReports} icon={<FileText size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
-          <StatCard title="Perlu Verifikasi" value={pendingVerification} icon={<ClipboardList size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Pending" trendColor="text-orange-500" />
+          <StatCard title="Total laporan" value={totalReports} icon={<FileText size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
+          <StatCard title="Perlu verifikasi" value={pendingVerification} icon={<ClipboardList size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Pending" trendColor="text-orange-500" />
           <StatCard title="Terverifikasi" value={verifiedCount} icon={<CheckCircle2 size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Done" trendColor="text-emerald-500" />
-          <StatCard title="Minta Revisi" value={revisionCount} icon={<FileWarning size={24} />} color="text-red-500" bg="bg-red-500/10" trend="Action" trendColor="text-red-500" />
+          <StatCard title="Minta revisi" value={revisionCount} icon={<FileWarning size={24} />} color="text-red-500" bg="bg-red-500/10" trend="Action" trendColor="text-red-500" />
         </motion.div>
 
         {/* Filters and List */}
@@ -354,11 +354,11 @@ export default function AdminTeamReportsPage() {
             </div>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
-                <SelectValue placeholder="Status Laporan" />
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Status laporan" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Status</SelectItem>
+              <SelectContent className="rounded-xl border-border">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua status</SelectItem>
                 {statuses.map(s => (
                   <SelectItem key={s} value={s} className="uppercase text-[10px] font-bold">{getStatusLabel(s)}</SelectItem>
                 ))}
@@ -366,11 +366,11 @@ export default function AdminTeamReportsPage() {
             </Select>
 
             <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 font-bold text-[10px] uppercase tracking-widest shadow-sm">
-                <SelectValue placeholder="Pilih Proyek" />
+              <SelectTrigger className="w-[180px] h-11 rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest shadow-sm">
+                <SelectValue placeholder="Pilih proyek" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-100 dark:border-white/5">
-                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua Proyek</SelectItem>
+              <SelectContent className="rounded-xl border-border">
+                <SelectItem value="all" className="uppercase text-[10px] font-bold">Semua proyek</SelectItem>
                 {projects.map(p => (
                   <SelectItem key={p.id} value={p.id} className="uppercase text-[10px] font-bold">{p.name}</SelectItem>
                 ))}
@@ -385,9 +385,9 @@ export default function AdminTeamReportsPage() {
               ))}
             </div>
           ) : filteredReports.length === 0 ? (
-            <div className="py-32 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10">
+            <div className="py-32 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center p-10">
               <FileSearch size={80} className="text-slate-300 dark:text-slate-700 opacity-30 mb-8" />
-              <h3 className="text-2xl font-black uppercase tracking-tighter">Laporan Kosong</h3>
+              <h3 className="text-2xl font-black tracking-tighter">Laporan kosong</h3>
               <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Tidak ada laporan inspector yang ditemukan untuk filter ini.</p>
             </div>
           ) : (
@@ -412,7 +412,7 @@ export default function AdminTeamReportsPage() {
 // Sub-components
 function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
   return (
-    <div className="relative bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+    <div className="relative bg-card rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
       <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
         {React.cloneElement(icon, { size: 80 })}
       </div>
@@ -421,7 +421,7 @@ function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
           {icon}
         </div>
         {trend && (
-          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-white/5`}>
+          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-border`}>
             {trend}
           </span>
         )}
@@ -462,19 +462,19 @@ const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
     <>
       <motion.div
         layout
-        className="group bg-white dark:bg-[#1e293b] rounded-[2.5rem] p-8 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 hover:ring-2 hover:ring-[#7c3aed]/20"
+        className="group bg-card rounded-[2.5rem] p-8 border border-border shadow-xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 hover:ring-2 hover:ring-[#7c3aed]/20"
       >
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div className="flex-1 min-w-0 space-y-4">
             <div className="flex items-center gap-3 flex-wrap">
-              <h3 className="text-xl font-black uppercase tracking-tight group-hover:text-[#7c3aed] transition-colors">{report.name}</h3>
+              <h3 className="text-xl font-black tracking-tight group-hover:text-[#7c3aed] transition-colors">{report.name}</h3>
               <Badge className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusColor(report.status)}`}>
                 {getStatusLabel(report.status)}
               </Badge>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
+              <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-border">
                 <div className="size-8 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center">
                   <Building size={14} />
                 </div>
@@ -484,7 +484,7 @@ const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5">
+              <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-border">
                 <div className="size-8 bg-[#7c3aed]/10 text-[#7c3aed] rounded-lg flex items-center justify-center">
                   <User size={14} />
                 </div>
@@ -521,9 +521,9 @@ const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
             <Button
               variant="outline"
               onClick={handleDownload}
-              className="h-14 lg:w-48 bg-white dark:bg-white/5 hover:bg-slate-50 border-slate-100 dark:border-white/5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
+              className="h-14 lg:w-48 bg-white dark:bg-white/5 hover:bg-slate-50 border-border rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
             >
-              <Download size={16} /> Unduh File
+              <Download size={16} /> Unduh file
             </Button>
 
             {report.status === 'submitted' && (
@@ -534,14 +534,14 @@ const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
                   className="h-14 flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
                 >
                   {loading === report.id ? <RefreshCw className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
-                  Verifikasi
+                  Verifikasi berkas
                 </Button>
                 <Button
                   onClick={() => setIsDialogOpen('revise')}
                   disabled={loading === report.id}
                   className="h-14 flex-1 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
                 >
-                  <AlertTriangle size={16} /> Revisi
+                  <AlertTriangle size={16} /> Revisi berkas
                 </Button>
               </div>
             )}
@@ -553,8 +553,8 @@ const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
         <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none rounded-[2.5rem] p-10 shadow-2xl overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#7c3aed] to-purple-500" />
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black uppercase tracking-tighter">
-              {isDialogOpen === 'verify' ? 'Verifikasi <span class="text-[#7c3aed]">Selesai</span>' : 'Minta <span class="text-orange-500">Revisi</span>'}
+            <DialogTitle className="text-2xl font-black tracking-tighter">
+              {isDialogOpen === 'verify' ? 'Verifikasi <span class="text-[#7c3aed]">selesai</span>' : 'Minta <span class="text-orange-500">revisi</span>'}
             </DialogTitle>
           </DialogHeader>
           <div className="py-6 space-y-6">
@@ -567,7 +567,7 @@ const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
               placeholder={isDialogOpen === 'verify' ? 'Catatan verifikasi (opsional)...' : 'Contoh: Lampiran foto kurang jelas, data teknis tidak sinkron...'}
               value={verificationNotes}
               onChange={(e) => setVerificationNotes(e.target.value)}
-              className="bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 rounded-2xl min-h-[120px] p-4 font-medium focus:ring-4 focus:ring-[#7c3aed]/10 transition-all outline-none"
+              className="bg-slate-50 dark:bg-white/5 border-border rounded-2xl min-h-[120px] p-4 font-medium focus:ring-4 focus:ring-[#7c3aed]/10 transition-all outline-none"
             />
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-4">
@@ -580,7 +580,7 @@ const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
               className={`flex-[2] h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest text-white shadow-xl transition-all ${isDialogOpen === 'verify' ? 'bg-[#7c3aed] hover:bg-[#6d28d9] shadow-[#7c3aed]/20' : 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20'}`}
             >
               {loading === report.id ? <RefreshCw className="animate-spin mr-2" /> : (isDialogOpen === 'verify' ? <CheckCircle2 className="mr-2" /> : <AlertTriangle className="mr-2" />)}
-              {isDialogOpen === 'verify' ? 'Konfirmasi Verifikasi' : 'Kirim Permintaan Revisi'}
+              {isDialogOpen === 'verify' ? 'Konfirmasi verifikasi' : 'Kirim permintaan revisi'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -588,3 +588,4 @@ const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
     </>
   );
 };
+

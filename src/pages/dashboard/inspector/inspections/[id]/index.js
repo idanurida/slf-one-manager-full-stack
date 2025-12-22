@@ -234,7 +234,7 @@ const PhotoGallery = ({ photos, onDelete }) => {
                 <p className="text-sm text-muted-foreground mt-4">{selectedPhoto.caption}</p>
               )}
               {selectedPhoto.latitude && selectedPhoto.longitude && (
-                <div className="mt-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-md">
+                <div className="mt-2 p-3 bg-slate-100 dark:bg-slate-900 rounded-md">
                   <p className="text-sm font-medium">Informasi Geotag:</p>
                   <p className="text-xs text-muted-foreground">
                     Latitude: {selectedPhoto.latitude.toFixed(5)}
@@ -1279,7 +1279,7 @@ export default function InspectionDetailPage() {
 
                         {/* Display response data */}
                         {response.response_data && (
-                          <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-md">
+                          <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-md">
                             <div className="space-y-2">
                               {Object.entries(response.response_data).map(([key, value]) => {
                                 // Safely handle different value types (string, array, object)

@@ -319,8 +319,8 @@ export default function AdminLeadTimelinePage() {
               </p>
             </div>
 
-            <div className="bg-white dark:bg-[#1e293b] p-2 rounded-2xl border border-slate-100 dark:border-white/5 shadow-lg shadow-slate-200/20 dark:shadow-none flex items-center gap-2">
-              <div className="px-4 py-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
+            <div className="bg-card p-2 rounded-2xl border border-border shadow-lg shadow-slate-200/20 dark:shadow-none flex items-center gap-2">
+              <div className="px-4 py-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-border">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Active Project</span>
                 <div className="flex items-center gap-2 mt-1">
                   <Building size={14} className="text-[#7c3aed]" />
@@ -380,7 +380,7 @@ export default function AdminLeadTimelinePage() {
           {/* Timeline Content */}
           <motion.div variants={itemVariants}>
             {!selectedProject ? (
-              <div className="py-24 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center">
+              <div className="py-24 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center">
                 <div className="size-20 bg-slate-50 dark:bg-white/5 rounded-[2rem] flex items-center justify-center text-slate-300 dark:text-slate-600 mb-6">
                   <Calendar size={32} />
                 </div>
@@ -388,7 +388,7 @@ export default function AdminLeadTimelinePage() {
                 <p className="text-slate-500 mt-2 max-w-xs text-sm">Silakan pilih proyek di pojok kanan atas untuk melihat timeline.</p>
               </div>
             ) : phases.length === 0 ? (
-              <div className="py-24 bg-white dark:bg-[#1e293b] rounded-[2.5rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center">
+              <div className="py-24 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center">
                 <div className="size-20 bg-orange-50 dark:bg-orange-500/10 rounded-[2rem] flex items-center justify-center text-orange-400 mb-6">
                   <AlertTriangle size={32} />
                 </div>
@@ -412,10 +412,10 @@ export default function AdminLeadTimelinePage() {
                         <div className={`
                                  relative p-6 rounded-[2rem] border transition-all duration-300 group
                                  ${isActive
-                            ? 'bg-white dark:bg-[#1e293b] border-[#7c3aed] shadow-2xl shadow-[#7c3aed]/10 ring-4 ring-[#7c3aed]/5'
+                            ? 'bg-card border-[#7c3aed] shadow-2xl shadow-[#7c3aed]/10 ring-4 ring-[#7c3aed]/5'
                             : isCompleted
-                              ? 'bg-slate-50 dark:bg-white/5 border-transparent opacity-80 hover:opacity-100 hover:bg-white dark:hover:bg-[#1e293b] hover:shadow-xl'
-                              : 'bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 hover:border-[#7c3aed]/30 hover:shadow-xl'
+                              ? 'bg-slate-50 dark:bg-white/5 border-transparent opacity-80 hover:opacity-100 hover:bg-white dark:hover:bg-slate-900 hover:shadow-xl'
+                              : 'bg-card border-border hover:border-[#7c3aed]/30 hover:shadow-xl'
                           }
                               `}>
                           <div className="flex justify-between items-start mb-4">
@@ -441,11 +441,11 @@ export default function AdminLeadTimelinePage() {
                           <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-6 line-clamp-2">{phase.description || 'Tidak ada deskripsi'}</p>
 
                           <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div className="bg-slate-50 dark:bg-black/20 p-3 rounded-2xl">
+                            <div className="bg-slate-50 dark:bg-card/20 p-3 rounded-2xl">
                               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Estimasi</span>
                               <span className="text-sm font-bold">{phase.estimated_duration} Hari</span>
                             </div>
-                            <div className="bg-slate-50 dark:bg-black/20 p-3 rounded-2xl">
+                            <div className="bg-slate-50 dark:bg-card/20 p-3 rounded-2xl">
                               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Mulai</span>
                               <span className="text-sm font-bold">{formatDate(phase.start_date)}</span>
                             </div>
@@ -472,10 +472,10 @@ export default function AdminLeadTimelinePage() {
                         <div className={`
                                  size-10 rounded-full border-4 flex items-center justify-center shadow-xl
                                  ${isActive
-                            ? 'bg-[#7c3aed] border-white dark:border-slate-800 ring-4 ring-[#7c3aed]/20'
+                            ? 'bg-[#7c3aed] border-white dark:border-slate-950 ring-4 ring-[#7c3aed]/20'
                             : isCompleted
-                              ? 'bg-emerald-500 border-white dark:border-slate-800 ring-4 ring-emerald-500/20'
-                              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                              ? 'bg-emerald-500 border-white dark:border-slate-950 ring-4 ring-emerald-500/20'
+                              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700'
                           }
                               `}>
                           {isCompleted ? <CheckCircle2 size={16} className="text-white" /> :
@@ -497,7 +497,7 @@ export default function AdminLeadTimelinePage() {
         {/* Edit Dialog */}
         <Dialog open={editDialog.open} onOpenChange={(open) => !saving && setEditDialog({ open, phase: open ? editDialog.phase : null })}>
           <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden bg-white dark:bg-slate-900 border-none max-w-lg">
-            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-border">
               <DialogTitle className="text-xl font-black uppercase tracking-tight">Edit Fase Pengerjaan</DialogTitle>
               <DialogDescription className="text-xs font-bold uppercase tracking-widest text-slate-400">Update status dan detail timeline proyek</DialogDescription>
             </DialogHeader>
@@ -508,7 +508,7 @@ export default function AdminLeadTimelinePage() {
                 <Input
                   value={editForm.phase_name}
                   onChange={(e) => setEditForm({ ...editForm, phase_name: e.target.value })}
-                  className="rounded-xl h-12 bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 font-bold"
+                  className="rounded-xl h-12 bg-slate-50 dark:bg-card/20 border-slate-200 dark:border-white/10 font-bold"
                 />
               </div>
 
@@ -519,13 +519,13 @@ export default function AdminLeadTimelinePage() {
                     type="number"
                     value={editForm.estimated_duration}
                     onChange={(e) => setEditForm({ ...editForm, estimated_duration: e.target.value })}
-                    className="rounded-xl h-12 bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 font-bold"
+                    className="rounded-xl h-12 bg-slate-50 dark:bg-card/20 border-slate-200 dark:border-white/10 font-bold"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="uppercase text-[10px] font-black tracking-widest text-slate-500">Status</Label>
                   <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
-                    <SelectTrigger className="rounded-xl h-12 bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 font-bold">
+                    <SelectTrigger className="rounded-xl h-12 bg-slate-50 dark:bg-card/20 border-slate-200 dark:border-white/10 font-bold">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -542,13 +542,13 @@ export default function AdminLeadTimelinePage() {
                 <Textarea
                   value={editForm.notes}
                   onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                  className="rounded-2xl min-h-[100px] bg-slate-50 dark:bg-black/20 border-slate-200 dark:border-white/10 resize-none"
+                  className="rounded-2xl min-h-[100px] bg-slate-50 dark:bg-card/20 border-slate-200 dark:border-white/10 resize-none"
                   placeholder="Tambahkan catatan progres..."
                 />
               </div>
             </div>
 
-            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 gap-3">
+            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-border gap-3">
               <Button variant="outline" onClick={() => setEditDialog({ open: false, phase: null })} className="rounded-xl h-12 font-black text-[10px] uppercase tracking-widest flex-1">
                 Batal
               </Button>
@@ -566,7 +566,7 @@ export default function AdminLeadTimelinePage() {
 // Sub-components
 function StatSimple({ title, value, icon, color, bg }) {
   return (
-    <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-4 transition-all hover:scale-105">
+    <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-4 transition-all hover:scale-105">
       <div className={`size-12 rounded-2xl flex items-center justify-center ${bg} ${color} shadow-lg shadow-current/5`}>
         {icon}
       </div>
@@ -577,3 +577,5 @@ function StatSimple({ title, value, icon, color, bg }) {
     </div>
   );
 }
+
+

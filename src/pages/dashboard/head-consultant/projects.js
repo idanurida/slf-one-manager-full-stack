@@ -128,7 +128,7 @@ export default function HeadConsultantProjectsPage() {
         {/* Page Heading & Actions */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl md:text-4xl font-display font-black text-gray-900 dark:text-white tracking-tight">Eksplorasi proyek</h1>
+            <h1 className="text-2xl md:text-3xl font-display font-black text-gray-900 dark:text-white tracking-tight">Eksplorasi proyek</h1>
             <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-base">Kelola dan pantau seluruh inisiatif kelaikan fungsi dalam satu pusat visual.</p>
           </div>
         </div>
@@ -166,15 +166,15 @@ export default function HeadConsultantProjectsPage() {
         </div>
 
         {/* Filters & Search Toolbar */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-card border border-border shadow-sm">
           {/* Left: Filters */}
           <div className="flex w-full lg:w-auto flex-wrap gap-4">
             <div className="relative min-w-[180px]">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Status filter</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Status filter</span>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-gray-100 outline-none transition-all"
+                className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
               >
                 <option>Semua Status</option>
                 <option>Draft</option>
@@ -185,11 +185,11 @@ export default function HeadConsultantProjectsPage() {
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
             </div>
             <div className="relative min-w-[180px]">
-              <span className="absolute -top-2 left-3 px-1 bg-surface-light dark:bg-surface-dark text-[10px] font-bold text-primary z-10">Jendela waktu</span>
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Jendela waktu</span>
               <select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="appearance-none w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-primary cursor-pointer text-gray-900 dark:text-gray-100 outline-none transition-all"
+                className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
               >
                 <option>Bulan Ini</option>
                 <option>3 Bulan Terakhir</option>
@@ -207,46 +207,46 @@ export default function HeadConsultantProjectsPage() {
                 placeholder="Cari nama proyek atau klien..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary text-gray-900 dark:text-white outline-none transition-all placeholder:text-text-secondary-light/50"
+                className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary text-foreground outline-none transition-all placeholder:text-muted-foreground/50"
               />
             </div>
-            <button className="h-11 w-11 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 text-text-secondary-light hover:text-primary hover:border-primary transition-all shadow-sm" title="Sort Results">
+            <button className="h-11 w-11 flex items-center justify-center rounded-xl border border-border bg-muted/50 text-muted-foreground hover:text-primary hover:border-primary transition-all shadow-sm" title="Sort Results">
               <SortAsc size={20} />
             </button>
-            <button className="h-11 w-11 flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 text-text-secondary-light hover:text-primary hover:border-primary transition-all shadow-sm" title="Refresh">
+            <button className="h-11 w-11 flex items-center justify-center rounded-xl border border-border bg-muted/50 text-muted-foreground hover:text-primary hover:border-primary transition-all shadow-sm" title="Refresh">
               <RefreshCw size={18} />
             </button>
           </div>
         </div>
 
         {/* Projects Table */}
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden transition-all duration-300">
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-white/[0.02]">
-                  <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Informasi proyek</th>
-                  <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Lokasi & klien</th>
-                  <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase">Status progres</th>
-                  <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider uppercase text-right">Manajemen</th>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="px-6 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Informasi proyek</th>
+                  <th className="px-6 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Lokasi & klien</th>
+                  <th className="px-6 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Status progres</th>
+                  <th className="px-6 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark text-right">Manajemen</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+              <tbody className="divide-y divide-border">
                 {loading ? (
-                  <tr><td colSpan="5" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-xs font-bold text-text-secondary-light">Menyelaraskan data...</span></div></td></tr>
+                  <tr><td colSpan="5" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-sm font-bold text-text-secondary-light">Menyelaraskan data...</span></div></td></tr>
                 ) : (
                   projects.length === 0 ? (
-                    <tr><td colSpan="5" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 mb-4"><FolderOpen size={40} className="text-slate-500/20" /></div><p className="font-bold text-sm text-slate-500">Database kosong</p></td></tr>
+                    <tr><td colSpan="5" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-muted mb-4"><FolderOpen size={40} className="text-slate-500/20" /></div><p className="font-bold text-sm text-slate-500">Database kosong</p></td></tr>
                   ) : (
                     projects.map(p => (
                       <tr key={p.id} className="group hover:bg-primary/5 transition-all duration-300">
                         <td className="px-8 py-6">
                           <div className="flex flex-col gap-1">
-                            <span className="font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-primary transition-colors cursor-pointer text-base" onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)}>
+                            <span className="font-bold text-foreground tracking-tight group-hover:text-primary transition-colors cursor-pointer text-base" onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)}>
                               {p.name}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-bold text-text-secondary-light bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md tracking-wider">ID: {p.id.slice(0, 8).toUpperCase()}</span>
+                              <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-md">ID: {p.id.slice(0, 8).toUpperCase()}</span>
                             </div>
                           </div>
                         </td>
@@ -256,15 +256,15 @@ export default function HeadConsultantProjectsPage() {
                               {(p.clients?.name || 'K')[0]}
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-sm font-bold text-gray-900 dark:text-gray-200 tracking-tight">{p.clients?.name || 'Unknown Client'}</span>
-                              <span className="text-[10px] font-medium text-text-secondary-light">Entitas terverifikasi</span>
+                              <span className="text-sm font-bold text-foreground tracking-tight">{p.clients?.name || 'Unknown Client'}</span>
+                              <span className="text-sm font-medium text-text-secondary-light">Entitas terverifikasi</span>
                             </div>
                           </div>
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex flex-col gap-1">
-                            <span className="text-xs font-bold text-gray-900 dark:text-gray-300">{formatDate(p.created_at)}</span>
-                            <span className="text-[10px] font-bold text-primary">Pendaftaran masuk</span>
+                            <span className="text-sm font-bold text-foreground">{formatDate(p.created_at)}</span>
+                            <span className="text-sm font-bold text-primary">Pendaftaran masuk</span>
                           </div>
                         </td>
                         <td className="px-8 py-6">
@@ -273,7 +273,7 @@ export default function HeadConsultantProjectsPage() {
                         <td className="px-8 py-6 text-right">
                           <button
                             onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)}
-                            className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 text-text-secondary-light hover:bg-primary hover:text-white transition-all shadow-sm"
+                            className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-muted/50 text-muted-foreground hover:bg-primary hover:text-white transition-all shadow-sm"
                           >
                             <Eye size={18} />
                           </button>
@@ -287,17 +287,17 @@ export default function HeadConsultantProjectsPage() {
           </div>
 
           {/* Pagination (Simplified) */}
-          <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 dark:border-gray-800 px-8 py-6 gap-6 bg-gray-50/30 dark:bg-black/10">
+          <div className="flex flex-col sm:flex-row items-center justify-between border-t border-border px-8 py-6 gap-6 bg-muted/30">
             <div className="flex flex-col">
-              <p className="text-xs font-bold text-text-secondary-light mb-1">Status kelaikan</p>
-              <span className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">
-                Menampilkan <span className="font-bold text-primary">1 - {projects.length}</span> dari <span className="font-bold text-gray-900 dark:text-white">{stats.totalProjects} entri data</span>
+              <p className="text-sm font-bold text-text-secondary-light mb-1">Status kelaikan</p>
+              <span className="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">
+                Menampilkan <span className="font-bold text-primary">1 - {projects.length}</span> dari <span className="font-bold text-foreground">{stats.totalProjects} entri data</span>
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button className="h-10 px-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark text-xs font-bold text-text-secondary-light hover:border-primary hover:text-primary transition-all disabled:opacity-30 shadow-sm" disabled>Sebelumnya</button>
+              <button className="h-10 px-4 rounded-xl border border-border bg-card text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary transition-all disabled:opacity-30 shadow-sm" disabled>Sebelumnya</button>
               <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/30">1</div>
-              <button className="h-10 px-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark text-xs font-bold text-text-secondary-light hover:border-primary hover:text-primary transition-all shadow-sm">Berikutnya</button>
+              <button className="h-10 px-4 rounded-xl border border-border bg-card text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary transition-all shadow-sm">Berikutnya</button>
             </div>
           </div>
         </div>
@@ -312,9 +312,9 @@ function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
     <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
       <div className="flex items-start justify-between relative z-10">
         <div>
-          <p className="text-xs font-bold text-text-secondary-light uppercase tracking-wider">{title}</p>
+          <p className="text-sm font-bold text-text-secondary-light">{title}</p>
           <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
-          {subtitle && <p className="text-xs font-medium text-text-secondary-light mt-1 opacity-70">{subtitle}</p>}
+          {subtitle && <p className="text-sm font-medium text-text-secondary-light mt-1 opacity-70">{subtitle}</p>}
         </div>
         <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 ${color}`}>
           <Icon size={20} />
@@ -322,11 +322,11 @@ function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
       </div>
       {trend && (
         <div className="mt-4 flex items-center gap-1.5 relative z-10">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-[10px] font-bold border border-status-green/20">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-xs font-bold border border-status-green/20">
             <TrendingUp size={12} />
             <span>+{trend}%</span>
           </div>
-          <span className="text-[10px] font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
+          <span className="text-xs font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
         </div>
       )}
       <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-[2.5] translate-x-1/4 translate-y-1/4 ${color}`}>
@@ -350,9 +350,10 @@ function StatusBadge({ status }) {
   const config = configs[status] || configs.draft;
 
   return (
-    <span className={`inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold border shadow-sm ${config.class}`}>
+    <span className={`inline-flex items-center rounded-lg px-3 py-1 text-sm font-bold border shadow-sm ${config.class}`}>
       <Zap size={10} className="mr-1.5" />
       {config.label}
     </span>
   );
 }
+

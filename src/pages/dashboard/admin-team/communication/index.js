@@ -195,7 +195,7 @@ export default function AdminTeamCommunicationInbox() {
             >
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <motion.div variants={itemVariants}>
-                        <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">
+                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
                             Pusat <span className="text-[#7c3aed]">Komunikasi</span>
                         </h1>
                         <p className="text-slate-500 font-medium">Hubungkan tim lintas proyek dan klien Anda.</p>
@@ -215,14 +215,14 @@ export default function AdminTeamCommunicationInbox() {
                             placeholder="Cari nama atau proyek..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-12 h-14 rounded-[2rem] bg-white dark:bg-[#1e293b] border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none text-base"
+                            className="pl-12 h-14 rounded-[2rem] bg-card border-border shadow-xl shadow-slate-200/50 dark:shadow-none text-base"
                         />
                     </div>
                 </motion.div>
 
                 {/* Tabs */}
                 <Tabs defaultValue="team" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="w-full max-w-md mx-auto grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-full mb-8">
+                    <TabsList className="w-full max-w-md mx-auto grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-full mb-8">
                         <TabsTrigger value="team" className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-[#7c3aed] data-[state=active]:text-[#7c3aed] dark:data-[state=active]:text-white font-bold transition-all">Tim Internal</TabsTrigger>
                         <TabsTrigger value="client" className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-[#7c3aed] data-[state=active]:text-[#7c3aed] dark:data-[state=active]:text-white font-bold transition-all">Klien</TabsTrigger>
                     </TabsList>
@@ -240,10 +240,10 @@ export default function AdminTeamCommunicationInbox() {
                                             key={contact.id}
                                             variants={itemVariants}
                                             onClick={() => router.push(`/dashboard/admin-team/communication/chat?recipient_id=${contact.id}`)}
-                                            className="group bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-md hover:shadow-xl hover:border-[#7c3aed]/30 transition-all cursor-pointer relative overflow-hidden"
+                                            className="group bg-card rounded-[2rem] p-6 border border-border shadow-md hover:shadow-xl hover:border-[#7c3aed]/30 transition-all cursor-pointer relative overflow-hidden"
                                         >
                                             <div className="flex items-center gap-5 relative z-10">
-                                                <div className="size-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-black text-xl">
+                                                <div className="size-14 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-500 font-black text-xl">
                                                     {contact.full_name.charAt(0)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -256,7 +256,7 @@ export default function AdminTeamCommunicationInbox() {
                                                         )}
                                                     </div>
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <Badge variant="outline" className="text-[10px] py-0 h-5 px-2 bg-slate-50 dark:bg-slate-900 border-none text-slate-500 uppercase tracking-wider">{contact.role.replace(/_/g, ' ')}</Badge>
+                                                        <Badge variant="outline" className="text-[10px] py-0 h-5 px-2 bg-slate-50 dark:bg-slate-900 border-none text-slate-500 tracking-wide">{contact.role.replace(/_/g, ' ')}</Badge>
                                                         <span className="text-xs text-slate-400 truncate max-w-[200px]">
                                                             {contact.projects.map(p => p.name).join(', ')}
                                                         </span>
@@ -283,10 +283,10 @@ export default function AdminTeamCommunicationInbox() {
                                         key={conv.id}
                                         variants={itemVariants}
                                         onClick={() => router.push(`/dashboard/admin-team/communication/chat?recipient_id=${conv.id}`)}
-                                        className="group bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-md hover:shadow-xl hover:border-[#7c3aed]/30 transition-all cursor-pointer"
+                                        className="group bg-card rounded-[2rem] p-6 border border-border shadow-md hover:shadow-xl hover:border-[#7c3aed]/30 transition-all cursor-pointer"
                                     >
                                         <div className="flex items-center gap-5">
-                                            <div className="size-14 rounded-2xl bg-blue-50 dark:bg-slate-800 text-blue-600 flex items-center justify-center">
+                                            <div className="size-14 rounded-2xl bg-blue-50 dark:bg-slate-900 text-blue-600 flex items-center justify-center">
                                                 <User />
                                             </div>
                                             <div className="flex-1">

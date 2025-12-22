@@ -94,7 +94,7 @@ export default function HeadConsultantDashboard() {
         {/* Welcome Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in-up">
           <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-display font-black text-gray-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-display font-black text-gray-900 dark:text-white tracking-tight">
               Selamat Datang, {profile?.full_name?.split(' ')[0] || 'Kepala'}
             </h1>
             <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm max-w-xl">
@@ -102,14 +102,11 @@ export default function HeadConsultantDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="px-5 py-2.5 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 hover:border-primary hover:text-primary font-semibold rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 group">
+            <button className="px-5 py-2.5 bg-card border border-border text-foreground hover:border-primary hover:text-primary font-semibold rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 group">
               <span className="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors font-medium">cloud_download</span>
               <span className="hidden sm:inline text-sm">Ekspor laporan</span>
             </button>
-            <button onClick={() => router.push('/dashboard/head-consultant/projects')} className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all flex items-center gap-2 transform active:scale-95">
-              <span className="material-symbols-outlined text-[20px] font-medium">add_circle</span>
-              <span className="text-sm">Proyek baru</span>
-            </button>
+
           </div>
         </div>
 
@@ -156,20 +153,20 @@ export default function HeadConsultantDashboard() {
                 <div className="size-8 rounded-lg bg-status-yellow/20 text-status-yellow flex items-center justify-center">
                   <span className="material-symbols-outlined text-lg font-medium">rate_review</span>
                 </div>
-                <h2 className="text-lg font-display font-bold text-gray-900 dark:text-white">Proyek perlu tinjauan</h2>
+                <h2 className="text-base font-display font-bold text-gray-900 dark:text-white">Proyek perlu tinjauan</h2>
               </div>
               <button onClick={() => router.push('/dashboard/head-consultant/projects')} className="text-sm font-semibold text-primary hover:text-primary-hover transition-colors">Lihat semua</button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
-                    <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider">Proyek</th>
-                    <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider">Tahapan</th>
-                    <th className="px-6 py-4 text-xs font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wider text-right">Aksi</th>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="px-6 py-4 text-sm font-bold text-muted-foreground">Proyek</th>
+                    <th className="px-6 py-4 text-sm font-bold text-muted-foreground">Tahapan</th>
+                    <th className="px-6 py-4 text-sm font-bold text-muted-foreground text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                <tbody className="divide-y divide-border">
                   {loading ? (
                     <tr><td colSpan="3" className="p-8 text-center text-text-secondary-light dark:text-text-secondary-dark text-sm">Memuat proyek...</td></tr>
                   ) : projectsNeedReview.length === 0 ? (
@@ -179,7 +176,7 @@ export default function HeadConsultantDashboard() {
                       <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group">
                         <td className="px-6 py-4 text-sm">
                           <div className="flex items-center gap-4">
-                            <div className="size-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark shadow-sm">
+                            <div className="size-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shadow-sm">
                               <span className="material-symbols-outlined text-xl font-medium">apartment</span>
                             </div>
                             <div>
@@ -195,7 +192,7 @@ export default function HeadConsultantDashboard() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)} className="bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-bold px-4 py-2 rounded-xl transition-all">
+                          <button onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)} className="bg-primary/10 hover:bg-primary hover:text-white text-primary text-sm font-bold px-4 py-2 rounded-xl transition-all">
                             Mulai tinjauan
                           </button>
                         </td>
@@ -214,7 +211,7 @@ export default function HeadConsultantDashboard() {
                 <div className="size-8 rounded-lg bg-status-green/20 text-status-green flex items-center justify-center">
                   <span className="material-symbols-outlined text-lg font-medium">approval</span>
                 </div>
-                <h2 className="text-lg font-display font-bold text-gray-900 dark:text-white">Laporan perlu persetujuan</h2>
+                <h2 className="text-base font-display font-bold text-gray-900 dark:text-white">Laporan perlu persetujuan</h2>
               </div>
               <button onClick={() => router.push('/dashboard/head-consultant/approvals')} className="text-sm font-semibold text-primary hover:text-primary-hover transition-colors">Lihat semua</button>
             </div>
@@ -225,9 +222,9 @@ export default function HeadConsultantDashboard() {
                 <div className="text-center py-6 text-text-secondary-light dark:text-text-secondary-dark text-sm">Semua laporan disetujui.</div>
               ) : (
                 reportsNeedApproval.map(r => (
-                  <div key={r.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-[#1e1826] hover:shadow-sm border border-transparent hover:border-gray-200 dark:hover:border-gray-800 transition-all group">
+                  <div key={r.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-card hover:shadow-sm border border-transparent hover:border-border transition-all group">
                     <div className="flex items-center gap-4 w-full sm:w-auto">
-                      <div className="size-12 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-primary shadow-sm group-hover:scale-105 transition-transform">
+                      <div className="size-12 rounded-xl bg-card border border-border flex items-center justify-center text-primary shadow-sm group-hover:scale-105 transition-transform">
                         <span className="material-symbols-outlined font-medium">description</span>
                       </div>
                       <div className="flex-1">
@@ -242,8 +239,8 @@ export default function HeadConsultantDashboard() {
                       <button onClick={() => router.push(`/dashboard/head-consultant/approvals`)} className="p-2 rounded-lg text-text-secondary-light hover:text-primary hover:bg-primary/5 transition-colors">
                         <span className="material-symbols-outlined text-[20px] font-medium">visibility</span>
                       </button>
-                      <button onClick={() => router.push(`/dashboard/head-consultant/approvals`)} className="bg-primary hover:bg-primary-hover text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[18px] font-medium">check</span> <span className="text-[12px]">Tanda tangani</span>
+                      <button onClick={() => router.push(`/dashboard/head-consultant/approvals`)} className="bg-primary hover:bg-primary-hover text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[18px] font-medium">check</span> <span className="text-sm">Tanda tangani</span>
                       </button>
                     </div>
                   </div>
@@ -256,12 +253,12 @@ export default function HeadConsultantDashboard() {
 
         {/* Quick Actions */}
         <div className="pb-8">
-          <h2 className="text-lg font-display font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <span className="p-1 rounded bg-primary/10 text-primary">
-              <span className="material-symbols-outlined font-medium">bolt</span>
+          <div className="flex items-center gap-2 mb-6">
+            <span className="p-1 rounded bg-primary/10 text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined font-medium text-sm">bolt</span>
             </span>
-            Aksi cepat
-          </h2>
+            <h2 className="text-base font-display font-bold text-foreground tracking-tight">Aksi cepat</h2>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             <QuickActionCard icon="add_task" label="Tinjauan baru" onClick={() => router.push('/dashboard/head-consultant/projects')} />
             <QuickActionCard icon="summarize" label="Buat ringkasan" onClick={() => { }} />
@@ -291,24 +288,24 @@ export default function HeadConsultantDashboard() {
 
 function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
   return (
-    <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+    <div className="rounded-2xl bg-card p-6 border border-border shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
       <div className="flex items-start justify-between relative z-10">
         <div>
-          <p className="text-xs font-bold text-text-secondary-light tracking-wider">{title}</p>
+          <p className="text-sm font-bold text-text-secondary-light">{title}</p>
           <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
           {subtitle && <p className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mt-1 opacity-70">{subtitle}</p>}
         </div>
-        <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 ${color}`}>
+        <div className={`rounded-xl p-3 bg-muted border border-border transition-transform group-hover:scale-110 ${color}`}>
           <Icon size={20} />
         </div>
       </div>
       {trend && (
         <div className="mt-4 flex items-center gap-1.5 relative z-10">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-[10px] font-bold border border-status-green/20">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-xs font-bold border border-status-green/20">
             <TrendingUp size={12} />
             <span>+{trend}%</span>
           </div>
-          <span className="text-[10px] font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
+          <span className="text-xs font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
         </div>
       )}
       <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-[2.5] translate-x-1/4 translate-y-1/4 ${color}`}>
@@ -320,10 +317,10 @@ function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
 
 function QuickActionCard({ icon, label, onClick, className = "" }) {
   return (
-    <button onClick={onClick} className={`group relative overflow-hidden bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:shadow-soft hover:border-primary/50 transition-all duration-300 ${className}`}>
+    <button onClick={onClick} className={`group relative overflow-hidden bg-card border border-border rounded-2xl p-6 hover:shadow-soft hover:border-primary/50 transition-all duration-300 ${className}`}>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
       <div className="flex flex-col items-center gap-3 relative z-10">
-        <div className="size-12 rounded-2xl bg-gray-50 dark:bg-gray-800 text-text-secondary-light dark:text-text-secondary-dark flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300 shadow-sm">
+        <div className="size-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300 shadow-sm">
           <span className="material-symbols-outlined font-medium">{icon}</span>
         </div>
         <span className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">{label}</span>

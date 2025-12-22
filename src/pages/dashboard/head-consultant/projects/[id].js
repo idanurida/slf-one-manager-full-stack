@@ -289,18 +289,18 @@ export default function HeadConsultantProjectDetailPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => router.push('/dashboard/head-consultant/projects')}
-                  className="rounded-xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="rounded-xl border-border bg-card shadow-sm hover:bg-muted"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
-                <h1 className="text-3xl md:text-3xl font-display font-extrabold text-gray-900 dark:text-white tracking-tight">{project?.name}</h1>
+                <h1 className="text-3xl md:text-3xl font-display font-extrabold text-foreground tracking-tight">{project?.name}</h1>
                 {!loading && (
                   <div className="flex flex-wrap gap-2">
-                    <Badge className={`rounded-lg px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${getStatusColor(project?.status)}`}>
+                    <Badge className={`rounded-lg px-3 py-1 text-sm font-bold ${getStatusColor(project?.status)}`}>
                       {getStatusLabel(project?.status)}
                     </Badge>
                     {project?.application_type && (
-                      <Badge variant="outline" className="rounded-lg px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-primary border-primary/30 bg-primary/5">
+                      <Badge variant="outline" className="rounded-lg px-3 py-1 text-xs font-bold text-primary border-primary/30 bg-primary/5">
                         {project.application_type}
                       </Badge>
                     )}
@@ -312,7 +312,7 @@ export default function HeadConsultantProjectDetailPage() {
                 size="sm"
                 onClick={handleRefresh}
                 disabled={loading}
-                className="rounded-xl bg-surface-light dark:bg-surface-dark border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-bold text-xs px-4 py-2 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                className="rounded-xl bg-card border-border text-foreground font-bold text-sm px-4 py-2 shadow-sm hover:bg-muted transition-all"
               >
                 <RefreshCw className={`w-3 h-3 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -335,16 +335,16 @@ export default function HeadConsultantProjectDetailPage() {
               <>
                 {/* Key Info Cards */}
                 <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
-                      <CardTitle className="flex items-center gap-2 text-[10px] font-bold text-primary tracking-widest">
+                  <Card className="rounded-2xl border-border bg-card shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <CardHeader className="pb-3 border-b border-border bg-muted/50">
+                      <CardTitle className="flex items-center gap-2 text-sm font-bold text-primary">
                         <User className="w-3.5 h-3.5" />
                         Identitas client
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6">
-                      <p className="font-display font-extrabold text-gray-900 dark:text-white tracking-tight text-xl leading-tight">{project?.clients?.name}</p>
-                      <div className="mt-4 space-y-2 text-xs text-text-secondary-light dark:text-text-secondary-dark font-medium">
+                      <p className="font-display font-extrabold text-foreground tracking-tight text-xl leading-tight">{project?.clients?.name}</p>
+                      <div className="mt-4 space-y-2 text-xs text-muted-foreground font-medium">
                         <div className="flex items-center gap-2">
                           <Mail className="w-3.5 h-3.5 opacity-50" />
                           <span>{project?.clients?.email}</span>
@@ -359,38 +359,38 @@ export default function HeadConsultantProjectDetailPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
-                      <CardTitle className="flex items-center gap-2 text-[10px] font-bold text-primary tracking-widest">
+                  <Card className="rounded-2xl border-border bg-card shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <CardHeader className="pb-3 border-b border-border bg-muted/50">
+                      <CardTitle className="flex items-center gap-2 text-sm font-bold text-primary">
                         <MapPin className="w-3.5 h-3.5" />
                         Lokasi proyek
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6">
-                      <p className="font-display font-extrabold text-gray-900 dark:text-white text-lg tracking-tight leading-tight">{project?.city}</p>
-                      <p className="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark mt-2 line-clamp-2">
+                      <p className="font-display font-extrabold text-foreground text-lg tracking-tight leading-tight">{project?.city}</p>
+                      <p className="text-xs font-medium text-muted-foreground mt-2 line-clamp-2">
                         {project?.address}
                       </p>
                     </CardContent>
                   </Card>
 
-                  <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
-                      <CardTitle className="flex items-center gap-2 text-[10px] font-bold text-primary tracking-widest">
+                  <Card className="rounded-2xl border-border bg-card shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <CardHeader className="pb-3 border-b border-border bg-muted/50">
+                      <CardTitle className="flex items-center gap-2 text-sm font-bold text-primary">
                         <Calendar className="w-3.5 h-3.5" />
                         Jadwal & waktu
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6">
                       <div className="space-y-4">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-text-secondary-light dark:text-text-secondary-dark font-bold tracking-wider">Terdaftar</span>
-                          <span className="font-bold text-gray-900 dark:text-white px-3 py-1 bg-gray-100 dark:bg-white/5 rounded-lg text-[10px]">{formatDate(project?.created_at)}</span>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground font-bold tracking-wider">Terdaftar</span>
+                          <span className="font-bold text-foreground px-3 py-1 bg-muted rounded-lg text-xs">{formatDate(project?.created_at)}</span>
                         </div>
                         {project?.target_completion_date && (
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-text-secondary-light dark:text-text-secondary-dark font-bold tracking-wider">Deadline</span>
-                            <span className="font-bold text-white px-3 py-1 bg-primary rounded-lg shadow-lg shadow-primary/20 text-[10px] tracking-wider">{formatDate(project?.target_completion_date)}</span>
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground font-bold tracking-wider">Deadline</span>
+                            <span className="font-bold text-white px-3 py-1 bg-primary rounded-lg shadow-lg shadow-primary/20 text-xs tracking-wider">{formatDate(project?.target_completion_date)}</span>
                           </div>
                         )}
                       </div>
@@ -401,45 +401,45 @@ export default function HeadConsultantProjectDetailPage() {
                 {/* Tabs */}
                 <motion.div variants={itemVariants}>
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-4 bg-surface-light dark:bg-surface-dark p-1 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                      <TabsTrigger value="overview" className="rounded-xl font-bold text-xs tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Ikhtisar</TabsTrigger>
-                      <TabsTrigger value="documents" className="rounded-xl font-bold text-xs tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Berkas</TabsTrigger>
-                      <TabsTrigger value="team" className="rounded-xl font-bold text-xs tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Tim kerja</TabsTrigger>
-                      <TabsTrigger value="timeline" className="rounded-xl font-bold text-xs tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Riwayat</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-4 bg-card p-1 rounded-2xl border border-border shadow-sm">
+                      <TabsTrigger value="overview" className="rounded-xl font-bold text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Ikhtisar</TabsTrigger>
+                      <TabsTrigger value="documents" className="rounded-xl font-bold text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Berkas</TabsTrigger>
+                      <TabsTrigger value="team" className="rounded-xl font-bold text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Tim kerja</TabsTrigger>
+                      <TabsTrigger value="timeline" className="rounded-xl font-bold text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Riwayat</TabsTrigger>
                     </TabsList>
 
                     {/* Overview Tab */}
                     <TabsContent value="overview" className="space-y-6 outline-none">
-                      <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden">
+                      <Card className="rounded-2xl border-border bg-card shadow-sm overflow-hidden">
                         <div className="h-1 bg-primary"></div>
-                        <CardHeader className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                          <CardTitle className="text-sm font-bold text-gray-900 dark:text-white">Spesifikasi proyek</CardTitle>
-                          <CardDescription className="text-[10px] font-bold text-text-secondary-light tracking-wider">Detail lingkup dan parameter teknis</CardDescription>
+                        <CardHeader className="bg-muted/50 border-b border-border">
+                          <CardTitle className="text-sm font-bold text-foreground">Spesifikasi proyek</CardTitle>
+                          <CardDescription className="text-xs font-bold text-text-secondary-light">Detail lingkup dan parameter teknis</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-8 p-8">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
-                              <span className="text-[10px] font-bold text-primary tracking-widest">Deskripsi ruang lingkup</span>
-                              <p className="text-xs leading-relaxed font-medium text-text-secondary-light dark:text-text-secondary-dark bg-gray-50/50 dark:bg-white/5 p-5 rounded-2xl border border-gray-200 dark:border-gray-800">
+                              <span className="text-sm font-bold text-primary">Deskripsi ruang lingkup</span>
+                              <p className="text-sm leading-relaxed font-medium text-muted-foreground bg-muted/50 p-5 rounded-2xl border border-border">
                                 {project?.description || 'Informasi deskripsi belum ditambahkan untuk proyek ini.'}
                               </p>
                             </div>
                             <div className="space-y-4">
-                              <span className="text-[10px] font-bold text-primary tracking-widest">Parameter teknis</span>
+                              <span className="text-sm font-bold text-primary">Parameter teknis</span>
                               <div className="grid grid-cols-1 gap-4">
-                                <div className="group flex justify-between items-center p-4 bg-gray-50/50 dark:bg-white/5 hover:border-primary/30 rounded-2xl border border-gray-200 dark:border-gray-800 transition-all duration-300">
+                                <div className="group flex justify-between items-center p-4 bg-muted/50 hover:border-primary/30 rounded-2xl border border-border transition-all duration-300">
                                   <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest mb-1">Klasifikasi aplikasi</span>
-                                    <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">{project?.application_type || 'N/A'}</span>
+                                    <span className="text-sm font-bold text-muted-foreground mb-1">Klasifikasi aplikasi</span>
+                                    <span className="text-sm font-bold text-foreground">{project?.application_type || 'N/A'}</span>
                                   </div>
                                   <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                                     <Zap className="w-5 h-5" />
                                   </div>
                                 </div>
-                                <div className="group flex justify-between items-center p-4 bg-gray-50/50 dark:bg-white/5 hover:border-primary/30 rounded-2xl border border-gray-200 dark:border-gray-800 transition-all duration-300">
+                                <div className="group flex justify-between items-center p-4 bg-muted/50 hover:border-primary/30 rounded-2xl border border-border transition-all duration-300">
                                   <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest mb-1">Volume bangunan</span>
-                                    <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">{project?.area_size ? `${project.area_size} M²` : 'Tidak tersedia'}</span>
+                                    <span className="text-sm font-bold text-muted-foreground mb-1">Volume bangunan</span>
+                                    <span className="text-sm font-bold text-foreground">{project?.area_size ? `${project.area_size} M²` : 'Tidak tersedia'}</span>
                                   </div>
                                   <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                                     <Building2 className="w-5 h-5" />
@@ -451,28 +451,28 @@ export default function HeadConsultantProjectDetailPage() {
                         </CardContent>
                       </Card>
 
-                      <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm overflow-hidden">
-                        <CardHeader className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                          <CardTitle className="text-sm font-bold text-gray-900 dark:text-white">Monitoring progres</CardTitle>
-                          <CardDescription className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Persentase penyelesaian proyek</CardDescription>
+                      <Card className="rounded-2xl border-border bg-card shadow-sm overflow-hidden">
+                        <CardHeader className="bg-muted/50 border-b border-border">
+                          <CardTitle className="text-sm font-bold text-foreground">Monitoring progres</CardTitle>
+                          <CardDescription className="text-xs font-bold text-text-secondary-light">Persentase penyelesaian proyek</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8">
                           <div className="space-y-8">
                             <div className="relative pt-2">
                               <div className="flex justify-between items-end mb-4">
                                 <div className="flex flex-col gap-1">
-                                  <span className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">Tahapan pengerjaan</span>
+                                  <span className="text-xs font-bold text-muted-foreground">Tahapan pengerjaan</span>
                                   <div className="flex items-center gap-2">
                                     <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
-                                    <span className="text-lg font-display font-extrabold text-primary tracking-tight uppercase tracking-widest">{getStatusLabel(project?.status)}</span>
+                                    <span className="text-lg font-display font-extrabold text-primary tracking-tight">{getStatusLabel(project?.status)}</span>
                                   </div>
                                 </div>
                                 <div className="flex flex-col items-end">
-                                  <span className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">Completion</span>
-                                  <span className="text-3xl font-display font-extrabold text-gray-900 dark:text-white tracking-tighter">{getProgressValue(project?.status)}<span className="text-sm text-primary ml-0.5">%</span></span>
+                                  <span className="text-xs font-bold text-muted-foreground">Completion</span>
+                                  <span className="text-3xl font-display font-extrabold text-foreground tracking-tighter">{getProgressValue(project?.status)}<span className="text-sm text-primary ml-0.5">%</span></span>
                                 </div>
                               </div>
-                              <div className="h-4 w-full bg-gray-100 dark:bg-white/5 rounded-full p-1 shadow-inner overflow-hidden border border-gray-200 dark:border-gray-800">
+                              <div className="h-4 w-full bg-muted rounded-full p-1 shadow-inner overflow-hidden border border-border">
                                 <motion.div
                                   initial={{ width: 0 }}
                                   animate={{ width: `${getProgressValue(project?.status)}%` }}
@@ -494,8 +494,8 @@ export default function HeadConsultantProjectDetailPage() {
                                   <AlertCircle className="h-6 w-6" />
                                 </div>
                                 <div className="flex flex-col gap-1 justify-center">
-                                  <h5 className="font-bold text-xs text-primary uppercase tracking-widest">Prioritas review tinggi</h5>
-                                  <p className="text-[11px] font-bold leading-relaxed text-text-secondary-light dark:text-text-secondary-dark">
+                                  <h5 className="font-bold text-sm text-primary">Prioritas review tinggi</h5>
+                                  <p className="text-xs font-bold leading-relaxed text-muted-foreground">
                                     Progres proyek terhenti di 70%. <span className="text-primary underline font-bold decoration-2 underline-offset-4 tracking-wider">Konfirmasi Anda</span> diperlukan untuk melepaskan laporan ke tahap pengajuan Pemerintah.
                                   </p>
                                 </div>
@@ -508,25 +508,25 @@ export default function HeadConsultantProjectDetailPage() {
 
                     {/* Documents Tab */}
                     <TabsContent value="documents" className="space-y-6 outline-none">
-                      <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
+                      <Card className="rounded-2xl border-border bg-card shadow-sm">
                         <CardHeader className="flex flex-row items-center justify-between p-6">
                           <div>
-                            <CardTitle className="text-sm font-bold text-gray-900 dark:text-white">Inventaris dokumentasi</CardTitle>
-                            <CardDescription className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">
+                            <CardTitle className="text-sm font-bold text-foreground">Inventaris dokumentasi</CardTitle>
+                            <CardDescription className="text-xs font-bold text-text-secondary-light">
                               Total {documents.length} Berkas dalam Database
                             </CardDescription>
                           </div>
-                          <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800">
+                          <div className="p-2.5 rounded-xl bg-muted border border-border">
                             <Filter size={18} className="text-text-secondary-light" />
                           </div>
                         </CardHeader>
                         <CardContent className="p-6">
                           {documents.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 bg-gray-50/50 dark:bg-white/5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
-                              <div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 mb-6 text-text-secondary-light/30">
+                            <div className="flex flex-col items-center justify-center py-20 bg-muted/50 rounded-2xl border-2 border-dashed border-border">
+                              <div className="h-20 w-20 flex items-center justify-center rounded-full bg-muted mb-6 text-muted-foreground/30">
                                 <FileCheck size={40} />
                               </div>
-                              <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">Repositori dokumen kosong</p>
+                              <p className="text-xs font-bold text-text-secondary-light">Repositori dokumen kosong</p>
                             </div>
                           ) : (
                             <div className="grid grid-cols-1 gap-4">
@@ -534,7 +534,7 @@ export default function HeadConsultantProjectDetailPage() {
                                 <motion.div
                                   whileHover={{ x: 4 }}
                                   key={doc.id}
-                                  className="group flex flex-col md:flex-row items-center justify-between p-5 bg-gray-50/50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl hover:border-primary/20 transition-all duration-300 shadow-sm gap-4"
+                                  className="group flex flex-col md:flex-row items-center justify-between p-5 bg-muted/50 border border-border rounded-2xl hover:border-primary/20 transition-all duration-300 shadow-sm gap-4"
                                 >
                                   <div className="flex items-center gap-5 w-full md:w-auto">
                                     <div className={`h-12 w-12 flex items-center justify-center rounded-xl font-bold text-lg shadow-sm border ${doc.document_type === 'CONTRACT' ? 'bg-blue-100 border-blue-200 text-blue-600' :
@@ -546,22 +546,22 @@ export default function HeadConsultantProjectDetailPage() {
                                     <div className="flex flex-col gap-0.5 min-w-0">
                                       <p className="font-bold text-sm tracking-tight text-gray-900 dark:text-white leading-none truncate">{doc.title || doc.document_type}</p>
                                       <div className="flex items-center gap-3">
-                                        <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">
+                                        <p className="text-xs font-bold text-text-secondary-light">
                                           {doc.document_type}
                                         </p>
-                                        <span className="text-gray-200 dark:text-gray-800">|</span>
-                                        <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">
+                                        <span className="text-border">|</span>
+                                        <p className="text-xs font-bold text-text-secondary-light">
                                           ID: {doc.id.slice(0, 8)}
                                         </p>
                                       </div>
-                                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">
+                                      <p className="text-xs font-bold text-primary mt-1">
                                         Update: {formatDate(doc.created_at)}
                                       </p>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
                                     <div className={`
-                                             flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold text-[9px] uppercase tracking-widest
+                                             flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold text-xs
                                             ${doc.status === 'approved_by_hc' ? 'bg-green-500/10 border-green-500/20 text-green-600' :
                                         doc.status === 'revision_requested_by_hc' ? 'bg-red-500/10 border-red-500/20 text-red-600' :
                                           'bg-yellow-500/10 border-yellow-500/20 text-yellow-600'}
@@ -577,7 +577,7 @@ export default function HeadConsultantProjectDetailPage() {
                                         <Button
                                           size="sm"
                                           onClick={() => handleApproveDocument(doc.id)}
-                                          className="bg-green-600 hover:bg-green-700 text-white font-bold text-[10px] h-9 px-4 rounded-xl shadow-lg shadow-green-500/20 transition-all uppercase tracking-widest"
+                                          className="bg-green-600 hover:bg-green-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-lg shadow-green-500/20 transition-all"
                                         >
                                           Verifikasi
                                         </Button>
@@ -585,7 +585,7 @@ export default function HeadConsultantProjectDetailPage() {
                                           size="sm"
                                           variant="outline"
                                           onClick={() => handleRequestRevision(doc.id)}
-                                          className="h-9 px-4 rounded-xl font-bold text-[10px] border-red-500/20 text-red-600 hover:bg-red-500/10 transition-all uppercase tracking-widest"
+                                          className="h-9 px-4 rounded-xl font-bold text-xs border-red-500/20 text-red-600 hover:bg-red-500/10 transition-all"
                                         >
                                           Revisi
                                         </Button>
@@ -606,16 +606,16 @@ export default function HeadConsultantProjectDetailPage() {
 
                     {/* Team Tab */}
                     <TabsContent value="team" className="space-y-6 outline-none">
-                      <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
-                        <CardHeader className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                          <CardTitle className="text-sm font-bold text-gray-900 dark:text-white">Personil proyek</CardTitle>
-                          <CardDescription className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Tim kerja yang ditugaskan</CardDescription>
+                      <Card className="rounded-2xl border-border bg-card shadow-sm">
+                        <CardHeader className="bg-muted/50 border-b border-border">
+                          <CardTitle className="text-sm font-bold text-foreground">Personil proyek</CardTitle>
+                          <CardDescription className="text-xs font-bold text-text-secondary-light">Tim kerja yang ditugaskan</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8">
                           {teamMembers.length === 0 ? (
-                            <div className="text-center py-20 bg-gray-50/50 dark:bg-white/5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+                            <div className="text-center py-20 bg-muted/50 rounded-2xl border-2 border-dashed border-border">
                               <Users className="w-12 h-12 mx-auto text-text-secondary-light/20 mb-4" />
-                              <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">Tim belum diinstruksikan</p>
+                              <p className="text-xs font-bold text-text-secondary-light">Tim belum diinstruksikan</p>
                             </div>
                           ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
@@ -623,9 +623,9 @@ export default function HeadConsultantProjectDetailPage() {
                                 <motion.div
                                   whileHover={{ y: -4 }}
                                   key={member.id}
-                                  className="group flex items-center gap-5 p-5 bg-gray-50/50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl hover:border-primary/30 transition-all duration-300 shadow-sm"
+                                  className="group flex items-center gap-5 p-5 bg-muted/50 border border-border rounded-2xl hover:border-primary/30 transition-all duration-300 shadow-sm"
                                 >
-                                  <div className="h-14 w-14 shrink-0 flex items-center justify-center rounded-2xl bg-primary/10 border-2 border-white dark:border-gray-800 shadow-lg p-0.5">
+                                  <div className="h-14 w-14 shrink-0 flex items-center justify-center rounded-2xl bg-primary/10 border-2 border-background shadow-lg p-0.5">
                                     {member.profiles?.avatar_url ? (
                                       <img src={member.profiles.avatar_url} className="h-full w-full rounded-[14px] object-cover" />
                                     ) : (
@@ -635,13 +635,13 @@ export default function HeadConsultantProjectDetailPage() {
                                     )}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="font-bold text-sm tracking-tight text-gray-900 dark:text-white truncate">{member.profiles?.full_name}</p>
+                                    <p className="font-bold text-sm tracking-tight text-foreground truncate">{member.profiles?.full_name}</p>
                                     <div className="flex items-center gap-2 mt-1">
-                                      <Badge variant="outline" className="rounded-md font-bold text-[9px] bg-primary/5 border-primary/20 text-primary uppercase tracking-widest px-2 py-0.5">
+                                      <Badge variant="outline" className="rounded-md font-bold text-xs bg-primary/5 border-primary/20 text-primary px-2 py-0.5">
                                         {member.role.replace('_', ' ')}
                                       </Badge>
                                     </div>
-                                    <p className="text-[10px] font-bold text-text-secondary-light truncate mt-1 lowercase opacity-70 tracking-widest">{member.profiles?.email}</p>
+                                    <p className="text-xs font-bold text-text-secondary-light truncate mt-1 lowercase opacity-70 tracking-widest">{member.profiles?.email}</p>
                                   </div>
                                 </motion.div>
                               ))}
@@ -653,46 +653,46 @@ export default function HeadConsultantProjectDetailPage() {
 
                     {/* Timeline Tab */}
                     <TabsContent value="timeline" className="space-y-6 outline-none">
-                      <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm">
-                        <CardHeader className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                          <CardTitle className="text-sm font-bold text-gray-900 dark:text-white">Kronologi perkembangan</CardTitle>
-                          <CardDescription className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Riwayat aktivitas proyek</CardDescription>
+                      <Card className="rounded-2xl border-border bg-card shadow-sm">
+                        <CardHeader className="bg-muted/50 border-b border-border">
+                          <CardTitle className="text-sm font-bold text-foreground">Kronologi perkembangan</CardTitle>
+                          <CardDescription className="text-xs font-bold text-text-secondary-light">Riwayat aktivitas proyek</CardDescription>
                         </CardHeader>
                         <CardContent className="p-10">
-                          <div className="space-y-12 relative before:absolute before:inset-0 before:left-[21px] before:w-[2px] before:bg-gray-200 dark:before:bg-gray-800">
+                          <div className="space-y-12 relative before:absolute before:inset-0 before:left-[21px] before:w-[2px] before:bg-border">
                             <div className="flex items-start gap-8 relative group">
-                              <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-green-500 text-white z-10 border-4 border-white dark:border-gray-900 shadow-lg shadow-green-500/20 -ml-[1px]">
+                              <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-green-500 text-white z-10 border-4 border-background shadow-lg shadow-green-500/20 -ml-[1px]">
                                 <CheckCircle2 className="w-5 h-5" />
                               </div>
-                              <div className="flex-1 p-6 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 group-hover:border-green-500/30 transition-all">
-                                <p className="font-bold text-sm tracking-tight text-gray-900 dark:text-white">Inisialisasi sistem</p>
-                                <p className="text-[10px] font-bold text-green-600 uppercase tracking-widest mt-1">{formatDate(project?.created_at)}</p>
-                                <p className="text-[11px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-3 leading-relaxed">Proyek berhasil dibuat di platform SLF One Manager dan tim inti telah ditugaskan.</p>
+                              <div className="flex-1 p-6 rounded-2xl bg-muted/50 border border-border group-hover:border-green-500/30 transition-all">
+                                <p className="font-bold text-sm tracking-tight text-foreground">Inisialisasi sistem</p>
+                                <p className="text-xs font-bold text-green-600 mt-1">{formatDate(project?.created_at)}</p>
+                                <p className="text-xs font-bold text-muted-foreground mt-3 leading-relaxed">Proyek berhasil dibuat di platform SLF One Manager dan tim inti telah ditugaskan.</p>
                               </div>
                             </div>
 
                             {project?.status !== 'draft' && (
                               <div className="flex items-start gap-8 relative group">
-                                <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-primary text-white z-10 border-4 border-white dark:border-gray-900 shadow-lg shadow-primary/20 -ml-[1px]">
+                                <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-primary text-white z-10 border-4 border-background shadow-lg shadow-primary/20 -ml-[1px]">
                                   <Send className="w-5 h-5" />
                                 </div>
-                                <div className="flex-1 p-6 rounded-2xl bg-gray-50/50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 group-hover:border-primary/30 transition-all">
-                                  <p className="font-bold text-sm tracking-tight text-gray-900 dark:text-white">Pelaporan inspeksi</p>
-                                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">Status: {getStatusLabel(project?.status)}</p>
-                                  <p className="text-[11px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-3 leading-relaxed">Laporan teknis sedang diproses oleh tim inspektor dan admin lead untuk ditinjau oleh pimpinan.</p>
+                                <div className="flex-1 p-6 rounded-2xl bg-muted/50 border border-border group-hover:border-primary/30 transition-all">
+                                  <p className="font-bold text-sm tracking-tight text-foreground">Pelaporan inspeksi</p>
+                                  <p className="text-xs font-bold text-primary mt-1">Status: {getStatusLabel(project?.status)}</p>
+                                  <p className="text-xs font-bold text-muted-foreground mt-3 leading-relaxed">Laporan teknis sedang diproses oleh tim inspektor dan admin lead untuk ditinjau oleh pimpinan.</p>
                                 </div>
                               </div>
                             )}
 
                             {project?.status === 'head_consultant_review' && (
                               <div className="flex items-start gap-8 relative group">
-                                <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-yellow-500 text-white z-10 border-4 border-white dark:border-gray-900 shadow-lg shadow-yellow-500/20 -ml-[1px]">
+                                <div className="h-11 w-11 flex items-center justify-center rounded-2xl bg-yellow-500 text-white z-10 border-4 border-background shadow-lg shadow-yellow-500/20 -ml-[1px]">
                                   <Clock className="w-5 h-5" />
                                 </div>
                                 <div className="flex-1 p-6 rounded-2xl bg-yellow-500/5 border border-yellow-500/30 group-hover:bg-yellow-500/10 transition-all">
                                   <p className="font-bold text-sm tracking-tight text-yellow-600">Verifikasi head consultant</p>
-                                  <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-widest mt-1">Pending review</p>
-                                  <p className="text-[11px] font-bold text-yellow-600/80 mt-3 leading-relaxed uppercase tracking-widest">Menunggu konfirmasi akhir Anda untuk proses legalitas.</p>
+                                  <p className="text-xs font-bold text-yellow-600 mt-1">Pending review</p>
+                                  <p className="text-xs font-bold text-yellow-600/80 mt-3 leading-relaxed">Menunggu konfirmasi akhir Anda untuk proses legalitas.</p>
                                 </div>
                               </div>
                             )}

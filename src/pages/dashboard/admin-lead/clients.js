@@ -134,7 +134,7 @@ export default function AdminLeadClientsPage() {
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
           <Loader2 className="w-12 h-12 animate-spin text-[#7c3aed]" />
-          <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Syncing Client Intelligence...</p>
+          <p className="mt-6 text-[10px] font-bold tracking-[0.3em] text-slate-400 animate-pulse">Syncing client intelligence...</p>
         </div>
       </DashboardLayout>
     );
@@ -157,17 +157,17 @@ export default function AdminLeadClientsPage() {
           {/* Header Section */}
           <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="flex items-start gap-6">
-              <button type="button" onClick={() => router.back()} className="mt-2 size-12 rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-xl shadow-slate-200/30 dark:shadow-none">
+              <button type="button" onClick={() => router.back()} className="mt-2 size-12 rounded-2xl bg-card border border-border flex items-center justify-center text-slate-400 hover:text-[#7c3aed] hover:scale-110 transition-all shadow-xl shadow-slate-200/30 dark:shadow-none">
                 <ArrowLeft size={20} />
               </button>
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">Client Management</Badge>
+                  <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-bold tracking-widest">Client management</Badge>
                   <div className="w-1 h-1 rounded-full bg-slate-300" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Database: {clients.length} Clients</span>
+                  <span className="text-[10px] font-bold tracking-widest text-slate-400">Total database: {clients.length} klien</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
-                  Partner <span className="text-[#7c3aed]">Intelligence</span>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+                  Partner <span className="text-[#7c3aed]">intelligence</span>
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium max-w-2xl">Arsip klien komprehensif dan riwayat kolaborasi proyek strategis Anda.</p>
               </div>
@@ -177,17 +177,17 @@ export default function AdminLeadClientsPage() {
               <div className="relative group flex-1 lg:min-w-[400px]">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
                 <input
-                  className="h-16 w-full rounded-2xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
-                  placeholder="Query Client, Perusahaan, atau ID..."
+                  className="h-16 w-full rounded-2xl bg-card border border-border shadow-2xl shadow-slate-200/40 dark:shadow-none pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#7c3aed]/10 outline-none transition-all placeholder-slate-400 font-medium"
+                  placeholder="Query client, perusahaan, atau ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <button
                 onClick={() => router.push('/dashboard/admin-lead/clients/new')}
-                className="h-16 px-8 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl flex items-center justify-center gap-4 font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-[#7c3aed]/30 active:scale-95"
+                className="h-12 px-4 md:px-8 w-full sm:w-auto bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl flex items-center justify-center gap-4 font-bold text-[10px] tracking-widest transition-all shadow-xl shadow-[#7c3aed]/20 active:scale-95 max-w-full truncate"
               >
-                <UserPlus size={18} /> Add New Partner
+                <UserPlus size={18} /> Partner baru
               </button>
             </div>
           </motion.div>
@@ -195,33 +195,33 @@ export default function AdminLeadClientsPage() {
           {/* Stats Overview */}
           <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <StatSimple
-              title="Total Clients"
+              title="Total klien"
               value={clients.length}
               icon={<Users size={20} />}
               color="text-[#7c3aed]"
               bg="bg-[#7c3aed]/10"
-              subValue="Database Growth"
+              subValue="Pertumbuhan database"
             />
             <StatSimple
-              title="Project Volume"
+              title="Volume proyek"
               value={clients.reduce((acc, c) => acc + (c.project_count || 0), 0)}
               icon={<Briefcase size={20} />}
               color="text-emerald-500"
               bg="bg-emerald-500/10"
-              subValue="Global Assignments"
+              subValue="Penugasan global"
             />
             <StatSimple
-              title="Retention Rate"
+              title="Tingkat retensi"
               value={(clients.reduce((acc, c) => acc + (c.project_count || 0), 0) / (clients.length || 1)).toFixed(1)}
               icon={<Rocket size={20} />}
               color="text-amber-500"
               bg="bg-amber-500/10"
-              subValue="Avg. Task/Partner"
+              subValue="Rata-rata tugas/partner"
             />
-            <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center justify-between group cursor-pointer hover:border-[#7c3aed]/30 transition-all" onClick={handleRefresh}>
+            <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center justify-between group cursor-pointer hover:border-[#7c3aed]/30 transition-all" onClick={handleRefresh}>
               <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Sync Status</p>
-                <p className="text-xl font-black tracking-tight leading-none text-blue-500 uppercase">Operational</p>
+                <p className="text-[10px] font-bold text-slate-400 leading-none">Sync status</p>
+                <p className="text-xl font-bold tracking-tight leading-none text-blue-500 capitalize">Operasional</p>
               </div>
               <div className={`size-12 rounded-2xl flex items-center justify-center bg-blue-500/10 text-blue-500 shadow-lg shadow-blue-500/5 group-hover:rotate-180 transition-all duration-700 ${loading ? 'animate-spin' : ''}`}>
                 <RefreshCw size={20} />
@@ -232,8 +232,8 @@ export default function AdminLeadClientsPage() {
           {/* Clients Grid Section */}
           <motion.div variants={itemVariants} className="space-y-8">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black uppercase tracking-tighter">Directory <span className="text-slate-400">Index</span></h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Showing {filteredClients.length} of {clients.length} Partners</p>
+              <h3 className="text-xl font-bold tracking-tighter">Direktori <span className="text-slate-400">index</span></h3>
+              <p className="text-[10px] font-bold text-slate-400 tracking-widest">Menampilkan {filteredClients.length} dari {clients.length} partner</p>
             </div>
 
             <AnimatePresence mode="wait">
@@ -245,14 +245,14 @@ export default function AdminLeadClientsPage() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="py-32 bg-white dark:bg-[#1e293b] rounded-[3rem] border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center text-center p-10"
+                  className="py-32 bg-card rounded-[3rem] border border-border flex flex-col items-center justify-center text-center p-10"
                 >
                   <div className="size-24 bg-slate-50 dark:bg-white/5 rounded-[2.5rem] flex items-center justify-center mb-8">
                     <Users size={40} className="text-slate-300 dark:text-slate-700" />
                   </div>
-                  <h3 className="text-2xl font-black uppercase tracking-tighter">No Partners Found</h3>
+                  <h3 className="text-2xl font-bold tracking-tighter">Tidak ada partner ditemukan</h3>
                   <p className="text-slate-500 mt-4 font-medium max-w-sm mx-auto">Database tidak menemukan client yang sesuai dengan kriteria pencarian Anda.</p>
-                  <button onClick={() => setSearchTerm('')} className="mt-8 h-12 px-10 bg-slate-100 dark:bg-white/5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Clear Search</button>
+                  <button onClick={() => setSearchTerm('')} className="mt-8 h-12 px-10 bg-slate-100 dark:bg-white/5 rounded-xl font-bold text-[10px] tracking-widest hover:bg-slate-200 transition-all">Bersihkan pencarian</button>
                 </motion.div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -264,14 +264,14 @@ export default function AdminLeadClientsPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.4, ease: "circOut" }}
-                      className="group bg-white dark:bg-[#1e293b] rounded-[3rem] p-10 border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/50 dark:shadow-none hover:border-[#7c3aed]/30 transition-all duration-500 relative overflow-hidden"
+                      className="group bg-card rounded-[3rem] p-10 border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none hover:border-[#7c3aed]/30 transition-all duration-500 relative overflow-hidden"
                     >
                       {/* Decorative Element */}
                       <div className="absolute -top-12 -right-12 size-40 bg-gradient-to-br from-[#7c3aed] to-blue-500 opacity-[0.03] rounded-full blur-3xl group-hover:opacity-10 transition-opacity" />
 
                       <div className="relative z-10 flex flex-col h-full">
                         <div className="flex justify-between items-start mb-8">
-                          <div className="size-16 bg-gradient-to-br from-[#7c3aed] to-blue-600 rounded-[1.5rem] flex items-center justify-center text-white font-black text-2xl shadow-2xl shadow-[#7c3aed]/30 group-hover:scale-110 transition-transform duration-500">
+                          <div className="size-16 bg-gradient-to-br from-[#7c3aed] to-blue-600 rounded-[1.5rem] flex items-center justify-center text-white font-bold text-2xl shadow-2xl shadow-[#7c3aed]/30 group-hover:scale-110 transition-transform duration-500">
                             {client.company_name?.charAt(0) || client.name?.charAt(0) || '?'}
                           </div>
                           <div className="flex gap-2">
@@ -281,20 +281,20 @@ export default function AdminLeadClientsPage() {
                                   <Settings size={18} />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent className="bg-slate-900 border-none rounded-xl text-[9px] font-black uppercase tracking-widest p-2">Edit Partner</TooltipContent>
+                              <TooltipContent className="bg-slate-900 border-none rounded-xl text-[9px] font-bold tracking-widest p-2">Edit partner</TooltipContent>
                             </Tooltip>
                           </div>
                         </div>
 
                         <div className="space-y-2 mb-8">
-                          <h3 className="text-2xl font-black uppercase tracking-tighter leading-none group-hover:text-[#7c3aed] transition-colors line-clamp-1">{client.company_name || 'Personal Account'}</h3>
+                          <h3 className="text-2xl font-bold tracking-tighter leading-none group-hover:text-[#7c3aed] transition-colors line-clamp-1">{client.company_name || 'Akun personal'}</h3>
                           <div className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{client.name}</span>
+                            <span className="text-[10px] font-bold text-slate-400 tracking-widest">{client.name}</span>
                           </div>
                         </div>
 
-                        <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-white/5">
+                        <div className="space-y-4 pt-4 border-t border-border">
                           <div className="flex items-center gap-4 text-slate-500">
                             <div className="size-8 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
                               <Mail size={14} className="text-[#7c3aed]" />
@@ -311,25 +311,25 @@ export default function AdminLeadClientsPage() {
                             <div className="size-8 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
                               <MapPin size={14} className="text-[#7c3aed]" />
                             </div>
-                            <span className="text-xs font-bold truncate uppercase tracking-tight">{client.city || 'Regional Database'}</span>
+                            <span className="text-xs font-bold truncate tracking-tight">{client.city || 'Regional database'}</span>
                           </div>
                         </div>
 
                         <div className="mt-auto pt-10 flex items-center justify-between">
                           <div className="flex flex-col">
                             <div className="flex items-baseline gap-1">
-                              <span className="text-3xl font-black text-slate-900 dark:text-white leading-none tracking-tighter">{client.project_count || 0}</span>
-                              <span className="text-[10px] font-black text-[#7c3aed] uppercase tracking-widest">Jobs</span>
+                              <span className="text-3xl font-bold text-slate-900 dark:text-white leading-none tracking-tighter">{client.project_count || 0}</span>
+                              <span className="text-[10px] font-bold text-[#7c3aed] tracking-widest">Tugas</span>
                             </div>
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Lifecycle Count</span>
+                            <span className="text-[8px] font-bold text-slate-400 tracking-widest mt-1">Lifecycle count</span>
                           </div>
 
                           <div className="flex gap-3">
                             <button
                               onClick={() => router.push(`/dashboard/admin-lead/communication?client=${client.id}`)}
-                              className="h-12 px-6 rounded-2xl bg-[#7c3aed]/10 text-[#7c3aed] hover:bg-[#7c3aed] hover:text-white font-black text-[9px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 group/btn shadow-inner"
+                              className="h-10 px-6 rounded-xl bg-[#7c3aed]/10 text-[#7c3aed] hover:bg-[#7c3aed] hover:text-white font-bold text-[9px] tracking-[0.2em] transition-all flex items-center justify-center gap-2 group/btn shadow-inner"
                             >
-                              <MessageCircle size={16} /> Link Chat
+                              <MessageCircle size={16} /> Link chat
                             </button>
                             <button
                               onClick={() => router.push(`/dashboard/admin-lead/clients/${client.id}`)}
@@ -355,11 +355,11 @@ export default function AdminLeadClientsPage() {
 // Sub-components
 function StatSimple({ title, value, icon, color, bg, subValue }) {
   return (
-    <div className="bg-white dark:bg-[#1e293b] p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-between transition-all hover:translate-y-[-8px] group">
+    <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/40 dark:shadow-none flex flex-col justify-between transition-all hover:translate-y-[-8px] group">
       <div className="flex items-start justify-between mb-8">
         <div className="space-y-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none">{title}</p>
-          <p className="text-3xl font-black tracking-tighter leading-none group-hover:text-[#7c3aed] transition-colors">{value}</p>
+          <p className="text-[10px] font-bold text-slate-400 leading-none">{title}</p>
+          <p className="text-3xl font-bold tracking-tighter leading-none group-hover:text-[#7c3aed] transition-colors">{value}</p>
         </div>
         <div className={`size-14 rounded-2xl flex items-center justify-center ${bg} ${color} shadow-lg shadow-current/5 group-hover:scale-110 transition-transform`}>
           {icon}
@@ -367,8 +367,9 @@ function StatSimple({ title, value, icon, color, bg, subValue }) {
       </div>
       <div className="flex items-center gap-2">
         <div className="w-1 h-1 rounded-full bg-slate-300" />
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{subValue}</p>
+        <p className="text-[9px] font-bold text-slate-400 tracking-widest">{subValue}</p>
       </div>
     </div>
   );
 }
+

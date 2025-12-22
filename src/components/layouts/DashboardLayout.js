@@ -294,6 +294,20 @@ const DashboardLayout = ({
   const sidebarItems = useMemo(() => getSidebarItems(profile?.role), [profile?.role]);
   const roleName = useMemo(() => getRoleDisplayName(profile?.role), [profile?.role]);
 
+  // Optimize bottom navigation for mobile (limit items)
+  const bottomNavItems = useMemo(() => {
+    if (!profile?.role) return [];
+
+    // Filter items for Admin Lead specifically as per user request (Max 4 items)
+    if (profile.role === 'admin_lead') {
+      const priorityNames = ['Dashboard', 'Proyek', 'Timeline', 'Komunikasi'];
+      return sidebarItems.filter(item => priorityNames.includes(item.name)).slice(0, 4);
+    }
+
+    // Default for all other roles: Show first 5 important items (Max 5 items)
+    return sidebarItems.slice(0, 5);
+  }, [sidebarItems, profile?.role]);
+
   // --- LOGIKA PROTEKSI AKSES DAN CHECK is_approved (UTAMA) ---
   useEffect(() => {
     // 1. Loading Awal (Tunggu user dan profile dimuat)
@@ -494,7 +508,7 @@ const DashboardLayout = ({
 
   // Jika semua pemeriksaan lolos atau user berada di /awaiting-approval, lanjutkan rendering.
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-body text-gray-900 dark:text-white antialiased">
+    <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-body text-gray-900 dark:text-white antialiased selection:bg-primary/20">
 
       {/* === DESKTOP SIDEBAR (ASIDE) === */}
       {!hideSidebar && (
@@ -614,15 +628,15 @@ const DashboardLayout = ({
       )}
 
       {/* === MAIN CONTENT === */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-background-light dark:bg-background-dark">
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-background-light dark:bg-background-dark w-full max-w-[100vw] overflow-x-hidden">
 
         {/* MOBILE HEADER */}
         {showHeader && (
           <header className={cn(
-            "lg:hidden flex items-center bg-surface-light dark:bg-surface-dark border-b border-slate-200 dark:border-white/10 sticky top-0 z-20 shadow-sm transition-all duration-300",
+            "lg:hidden flex items-center bg-surface-light dark:bg-surface-dark border-b border-slate-200 dark:border-white/10 sticky top-0 z-20 shadow-sm transition-all duration-300 h-16 md:h-20",
             showHeaderMobile ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
           )}>
-            <div className="flex items-center justify-between w-full p-4 mx-auto max-w-[1600px]">
+            <div className="flex items-center justify-between w-full px-4 md:px-6 mx-auto max-w-[1600px]">
               <div className="flex items-center gap-3">
                 <Sheet>
                   <SheetTrigger asChild>
@@ -727,19 +741,22 @@ const DashboardLayout = ({
               <div className="flex items-center gap-3">
                 <button
                   onClick={toggleDarkMode}
-                  className="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors text-slate-500 dark:text-slate-400"
+                  className="p-2.5 md:p-3 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors text-slate-500 dark:text-slate-400 touch-target"
                 >
-                  {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  {darkMode ? <Sun className="w-5 h-5 md:w-6 md:h-6" /> : <Moon className="w-5 h-5 md:w-6 md:h-6" />}
                 </button>
-                <Link href="/dashboard/notifications" className="relative text-slate-500">
-                  <Bell className="w-6 h-6" />
+                <Link href="/dashboard/notifications" className="relative p-2.5 md:p-3 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors text-slate-500 dark:text-slate-400 touch-target">
+                  <Bell className="w-5 h-5 md:w-6 md:h-6" />
                   {notifications > 0 && (
-                    <span className="absolute -top-1 -right-1 size-2.5 bg-red-500 rounded-full border-2 border-surface-light dark:border-surface-dark"></span>
+                    <span className="absolute top-2 right-2 md:top-2.5 md:right-2.5 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                    </span>
                   )}
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Avatar className="size-9 ring-2 ring-primary/20 shadow-sm cursor-pointer hover:ring-primary/40 transition-all">
+                    <Avatar className="size-10 md:size-11 ring-2 ring-primary/20 shadow-sm cursor-pointer hover:ring-primary/40 transition-all">
                       <AvatarImage src={profile?.avatar_url} />
                       <AvatarFallback className="bg-primary text-white text-xs">{profile?.full_name?.charAt(0) || 'U'}</AvatarFallback>
                     </Avatar>
@@ -846,11 +863,11 @@ const DashboardLayout = ({
 
         {/* === MOBILE BOTTOM NAV === */}
         <nav className={cn(
-          "lg:hidden fixed bottom-0 w-full bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-md border-t border-slate-200 dark:border-white/10 flex justify-around py-3 pb-safe z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] select-none transition-all duration-300",
-          showHeaderMobile ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
+          "lg:hidden fixed bottom-1 left-2 right-2 bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 flex justify-around py-3 pb-safe z-30 shadow-[0_-8px_30px_rgb(0,0,0,0.12)] select-none transition-all duration-300 rounded-[2rem]",
+          showHeaderMobile ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
         )}>
-          {/* Dynamic Bottom Nav based on Role - Show first 5 items */}
-          {sidebarItems.map((item, index) => {
+          {/* Dynamic Bottom Nav based on Role - Optimized for Admin Lead (4 items) */}
+          {bottomNavItems.map((item, index) => {
             const isActive = item.exact
               ? router.pathname === item.path
               : router.pathname === item.path || router.pathname.startsWith(item.path + '/');

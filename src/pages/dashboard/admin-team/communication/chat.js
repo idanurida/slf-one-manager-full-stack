@@ -118,10 +118,10 @@ export default function AdminTeamChatPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl mx-auto h-[calc(100vh-100px)] flex flex-col bg-white dark:bg-[#0f172a] rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100 dark:border-white/5 my-4">
+            <div className="max-w-4xl mx-auto h-[calc(100vh-64px)] md:h-[calc(100vh-100px)] flex flex-col bg-card md:rounded-[2rem] shadow-none md:shadow-2xl overflow-hidden border-t md:border border-border -mx-4 -mb-4 md:mx-auto md:my-4 relative">
 
                 {/* Header */}
-                <div className="p-4 bg-white dark:bg-[#1e293b] border-b border-slate-100 dark:border-white/5 flex items-center justify-between z-10">
+                <div className="p-4 bg-card border-b border-border flex items-center justify-between z-10">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/admin-team/communication')} className="rounded-full">
                             <ArrowLeft size={20} />
@@ -166,7 +166,7 @@ export default function AdminTeamChatPage() {
                             return (
                                 <div key={msg.id}>
                                     {showTime && (
-                                        <div className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest my-4">
+                                        <div className="text-center text-[10px] text-slate-400 font-medium my-4">
                                             {format(new Date(msg.created_at), 'dd MMM HH:mm', { locale: localeId })}
                                         </div>
                                     )}
@@ -176,7 +176,7 @@ export default function AdminTeamChatPage() {
                                             max-w-[70%] p-4 rounded-2xl shadow-sm relative
                                             ${isMe
                                                     ? 'bg-[#7c3aed] text-white rounded-br-none'
-                                                    : 'bg-white dark:bg-[#1e293b] text-slate-700 dark:text-slate-200 rounded-bl-none'}
+                                                    : 'bg-card text-slate-700 dark:text-slate-200 rounded-bl-none'}
                                         `}
                                         >
                                             <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
@@ -195,7 +195,7 @@ export default function AdminTeamChatPage() {
                 </div>
 
                 {/* Input Area */}
-                <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-[#1e293b] border-t border-slate-100 dark:border-white/5 flex gap-3 items-center">
+                <form onSubmit={handleSendMessage} className="p-4 bg-card border-t border-border flex gap-3 items-center">
                     <Input
                         value={newMessage}
                         onChange={e => setNewMessage(e.target.value)}

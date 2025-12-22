@@ -291,26 +291,26 @@ export default function HeadConsultantSettings() {
                 </div>
 
                 <Tabs defaultValue="profile" className="space-y-6">
-                    <TabsList className="bg-surface-light dark:bg-surface-dark p-1 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-wrap h-auto">
+                    <TabsList className="bg-card p-1 rounded-2xl border border-border shadow-sm flex flex-wrap h-auto">
                         <TabsTrigger value="profile" className="flex items-center gap-2 px-4 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
                             <User className="h-4 w-4" />
-                            <span className="text-xs font-bold">Profil</span>
+                            <span className="text-sm font-bold">Profil</span>
                         </TabsTrigger>
                         <TabsTrigger value="security" className="flex items-center gap-2 px-4 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
                             <Shield className="h-4 w-4" />
-                            <span className="text-xs font-bold">Keamanan</span>
+                            <span className="text-sm font-bold">Keamanan</span>
                         </TabsTrigger>
                         <TabsTrigger value="notifications" className="flex items-center gap-2 px-4 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
                             <Bell className="h-4 w-4" />
-                            <span className="text-xs font-bold">Notifikasi</span>
+                            <span className="text-sm font-bold">Notifikasi</span>
                         </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="profile" className="space-y-6 animate-fade-in-up">
-                        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm bg-surface-light dark:bg-surface-dark">
-                            <CardHeader className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                                <CardTitle className="text-sm font-bold text-gray-900 dark:text-white">Foto profil</CardTitle>
-                                <CardDescription className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Kelola foto profil Anda</CardDescription>
+                        <Card className="rounded-2xl border-border overflow-hidden shadow-sm bg-card">
+                            <CardHeader className="bg-muted/50 border-b border-border">
+                                <CardTitle className="text-base font-bold text-gray-900 dark:text-white">Foto profil</CardTitle>
+                                <CardDescription className="text-xs font-bold text-text-secondary-light">Kelola foto profil Anda</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8">
                                 <div className="flex flex-col md:flex-row items-center gap-8">
@@ -329,7 +329,7 @@ export default function HeadConsultantSettings() {
                                             <Button
                                                 onClick={() => fileInputRef.current.click()}
                                                 disabled={loading}
-                                                className="rounded-xl bg-primary hover:bg-primary-hover text-white shadow-lg shadow-primary/20 flex items-center gap-2 h-11 px-6 font-bold text-[10px] transition-all"
+                                                className="rounded-xl bg-primary hover:bg-primary-hover text-white shadow-lg shadow-primary/20 flex items-center gap-2 h-11 px-6 font-bold text-sm transition-all"
                                             >
                                                 <Upload className="w-4 h-4" />
                                                 {avatarFile ? 'Ganti File' : 'Unggah Foto'}
@@ -347,7 +347,7 @@ export default function HeadConsultantSettings() {
                                                     variant="outline"
                                                     onClick={handleAvatarRemove}
                                                     disabled={loading}
-                                                    className="rounded-xl border-consultant-red/20 text-consultant-red hover:bg-consultant-red hover:text-white flex items-center gap-2 h-11 px-6 font-bold text-[10px] transition-all"
+                                                    className="rounded-xl border-consultant-red/20 text-consultant-red hover:bg-consultant-red hover:text-white flex items-center gap-2 h-11 px-6 font-bold text-xs transition-all"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                     Hapus
@@ -359,13 +359,13 @@ export default function HeadConsultantSettings() {
                                             <Button
                                                 onClick={handleAvatarUpload}
                                                 disabled={loading}
-                                                className="rounded-xl bg-status-green hover:bg-green-600 text-white shadow-green-500/20 flex items-center gap-2 h-11 px-6 font-bold text-[10px] animate-pulse"
+                                                className="rounded-xl bg-status-green hover:bg-green-600 text-white shadow-green-500/20 flex items-center gap-2 h-11 px-6 font-bold text-xs animate-pulse"
                                             >
                                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                                 Simpan Avatar Baru
                                             </Button>
                                         )}
-                                        <p className="text-[10px] font-bold text-text-secondary-light">
+                                        <p className="text-xs font-bold text-text-secondary-light">
                                             {avatarFile ? `File terpilih: ${avatarFile.name}` : 'Maks. 2MB. Format: JPG, PNG.'}
                                         </p>
                                     </div>
@@ -373,60 +373,60 @@ export default function HeadConsultantSettings() {
                             </CardContent>
                         </Card>
 
-                        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm bg-surface-light dark:bg-surface-dark">
-                            <CardHeader className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                                <CardTitle className="text-sm font-bold text-gray-900 dark:text-white">Informasi pribadi</CardTitle>
-                                <CardDescription className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Kelola informasi dasar profil Anda</CardDescription>
+                        <Card className="rounded-2xl border-border overflow-hidden shadow-sm bg-card">
+                            <CardHeader className="bg-muted/50 border-b border-border">
+                                <CardTitle className="text-base font-bold text-gray-900 dark:text-white">Informasi pribadi</CardTitle>
+                                <CardDescription className="text-xs font-bold text-text-secondary-light">Kelola informasi dasar profil Anda</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8">
                                 <form onSubmit={handleSubmit} className="space-y-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Nama lengkap</span>
+                                            <span className="text-sm font-bold text-primary">Nama lengkap</span>
                                             <Input
                                                 value={fullName}
                                                 onChange={(e) => setFullName(e.target.value)}
                                                 placeholder="Masukkan nama lengkap"
                                                 required
-                                                className="h-12 rounded-xl bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-800 focus:ring-2 focus:ring-primary/20 placeholder-text-secondary-light/50"
+                                                className="h-12 rounded-xl bg-muted/50 border-border focus:ring-2 focus:ring-primary/20 placeholder-text-secondary-light/50"
                                             />
                                         </div>
 
                                         <div className="space-y-3">
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Nomor telepon</span>
+                                            <span className="text-xs font-bold text-primary">Nomor telepon</span>
                                             <Input
                                                 value={phone}
                                                 onChange={(e) => setPhone(e.target.value)}
                                                 placeholder="08xxxxxxxxxx"
-                                                className="h-12 rounded-xl bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-800 focus:ring-2 focus:ring-primary/20 placeholder-text-secondary-light/50"
+                                                className="h-12 rounded-xl bg-muted/50 border-border focus:ring-2 focus:ring-primary/20 placeholder-text-secondary-light/50"
                                             />
                                         </div>
 
                                         <div className="space-y-3">
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Alamat email</span>
+                                            <span className="text-xs font-bold text-primary">Alamat email</span>
                                             <Input
                                                 value={profileData?.email || ""}
                                                 readOnly
-                                                className="h-12 rounded-xl bg-gray-100 dark:bg-white/10 border-transparent cursor-not-allowed font-bold"
+                                                className="h-12 rounded-xl bg-muted border-transparent cursor-not-allowed font-bold"
                                             />
                                         </div>
 
                                         <div className="space-y-3">
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Peran sistem</span>
+                                            <span className="text-xs font-bold text-primary">Peran sistem</span>
                                             <Input
                                                 value={profileData?.role ? profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1).replace(/_/g, ' ') : ""}
                                                 readOnly
-                                                className="h-12 rounded-xl bg-gray-100 dark:bg-white/10 border-transparent cursor-not-allowed font-bold text-primary"
+                                                className="h-12 rounded-xl bg-muted border-transparent cursor-not-allowed font-bold text-primary"
                                             />
                                         </div>
 
                                         <div className="space-y-3 md:col-span-2">
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Lokasi kantor</span>
+                                            <span className="text-xs font-bold text-primary">Lokasi kantor</span>
                                             <Input
                                                 value={officeLocation}
                                                 onChange={(e) => setOfficeLocation(e.target.value)}
                                                 placeholder="Contoh: Jakarta Office / Remote"
-                                                className="h-12 rounded-xl bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-800 focus:ring-2 focus:ring-primary/20 placeholder-text-secondary-light/50"
+                                                className="h-12 rounded-xl bg-muted/50 border-border focus:ring-2 focus:ring-primary/20 placeholder-text-secondary-light/50"
                                             />
                                         </div>
                                     </div>
@@ -434,7 +434,7 @@ export default function HeadConsultantSettings() {
                                     <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full md:w-auto rounded-xl bg-primary hover:bg-primary-hover text-white shadow-lg shadow-primary/30 h-12 px-8 font-bold text-[12px] flex items-center justify-center gap-3 transition-all active:scale-95"
+                                        className="w-full md:w-auto rounded-xl bg-primary hover:bg-primary-hover text-white shadow-lg shadow-primary/30 h-12 px-8 font-bold text-sm flex items-center justify-center gap-3 transition-all active:scale-95"
                                     >
                                         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                                         Simpan Perubahan Profil
@@ -445,39 +445,39 @@ export default function HeadConsultantSettings() {
                     </TabsContent>
 
                     <TabsContent value="security" className="space-y-6 animate-fade-in-up">
-                        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm bg-surface-light dark:bg-surface-dark">
-                            <CardHeader className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
-                                <CardTitle className="text-sm font-bold flex items-center gap-3 text-gray-900 dark:text-white">
+                        <Card className="rounded-2xl border-border overflow-hidden shadow-sm bg-card">
+                            <CardHeader className="bg-muted/50 border-b border-border">
+                                <CardTitle className="text-base font-bold flex items-center gap-3 text-gray-900 dark:text-white">
                                     <KeyRound className="h-5 w-5 text-primary" />
                                     Keamanan akun
                                 </CardTitle>
-                                <CardDescription className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Perbarui password Anda secara berkala</CardDescription>
+                                <CardDescription className="text-xs font-bold text-text-secondary-light">Perbarui password Anda secara berkala</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8">
                                 {passwordSuccess && (
                                     <Alert className="mb-8 border-green-500/20 bg-green-500/5 rounded-2xl">
                                         <CheckCircle2 className="h-5 w-5 text-green-600" />
-                                        <AlertDescription className="text-green-600 font-bold text-[10px]">Password berhasil diubah!</AlertDescription>
+                                        <AlertDescription className="text-green-600 font-bold text-xs">Password berhasil diubah!</AlertDescription>
                                     </Alert>
                                 )}
 
                                 {passwordError && (
                                     <Alert variant="destructive" className="mb-8 rounded-2xl">
                                         <Info className="h-5 w-5" />
-                                        <AlertDescription className="font-bold text-[10px]">{passwordError}</AlertDescription>
+                                        <AlertDescription className="font-bold text-xs">{passwordError}</AlertDescription>
                                     </Alert>
                                 )}
 
                                 <form onSubmit={handleChangePassword} className="space-y-6">
                                     <div className="space-y-3">
-                                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Kata sandi saat ini</span>
+                                        <span className="text-sm font-bold text-primary">Kata sandi saat ini</span>
                                         <div className="relative">
                                             <Input
                                                 name="currentPassword"
                                                 type={showCurrentPassword ? "text" : "password"}
                                                 value={passwordData.currentPassword}
                                                 onChange={handlePasswordChange}
-                                                className="h-12 rounded-xl bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-800 pr-12 focus:ring-2 focus:ring-primary/20"
+                                                className="h-12 rounded-xl bg-muted/50 border-border pr-12 focus:ring-2 focus:ring-primary/20"
                                             />
                                             <button
                                                 type="button"
@@ -491,14 +491,14 @@ export default function HeadConsultantSettings() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-3">
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Kata sandi baru</span>
+                                            <span className="text-xs font-bold text-primary">Kata sandi baru</span>
                                             <div className="relative">
                                                 <Input
                                                     name="newPassword"
                                                     type={showNewPassword ? "text" : "password"}
                                                     value={passwordData.newPassword}
                                                     onChange={handlePasswordChange}
-                                                    className="h-12 rounded-xl bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-800 pr-12 focus:ring-2 focus:ring-primary/20"
+                                                    className="h-12 rounded-xl bg-muted/50 border-border pr-12 focus:ring-2 focus:ring-primary/20"
                                                 />
                                                 <button
                                                     type="button"
@@ -511,7 +511,7 @@ export default function HeadConsultantSettings() {
 
                                             {passwordData.newPassword && (
                                                 <div className="space-y-1 pt-1">
-                                                    <div className="flex justify-between text-[8px] font-bold tracking-widest">
+                                                    <div className="flex justify-between text-xs font-bold">
                                                         <span className="text-text-secondary-light">Kekuatan:</span>
                                                         <span className={passwordStrength.color}>{passwordStrength.label}</span>
                                                     </div>
@@ -521,7 +521,7 @@ export default function HeadConsultantSettings() {
                                                                 key={i}
                                                                 className={`h-1 rounded-full transition-all duration-500 ${i <= passwordStrength.score
                                                                     ? passwordStrength.score <= 1 ? 'bg-consultant-red' : passwordStrength.score <= 2 ? 'bg-status-yellow' : 'bg-status-green'
-                                                                    : 'bg-gray-200 dark:bg-white/10'
+                                                                    : 'bg-muted'
                                                                     }`}
                                                             />
                                                         ))}
@@ -531,14 +531,14 @@ export default function HeadConsultantSettings() {
                                         </div>
 
                                         <div className="space-y-3">
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Konfirmasi kata sandi</span>
+                                            <span className="text-xs font-bold text-primary">Konfirmasi kata sandi</span>
                                             <div className="relative">
                                                 <Input
                                                     name="confirmPassword"
                                                     type={showConfirmPassword ? "text" : "password"}
                                                     value={passwordData.confirmPassword}
                                                     onChange={handlePasswordChange}
-                                                    className="h-12 rounded-xl bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-800 pr-12 focus:ring-2 focus:ring-primary/20"
+                                                    className="h-12 rounded-xl bg-muted/50 border-border pr-12 focus:ring-2 focus:ring-primary/20"
                                                 />
                                                 <button
                                                     type="button"
@@ -549,7 +549,7 @@ export default function HeadConsultantSettings() {
                                                 </button>
                                             </div>
                                             {passwordData.confirmPassword && (
-                                                <p className={`text-[8px] font-bold tracking-widest ${passwordsMatch ? 'text-status-green' : 'text-consultant-red'}`}>
+                                                <p className={`text-xs font-bold ${passwordsMatch ? 'text-status-green' : 'text-consultant-red'}`}>
                                                     {passwordsMatch ? '✓ Password Cocok' : '✗ Password Tidak Cocok'}
                                                 </p>
                                             )}
@@ -559,7 +559,7 @@ export default function HeadConsultantSettings() {
                                     <Button
                                         type="submit"
                                         disabled={passwordLoading || !passwordData.currentPassword || !passwordsMatch}
-                                        className="rounded-xl bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:opacity-90 h-12 px-8 font-bold text-[12px] flex items-center justify-center gap-3 active:scale-95 transition-all"
+                                        className="rounded-xl bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:opacity-90 h-12 px-8 font-bold text-xs flex items-center justify-center gap-3 active:scale-95 transition-all"
                                     >
                                         {passwordLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <KeyRound className="h-5 w-5" />}
                                         Update Password Keamanan
@@ -570,16 +570,16 @@ export default function HeadConsultantSettings() {
                     </TabsContent>
 
                     <TabsContent value="notifications" className="space-y-6 animate-fade-in-up">
-                        <Card className="rounded-2xl border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm bg-surface-light dark:bg-surface-dark">
-                            <CardHeader className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
+                        <Card className="rounded-2xl border-border overflow-hidden shadow-sm bg-card">
+                            <CardHeader className="bg-muted/50 border-b border-border">
                                 <CardTitle className="text-sm font-bold text-gray-900 dark:text-white">Preferensi notifikasi</CardTitle>
-                                <CardDescription className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Atur bagaimana cara sistem menghubungi Anda</CardDescription>
+                                <CardDescription className="text-xs font-bold text-text-secondary-light">Atur bagaimana cara sistem menghubungi Anda</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 space-y-8">
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-primary/20 transition-all">
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/50 border border-transparent hover:border-primary/20 transition-all">
                                     <div className="space-y-1">
-                                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Notifikasi email</span>
-                                        <p className="text-[10px] text-text-secondary-light font-bold tracking-tight">Terima ringkasan aktivitas via email</p>
+                                        <span className="text-sm font-bold text-primary">Notifikasi email</span>
+                                        <p className="text-xs text-text-secondary-light font-bold">Terima ringkasan aktivitas via email</p>
                                     </div>
                                     <Switch
                                         checked={notifications.emailNotifications}
@@ -587,10 +587,10 @@ export default function HeadConsultantSettings() {
                                     />
                                 </div>
 
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-primary/20 transition-all">
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/50 border border-transparent hover:border-primary/20 transition-all">
                                     <div className="space-y-1">
-                                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Pembaruan proyek</span>
-                                        <p className="text-[10px] text-text-secondary-light font-bold tracking-tight">Notifikasi instan perubahan data proyek</p>
+                                        <span className="text-sm font-bold text-primary">Pembaruan proyek</span>
+                                        <p className="text-xs text-text-secondary-light font-bold">Notifikasi instan perubahan data proyek</p>
                                     </div>
                                     <Switch
                                         checked={notifications.projectUpdates}
@@ -598,10 +598,10 @@ export default function HeadConsultantSettings() {
                                     />
                                 </div>
 
-                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-primary/20 transition-all">
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/50 border border-transparent hover:border-primary/20 transition-all">
                                     <div className="space-y-1">
-                                        <Label className="text-[10px] font-bold text-primary uppercase tracking-widest">Approval requests</Label>
-                                        <p className="text-[10px] text-text-secondary-light font-bold tracking-tight">Notifikasi saat ada dokumen menunggu approval</p>
+                                        <Label className="text-sm font-bold text-primary">Approval requests</Label>
+                                        <p className="text-xs text-text-secondary-light font-bold">Notifikasi saat ada dokumen menunggu approval</p>
                                     </div>
                                     <Switch
                                         checked={notifications.approvalRequests}
@@ -609,7 +609,7 @@ export default function HeadConsultantSettings() {
                                     />
                                 </div>
 
-                                <Button className="rounded-xl bg-primary hover:bg-primary-hover text-white h-11 px-8 font-bold text-[10px] transition-all" onClick={() => toast.success('Preferensi disimpan')}>
+                                <Button className="rounded-xl bg-primary hover:bg-primary-hover text-white h-11 px-8 font-bold text-sm transition-all" onClick={() => toast.success('Preferensi disimpan')}>
                                     Simpan Preferensi
                                 </Button>
                             </CardContent>

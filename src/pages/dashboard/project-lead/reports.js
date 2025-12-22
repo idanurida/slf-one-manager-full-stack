@@ -217,68 +217,68 @@ export default function TeamLeaderReportsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <motion.div variants={itemVariants}>
-            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">
-              Approval <span className="text-[#7c3aed]">Laporan</span>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-gray-900 dark:text-white">
+              Approval <span className="text-primary">laporan</span>
             </h1>
             <p className="text-slate-500 font-medium">Tinjau dan setujui laporan teknis dari tim lapangan.</p>
           </motion.div>
           <motion.div variants={itemVariants} className="flex gap-3">
             <Button variant="outline" size="sm" onClick={fetchData} className="rounded-xl h-10 px-4">
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              Refresh data
             </Button>
           </motion.div>
         </div>
 
         {/* Stats */}
         <motion.div variants={itemVariants} className="grid grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between group hover:border-orange-200 transition-colors cursor-default">
+          <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between group hover:border-orange-200 transition-colors cursor-default">
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Perlu Review</p>
+              <p className="text-[10px] font-bold text-slate-400 tracking-widest mb-1">Perlu review</p>
               <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.pending}</h3>
             </div>
-            <div className="size-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="size-12 rounded-xl bg-status-yellow/10 text-status-yellow flex items-center justify-center group-hover:scale-110 transition-transform">
               <AlertCircle size={24} />
             </div>
           </div>
-          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between group hover:border-green-200 transition-colors cursor-default">
+          <div className="bg-card p-6 rounded-[2rem] border border-border shadow-sm flex items-center justify-between group hover:border-status-green/50 transition-colors cursor-default">
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Disetujui</p>
-              <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.approved}</h3>
+              <p className="text-xs font-bold text-muted-foreground tracking-widest mb-1">Disetujui</p>
+              <h3 className="text-3xl font-black text-foreground">{stats.approved}</h3>
             </div>
-            <div className="size-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="size-12 rounded-xl bg-status-green/10 text-status-green flex items-center justify-center group-hover:scale-110 transition-transform">
               <CheckCircle2 size={24} />
             </div>
           </div>
-          <div className="bg-white dark:bg-[#1e293b] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between group hover:border-red-200 transition-colors cursor-default">
+          <div className="bg-card p-6 rounded-[2rem] border border-border shadow-sm flex items-center justify-between group hover:border-consultant-red/50 transition-colors cursor-default">
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Ditolak</p>
-              <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.rejected}</h3>
+              <p className="text-xs font-bold text-muted-foreground tracking-widest mb-1">Ditolak</p>
+              <h3 className="text-3xl font-black text-foreground">{stats.rejected}</h3>
             </div>
-            <div className="size-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="size-12 rounded-xl bg-consultant-red/10 text-consultant-red flex items-center justify-center group-hover:scale-110 transition-transform">
               <XCircle size={24} />
             </div>
           </div>
         </motion.div>
 
         {/* Filters */}
-        <motion.div variants={itemVariants} className="bg-white dark:bg-[#1e293b] p-4 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 flex flex-col md:flex-row gap-4">
+        <motion.div variants={itemVariants} className="bg-card p-4 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-border flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input
               placeholder="Cari laporan..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl"
+              className="pl-12 h-12 bg-muted/50 border-transparent focus:border-primary rounded-xl"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-[200px] h-12 bg-slate-50 dark:bg-slate-900/50 border-transparent focus:border-[#7c3aed] rounded-xl">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger className="w-full md:w-[200px] h-12 bg-muted/50 border-transparent focus:border-primary rounded-xl">
+              <SelectValue placeholder="Semua status" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="all">Semua Status</SelectItem>
-              <SelectItem value="verified_by_admin_team">Perlu Review</SelectItem>
+              <SelectItem value="all">Semua status</SelectItem>
+              <SelectItem value="verified_by_admin_team">Perlu review</SelectItem>
               <SelectItem value="approved_by_pl">Disetujui</SelectItem>
               <SelectItem value="rejected_by_pl">Ditolak</SelectItem>
             </SelectContent>
@@ -292,10 +292,10 @@ export default function TeamLeaderReportsPage() {
               [1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-[2rem] w-full" />)
             ) : filteredReports.length === 0 ? (
               <div className="py-20 text-center">
-                <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-6">
+                <div className="size-24 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mx-auto mb-6">
                   <FileText className="size-12 text-slate-300" />
                 </div>
-                <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-2">Tidak ada laporan</h3>
+                <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white mb-2">Tidak ada laporan</h3>
                 <p className="text-slate-400">Belum ada laporan yang sesuai kriteria.</p>
               </div>
             ) : (
@@ -303,7 +303,7 @@ export default function TeamLeaderReportsPage() {
                 <motion.div
                   key={report.id}
                   variants={itemVariants}
-                  className="group bg-white dark:bg-[#1e293b] rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-none hover:shadow-2xl hover:border-[#7c3aed]/30 transition-all duration-300 relative overflow-hidden"
+                  className="group bg-card rounded-[2rem] p-6 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 relative overflow-hidden"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                     <div className="flex items-start gap-4">
@@ -312,13 +312,13 @@ export default function TeamLeaderReportsPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 border-none px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider">
+                          <Badge className="bg-muted text-muted-foreground border-none px-2 py-0.5 rounded-md text-xs font-bold tracking-wider">
                             {report.project_name}
                           </Badge>
-                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{format(new Date(report.created_at), 'dd MMM HH:mm', { locale: localeId })}</span>
+                          <span className="text-xs text-muted-foreground font-bold tracking-widest">{format(new Date(report.created_at), 'dd MMM HH:mm', { locale: localeId })}</span>
                         </div>
-                        <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2">{report.name}</h3>
-                        <div className="flex items-center gap-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                        <h3 className="text-lg font-black text-foreground mb-2">{report.name}</h3>
+                        <div className="flex items-center gap-4 text-sm font-bold text-muted-foreground tracking-wide">
                           <span className="flex items-center gap-1"><User size={12} /> {report.inspector_name}</span>
                         </div>
                       </div>
@@ -340,7 +340,7 @@ export default function TeamLeaderReportsPage() {
                             className="bg-green-600 hover:bg-green-700 text-white rounded-xl h-10 px-6 font-bold"
                             onClick={() => { setSelectedReport(report); setApproveDialogOpen(true); }}
                           >
-                            Approve
+                            Setujui
                           </Button>
                           <Button
                             size="sm"
@@ -348,17 +348,17 @@ export default function TeamLeaderReportsPage() {
                             className="bg-red-600 hover:bg-red-700 text-white rounded-xl h-10 px-6 font-bold"
                             onClick={() => { setSelectedReport(report); setRejectDialogOpen(true); }}
                           >
-                            Reject
+                            Tolak
                           </Button>
                         </>
                       )}
                       {report.status === 'approved_by_pl' && (
-                        <Badge className="bg-green-100 text-green-700 h-10 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border-none">
+                        <Badge className="bg-green-100 text-green-700 h-10 px-4 rounded-xl text-xs font-bold tracking-wider border-none">
                           <CheckCircle2 size={16} className="mr-2" /> Disetujui
                         </Badge>
                       )}
                       {report.status === 'rejected_by_pl' && (
-                        <Badge className="bg-red-100 text-red-700 h-10 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border-none">
+                        <Badge className="bg-red-100 text-red-700 h-10 px-4 rounded-xl text-xs font-bold tracking-wider border-none">
                           <XCircle size={16} className="mr-2" /> Ditolak
                         </Badge>
                       )}
@@ -372,24 +372,24 @@ export default function TeamLeaderReportsPage() {
 
         {/* Dialogs */}
         <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
-          <DialogContent className="rounded-[2rem] border-none bg-white dark:bg-[#1e293b]">
+          <DialogContent className="rounded-[2rem] border-none bg-card">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-black uppercase tracking-tight">Konfirmasi Approval</DialogTitle>
+              <DialogTitle className="text-2xl font-black tracking-tight">Konfirmasi persetujuan</DialogTitle>
             </DialogHeader>
             <p className="text-slate-500">
               Apakah Anda yakin ingin menyetujui laporan <strong>{selectedReport?.name}</strong>? Tindakan ini akan meneruskan status laporan.
             </p>
             <DialogFooter>
               <Button variant="ghost" onClick={() => setApproveDialogOpen(false)} className="rounded-xl font-bold">Batal</Button>
-              <Button onClick={() => handleApproveReport(selectedReport?.id)} className="bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold">Ya, Setujui</Button>
+              <Button onClick={() => handleApproveReport(selectedReport?.id)} className="bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold">Ya, setujui</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-          <DialogContent className="rounded-[2rem] border-none bg-white dark:bg-[#1e293b]">
+          <DialogContent className="rounded-[2rem] border-none bg-card">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-black uppercase tracking-tight text-red-600">Konfirmasi Penolakan</DialogTitle>
+              <DialogTitle className="text-2xl font-black tracking-tight text-red-600">Konfirmasi penolakan</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <p className="text-slate-500">
@@ -399,12 +399,12 @@ export default function TeamLeaderReportsPage() {
                 value={rejectionNotes}
                 onChange={e => setRejectionNotes(e.target.value)}
                 placeholder="Contoh: Dokumen kurang lengkap, mohon perbaiki bagian..."
-                className="min-h-[100px] rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 ring-red-500/20"
+                className="min-h-[100px] rounded-xl bg-muted border-none focus:ring-2 ring-red-500/20"
               />
             </div>
             <DialogFooter>
               <Button variant="ghost" onClick={() => setRejectDialogOpen(false)} className="rounded-xl font-bold">Batal</Button>
-              <Button onClick={() => handleRejectReport(selectedReport?.id)} className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold">Tolak Laporan</Button>
+              <Button onClick={() => handleRejectReport(selectedReport?.id)} className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold">Tolak laporan</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -422,3 +422,4 @@ const getStatusColor = (status) => {
     default: return 'bg-slate-100 text-slate-600';
   }
 }
+

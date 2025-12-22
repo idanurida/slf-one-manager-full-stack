@@ -296,11 +296,11 @@ export default function HeadConsultantProjectDetailPage() {
                 <h1 className="text-3xl md:text-3xl font-display font-extrabold text-gray-900 dark:text-white tracking-tight">{project?.name}</h1>
                 {!loading && (
                   <div className="flex flex-wrap gap-2">
-                    <Badge className={`rounded-lg px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${getStatusColor(project?.status)}`}>
+                    <Badge className={`rounded-lg px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${getStatusColor(project?.status)}`}>
                       {getStatusLabel(project?.status)}
                     </Badge>
                     {project?.application_type && (
-                      <Badge variant="outline" className="rounded-lg px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary border-primary/30 bg-primary/5">
+                      <Badge variant="outline" className="rounded-lg px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-primary border-primary/30 bg-primary/5">
                         {project.application_type}
                       </Badge>
                     )}
@@ -337,7 +337,7 @@ export default function HeadConsultantProjectDetailPage() {
                 <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:shadow-md transition-shadow duration-300">
                     <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
-                      <CardTitle className="flex items-center gap-2 text-[10px] font-bold text-primary uppercase tracking-widest">
+                      <CardTitle className="flex items-center gap-2 text-[10px] font-bold text-primary tracking-widest">
                         <User className="w-3.5 h-3.5" />
                         Identitas client
                       </CardTitle>
@@ -361,7 +361,7 @@ export default function HeadConsultantProjectDetailPage() {
 
                   <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:shadow-md transition-shadow duration-300">
                     <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
-                      <CardTitle className="flex items-center gap-2 text-[10px] font-bold text-primary uppercase tracking-widest">
+                      <CardTitle className="flex items-center gap-2 text-[10px] font-bold text-primary tracking-widest">
                         <MapPin className="w-3.5 h-3.5" />
                         Lokasi proyek
                       </CardTitle>
@@ -376,7 +376,7 @@ export default function HeadConsultantProjectDetailPage() {
 
                   <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:shadow-md transition-shadow duration-300">
                     <CardHeader className="pb-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
-                      <CardTitle className="flex items-center gap-2 text-[10px] font-bold text-primary uppercase tracking-widest">
+                      <CardTitle className="flex items-center gap-2 text-[10px] font-bold text-primary tracking-widest">
                         <Calendar className="w-3.5 h-3.5" />
                         Jadwal & waktu
                       </CardTitle>
@@ -384,12 +384,12 @@ export default function HeadConsultantProjectDetailPage() {
                     <CardContent className="pt-6">
                       <div className="space-y-4">
                         <div className="flex justify-between items-center text-xs">
-                          <span className="text-text-secondary-light dark:text-text-secondary-dark font-bold uppercase tracking-wider">Terdaftar</span>
+                          <span className="text-text-secondary-light dark:text-text-secondary-dark font-bold tracking-wider">Terdaftar</span>
                           <span className="font-bold text-gray-900 dark:text-white px-3 py-1 bg-gray-100 dark:bg-white/5 rounded-lg text-[10px]">{formatDate(project?.created_at)}</span>
                         </div>
                         {project?.target_completion_date && (
                           <div className="flex justify-between items-center text-xs">
-                            <span className="text-text-secondary-light dark:text-text-secondary-dark font-bold uppercase tracking-wider">Deadline</span>
+                            <span className="text-text-secondary-light dark:text-text-secondary-dark font-bold tracking-wider">Deadline</span>
                             <span className="font-bold text-white px-3 py-1 bg-primary rounded-lg shadow-lg shadow-primary/20 text-[10px] tracking-wider">{formatDate(project?.target_completion_date)}</span>
                           </div>
                         )}
@@ -402,10 +402,10 @@ export default function HeadConsultantProjectDetailPage() {
                 <motion.div variants={itemVariants}>
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                     <TabsList className="grid w-full grid-cols-4 bg-surface-light dark:bg-surface-dark p-1 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                      <TabsTrigger value="overview" className="rounded-xl font-bold text-xs uppercase tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Ikhtisar</TabsTrigger>
-                      <TabsTrigger value="documents" className="rounded-xl font-bold text-xs uppercase tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Berkas</TabsTrigger>
-                      <TabsTrigger value="team" className="rounded-xl font-bold text-xs uppercase tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Tim kerja</TabsTrigger>
-                      <TabsTrigger value="timeline" className="rounded-xl font-bold text-xs uppercase tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Riwayat</TabsTrigger>
+                      <TabsTrigger value="overview" className="rounded-xl font-bold text-xs tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Ikhtisar</TabsTrigger>
+                      <TabsTrigger value="documents" className="rounded-xl font-bold text-xs tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Berkas</TabsTrigger>
+                      <TabsTrigger value="team" className="rounded-xl font-bold text-xs tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Tim kerja</TabsTrigger>
+                      <TabsTrigger value="timeline" className="rounded-xl font-bold text-xs tracking-widest transition-all data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">Riwayat</TabsTrigger>
                     </TabsList>
 
                     {/* Overview Tab */}
@@ -414,18 +414,18 @@ export default function HeadConsultantProjectDetailPage() {
                         <div className="h-1 bg-primary"></div>
                         <CardHeader className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
                           <CardTitle className="text-sm font-bold text-gray-900 dark:text-white">Spesifikasi proyek</CardTitle>
-                          <CardDescription className="text-[10px] font-bold text-text-secondary-light uppercase tracking-wider">Detail lingkup dan parameter teknis</CardDescription>
+                          <CardDescription className="text-[10px] font-bold text-text-secondary-light tracking-wider">Detail lingkup dan parameter teknis</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-8 p-8">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
-                              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Deskripsi ruang lingkup</span>
+                              <span className="text-[10px] font-bold text-primary tracking-widest">Deskripsi ruang lingkup</span>
                               <p className="text-xs leading-relaxed font-medium text-text-secondary-light dark:text-text-secondary-dark bg-gray-50/50 dark:bg-white/5 p-5 rounded-2xl border border-gray-200 dark:border-gray-800">
                                 {project?.description || 'Informasi deskripsi belum ditambahkan untuk proyek ini.'}
                               </p>
                             </div>
                             <div className="space-y-4">
-                              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Parameter teknis</span>
+                              <span className="text-[10px] font-bold text-primary tracking-widest">Parameter teknis</span>
                               <div className="grid grid-cols-1 gap-4">
                                 <div className="group flex justify-between items-center p-4 bg-gray-50/50 dark:bg-white/5 hover:border-primary/30 rounded-2xl border border-gray-200 dark:border-gray-800 transition-all duration-300">
                                   <div className="flex flex-col">

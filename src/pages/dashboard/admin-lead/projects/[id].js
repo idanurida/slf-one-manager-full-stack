@@ -503,11 +503,11 @@ export default function AdminLeadProjectDetailPage() {
               </button>
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">{project.application_type || 'SLF'}</Badge>
+                  <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black tracking-widest">{project.application_type || 'SLF'}</Badge>
                   <div className="w-1 h-1 rounded-full bg-slate-300" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Project ID: {id?.slice(0, 8)}</span>
+                  <span className="text-[10px] font-black tracking-widest text-slate-400">Project ID: {id?.slice(0, 8)}</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
                   Project <span className="text-[#7c3aed]">Detail</span>
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium">{project.name}</p>
@@ -521,7 +521,7 @@ export default function AdminLeadProjectDetailPage() {
               {isAdminLead && (
                 <button
                   onClick={() => router.push(`/dashboard/admin-lead/projects/${id}/edit`)}
-                  className="h-14 px-8 bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-slate-200/30 dark:shadow-none hover:bg-slate-50"
+                  className="h-14 px-8 bg-white dark:bg-[#1e293b] text-slate-900 dark:text-white border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] tracking-widest transition-all shadow-xl shadow-slate-200/30 dark:shadow-none hover:bg-slate-50"
                 >
                   <Settings size={16} /> Edit Settings
                 </button>
@@ -552,7 +552,7 @@ export default function AdminLeadProjectDetailPage() {
                     <TabsTrigger
                       key={tab.id}
                       value={tab.id}
-                      className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#7c3aed] text-slate-400 font-black uppercase text-[11px] tracking-widest p-0 flex items-center gap-2 group transition-all relative py-2"
+                      className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#7c3aed] text-slate-400 font-black text-[11px] tracking-widest p-0 flex items-center gap-2 group transition-all relative py-2"
                     >
                       <div className="size-8 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center group-data-[state=active]:bg-[#7c3aed]/10 transition-all">
                         {tab.icon}
@@ -588,7 +588,7 @@ export default function AdminLeadProjectDetailPage() {
                         <div className="size-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
                           <Building size={20} />
                         </div>
-                        <h2 className="text-xl font-black uppercase tracking-tighter">Spesifikasi Proyek</h2>
+                        <h2 className="text-xl font-black tracking-tighter">Spesifikasi Proyek</h2>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-12">
@@ -611,12 +611,12 @@ export default function AdminLeadProjectDetailPage() {
                             <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                               <User size={16} />
                             </div>
-                            <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Informasi Klien</h3>
+                            <h3 className="text-sm font-black tracking-widest text-slate-400">Informasi Klien</h3>
                           </div>
                           <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 space-y-4 border border-slate-100 dark:border-white/5">
-                            <p className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white">{project.clients?.name || project.clients?.email || 'N/A'}</p>
-                            {project.clients?.phone && <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><Phone size={12} /> {project.clients.phone}</p>}
-                            {project.clients?.address && <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><MapPin size={12} /> {project.clients.address}</p>}
+                            <p className="text-lg font-black tracking-tight text-slate-900 dark:text-white">{project.clients?.name || project.clients?.email || 'N/A'}</p>
+                            {project.clients?.phone && <p className="text-xs font-bold text-slate-400 tracking-widest flex items-center gap-2"><Phone size={12} /> {project.clients.phone}</p>}
+                            {project.clients?.address && <p className="text-xs font-bold text-slate-400 tracking-widest flex items-center gap-2"><MapPin size={12} /> {project.clients.address}</p>}
                           </div>
                         </div>
 
@@ -625,12 +625,12 @@ export default function AdminLeadProjectDetailPage() {
                             <div className="size-8 rounded-lg bg-[#7c3aed]/10 text-[#7c3aed] flex items-center justify-center">
                               <UserCheck size={16} />
                             </div>
-                            <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Project Leadership</h3>
+                            <h3 className="text-sm font-black tracking-widest text-slate-400">Project Leadership</h3>
                           </div>
                           <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 space-y-4 border border-slate-100 dark:border-white/5">
-                            <p className="text-lg font-black uppercase tracking-tight text-[#7c3aed]">{project.project_lead?.full_name || project.project_lead?.email || 'N/A'}</p>
+                            <p className="text-lg font-black tracking-tight text-[#7c3aed]">{project.project_lead?.full_name || project.project_lead?.email || 'N/A'}</p>
                             {project.project_lead?.specialization && (
-                              <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">{project.project_lead.specialization.replace(/_/g, ' ')}</Badge>
+                              <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black tracking-widest">{project.project_lead.specialization.replace(/_/g, ' ')}</Badge>
                             )}
                           </div>
                         </div>
@@ -756,7 +756,7 @@ export default function AdminLeadProjectDetailPage() {
           </motion.div>
         </motion.div>
       </TooltipProvider>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 }
 
@@ -781,10 +781,10 @@ function StatSimple({ title, value, icon, color, bg, subValue }) {
 function InfoItem({ label, value, icon }) {
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+      <p className="text-[10px] font-black tracking-widest text-slate-400">{label}</p>
       <div className="flex items-center gap-2">
         {icon && <span className="text-slate-300">{icon}</span>}
-        <p className="font-black text-sm uppercase tracking-tight text-slate-900 dark:text-white">{value || 'N/A'}</p>
+        <p className="font-black text-sm tracking-tight text-slate-900 dark:text-white">{value || 'N/A'}</p>
       </div>
     </div>
   );

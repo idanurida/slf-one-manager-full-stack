@@ -44,7 +44,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function NewInspectionReport() {
   const router = useRouter();
-  const { inspectionId } = router.query;
+  const { inspectionId, reportId } = router.query;
   const { toast } = useToast();
   const { user, profile, loading: authLoading, isInspector } = useAuth();
 
@@ -63,16 +63,40 @@ export default function NewInspectionReport() {
     selectedFindings: []
   });
 
-  // Load inspection data
+  // Load data
   useEffect(() => {
-    const loadInspectionData = async (targetId) => {
+    const loadInitialData = async () => {
       if (!user?.id || !isInspector) return;
 
       try {
         setLoading(true);
-        let idToLoad = targetId || inspectionId;
+        let idToLoad = inspectionId;
+        let existingReport = null;
 
-        // ✅ AUTO-SELECT: Jika ID tidak ada, cari inspeksi yang sedang berjalan
+        // 1. Jika ada reportId, load report dulu untuk dapatkan inspection_id
+        if (reportId) {
+          console.log('🔍 Report ID detected, loading existing report:', reportId);
+          const { data: rd, error: re } = await supabase
+            .from('inspection_reports')
+            .select('*')
+            .eq('id', reportId)
+            .single();
+
+          if (re) throw re;
+          existingReport = rd;
+          idToLoad = rd.inspection_id;
+
+          // Populate form with existing data
+          setFormData({
+            title: rd.title,
+            findings: rd.findings,
+            recommendations: rd.recommendations,
+            status: rd.status,
+            selectedFindings: rd.selected_findings_ids || []
+          });
+        }
+
+        // 2. Jika ID inspeksi tidak ada (bukan edit, bukan dari URL), cari yang active
         if (!idToLoad) {
           console.log('🔍 Inspection ID missing, searching for in-progress inspection...');
           const { data: activeInspections, error: activeError } = await supabase
@@ -88,16 +112,15 @@ export default function NewInspectionReport() {
           if (activeInspections && activeInspections.length > 0) {
             idToLoad = activeInspections[0].id;
             console.log('✅ Found active inspection:', idToLoad);
-            // Sync with URL for consistency
             router.replace(`/dashboard/inspector/reports/new?inspectionId=${idToLoad}`, undefined, { shallow: true });
           } else {
             console.log('❌ No active inspection found.');
             setLoading(false);
-            return; // Show selection error
+            return;
           }
         }
 
-        // Load inspection detail
+        // 3. Load inspection detail
         const { data: inspectionData, error: inspectionError } = await supabase
           .from('inspections')
           .select(`
@@ -117,7 +140,7 @@ export default function NewInspectionReport() {
         if (inspectionError) throw inspectionError;
         setInspection(inspectionData);
 
-        // Load checklist responses
+        // 4. Load checklist responses
         const { data: checklistResponses, error: checklistError } = await supabase
           .from('checklist_responses')
           .select(`
@@ -133,7 +156,7 @@ export default function NewInspectionReport() {
         if (checklistError) throw checklistError;
         setChecklistData(checklistResponses || []);
 
-        // Load inspection photos
+        // 5. Load inspection photos
         const { data: photosData, error: photosError } = await supabase
           .from('inspection_photos')
           .select('*')
@@ -143,8 +166,8 @@ export default function NewInspectionReport() {
         if (photosError) throw photosError;
         setPhotos(photosData || []);
 
-        // Set default title
-        if (inspectionData) {
+        // 6. Set default title (only if NOT editing)
+        if (inspectionData && !existingReport) {
           setFormData(prev => ({
             ...prev,
             title: `Laporan Inspeksi - ${inspectionData.projects?.name || 'Proyek'} - ${new Date().toLocaleDateString('id-ID')}`
@@ -152,9 +175,9 @@ export default function NewInspectionReport() {
         }
 
       } catch (err) {
-        console.error('Error loading inspection data:', err);
+        console.error('Error loading data:', err);
         toast({
-          title: "Gagal memuat data inspeksi",
+          title: "Gagal memuat data",
           description: err.message,
           variant: "destructive",
         });
@@ -164,9 +187,9 @@ export default function NewInspectionReport() {
     };
 
     if (user && isInspector) {
-      loadInspectionData();
+      loadInitialData();
     }
-  }, [inspectionId, user, isInspector, toast, router]);
+  }, [inspectionId, reportId, user, isInspector, toast, router]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -219,19 +242,23 @@ export default function NewInspectionReport() {
     try {
       const reportData = {
         project_id: inspection.project_id,
-        inspection_id: inspectionId,
+        inspection_id: inspection.id,
         inspector_id: user.id,
         title: formData.title,
         findings: formData.findings,
         recommendations: formData.recommendations,
         status: status,
         selected_findings_ids: formData.selectedFindings,
-        created_at: new Date().toISOString()
+        updated_at: new Date().toISOString()
       };
+
+      if (!reportId) {
+        reportData.created_at = new Date().toISOString();
+      }
 
       const { data: savedReport, error } = await supabase
         .from('inspection_reports')
-        .insert([reportData])
+        .upsert(reportId ? { id: reportId, ...reportData } : [reportData])
         .select()
         .single();
 
@@ -245,7 +272,7 @@ export default function NewInspectionReport() {
         variant: "default",
       });
 
-      // Redirect to reports list or the created report
+      // Redirect to report detail
       router.push(`/dashboard/inspector/reports/${savedReport.id}`);
 
     } catch (err) {

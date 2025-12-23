@@ -360,7 +360,7 @@ export default function InspectorReports() {
                                       variant="ghost"
                                       size="icon"
                                       className="h-9 w-9 rounded-xl hover:bg-amber-50 hover:text-amber-600"
-                                      onClick={() => router.push(`/dashboard/inspector/reports/${report.id}/edit`)}
+                                      onClick={() => router.push(`/dashboard/inspector/reports/new?reportId=${report.id}`)}
                                     >
                                       <Edit className="w-4 h-4" />
                                     </Button>

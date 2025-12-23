@@ -65,11 +65,37 @@ export default function NewInspectionReport() {
 
   // Load inspection data
   useEffect(() => {
-    const loadInspectionData = async () => {
+    const loadInspectionData = async (targetId) => {
       if (!user?.id || !isInspector) return;
 
       try {
         setLoading(true);
+        let idToLoad = targetId || inspectionId;
+
+        // ✅ AUTO-SELECT: Jika ID tidak ada, cari inspeksi yang sedang berjalan
+        if (!idToLoad) {
+          console.log('🔍 Inspection ID missing, searching for in-progress inspection...');
+          const { data: activeInspections, error: activeError } = await supabase
+            .from('inspections')
+            .select('id')
+            .eq('inspector_id', user.id)
+            .eq('status', 'in_progress')
+            .order('updated_at', { ascending: false })
+            .limit(1);
+
+          if (activeError) throw activeError;
+
+          if (activeInspections && activeInspections.length > 0) {
+            idToLoad = activeInspections[0].id;
+            console.log('✅ Found active inspection:', idToLoad);
+            // Sync with URL for consistency
+            router.replace(`/dashboard/inspector/reports/new?inspectionId=${idToLoad}`, undefined, { shallow: true });
+          } else {
+            console.log('❌ No active inspection found.');
+            setLoading(false);
+            return; // Show selection error
+          }
+        }
 
         // Load inspection detail
         const { data: inspectionData, error: inspectionError } = await supabase
@@ -80,13 +106,11 @@ export default function NewInspectionReport() {
               id,
               name,
               location,
-              location,
               clients(name),
-              description
               description
             )
           `)
-          .eq('id', inspectionId)
+          .eq('id', idToLoad)
           .eq('inspector_id', user.id)
           .single();
 
@@ -104,7 +128,7 @@ export default function NewInspectionReport() {
               template_title
             )
           `)
-          .eq('inspection_id', inspectionId);
+          .eq('inspection_id', idToLoad);
 
         if (checklistError) throw checklistError;
         setChecklistData(checklistResponses || []);
@@ -113,8 +137,8 @@ export default function NewInspectionReport() {
         const { data: photosData, error: photosError } = await supabase
           .from('inspection_photos')
           .select('*')
-          .eq('inspection_id', inspectionId)
-          .order('uploaded_at', { ascending: false });
+          .eq('inspection_id', idToLoad)
+          .order('created_at', { ascending: false });
 
         if (photosError) throw photosError;
         setPhotos(photosData || []);
@@ -139,10 +163,10 @@ export default function NewInspectionReport() {
       }
     };
 
-    if (inspectionId && user && isInspector) {
+    if (user && isInspector) {
       loadInspectionData();
     }
-  }, [inspectionId, user, isInspector, toast]);
+  }, [inspectionId, user, isInspector, toast, router]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -195,17 +219,13 @@ export default function NewInspectionReport() {
     try {
       const reportData = {
         project_id: inspection.project_id,
-        inspector_id: user.id, // Corrected from assigned_to/created_by
+        inspection_id: inspectionId,
+        inspector_id: user.id,
         title: formData.title,
         findings: formData.findings,
         recommendations: formData.recommendations,
         status: status,
-        // findings_summary, and selected_findings_ids might need to be stored in jsonb if schema supports it, 
-        // or omitted if not in schema. Based on schema provided: 
-        // id, project_id, inspector_id, admin_team_id, ..., title, findings, recommendations, status, project_lead_notes
-        // It does NOT show 'findings_summary' or 'selected_findings_ids' columns.
-        // I will omit them to avoid errors, or try to put them in 'findings' if needed. 
-        // For now, let's stick to the schema columns.
+        selected_findings_ids: formData.selectedFindings,
         created_at: new Date().toISOString()
       };
 
@@ -277,34 +297,46 @@ export default function NewInspectionReport() {
     );
   }
 
-  if (!inspectionId) {
+  if (loading) {
     return (
       <DashboardLayout title="Buat Laporan Baru">
-        <div className="p-4 md:p-6">
-          <Alert variant="destructive">
-            <AlertTitle>Inspection ID tidak tersedia</AlertTitle>
-            <AlertDescription>
-              Silakan pilih inspeksi terlebih dahulu dari halaman jadwal.
-            </AlertDescription>
-          </Alert>
-          <Button
-            onClick={() => router.push('/dashboard/inspector/schedules')}
-            className="mt-4"
-          >
-            Lihat Jadwal
-          </Button>
+        <div className="p-4 md:p-6 space-y-6">
+          <div className="flex flex-col items-center justify-center min-h-[400px]">
+            <Loader2 className="w-10 h-10 animate-spin text-[#7c3aed] mb-4" />
+            <p className="text-muted-foreground font-medium">Bekerja... Sedang menyiapkan data inspeksi Anda</p>
+          </div>
         </div>
       </DashboardLayout>
     );
   }
 
-  if (loading) {
+  if (!inspectionId && !inspection) {
     return (
       <DashboardLayout title="Buat Laporan Baru">
-        <div className="p-4 md:p-6 space-y-6">
-          <div className="flex items-center gap-4">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <p className="text-muted-foreground">Memuat data inspeksi...</p>
+        <div className="p-6">
+          <div className="bg-white dark:bg-surface-dark border border-border shadow-2xl shadow-slate-200/50 rounded-[2.5rem] p-12 text-center max-w-2xl mx-auto">
+            <div className="w-24 h-24 bg-red-50 dark:bg-red-900/10 text-red-600 rounded-full flex items-center justify-center mx-auto mb-8">
+              <AlertTriangle className="w-12 h-12" />
+            </div>
+            <h2 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white mb-4">Inspeksi Tidak Ditemukan</h2>
+            <p className="text-slate-500 font-medium mb-10 leading-relaxed">
+              Kami tidak menemukan ID inspeksi di URL dan tidak ada inspeksi yang sedang berlangsung (In Progress) untuk akun Anda saat ini.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                onClick={() => router.push('/dashboard/inspector/schedules')}
+                className="h-12 px-8 rounded-2xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold text-[11px] tracking-widest shadow-lg shadow-[#7c3aed]/20 transition-all hover:scale-105"
+              >
+                PILIH DARI JADWAL
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => router.back()}
+                className="h-12 px-8 rounded-2xl font-bold text-[11px] tracking-widest"
+              >
+                KEMBALI
+              </Button>
+            </div>
           </div>
         </div>
       </DashboardLayout>

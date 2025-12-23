@@ -375,6 +375,16 @@ export default function InspectorSchedules() {
                             >
                               <Eye size={18} />
                             </Button>
+                            {(schedule.status === 'completed' || schedule.status === 'in_progress') && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-10 w-10 rounded-xl hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                                onClick={() => router.push(`/dashboard/inspector/reports/new?inspectionId=${schedule.id}`)}
+                              >
+                                <FileText size={18} />
+                              </Button>
+                            )}
                             {schedule.status === 'scheduled' && (
                               <Button
                                 size="sm"

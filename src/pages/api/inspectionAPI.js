@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         .from('vw_inspections_fixed')
         .select(`
           id, project_id, assigned_to, scheduled_date, start_time, end_time, status, report_summary, created_at,
-          inspection_photos (id, photo_url, uploaded_at),
+          inspection_photos (id, photo_url, created_at),
           profiles!assigned_to (full_name, email, specialization)
         `)
         .eq("project_id", project_id)

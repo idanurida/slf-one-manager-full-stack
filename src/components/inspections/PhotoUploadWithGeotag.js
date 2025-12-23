@@ -88,7 +88,7 @@ const getStatusText = (status) => {
 };
 
 // --- Main Component ---
-const PhotoUploadWithGeotag = ({ checklistItem, onSave, userId, checklistFormFilled = false }) => {
+const PhotoUploadWithGeotag = ({ inspectionId, checklistItem, onSave, userId, checklistFormFilled = false }) => {
   const { toast } = useToast(); // ✅ Gunakan useToast dari shadcn/ui
   const fileInputRef = useRef(null);
 
@@ -170,7 +170,7 @@ const PhotoUploadWithGeotag = ({ checklistItem, onSave, userId, checklistFormFil
               </DialogHeader>
               <div className="flex-1 overflow-hidden">
                 <CameraGeotagging
-                  inspectionId={checklistItem?.inspection_id}
+                  inspectionId={inspectionId || checklistItem?.inspection_id}
                   checklistItemId={checklistItem?.id}
                   itemName={checklistItem?.item_name}
                   projectId={checklistItem?.project_id}

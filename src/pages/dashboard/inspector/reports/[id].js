@@ -57,27 +57,16 @@ export default function ReportDetail() {
           .from('inspection_reports')
           .select(`
             *,
-            inspections (
-              id,
-              scheduled_date,
-              projects (
-                id,
-                name,
-                location,
-                location,
-                clients(name),
-                description
-                description
-              )
-            ),
             projects (
               id,
               name,
               location,
-              location,
-              clients(name),
-              description
-              description
+              application_type,
+              clients (
+                id,
+                name,
+                email
+              )
             )
           `)
           .eq('id', id)
@@ -107,11 +96,20 @@ export default function ReportDetail() {
         }
 
         // Load photos
-        const { data: photosData, error: photosError } = await supabase
+        // Fallback: If inspection_id is not in report, use project_id and inspector_id
+        let photoQuery = supabase
           .from('inspection_photos')
           .select('*')
-          .eq('inspection_id', reportData.inspection_id)
-          .order('uploaded_at', { ascending: false });
+          .order('created_at', { ascending: false });
+
+        if (reportData.inspection_id) {
+          photoQuery = photoQuery.eq('inspection_id', reportData.inspection_id);
+        } else {
+          photoQuery = photoQuery.eq('project_id', reportData.project_id)
+            .eq('uploaded_by', user.id);
+        }
+
+        const { data: photosData, error: photosError } = await photoQuery;
 
         if (!photosError) {
           setPhotos(photosData || []);

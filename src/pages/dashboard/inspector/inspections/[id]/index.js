@@ -20,7 +20,7 @@ import {
   ArrowLeft, Save, CheckCircle, XCircle, AlertTriangle, Clock, Calendar,
   MapPin, User, Building, Camera, FileText, Download, Send, Eye, Star,
   ChevronDown, Play, Check, Info, Loader2, Edit, Plus, Trash2, Search,
-  Upload, RotateCcw, Activity, UserCheck, Bell, CheckSquare
+  Upload, RotateCcw, Activity, UserCheck, Bell, CheckSquare, Printer
 } from 'lucide-react';
 
 // Layout & Auth
@@ -192,7 +192,7 @@ const PhotoGallery = ({ photos, onDelete }) => {
                     </Badge>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    {new Date(photo.uploaded_at || photo.timestamp).toLocaleString('id-ID')}
+                    {new Date(photo.created_at || photo.captured_at || photo.timestamp).toLocaleString('id-ID')}
                   </p>
                 </div>
                 <Button
@@ -245,7 +245,7 @@ const PhotoGallery = ({ photos, onDelete }) => {
                 </div>
               )}
               <p className="text-xs text-muted-foreground mt-2">
-                Diupload: {new Date(selectedPhoto.uploaded_at || selectedPhoto.timestamp).toLocaleString('id-ID')}
+                Diupload: {new Date(selectedPhoto.created_at || selectedPhoto.captured_at || selectedPhoto.timestamp).toLocaleString('id-ID')}
               </p>
             </div>
           </div>
@@ -261,7 +261,6 @@ const InspectionNotes = ({ inspection, onUpdate }) => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
-
   const handleSaveNotes = async () => {
     if (!inspection?.id) return;
 
@@ -542,6 +541,24 @@ export default function InspectionDetailPage() {
     setProgress(Math.round((completedItems / items.length) * 100));
   };
 
+  // ✅ Fungsi Baru: Handle Print
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // ✅ Fungsi Baru: Handle Create Report
+  const handleCreateReport = () => {
+    if (inspectionId) {
+      router.push(`/dashboard/inspector/reports/new?inspectionId=${inspectionId}`);
+    } else {
+      toast({
+        title: 'Gagal membuat laporan',
+        description: 'ID Inspeksi tidak ditemukan.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Fetch inspection data - HANYA ketika user sudah tersedia
   useEffect(() => {
     const fetchInspectionData = async () => {
@@ -791,7 +808,7 @@ export default function InspectionDetailPage() {
         [itemId]: [...(prev[itemId] || []), {
           ...photoData,
           id: Date.now() + Math.random(),
-          uploaded_at: new Date().toISOString()
+          created_at: new Date().toISOString()
         }]
       }));
 
@@ -1097,15 +1114,56 @@ export default function InspectionDetailPage() {
             )}
 
             {inspection.status === 'in_progress' && (
-              <Button
-                onClick={handleSubmitInspection}
-                disabled={submitting || progress < 100}
-                className="flex items-center gap-2"
-              >
-                {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                <Check className="w-4 h-4" />
-                {submitting ? 'Mengirim...' : 'Selesaikan Inspeksi'}
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  onClick={handlePrint}
+                  className="flex items-center gap-2 border-primary text-primary hover:bg-primary/5"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span className="hidden sm:inline">Cetak Preview</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={handleCreateReport}
+                  className="flex items-center gap-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span className="hidden sm:inline">Buat Laporan</span>
+                </Button>
+
+                <Button
+                  onClick={handleSubmitInspection}
+                  disabled={submitting || progress < 100}
+                  className="flex items-center gap-2"
+                >
+                  {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  <Check className="w-4 h-4" />
+                  {submitting ? 'Mengirim...' : 'Selesaikan Inspeksi'}
+                </Button>
+              </>
+            )}
+
+            {inspection.status === 'completed' && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={handlePrint}
+                  className="flex items-center gap-2 border-primary text-primary hover:bg-primary/5"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak</span>
+                </Button>
+
+                <Button
+                  onClick={handleCreateReport}
+                  className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Buat Laporan</span>
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -1231,6 +1289,7 @@ export default function InspectionDetailPage() {
                         {/* Ganti PhotoUploadSection dengan PhotoUploadWithGeotag */}
                         <PhotoUploadWithGeotag
                           checklistItem={item}
+                          inspectionId={inspectionId}
                           onSave={(photoData) => handlePhotoUpload(item.id, photoData)}
                           userId={user.id}
                           checklistFormFilled={!!responses[item.id]}

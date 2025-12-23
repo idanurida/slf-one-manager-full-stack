@@ -1,8 +1,8 @@
 // src/components/inspections/PhotoGallery.jsx
 
 import React, { useState, useEffect, useMemo } from "react";
-import { FiTrash2, FiMapPin, FiUser, FiInfo, FiX } from "lucide-react"; 
-import { motion } from 'framer-motion'; 
+import { FiTrash2, FiMapPin, FiUser, FiInfo, FiX } from "lucide-react";
+import { motion } from 'framer-motion';
 
 // =================================================================
 // 1. ENVIRONMENT/SHADCN UI MOCKS (Menggantikan Chakra UI)
@@ -13,10 +13,10 @@ const cn = (...classes) => classes.filter(Boolean).join(' ');
 // Mock Checkbox
 const Checkbox = ({ isChecked, onChange, children, className = "" }) => (
     <label className={cn("flex items-center space-x-2 text-sm text-gray-700", className)}>
-        <input 
-            type="checkbox" 
-            checked={isChecked} 
-            onChange={onChange} 
+        <input
+            type="checkbox"
+            checked={isChecked}
+            onChange={onChange}
             // Checkbox color uses slate theme
             className="h-4 w-4 rounded border-gray-300 text-slate-600 focus:ring-slate-500"
         />
@@ -27,12 +27,12 @@ const Checkbox = ({ isChecked, onChange, children, className = "" }) => (
 // Mock Badge
 const Badge = ({ children, className = "", colorScheme }) => {
     // Badge color scheme changed from blue to slate for the template title
-    const colorClasses = colorScheme === "slate" 
-        ? "bg-slate-100 text-slate-700 border border-slate-300" 
+    const colorClasses = colorScheme === "slate"
+        ? "bg-slate-100 text-slate-700 border border-slate-300"
         : colorScheme === "red"
-        ? "bg-red-100 text-red-700 border border-red-300"
-        : "bg-gray-100 text-gray-700 border border-gray-300";
-    
+            ? "bg-red-100 text-red-700 border border-red-300"
+            : "bg-gray-100 text-gray-700 border border-gray-300";
+
     return (
         <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", colorClasses, className)}>
             {children}
@@ -43,21 +43,21 @@ const Badge = ({ children, className = "", colorScheme }) => {
 // Mock Component Adapters (replacing Chakra components)
 const Box = ({ children, className = "", ...props }) => <div className={className} {...props}>{children}</div>;
 const VStack = ({ children, className = "", spacing = 6, align = "stretch" }) => (
-    <div 
+    <div
         className={cn("flex flex-col", `space-y-${spacing}`, className, align === "stretch" ? "items-stretch" : "")}
     >
         {children}
     </div>
 );
 const SimpleGrid = ({ children, className = "", columns, spacing = 4 }) => (
-    <div 
+    <div
         className={cn(
-            "grid", 
+            "grid",
             columns?.base === 1 ? "grid-cols-1" : "grid-cols-1", // Default to 1
-            columns?.sm === 2 && "sm:grid-cols-2", 
-            columns?.md === 3 && "md:grid-cols-3", 
-            columns?.lg === 4 && "lg:grid-cols-4", 
-            `gap-${spacing}`, 
+            columns?.sm === 2 && "sm:grid-cols-2",
+            columns?.md === 3 && "md:grid-cols-3",
+            columns?.lg === 4 && "lg:grid-cols-4",
+            `gap-${spacing}`,
             className
         )}
     >
@@ -82,20 +82,20 @@ const Text = ({ children, className = "", fontSize, fontWeight, noOfLines, color
     const weightClass = fontWeight === 'bold' ? 'font-bold' : '';
     const colorClass = color ? `text-${color.replace('.', '-')}` : 'text-gray-900';
     const marginClass = mt ? `mt-${mt}` : '';
-    
+
     // Simplified noOfLines for a mock, relying on Tailwind's truncate/line-clamp
     return <p className={cn(sizeClass, weightClass, colorClass, marginClass, noOfLines === 1 && "truncate", className)}>{children}</p>;
 };
 
 const Image = ({ src, alt, borderRadius, objectFit, height, width, ...props }) => (
-    <img 
-        src={src} 
-        alt={alt} 
+    <img
+        src={src}
+        alt={alt}
         className={cn(
-            "w-full", 
-            borderRadius === "md" && "rounded-t-xl", 
-            objectFit === "cover" && "object-cover", 
-            height ? `h-[${height}]` : "h-auto", 
+            "w-full",
+            borderRadius === "md" && "rounded-t-xl",
+            objectFit === "cover" && "object-cover",
+            height ? `h-[${height}]` : "h-auto",
             width && "w-full" // Assuming width="100%"
         )}
         style={{ height: height, width: width }}
@@ -106,10 +106,10 @@ const Image = ({ src, alt, borderRadius, objectFit, height, width, ...props }) =
 
 const IconButton = ({ icon: Icon, size, colorScheme, onClick, className = "", ...props }) => {
     // Red color kept for delete action
-    const colorClasses = colorScheme === "red" 
-        ? "bg-red-500 hover:bg-red-600 text-white" 
+    const colorClasses = colorScheme === "red"
+        ? "bg-red-500 hover:bg-red-600 text-white"
         : "bg-gray-200 hover:bg-gray-300 text-gray-700";
-    
+
     return (
         <button
             onClick={onClick}
@@ -125,17 +125,17 @@ const IconButton = ({ icon: Icon, size, colorScheme, onClick, className = "", ..
 const Button = ({ children, className = "", variant, size = "sm", onClick, leftIcon: Icon, ...props }) => {
     let sizeClasses = "px-4 py-2 text-sm";
     if (size === "sm") sizeClasses = "px-3 py-1.5 text-sm";
-    
+
     // FIX: Changed const to let to allow reassignment based on colorScheme
-    let variantClasses = variant === "outline" 
+    let variantClasses = variant === "outline"
         ? // Reset button remains red for clarity
-          "border border-red-500 text-red-500 hover:bg-red-50"
+        "border border-red-500 text-red-500 hover:bg-red-50"
         : variant === "ghost"
-        ? "text-slate-700 hover:bg-slate-100"
-        : variant === "unstyled"
-        ? ""
-        : // Default primary is slate-900 (used for modal confirmation)
-          "bg-slate-900 text-white hover:bg-slate-700";
+            ? "text-slate-700 hover:bg-slate-100"
+            : variant === "unstyled"
+                ? ""
+                : // Default primary is slate-900 (used for modal confirmation)
+                "bg-slate-900 text-white hover:bg-slate-700";
 
     if (props.colorScheme === 'red') {
         // Explicitly red for the delete confirmation
@@ -238,14 +238,14 @@ const mockSupabase = {
                 order: () => ({
                     async then(resolve) {
                         await new Promise(r => setTimeout(r, 800)); // Simulate delay
-                        
+
                         const mockPhotos = [
                             { id: 101, checklist_item_id: 'ci1', photo_url: 'https://placehold.co/400x200/505050/FFFFFF?text=Foto+Struktur', caption: 'Pemeriksaan struktur utama', latitude: -6.2, longitude: 106.8, uploaded_at: '2024-07-25T10:00:00Z', uploaded_by: { id: 'user1', full_name: 'Budi Santoso', email: 'budi@corp.com' } },
                             { id: 102, checklist_item_id: 'ci2', photo_url: 'https://placehold.co/400x200/556270/FFFFFF?text=Foto+Lantai', caption: 'Lantai keramik retak di area A', latitude: null, longitude: null, uploaded_at: '2024-07-24T14:30:00Z', uploaded_by: { id: 'user2', full_name: 'Ayu Lestari', email: 'ayu@corp.com' } },
                             { id: 103, checklist_item_id: 'ci1', photo_url: 'https://placehold.co/400x200/9099A2/FFFFFF?text=Foto+Atap', caption: 'Kondisi atap baru terpasang', latitude: -6.21, longitude: 106.81, uploaded_at: '2024-07-24T09:00:00Z', uploaded_by: { id: 'user1', full_name: 'Budi Santoso', email: 'budi@corp.com' } },
                             { id: 104, checklist_item_id: 'ci3', photo_url: 'https://placehold.co/400x200/79818A/FFFFFF?text=Foto+Kabel', caption: 'Pemasangan kabel listrik', latitude: -6.205, longitude: 106.805, uploaded_at: '2024-07-23T11:00:00Z', uploaded_by: { id: 'user3', full_name: 'Joko Purnomo', email: 'joko@corp.com' } },
                         ];
-                        
+
                         const data = mockPhotos.filter(p => !value || p.uploaded_by?.id === value);
                         resolve({ data: data, error: null });
                     }
@@ -328,10 +328,10 @@ const PhotoGallery = ({
                         caption,
                         latitude,
                         longitude,
-                        uploaded_at,
+                        created_at,
                         uploaded_by:uploaded_by (id, full_name, email)
                     `)
-                    .order("uploaded_at", { ascending: false });
+                    .order("created_at", { ascending: false });
 
                 if (initialUserId) {
                     // This filter is applied only on initial load based on prop
@@ -339,7 +339,7 @@ const PhotoGallery = ({
                 }
 
                 // In the mock, we only run the .then() once
-                const { data, error } = await query; 
+                const { data, error } = await query;
                 if (error) throw error;
 
                 // For the purpose of demonstration, ensure mock data includes all unique users
@@ -381,7 +381,7 @@ const PhotoGallery = ({
             // Include photos uploaded up to the end of the selected day
             const endOfDay = new Date(endDate);
             endOfDay.setHours(23, 59, 59, 999);
-            result = result.filter((p) => new Date(p.uploaded_at) <= endOfDay);
+            result = result.filter((p) => new Date(p.created_at || p.captured_at) <= endOfDay);
         }
 
         if (withLocation) {
@@ -481,7 +481,7 @@ const PhotoGallery = ({
             <Card className="shadow-lg">
                 <CardBody p={4}>
                     <HStack spacing={4} wrap="wrap">
-                        
+
                         {/* Filter User */}
                         <FormControl minW="200px">
                             <FormLabel fontSize="sm">Filter User</FormLabel>
@@ -531,8 +531,8 @@ const PhotoGallery = ({
 
                         {/* Lokasi Checkbox */}
                         <Box className="flex flex-col justify-end pt-5">
-                            <Checkbox 
-                                isChecked={withLocation} 
+                            <Checkbox
+                                isChecked={withLocation}
                                 onChange={(e) => setWithLocation(e.target.checked)}
                             >
                                 Dengan GPS
@@ -541,10 +541,10 @@ const PhotoGallery = ({
 
                         {/* Reset Button (Red border/text kept for action clarity) */}
                         <Box className="flex flex-col justify-end pt-5">
-                            <Button 
-                                leftIcon={FiX} 
-                                size="sm" 
-                                variant="outline" 
+                            <Button
+                                leftIcon={FiX}
+                                size="sm"
+                                variant="outline"
                                 onClick={resetFilters}
                                 // Tailored to use red outline theme
                                 className="border-red-500 text-red-500 hover:bg-red-50"
@@ -587,7 +587,7 @@ const PhotoGallery = ({
                                         <Text fontSize="xs" color="gray.600" noOfLines={1} className="text-gray-600">
                                             {checklistItem?.item_name || photo.checklist_item_id}
                                         </Text>
-                                        
+
                                         {/* Meta: Location */}
                                         <HStack fontSize="xs" className="text-gray-500 mt-1" spacing={1}>
                                             <FiMapPin className="h-3 w-3" />
@@ -597,7 +597,7 @@ const PhotoGallery = ({
                                                     : "Lokasi tidak tersedia"}
                                             </Text>
                                         </HStack>
-                                        
+
                                         {/* Meta: User */}
                                         <HStack fontSize="xs" className="text-gray-500 mt-1" spacing={1}>
                                             <FiUser className="h-3 w-3" />
@@ -605,7 +605,7 @@ const PhotoGallery = ({
                                                 {photo.uploaded_by?.full_name || photo.uploaded_by?.email || "Tidak dikenal"}
                                             </Text>
                                         </HStack>
-                                        
+
                                         <HStack justify="space-between" className="mt-2">
                                             {/* Badge color uses slate theme */}
                                             <Badge colorScheme="slate" fontSize="xs">

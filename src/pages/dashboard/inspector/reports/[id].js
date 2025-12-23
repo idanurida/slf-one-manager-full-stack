@@ -636,7 +636,7 @@ export default function ReportDetail() {
               {/* Footer */}
               <div className="pt-12 border-t flex flex-col items-center gap-4 opacity-50">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  PT Pos Indonesia (Persero) - SLF Manager System
+                  PT Puri Dimensi - SLF Manager System
                 </p>
               </div>
             </div>

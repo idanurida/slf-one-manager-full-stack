@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -502,7 +502,6 @@ const getStatusBadge = (status) => {
 // Main Component
 export default function InspectionDetailPage() {
   const router = useRouter();
-  const params = useParams();
   const { toast } = useToast();
   const { user, profile, isInspector, loading: authLoading } = useAuth();
 
@@ -518,8 +517,8 @@ export default function InspectionDetailPage() {
   const [openAccordions, setOpenAccordions] = useState({});
   const [activeTab, setActiveTab] = useState('checklist');
 
-  // ✅ Safe access to params dengan null check
-  const inspectionId = params?.id;
+  // ✅ Safe access to query ID
+  const inspectionId = router.query.id;
 
   // Toggle accordion
   const toggleAccordion = (itemId) => {
@@ -682,7 +681,7 @@ export default function InspectionDetailPage() {
           description: error.message,
           variant: 'destructive',
         });
-        router.push('/dashboard/inspector/inspections');
+        router.push('/dashboard/inspector/my-inspections');
       } finally {
         setLoading(false);
       }
@@ -888,7 +887,7 @@ export default function InspectionDetailPage() {
         description: 'Laporan inspeksi telah dikirim',
       });
 
-      router.push('/dashboard/inspector/inspections');
+      router.push('/dashboard/inspector/my-inspections');
 
     } catch (error) {
       console.error('Error submitting inspection:', error);
@@ -1016,7 +1015,7 @@ export default function InspectionDetailPage() {
             </AlertDescription>
           </Alert>
           <Button
-            onClick={() => router.push('/dashboard/inspector/inspections')}
+            onClick={() => router.push('/dashboard/inspector/my-inspections')}
             className="mt-4"
           >
             Kembali ke Daftar Inspeksi
@@ -1061,7 +1060,7 @@ export default function InspectionDetailPage() {
             </AlertDescription>
           </Alert>
           <Button
-            onClick={() => router.push('/dashboard/inspector/inspections')}
+            onClick={() => router.push('/dashboard/inspector/my-inspections')}
             className="mt-4"
           >
             Kembali ke Daftar Inspeksi
@@ -1080,7 +1079,7 @@ export default function InspectionDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push('/dashboard/inspector/inspections')}
+              onClick={() => router.push('/dashboard/inspector/my-inspections')}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>

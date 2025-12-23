@@ -308,6 +308,7 @@ export default function ReportDetail() {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-muted p-1 rounded-2xl h-auto w-full justify-start overflow-x-auto gap-1">
             <TabsTrigger value="overview" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Ringkasan</TabsTrigger>
+            <TabsTrigger value="preview" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Preview Utuh</TabsTrigger>
             <TabsTrigger value="findings" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Temuan Detail</TabsTrigger>
             <TabsTrigger value="photos" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Dokumentasi</TabsTrigger>
             <TabsTrigger value="status" className="rounded-xl px-4 py-2.5 font-bold text-xs uppercase tracking-widest whitespace-nowrap data-[state=active]:bg-white data-[state=active]:!text-[#7c3aed] data-[state=active]:shadow-sm">Status & Review</TabsTrigger>
@@ -454,6 +455,191 @@ export default function ReportDetail() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Full Preview Tab */}
+          <TabsContent value="preview" className="space-y-8 print:block">
+            <div className="bg-white dark:bg-slate-900 border rounded-2xl p-8 md:p-12 shadow-sm space-y-12">
+              {/* Cover/Header */}
+              <div className="text-center space-y-6 border-b pb-8">
+                <div className="w-20 h-20 bg-[#7c3aed]/10 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                  <Building className="w-10 h-10 text-[#7c3aed]" />
+                </div>
+                <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
+                  Laporan Pemeriksaan Kelaikan Fungsi Bangunan Gedung
+                </h1>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-white/5 rounded-full text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                  <FileText className="w-3 h-3" />
+                  {report.title}
+                </div>
+              </div>
+
+              {/* Data Administrasi */}
+              <div className="space-y-6">
+                <h3 className="text-sm font-black uppercase tracking-widest text-[#7c3aed] flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-[#7c3aed]/10 flex items-center justify-center">
+                    <span className="text-[10px]">01</span>
+                  </div>
+                  Data Administrasi Proyek
+                </h3>
+                <div className="grid md:grid-cols-2 gap-8 bg-slate-50 dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nama Bangunan / Proyek</Label>
+                      <p className="font-bold text-slate-900 dark:text-white capitalize">{project?.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pemilik / Klien</Label>
+                      <p className="font-bold text-slate-900 dark:text-white capitalize">{clientName || '-'}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Lokasi</Label>
+                      <p className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <MapPin className="w-3 h-3 text-red-500" />
+                        {project?.location}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal Laporan</Label>
+                      <p className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <Calendar className="w-3 h-3 text-[#7c3aed]" />
+                        {formatDate(report.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hasil Pemeriksaan (Findings) */}
+              <div className="space-y-6">
+                <h3 className="text-sm font-black uppercase tracking-widest text-[#7c3aed] flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-[#7c3aed]/10 flex items-center justify-center">
+                    <span className="text-[10px]">02</span>
+                  </div>
+                  Hasil Pemeriksaan Lapangan
+                </h3>
+
+                <div className="space-y-8">
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-l-2 border-[#7c3aed] pl-3">A. Temuan Utama</h4>
+                    <div className="bg-white dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5 prose dark:prose-invert max-w-none">
+                      {report.findings ? (
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                          {report.findings}
+                        </p>
+                      ) : (
+                        <p className="italic text-slate-400 text-sm">Belum ada temuan naratif yang diisi.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-l-2 border-[#7c3aed] pl-3">B. Rekomendasi Perbaikan</h4>
+                    <div className="bg-white dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5 prose dark:prose-invert max-w-none">
+                      {report.recommendations ? (
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                          {report.recommendations}
+                        </p>
+                      ) : (
+                        <p className="italic text-slate-400 text-sm">Belum ada rekomendasi yang diisi.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Checklist Items Table */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-l-2 border-[#7c3aed] pl-3">C. Detail Checklist Item Terpilih</h4>
+                    {checklistData.length > 0 ? (
+                      <div className="border rounded-2xl overflow-hidden shadow-sm">
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-slate-50 dark:bg-white/5">
+                            <tr>
+                              <th className="px-6 py-3 font-black uppercase tracking-widest text-[9px] text-slate-500">Kategori / Item</th>
+                              <th className="px-6 py-3 font-black uppercase tracking-widest text-[9px] text-slate-500">Status</th>
+                              <th className="px-6 py-3 font-black uppercase tracking-widest text-[9px] text-slate-500">Respon</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {checklistData.map((item) => (
+                              <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-white/5">
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-[#7c3aed] uppercase tracking-tighter mb-0.5">{item.checklist_items?.category || 'Umum'}</span>
+                                    <span className="font-bold text-slate-800 dark:text-slate-200">{item.checklist_items?.item_name || item.item_id}</span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <Badge variant="outline" className={`text-[9px] uppercase font-black ${item.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
+                                    {item.status === 'completed' ? 'Lengkap' : 'Draft'}
+                                  </Badge>
+                                </td>
+                                <td className="px-6 py-4 text-xs text-slate-500 italic">
+                                  {item.notes || (item.response ? 'Data Tersedia' : 'Belum ada catatan')}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="italic text-slate-400 text-sm">Belum ada item checklist yang dipilih untuk laporan ini.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Dokumentasi Foto */}
+              <div className="space-y-6">
+                <h3 className="text-sm font-black uppercase tracking-widest text-[#7c3aed] flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-[#7c3aed]/10 flex items-center justify-center">
+                    <span className="text-[10px]">03</span>
+                  </div>
+                  Dokumentasi Foto Lapangan
+                </h3>
+                {photos.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {photos.map((photo, idx) => (
+                      <div key={photo.id} className="flex flex-col gap-3 group">
+                        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+                          <img
+                            src={photo.photo_url}
+                            alt={photo.caption}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg">
+                            Foto {idx + 1}
+                          </div>
+                        </div>
+                        <div className="px-2">
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-snug">{photo.caption || 'Tanpa Keterangan'}</p>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <span className="text-[9px] text-slate-400 flex items-center gap-1">
+                              <MapPin className="w-2.5 h-2.5" />
+                              {photo.latitude ? `${photo.latitude.toFixed(4)}, ${photo.longitude.toFixed(4)}` : '-'}
+                            </span>
+                            <span className="text-[9px] text-slate-400 flex items-center gap-1">
+                              <Calendar className="w-2.5 h-2.5" />
+                              {formatDateTime(photo.captured_at || photo.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="italic text-slate-400 text-sm">Belum ada dokumentasi foto yang diunggah.</p>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="pt-12 border-t flex flex-col items-center gap-4 opacity-50">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                  PT Pos Indonesia (Persero) - SLF Manager System
+                </p>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Findings Tab */}
@@ -707,6 +893,6 @@ export default function ReportDetail() {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 }

@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [mobileMode, setMobileMode] = useState(false);
   const router = useRouter();
 
@@ -20,12 +21,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // 🚀 OPTIMIZED: Fetch profile untuk mobile
+  // 🚀 OPTIMIZED: Fetch profile
   const fetchProfile = useCallback(async (userId) => {
     if (!userId) return null;
 
     try {
-      // ✅ OPTIMIZE 1: Minimal query - hanya field yang diperlukan
+      // ✅ OPTIMIZE 1: Minimal query
       const { data, error } = await supabase
         .from("profiles")
         .select("id, email, role, status, is_approved, full_name, company_name, specialization, phone_number, client_id")
@@ -34,7 +35,6 @@ export const AuthProvider = ({ children }) => {
 
       if (error) {
         console.error("❌ Profile fetch error:", error.message);
-        // Return minimal data untuk mencegah crash & update state
         const fallbackProfile = { id: userId, status: 'error', email: 'unknown', role: 'guest' };
         setProfile(fallbackProfile);
         return fallbackProfile;
@@ -45,79 +45,32 @@ export const AuthProvider = ({ children }) => {
         return null;
       }
 
-      // ✅ OPTIMIZE 2: Skip heavy checks untuk mobile
-      if (mobileMode) {
-        console.log("📱 Mobile mode: Skipping heavy checks for speed");
+      // NO SIDE-EFFECT REDIRECTS HERE ANYMORE
+      // Logic for blocking users or pending users is handled by central effects or the pages themselves
 
-        // Cepat cek status utama saja
-        const status = data.status || 'pending';
-        const isApproved = data.is_approved === true;
-
-        // Critical status saja yang di-handle
-        if (status === 'suspended' || status === 'rejected') {
-          setTimeout(() => {
-            router.push(`/awaiting-approval?reason=${status}`);
-          }, 300);
-          return { ...data, blocked: true };
-        }
-
-        // Pending users (non-superadmin)
-        if (status === 'pending' && !isApproved && data.role !== 'superadmin') {
-          setTimeout(() => {
-            router.push('/awaiting-approval?reason=pending-approval');
-          }, 300);
-          return { ...data, pending: true };
-        }
-
-        // Approved users - langsung lanjut
-        setProfile(data);
-        return data;
-      }
-
-      // ✅ DESKTOP MODE: Full checks (termasuk email verification)
-      const { data: authUser, error: authError } = await supabase.auth.getUser();
-
-      if (authError) {
-        console.error("❌ Auth user error:", authError.message);
-      } else if (authUser.user && !authUser.user.email_confirmed_at) {
-        console.log("📧 Email not verified");
-        setTimeout(() => {
-          router.push('/awaiting-approval?reason=email-not-verified');
-        }, 300);
-        return { ...data, emailNotVerified: true };
-      }
-
-      // Desktop: Full status check
       const status = data.status || 'pending';
-      const isApproved = data.is_approved === true;
+      const isApproved = data.is_approved === true || status === 'approved';
 
-      if (status === 'suspended' || status === 'rejected') {
-        setTimeout(() => {
-          router.push(`/awaiting-approval?reason=${status}`);
-        }, 300);
-        return { ...data, blocked: true };
-      }
-
-      if (status === 'pending' && !isApproved && data.role !== 'superadmin') {
-        setTimeout(() => {
-          router.push('/awaiting-approval?reason=pending-approval');
-        }, 300);
-        return { ...data, pending: true };
-      }
+      // Mark special flags but don't force redirect
+      const enrichedData = {
+        ...data,
+        blocked: status === 'suspended' || status === 'rejected',
+        pending: status === 'pending' && !isApproved && data.role !== 'superadmin'
+      };
 
       // Legacy users - background update
       if ((data.status === null || data.is_approved === null) && !mobileMode) {
-        setTimeout(() => updateLegacyUser(userId), 10000); // 10 detik kemudian
+        setTimeout(() => updateLegacyUser(userId), 10000);
       }
 
-      setProfile(data);
-      return data;
+      setProfile(enrichedData);
+      return enrichedData;
 
     } catch (err) {
       console.error("❌ Fetch profile failed:", err.message);
       return null;
     }
-  }, [router, mobileMode]);
+  }, [mobileMode]);
 
   // 🔄 Background task untuk legacy users (non-blocking)
   const updateLegacyUser = async (userId) => {
@@ -164,6 +117,19 @@ export const AuthProvider = ({ children }) => {
 
         if (mounted && session?.user) {
           setUser(session.user);
+          // 🚀 HYPER-OPTIMIZATION: Instant hydration from metadata
+          if (session.user && !profile) {
+            console.log("⚡ [initAuth] Hydrating from session metadata");
+            const meta = session.user.user_metadata || {};
+            setProfile({
+              id: session.user.id,
+              email: session.user.email,
+              role: meta.role || 'guest',
+              full_name: meta.full_name || 'User',
+              status: meta.status || 'pending',
+              is_approved: meta.is_approved === true || meta.status === 'approved'
+            });
+          }
           await fetchProfile(session.user.id);
         }
       } catch (error) {
@@ -192,17 +158,17 @@ export const AuthProvider = ({ children }) => {
           setUser(session.user);
 
           // 🚀 HYPER-OPTIMIZATION: Hydrate from metadata for instant UI feedback
-          if (session.user.user_metadata?.role && !profile) {
+          if (session.user && !profile) {
             console.log("⚡ Hydrating profile from metadata for speed");
-            const meta = session.user.user_metadata;
+            const meta = session.user.user_metadata || {};
             // Set temporary profile based on metadata to unblock redirect
             setProfile({
               id: session.user.id,
               email: session.user.email,
-              role: meta.role,
-              full_name: meta.full_name,
-              status: 'pending', // Be conservative for new users
-              is_approved: false // Be conservative for new users
+              role: meta.role || 'guest',
+              full_name: meta.full_name || 'User',
+              status: meta.status || 'pending',
+              is_approved: meta.is_approved === true || meta.status === 'approved'
             });
           }
 
@@ -210,10 +176,13 @@ export const AuthProvider = ({ children }) => {
             // Background validation (still runs to get real DB status)
             const data = await fetchProfile(session.user.id);
 
-            if (data && !data.blocked && !data.pending && !data.emailNotVerified) {
+            const isApproved = data.is_approved === true || data.status === 'approved' || (data.status === null && data.is_approved === null);
+
+            if (data && !data.blocked && isApproved && !data.emailNotVerified) {
               // Redirect paths
               const redirectPaths = {
                 superadmin: "/dashboard/superadmin",
+                admin: "/dashboard/admin",
                 admin_lead: "/dashboard/admin-lead",
                 admin_team: "/dashboard/admin-team",
                 head_consultant: "/dashboard/head-consultant",
@@ -234,12 +203,13 @@ export const AuthProvider = ({ children }) => {
               ];
 
               const shouldRedirect =
-                !noRedirectPaths.some(path => currentPath.startsWith(path)) &&
+                !noRedirectPaths.some(path => currentPath === path || currentPath.startsWith(path + '/')) &&
                 currentPath !== redirectPath;
 
               if (shouldRedirect) {
                 console.log(`🔄 Redirecting to: ${redirectPath}`);
-                setTimeout(() => router.replace(redirectPath), 50); // Faster redirect
+                setIsRedirecting(true);
+                setTimeout(() => router.replace(redirectPath).finally(() => setIsRedirecting(false)), 50); // Faster redirect
               }
             }
           } catch (error) {
@@ -322,6 +292,7 @@ export const AuthProvider = ({ children }) => {
         // Check if user is approved
         const isApproved = profileData?.is_approved === true ||
           profileData?.status === 'approved' ||
+          profileData?.role === 'admin' ||
           profileData?.role === 'superadmin';
 
         if (!isApproved) {
@@ -372,6 +343,7 @@ export const AuthProvider = ({ children }) => {
     user,
     profile,
     loading,
+    isRedirecting,
     isMobile: mobileMode,
 
     // Methods
@@ -387,6 +359,7 @@ export const AuthProvider = ({ children }) => {
 
     // Role helpers
     isSuperadmin: profile?.role === 'superadmin',
+    isAdmin: profile?.role === 'admin',
     isAdminLead: profile?.role === 'admin_lead',
     isAdminTeam: profile?.role === 'admin_team',
     isHeadConsultant: profile?.role === 'head_consultant',
@@ -402,6 +375,12 @@ export const AuthProvider = ({ children }) => {
     getUserEmail: () => user?.email || profile?.email,
     getFullName: () => profile?.full_name,
     getUserId: () => user?.id,
+
+    // Internal helper for logic consistency
+    checkIsApproved: (p) => {
+      if (!p) return false;
+      return p.is_approved === true || p.status === 'approved' || (p.status === null && p.is_approved === null);
+    }
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

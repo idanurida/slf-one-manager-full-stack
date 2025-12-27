@@ -72,7 +72,7 @@ export default function AwaitingApprovalPage() {
             const r = params.get('reason') || '';
             setReason(r);
 
-            if (r === 'registered') {
+            if (['registered', 'email-confirmed', 'pending-approval'].includes(r)) {
                 const email = localStorage.getItem('registered_email');
                 const fullName = localStorage.getItem('registered_fullName');
                 const role = localStorage.getItem('registered_role');
@@ -100,26 +100,25 @@ export default function AwaitingApprovalPage() {
                 role: profile?.role
             });
 
-            // ✅ BYPASS ALL CHECKS FOR REGISTRATION FLOW
-            if (reason === 'registered' || reason === 'email-confirmed') {
-                console.log(`[AwaitingApproval] Registration flow (${reason}), bypassing all checks`);
+            // ✅ BYPASS ALL CHECKS FOR REGISTRATION FLOW OR PENDING STATUS
+            // This ensures the UI is visible even if the user/profile isn't fully loaded yet (e.g. during refresh)
+            const bypassReasons = ['registered', 'email-confirmed', 'pending-approval'];
+            if (bypassReasons.includes(reason)) {
+                console.log(`[AwaitingApproval] Bypass active for reason: ${reason}`);
                 setChecking(false);
-                return;
+                // Continue to check if user is actually approved in the background
             }
 
-            // Jika tidak ada user sama sekali, redirect ke login (kecuali sedang registrasi)
-            if (!user && reason !== 'registered' && reason !== 'email-confirmed') {
+            // Jika tidak ada user sama sekali dan bukan sedang registrasi/pending, redirect ke login
+            if (!user && !bypassReasons.includes(reason)) {
                 console.log("[AwaitingApproval] Tidak ada user, redirect ke login");
                 setTimeout(() => router.push('/login'), 100);
                 return;
             }
 
-            // ⚠️ CRITICAL FIX: If profile doesn't exist after auth loaded, show error
-            if (user && !profile) {
-                console.log("[AwaitingApproval] Profile TIDAK ADA untuk user:", user.email);
-                // Set checking to false to show UI
-                setChecking(false);
-                // Return to prevent accessing null profile below
+            // ⚠️ CRITICAL Guard: If profile doesn't exist yet, stop and wait
+            if (!profile) {
+                console.log("[AwaitingApproval] Profile data not yet available, waiting...");
                 return;
             }
 
@@ -128,49 +127,45 @@ export default function AwaitingApprovalPage() {
             const hasNullApproved = profile.is_approved === null || profile.is_approved === undefined;
             const isExistingUser = hasNullStatus && hasNullApproved;
 
-            // Existing users dengan NULL values dianggap approved
+            // Consolidate Approval Criteria
             const isApproved = profile.is_approved === true ||
                 profile.status === 'approved' ||
                 isExistingUser;
 
-            // Hanya new users dengan status eksplisit 'pending' yang ditolak
-            const isPendingNewUser = profile.status === 'pending' || profile.is_approved === false;
-
             if (isApproved) {
-                console.log("[AwaitingApproval] User approved/legacy, redirect ke dashboard");
+                console.log("[AwaitingApproval] User approved, redirecting to appropriate dashboard");
+                setChecking(false);
 
                 // Gunakan redirect yang sama dengan login page
-                const getDashboardPath = (role) => {
-                    const redirectPaths = {
-                        'admin_team': '/dashboard/admin-team',
-                        'admin_lead': '/dashboard/admin-lead',
-                        'head_consultant': '/dashboard/head-consultant',
-                        'superadmin': '/dashboard/superadmin',
-                        'project_lead': '/dashboard/project-lead',
-                        'inspector': '/dashboard/inspector',
-                        'client': '/dashboard/client'
-                    };
-                    return redirectPaths[role] || '/dashboard';
+                const redirectPaths = {
+                    'admin': '/dashboard/admin',
+                    'admin_team': '/dashboard/admin-team',
+                    'admin_lead': '/dashboard/admin-lead',
+                    'head_consultant': '/dashboard/head-consultant',
+                    'superadmin': '/dashboard/superadmin',
+                    'project_lead': '/dashboard/project-lead',
+                    'inspector': '/dashboard/inspector',
+                    'client': '/dashboard/client',
+                    'drafter': '/dashboard/drafter'
                 };
 
-                const dashboardPath = getDashboardPath(profile.role);
+                const dashboardPath = redirectPaths[profile.role] || '/dashboard';
                 console.log("[AwaitingApproval] Redirecting to:", dashboardPath);
 
-                // Gunakan replace untuk menghindari history stacking
-                setTimeout(() => router.replace(dashboardPath), 100);
+                // Give the user a moment to see the "Approved" status UI
+                setTimeout(() => {
+                    console.log("[AwaitingApproval] Executing redirect now...");
+                    router.replace(dashboardPath);
+                }, 1500);
                 return;
             }
 
-            // Hanya new users dengan status 'pending' yang tetap di halaman ini
-            if (isPendingNewUser) {
-                console.log("[AwaitingApproval] New user pending approval, showing page");
+            // Pending check
+            if (profile.status === 'pending' || !isApproved) {
+                console.log("[AwaitingApproval] User still pending, holding on page");
                 setChecking(false);
                 return;
             }
-
-            // Fallback: jika tidak approved dan bukan pending, redirect ke login
-            console.log("[AwaitingApproval] Unknown status, redirecting to login");
-            setTimeout(() => router.push('/login'), 100);
         };
 
         // Jalankan check dengan delay untuk menghindari race condition
@@ -203,21 +198,19 @@ export default function AwaitingApprovalPage() {
             };
         }
 
-        // ✅ Handle email confirmed - show pending approval message (ONLY if not rejected/suspended)
-        if (reason === 'email-confirmed') {
-            // Priority Check: If profile is loaded and rejected/suspended, Let the specific status handler below take over
-            if (profile && (profile.status === 'rejected' || profile.status === 'suspended')) {
-                // Pass through to switch(profile.status)
-            } else {
-                return {
-                    icon: <Clock className="w-12 h-12 mx-auto text-blue-500 animate-pulse" />,
-                    title: "Email Terverifikasi!",
-                    description: "Email Anda sudah dikonfirmasi. Akun Anda sedang menunggu persetujuan dari Superadmin. Anda akan menerima notifikasi setelah akun disetujui.",
-                    alertType: 'default',
-                    showRedirect: false,
-                    forceShowContent: false
-                };
-            }
+        // PRIORITY CHECK: If we have a real profile, let its database status take priority
+        // over the URL "reason" (especially when approved/rejected)
+        if (profile && profile.status && profile.status !== 'pending' && profile.status !== 'error') {
+            // Let the main switch(profile.status) handle it
+        } else if (reason === 'email-confirmed') {
+            return {
+                icon: <Clock className="w-12 h-12 mx-auto text-blue-500 animate-pulse" />,
+                title: "Email Terverifikasi!",
+                description: "Email Anda sudah dikonfirmasi. Akun Anda sedang menunggu persetujuan dari Superadmin. Anda akan menerima notifikasi setelah akun disetujui.",
+                alertType: 'default',
+                showRedirect: false,
+                forceShowContent: true
+            };
         }
 
         if (!profile) {
@@ -251,11 +244,12 @@ export default function AwaitingApprovalPage() {
         switch (profile.status) {
             case 'approved':
                 return {
-                    icon: <CheckCircle className="w-12 h-12 mx-auto text-green-500" />,
-                    title: "Akun Telah Disetujui",
-                    description: "Akun Anda telah disetujui. Mengarahkan ke dashboard...",
+                    icon: <ShieldCheck className="w-12 h-12 mx-auto text-green-500 animate-bounce" />,
+                    title: "Akun Telah Disetujui!",
+                    description: "Selamat! Akun Anda telah disetujui oleh Superadmin. Anda akan dialihkan ke dashboard dalam sekejap.",
                     alertType: 'success',
-                    showRedirect: true
+                    showRedirect: false,
+                    forceShowContent: true
                 };
             case 'rejected':
                 return {
@@ -279,7 +273,8 @@ export default function AwaitingApprovalPage() {
                     title: "Menunggu Persetujuan Admin",
                     description: "Akun baru Anda sedang menunggu persetujuan dari SuperAdmin.",
                     alertType: 'default',
-                    showRedirect: false
+                    showRedirect: false,
+                    forceShowContent: true // Always show for pending status
                 };
             default:
                 // Fallback ke URL reason
@@ -292,13 +287,25 @@ export default function AwaitingApprovalPage() {
                             alertType: 'default',
                             showRedirect: false
                         };
+                    case 'pending-approval':
+                        // Only force show if NOT already approved to avoid flash
+                        const isTrulyPending = !isApproved && profile?.status === 'pending';
+                        return {
+                            icon: <ShieldAlert className="w-12 h-12 mx-auto text-yellow-500" />,
+                            title: "Menunggu Persetujuan",
+                            description: "Akun Anda sedang dalam proses peninjauan oleh Admin.",
+                            alertType: 'default',
+                            showRedirect: false,
+                            forceShowContent: isTrulyPending
+                        };
                     default:
                         return {
                             icon: <ShieldAlert className="w-12 h-12 mx-auto text-yellow-500" />,
                             title: "Status Akun",
                             description: "Sedang memeriksa status akun Anda...",
                             alertType: 'default',
-                            showRedirect: false
+                            showRedirect: false,
+                            forceShowContent: false
                         };
                 }
         }
@@ -389,14 +396,16 @@ export default function AwaitingApprovalPage() {
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Nama:</span>
                                     <span className="font-medium text-foreground">
-                                        {profile?.full_name || tempUser?.full_name || user?.user_metadata?.full_name || 'N/A'}
+                                        {profile?.full_name && profile.full_name !== 'User' ? profile.full_name :
+                                            (user?.user_metadata?.full_name || tempUser?.full_name || 'Menunggu...')}
                                     </span>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Peran:</span>
                                     <span className="font-medium text-primary capitalize">
-                                        {(profile?.role || tempUser?.role || user?.user_metadata?.role || 'N/A').replace(/_/g, ' ')}
+                                        {((profile?.role && profile.role !== 'guest' ? profile.role :
+                                            (user?.user_metadata?.role || tempUser?.role || 'pending'))).replace(/_/g, ' ')}
                                     </span>
                                 </div>
 

@@ -162,7 +162,11 @@ export default function ReportDetail() {
   };
 
   const formatDateTime = (dateString) => {
-    return new Date(dateString).toLocaleString('id-ID', {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
+
+    return date.toLocaleString('id-ID', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -763,7 +767,7 @@ export default function ReportDetail() {
                               </div>
                             )}
                             <div className="text-xs text-muted-foreground">
-                              {formatDateTime(photo.uploaded_at)}
+                              {formatDateTime(photo.captured_at || photo.created_at)}
                             </div>
                           </div>
                         </CardContent>

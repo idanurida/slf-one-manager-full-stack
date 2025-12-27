@@ -131,7 +131,7 @@ export default function TeamLeaderProjectDetailPage() {
       await supabase.from('notifications').insert([{
         project_id: id, type: 'inspector_assigned',
         message: `Anda ditugaskan sebagai inspector untuk proyek ${project.name}`,
-        sender_id: user.id, recipient_id: selectedInspector, read: false
+        sender_id: user.id, recipient_id: selectedInspector, is_read: false
       }]);
 
       toast.success('Inspector berhasil ditugaskan');
@@ -176,7 +176,7 @@ export default function TeamLeaderProjectDetailPage() {
       await supabase.from('notifications').insert([{
         project_id: id, type: 'final_report_submitted',
         message: `Laporan final proyek ${project.name} telah diserahkan.`,
-        sender_id: user.id, recipient_id: project.admin_lead_id, read: false
+        sender_id: user.id, recipient_id: project.admin_lead_id, is_read: false
       }]);
 
       toast.success('Laporan diserahkan ke Admin Lead');

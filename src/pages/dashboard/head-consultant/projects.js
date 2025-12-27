@@ -43,12 +43,7 @@ export default function HeadConsultantProjectsPage() {
   const [statusFilter, setStatusFilter] = useState('Semua Status');
   const [timeFilter, setTimeFilter] = useState('Bulan Ini');
 
-  const [stats, setStats] = useState({
-    totalProjects: 0,
-    technicalVerification: 0,
-    pendingTTD: 0,
-    completed: 0
-  });
+
 
   // Fetch Data
   const fetchData = useCallback(async () => {
@@ -68,12 +63,7 @@ export default function HeadConsultantProjectsPage() {
       setProjects(projectsList);
 
       // Calculate Stats
-      setStats({
-        totalProjects: projectsList.length,
-        technicalVerification: projectsList.filter(p => p.status === 'technical_verification' || p.status === 'head_consultant_review').length,
-        pendingTTD: projectsList.filter(p => p.status === 'pending_ttd' || p.status === 'approved_by_pl').length,
-        completed: projectsList.filter(p => p.status === 'completed' || p.status === 'slf_issued').length
-      });
+
 
     } catch (error) {
       console.error('Error:', error);
@@ -134,36 +124,7 @@ export default function HeadConsultantProjectsPage() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Proyek berjalan"
-            value={stats.totalProjects}
-            icon={FolderOpen}
-            color="text-primary"
-            subtitle="Dalam Eksekusi"
-          />
-          <StatCard
-            title="Persetujuan akhir"
-            value={stats.pendingTTD}
-            icon={FileText}
-            color="text-status-yellow"
-            subtitle="Menunggu Validasi"
-          />
-          <StatCard
-            title="SLF terbit"
-            value={stats.completed}
-            icon={CheckCircle2}
-            color="text-status-green"
-            subtitle="Sertifikasi Selesai"
-          />
-          <StatCard
-            title="Total portfolio"
-            value={stats.totalProjects}
-            icon={TrendingUp}
-            color="text-blue-500"
-            subtitle="Total Keseluruhan"
-          />
-        </div>
+
 
         {/* Filters & Search Toolbar */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-card border border-border shadow-sm">
@@ -291,7 +252,7 @@ export default function HeadConsultantProjectsPage() {
             <div className="flex flex-col">
               <p className="text-sm font-bold text-text-secondary-light mb-1">Status kelaikan</p>
               <span className="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">
-                Menampilkan <span className="font-bold text-primary">1 - {projects.length}</span> dari <span className="font-bold text-foreground">{stats.totalProjects} entri data</span>
+                Menampilkan <span className="font-bold text-primary">1 - {projects.length}</span> dari <span className="font-bold text-foreground">{projects.length} entri data</span>
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -307,34 +268,7 @@ export default function HeadConsultantProjectsPage() {
 }
 
 
-function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
-  return (
-    <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
-      <div className="flex items-start justify-between relative z-10">
-        <div>
-          <p className="text-sm font-bold text-text-secondary-light">{title}</p>
-          <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
-          {subtitle && <p className="text-sm font-medium text-text-secondary-light mt-1 opacity-70">{subtitle}</p>}
-        </div>
-        <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 ${color}`}>
-          <Icon size={20} />
-        </div>
-      </div>
-      {trend && (
-        <div className="mt-4 flex items-center gap-1.5 relative z-10">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-xs font-bold border border-status-green/20">
-            <TrendingUp size={12} />
-            <span>+{trend}%</span>
-          </div>
-          <span className="text-xs font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
-        </div>
-      )}
-      <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-[2.5] translate-x-1/4 translate-y-1/4 ${color}`}>
-        <Icon size={60} />
-      </div>
-    </div>
-  );
-}
+
 
 function StatusBadge({ status }) {
   const configs = {

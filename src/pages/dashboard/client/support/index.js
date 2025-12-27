@@ -93,27 +93,19 @@ const FAQ_ITEMS = [
   },
 ];
 
-const getStatusBadge = (status) => {
-  const statusConfig = {
-    'open': { label: 'Menunggu', variant: 'secondary' },
-    'in_progress': { label: 'Diproses', variant: 'default' },
-    'resolved': { label: 'Selesai', variant: 'outline' },
-    'closed': { label: 'Ditutup', variant: 'outline' },
+function ProjectStatusBadge({ status }) {
+  const styles = {
+    open: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    resolved: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    closed: "bg-slate-500/10 text-slate-500 border-slate-500/20",
+    in_progress: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
   };
-  const config = statusConfig[status] || { label: status, variant: 'secondary' };
-  return <Badge variant={config.variant}>{config.label}</Badge>;
-};
-
-const getPriorityBadge = (priority) => {
-  const priorityConfig = {
-    'low': { label: 'Rendah', className: 'bg-gray-100 text-gray-800' },
-    'normal': { label: 'Normal', className: 'bg-blue-100 text-blue-800' },
-    'high': { label: 'Tinggi', className: 'bg-orange-100 text-orange-800' },
-    'urgent': { label: 'Urgent', className: 'bg-red-100 text-red-800' },
-  };
-  const config = priorityConfig[priority] || priorityConfig['normal'];
-  return <Badge className={config.className}>{config.label}</Badge>;
-};
+  return (
+    <Badge className={`${styles[status] || "bg-slate-500/10 text-slate-500 border-slate-500/20"} capitalize font-black text-[8px] tracking-widest px-3 py-1 rounded-full border shadow-sm`}>
+      {status || "Unknown"}
+    </Badge>
+  );
+}
 
 export default function ClientSupportPage() {
   const router = useRouter();
@@ -131,6 +123,27 @@ export default function ClientSupportPage() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
 
+  const [contactInfo, setContactInfo] = useState({
+    whatsapp: "6281575409309",
+    email: "supportSLF@puridimensi.id"
+  });
+
+  useEffect(() => {
+    const fetchSystemSettings = async () => {
+      try {
+        const { data } = await supabase
+          .from('system_settings')
+          .select('value')
+          .eq('key', 'support_contact')
+          .single();
+        if (data?.value) setContactInfo(data.value);
+      } catch (e) {
+        console.error("Error fetching system settings:", e);
+      }
+    };
+    fetchSystemSettings();
+  }, []);
+
   // Fetch support requests
   const fetchSupportRequests = useCallback(async () => {
     if (!user) return;
@@ -139,7 +152,10 @@ export default function ClientSupportPage() {
       // Try to fetch from support_requests table
       const { data, error } = await supabase
         .from('support_requests')
-        .select('*')
+        .select(`
+          *,
+          responder:profiles!support_requests_responded_by_fkey(full_name)
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -160,7 +176,7 @@ export default function ClientSupportPage() {
             id: n.id,
             request_type: n.metadata?.request_type || 'general',
             message: n.message,
-            status: n.read ? 'resolved' : 'open',
+            status: n.is_read ? 'resolved' : 'open',
             priority: n.metadata?.priority || 'normal',
             created_at: n.created_at,
           }));
@@ -239,7 +255,7 @@ export default function ClientSupportPage() {
         message: `[${REQUEST_TYPES.find(t => t.value === requestType)?.label}] ${subject || ''}: ${message.trim()}`,
         sender_id: user.id,
         recipient_id: admin.id,
-        read: false,
+        is_read: false,
         metadata: { request_type: requestType, subject },
         created_at: new Date().toISOString()
       }));
@@ -263,7 +279,7 @@ export default function ClientSupportPage() {
           message: `Support Request #${requestId}: ${subject || REQUEST_TYPES.find(t => t.value === requestType)?.label}`,
           sender_id: user.id,
           recipient_id: admin.id,
-          read: false,
+          is_read: false,
           metadata: { support_request_id: requestId, request_type: requestType },
           created_at: new Date().toISOString()
         }));
@@ -348,47 +364,46 @@ export default function ClientSupportPage() {
         )}
 
         {/* Contact Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <MessageCircle className="w-6 h-6 text-blue-600" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="rounded-[2rem] border-slate-200/60 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none overflow-hidden group bg-slate-50 dark:bg-white/5">
+            <CardContent className="p-8">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="size-16 rounded-3xl bg-blue-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <Mail size={32} />
+                </div>
+                <div>
+                  <h3 className="font-black text-xl">Email Support</h3>
+                  <p className="text-muted-foreground text-sm mt-1">{contactInfo?.email || 'supportSLF@puridimensi.id'}</p>
+                </div>
+                <Button variant="default" className="w-full rounded-2xl h-12 font-bold tracking-widest text-xs uppercase" asChild>
+                  <a href={`mailto:${contactInfo?.email || 'supportSLF@puridimensi.id'}`}>
+                    Kirim Email
+                  </a>
+                </Button>
               </div>
-              <h3 className="font-semibold mb-1">Kirim Pesan</h3>
-              <p className="text-sm text-muted-foreground mb-3">Support Ticket</p>
-              <Button variant="outline" size="sm" onClick={() => setDialogOpen(true)}>
-                Buat Tiket
-              </Button>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Mail className="w-6 h-6 text-green-600" />
+          <Card className="rounded-[2rem] border-slate-200/60 dark:border-white/5 shadow-xl shadow-slate-200/30 dark:shadow-none overflow-hidden group bg-slate-50 dark:bg-white/5">
+            <CardContent className="p-8">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="size-16 rounded-3xl bg-green-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <MessageCircle size={32} />
+                </div>
+                <div>
+                  <h3 className="font-black text-xl">WhatsApp</h3>
+                  <p className="text-muted-foreground text-sm mt-1">Fast Respond via WA</p>
+                </div>
+                <Button variant="default" className="w-full rounded-2xl h-12 font-bold bg-green-600 hover:bg-green-700 tracking-widest text-xs uppercase" asChild>
+                  <a
+                    href={`https://wa.me/${contactInfo?.whatsapp || '6281575409309'}?text=Halo%20Admin%20SLF%20One%20Manager%2C%20saya%20butuh%20bantuan%20terkait%20aplikasi%2Fproyek%20saya.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Hubungi WhatsApp
+                  </a>
+                </Button>
               </div>
-              <h3 className="font-semibold mb-1">Email</h3>
-              <p className="text-sm text-muted-foreground mb-3">supportSLF@puridimensi.id</p>
-              <Button variant="outline" size="sm" asChild>
-                <a href="mailto:supportSLF@puridimensi.id">
-                  Kirim Email
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Phone className="w-6 h-6 text-red-600" />
-              </div>
-              <h3 className="font-semibold mb-1">Telepon</h3>
-              <p className="text-sm text-muted-foreground mb-3">+62 815-7540-9309</p>
-              <Button variant="outline" size="sm" asChild>
-                <a href="https://wa.me/6281575409309" target="_blank" rel="noopener noreferrer">
-                  WhatsApp
-                </a>
-              </Button>
             </CardContent>
           </Card>
         </div>
@@ -432,22 +447,38 @@ export default function ClientSupportPage() {
                 ) : (
                   <div className="space-y-3">
                     {supportRequests.map(request => (
-                      <Card key={request.id} className="border">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="outline">
+                      <Card key={request.id} className="rounded-[2rem] border-slate-200/60 dark:border-white/5 shadow-lg shadow-slate-200/20 dark:shadow-none overflow-hidden hover:scale-[1.01] transition-transform">
+                        <CardContent className="p-6">
+                          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                            <div className="flex-1 space-y-4">
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-primary/10 text-primary border-none rounded-full font-black text-[8px] uppercase tracking-widest px-3 py-1">
                                   {REQUEST_TYPES.find(t => t.value === request.request_type)?.label || request.request_type}
                                 </Badge>
-                                {getStatusBadge(request.status)}
-                                {getPriorityBadge(request.priority)}
+                                <ProjectStatusBadge status={request.status} />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">ID: #{request.id.slice(0, 8)}</span>
                               </div>
-                              <p className="text-sm">{request.message}</p>
-                              <p className="text-xs text-muted-foreground mt-2">
-                                <Clock className="w-3 h-3 inline mr-1" />
+
+                              <div>
+                                <h4 className="font-bold text-slate-900 dark:text-white">{request.subject}</h4>
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{request.message}</p>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                <Clock size={12} />
                                 {formatDateSafely(request.created_at)}
-                              </p>
+                              </div>
+
+                              {request.admin_response && (
+                                <div className="mt-4 p-5 bg-primary/5 border border-primary/10 rounded-2xl space-y-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
+                                    <CheckCircle size={12} />
+                                    Respon Admin
+                                  </div>
+                                  <p className="text-sm italic text-slate-700 dark:text-slate-300 leading-relaxed font-medium">"{request.admin_response}"</p>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Dibalas oleh {request.responder?.full_name || 'Admin'} pada {formatDateSafely(request.responded_at)}</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </CardContent>

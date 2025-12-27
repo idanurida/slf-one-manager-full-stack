@@ -23,6 +23,7 @@ import {
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { fetchProjectMessages, sendMessage as sendMessageService, markMessagesAsRead } from "@/utils/messageService";
 
 export default function ChatPage() {
     const router = useRouter();
@@ -79,19 +80,12 @@ export default function ChatPage() {
     const fetchMessages = async () => {
         if (!user?.id || !recipient_id) return;
 
-        const { data, error } = await supabase
-            .from('notifications')
-            .select('*')
-            .or(`and(sender_id.eq.${user.id},recipient_id.eq.${recipient_id}),and(sender_id.eq.${recipient_id},recipient_id.eq.${user.id})`)
-            .order('created_at', { ascending: true });
+        // Note: For simplicity in this view, we're using recipient_id to find common project messages
+        const { data, error } = await fetchProjectMessages(null, user.id, recipient_id);
 
         if (!error) {
             setMessages(data || []);
-            // Mark as read
-            const unreadIds = data?.filter(m => !m.is_read && m.recipient_id === user.id).map(m => m.id) || [];
-            if (unreadIds.length > 0) {
-                await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
-            }
+            await markMessagesAsRead(user.id, recipient_id);
         }
     };
 
@@ -103,16 +97,10 @@ export default function ChatPage() {
         setNewMessage(""); // Optimistic clear
 
         try {
-            // Identify type roughly
-            const type = recipient.role === 'client' ? 'message_to_client' : 'message_internal';
-
-            const { error } = await supabase.from('notifications').insert({
-                sender_id: user.id,
-                recipient_id: recipient.id,
-                title: `Pesan dari ${profile?.full_name || 'Project Lead'}`,
-                message: msgText,
-                type: type,
-                is_read: false
+            const { error } = await sendMessageService({
+                senderId: user.id,
+                recipientId: recipient.id,
+                message: msgText
             });
 
             if (error) throw error;

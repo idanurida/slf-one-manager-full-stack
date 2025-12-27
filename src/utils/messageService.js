@@ -202,7 +202,7 @@ const createMessageNotification = async ({ projectId, senderId, recipientId, mes
       message: `Pesan dari ${senderName}: ${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`,
       sender_id: senderId,
       recipient_id: recipientId,
-      read: false,
+      is_read: false,
       created_at: new Date().toISOString(),
     });
   } catch (err) {
@@ -237,7 +237,7 @@ export const markMessagesAsRead = async (messageIds, userId) => {
     if (notifIds.length > 0) {
       await supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ is_read: true })
         .in('id', notifIds)
         .eq('recipient_id', userId);
     }

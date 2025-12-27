@@ -15,22 +15,22 @@ import { Send, ArrowLeft } from "lucide-react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { fetchProjectMessages, sendMessage as sendMessageService } from "@/utils/messageService";
 
 // Message Bubble Component - Minimalis
 const MessageBubble = ({ message, isOwn, senderName, timestamp }) => {
-  const time = new Date(timestamp).toLocaleTimeString('id-ID', { 
-    hour: '2-digit', 
+  const time = new Date(timestamp).toLocaleTimeString('id-ID', {
+    hour: '2-digit',
     minute: '2-digit',
     hour12: false
   });
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4 animate-in fade-in`}>
-      <div className={`max-w-[80%] px-4 py-3 rounded-lg ${
-        isOwn 
-          ? 'bg-blue-500 text-white' 
-          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-      }`}>
+      <div className={`max-w-[80%] px-4 py-3 rounded-lg ${isOwn
+        ? 'bg-blue-500 text-white'
+        : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+        }`}>
         <p className="text-sm break-words whitespace-pre-wrap">{message}</p>
         <div className="flex justify-between items-center mt-2 text-xs opacity-70">
           <span>{isOwn ? 'Anda' : senderName}</span>
@@ -63,59 +63,17 @@ export default function CommunicationThreadPage() {
     if (!projectId || !user?.id) return;
 
     try {
-      // Cari di table messages
-      const { data: messagesData, error: messagesErr } = await supabase
-        .from('messages')
-        .select(`
-          id,
-          message,
-          created_at,
-          sender_id,
-          sender:profiles!messages_sender_id_fkey(full_name)
-        `)
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: true })
-        .limit(100);
+      const { data, error } = await fetchProjectMessages(projectId, user.id);
 
-      if (!messagesErr && messagesData) {
-        setMessages(messagesData.map(msg => ({
-          id: msg.id,
-          message: msg.message,
-          created_at: msg.created_at,
-          sender_id: msg.sender_id,
-          sender_name: msg.sender?.full_name || 'Unknown'
-        })));
-        return;
-      }
+      if (error) throw error;
 
-      // Fallback: cari di notifications jika messages table tidak ada
-      const { data: notificationsData, error: notifErr } = await supabase
-        .from('notifications')
-        .select(`
-          id,
-          message,
-          created_at,
-          sender_id:user_id,
-          profiles!notifications_user_id_fkey(full_name)
-        `)
-        .eq('project_id', projectId)
-        .eq('type', 'message')
-        .order('created_at', { ascending: true })
-        .limit(100);
-
-      if (!notifErr && notificationsData) {
-        setMessages(notificationsData.map(notif => ({
-          id: notif.id,
-          message: notif.message,
-          created_at: notif.created_at,
-          sender_id: notif.sender_id,
-          sender_name: notif.profiles?.full_name || 'Unknown'
-        })));
-        return;
-      }
-
-      // Jika tidak ada data sama sekali
-      setMessages([]);
+      setMessages((data || []).map(msg => ({
+        id: msg.id,
+        message: msg.message,
+        created_at: msg.created_at,
+        sender_id: msg.sender_id,
+        sender_name: msg.profiles?.full_name || 'Unknown'
+      })));
 
     } catch (err) {
       console.error('Error fetching messages:', err);
@@ -144,42 +102,14 @@ export default function CommunicationThreadPage() {
     if (!projectId || !user?.id || !messageText.trim()) return;
 
     try {
-      // Coba simpan ke table messages
-      const { data: messageData, error: messageErr } = await supabase
-        .from('messages')
-        .insert({
-          project_id: projectId,
-          sender_id: user.id,
-          message: messageText.trim(),
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+      const { data, error } = await sendMessageService({
+        projectId,
+        senderId: user.id,
+        message: messageText.trim()
+      });
 
-      if (!messageErr && messageData) {
-        return { success: true, data: messageData };
-      }
-
-      // Fallback: simpan ke notifications sebagai message
-      const { data: notifData, error: notifErr } = await supabase
-        .from('notifications')
-        .insert({
-          project_id: projectId,
-          user_id: user.id,
-          recipient_id: null, // Group message
-          type: 'message',
-          title: 'Pesan Baru',
-          message: messageText.trim(),
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (!notifErr && notifData) {
-        return { success: true, data: notifData };
-      }
-
-      throw notifErr || messageErr;
+      if (error) throw error;
+      return { success: true, data };
 
     } catch (err) {
       console.error('Error sending message:', err);
@@ -208,16 +138,16 @@ export default function CommunicationThreadPage() {
 
       // Kirim ke server
       const result = await sendMessage(messageText);
-      
+
       if (result.success) {
         // Replace temporary message with real one
-        setMessages(prev => prev.map(msg => 
-          msg.id === tempMessage.id 
+        setMessages(prev => prev.map(msg =>
+          msg.id === tempMessage.id
             ? {
-                ...msg,
-                id: result.data.id,
-                sender_name: 'Anda'
-              }
+              ...msg,
+              id: result.data.id,
+              sender_name: 'Anda'
+            }
             : msg
         ));
       } else {
@@ -252,7 +182,7 @@ export default function CommunicationThreadPage() {
             <Skeleton className="h-8 w-8 rounded-full" />
             <Skeleton className="h-4 w-40" />
           </div>
-          
+
           {/* Messages skeleton */}
           <div className="flex-1 overflow-hidden space-y-4">
             {[1, 2, 3].map((i) => (
@@ -265,7 +195,7 @@ export default function CommunicationThreadPage() {
               </div>
             ))}
           </div>
-          
+
           {/* Input skeleton */}
           <div className="pt-4">
             <Skeleton className="h-20 w-full" />

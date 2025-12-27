@@ -243,7 +243,7 @@ function ProjectCard({ project }) {
       </div>
 
       <div className="mb-6 space-y-1">
-        <h3 className="text-lg font-black tracking-tight text-foreground line-clamp-2 min-h-[3.5rem] group-hover:text-primary transition-colors">
+        <h3 className="text-base font-bold tracking-tight text-foreground line-clamp-2 min-h-[3.5rem] group-hover:text-primary transition-colors">
           {project.name}
         </h3>
         <p className="text-sm font-bold text-muted-foreground tracking-widest flex items-center gap-2">

@@ -268,21 +268,12 @@ export default function AdminLeadProjectsTrackingPage() {
           </div>
         </motion.div>
 
-        {/* Stats Overview */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <StatSimple title="Total" value={stats.totalProjects} icon={<Building2 size={16} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" />
-          <StatSimple title="Aktif" value={stats.activeProjects} icon={<TrendingUp size={16} />} color="text-amber-500" bg="bg-amber-500/10" />
-          <StatSimple title="Docs" value={stats.projectsWithPendingDocs} icon={<FileText size={16} />} color="text-red-500" bg="bg-red-500/10" />
-          <StatSimple title="Bayar" value={stats.pendingPayments} icon={<DollarSign size={16} />} color="text-purple-500" bg="bg-purple-500/10" />
-          <StatSimple title="Laporan" value={stats.projectsWithVerifiedReports} icon={<CheckCircle2 size={16} />} color="text-emerald-500" bg="bg-emerald-500/10" />
-          <StatSimple title="Selesai" value={stats.completedProjects} icon={<Check size={16} />} color="text-blue-500" bg="bg-blue-500/10" />
-        </motion.div>
 
         {/* Projects List Refined Table */}
         <motion.div variants={itemVariants} className="bg-card rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-border overflow-hidden transition-all duration-300">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 font-bold text-[10px] tracking-[0.15em] border-b border-border">
+              <thead className="bg-muted/50 text-muted-foreground font-bold text-[10px] tracking-[0.15em] border-b border-border">
                 <tr>
                   <th className="px-8 py-6">Informasi Proyek</th>
                   <th className="px-8 py-6">Tim</th>
@@ -302,12 +293,12 @@ export default function AdminLeadProjectsTrackingPage() {
                   </td></tr>
                 ) : (
                   filteredProjects.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
+                    <tr key={p.id} className="hover:bg-muted/50 transition-all group">
                       <td className="px-8 py-6">
                         <div className="flex flex-col gap-1.5 cursor-pointer" onClick={() => router.push(`/dashboard/admin-lead/projects/${p.id}`)}>
                           <span className="font-bold text-sm text-slate-900 dark:text-white tracking-tight group-hover:text-[#7c3aed] transition-colors">{p.name}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-[9px] font-bold tracking-widest bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded text-slate-500">{p.application_type || 'SLF'}</span>
+                            <span className="text-[9px] font-bold tracking-widest bg-muted px-2 py-0.5 rounded text-muted-foreground">{p.application_type || 'SLF'}</span>
                             <span className="text-[10px] font-bold text-slate-400 tracking-widest">{p.client_name}</span>
                           </div>
                         </div>
@@ -339,7 +330,7 @@ export default function AdminLeadProjectsTrackingPage() {
                             <span className="text-[10px] font-bold text-slate-400 tracking-widest">{p.document_counts.verified}/{p.document_counts.total} file</span>
                             <span className="text-[10px] font-bold text-[#7c3aed]">{Math.round((p.document_counts.verified / (p.document_counts.total || 1)) * 100)}%</span>
                           </div>
-                          <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${(p.document_counts.verified / (p.document_counts.total || 1)) * 100}%` }}
@@ -356,19 +347,19 @@ export default function AdminLeadProjectsTrackingPage() {
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
                           <div className="flex flex-col items-center gap-1 group/icon">
-                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.payment_info?.status === 'verified' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-slate-50 dark:bg-white/5 border-border text-slate-300'}`}>
+                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.payment_info?.status === 'verified' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-muted border-border text-muted-foreground'}`}>
                               <CreditCard size={14} />
                             </div>
                             <span className="text-[8px] font-bold text-slate-400 tracking-tighter">Finance</span>
                           </div>
                           <div className="flex flex-col items-center gap-1">
-                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.report_verified ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-500' : 'bg-slate-50 dark:bg-white/5 border-border text-slate-300'}`}>
+                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.report_verified ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-500' : 'bg-muted border-border text-muted-foreground'}`}>
                               <FileCheck size={14} />
                             </div>
                             <span className="text-[8px] font-bold text-slate-400 tracking-tighter">Report</span>
                           </div>
                           <div className="flex flex-col items-center gap-1">
-                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.simbg_uploaded ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-500' : 'bg-slate-50 dark:bg-white/5 border-border text-slate-300'}`}>
+                            <div className={`size-8 rounded-lg flex items-center justify-center border transition-all ${p.simbg_uploaded ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-500' : 'bg-muted border-border text-muted-foreground'}`}>
                               <Upload size={14} />
                             </div>
                             <span className="text-[8px] font-bold text-slate-400 tracking-tighter">SIMBG</span>
@@ -376,7 +367,7 @@ export default function AdminLeadProjectsTrackingPage() {
                         </div>
                       </td>
                       <td className="px-8 py-6 text-right">
-                        <button onClick={() => router.push(`/dashboard/admin-lead/projects/${p.id}`)} className="size-10 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10 transition-all flex items-center justify-center ml-auto">
+                        <button onClick={() => router.push(`/dashboard/admin-lead/projects/${p.id}`)} className="size-10 rounded-xl bg-muted text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all flex items-center justify-center ml-auto">
                           <ArrowRight size={18} />
                         </button>
                       </td>
@@ -414,11 +405,11 @@ export default function AdminLeadProjectsTrackingPage() {
               </div>
             </div>
             <div className="space-y-3">
-              <div className="p-4 bg-slate-50 dark:bg-card/20 rounded-2xl flex items-center justify-between">
+              <div className="p-4 bg-muted/50 rounded-2xl flex items-center justify-between">
                 <span className="text-[10px] font-bold text-slate-500 tracking-widest">Laporan menunggu</span>
                 <span className="text-sm font-bold text-[#7c3aed]">{stats.projectsWithPendingDocs}</span>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-card/20 rounded-2xl flex items-center justify-between">
+              <div className="p-4 bg-muted/50 rounded-2xl flex items-center justify-between">
                 <span className="text-[10px] font-bold text-slate-500 tracking-widest">Invoice pending</span>
                 <span className="text-sm font-bold text-purple-500">{stats.pendingPayments}</span>
               </div>
@@ -431,19 +422,6 @@ export default function AdminLeadProjectsTrackingPage() {
 }
 
 // Sub-components
-function StatSimple({ title, value, icon, color, bg }) {
-  return (
-    <div className="flex items-center gap-3 bg-card p-3 rounded-2xl border border-border shadow-lg shadow-slate-200/30 dark:shadow-none transition-all hover:scale-105">
-      <div className={`size-8 rounded-lg flex items-center justify-center ${bg} ${color}`}>
-        {icon}
-      </div>
-      <div className="flex flex-col">
-        <span className="text-[8px] font-bold text-slate-400 tracking-tighter leading-none">{title}</span>
-        <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight mt-0.5">{value}</span>
-      </div>
-    </div>
-  );
-}
 
 // Additional Icons / Helpers
 // Items already imported from lucide-react: CalendarDays, FileCheck, Loader2

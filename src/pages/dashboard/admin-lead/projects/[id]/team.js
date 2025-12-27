@@ -127,7 +127,7 @@ export default function ProjectTeamPage() {
             const { data: users, error: usersErr } = await supabase
                 .from('profiles')
                 .select('id, full_name, email, role, specialization')
-                .neq('role', 'client')
+                .in('role', ['project_lead', 'admin_team', 'inspector', 'head_consultant', 'drafter'])
                 .order('full_name');
 
             if (usersErr) throw usersErr;
@@ -337,7 +337,14 @@ export default function ProjectTeamPage() {
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Pilih User</label>
                                 <Select
                                     value={assignForm.user_id}
-                                    onValueChange={(v) => setAssignForm({ ...assignForm, user_id: v })}
+                                    onValueChange={(v) => {
+                                        const selectedUser = availableUsers.find(u => u.id === v);
+                                        setAssignForm({
+                                            ...assignForm,
+                                            user_id: v,
+                                            role: selectedUser?.role || assignForm.role
+                                        });
+                                    }}
                                 >
                                     <SelectTrigger className="h-14 rounded-2xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 focus:ring-[#7c3aed] text-sm font-medium">
                                         <SelectValue placeholder="Cari user..." />
@@ -348,7 +355,9 @@ export default function ProjectTeamPage() {
                                                 <SelectItem key={u.id} value={u.id} className="cursor-pointer py-3 focus:bg-slate-50">
                                                     <div className="flex flex-col text-left">
                                                         <span className="font-bold text-slate-700">{u.full_name}</span>
-                                                        <span className="text-xs text-slate-400">{u.role}</span>
+                                                        <span className="text-[8px] font-bold text-slate-400 tracking-widest mt-1 inline-flex items-center gap-2">
+                                                            {u.role.replace(/_/g, ' ')} {u.specialization && `• ${u.specialization}`}
+                                                        </span>
                                                     </div>
                                                 </SelectItem>
                                             ))
@@ -373,9 +382,12 @@ export default function ProjectTeamPage() {
                                     <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
                                         <SelectItem value="project_lead" className="cursor-pointer py-3 font-medium">Project Lead</SelectItem>
                                         <SelectItem value="inspector" className="cursor-pointer py-3 font-medium">Inspector</SelectItem>
-                                        <SelectItem value="drafter" className="cursor-pointer py-3 font-medium">Drafter</SelectItem>
-                                        <SelectItem value="head_consultant" className="cursor-pointer py-3 font-medium">Head Consultant</SelectItem>
                                         <SelectItem value="admin_team" className="cursor-pointer py-3 font-medium">Admin Team</SelectItem>
+                                        {assignForm.role && !['project_lead', 'inspector', 'admin_team'].includes(assignForm.role) && (
+                                            <SelectItem value={assignForm.role} className="cursor-pointer py-3 font-medium opacity-50">
+                                                {assignForm.role.replace(/_/g, ' ')}
+                                            </SelectItem>
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>

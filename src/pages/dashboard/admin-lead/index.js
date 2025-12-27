@@ -4,27 +4,31 @@ import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
+import Link from "next/link";
+import Image from "next/image";
 
 // UI Components
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 // Icons
 import {
-  Building2, Users, FileText, Clock, CheckCircle, AlertTriangle,
-  Plus, Calendar, Eye, Bell, ChevronRight, CreditCard,
-  FolderOpen, MessageCircle, ArrowRight, Loader2, RefreshCw,
-  LayoutDashboard, Settings, LogOut, Sun, Moon, Search,
-  TrendingUp, Star, Check, Zap, Building, User, Mail,
-  CalendarDays, BarChart3, Timeline, Menu
+  Building2, Users, FileText, CheckCircle, AlertCircle,
+  Plus, Calendar, CreditCard, ArrowRight, Loader2,
+  LayoutDashboard, Search, Bell, MessageSquare, Briefcase,
+  ChevronRight, Clock, ShieldCheck
 } from "lucide-react";
 
 // Format date helper
-const formatDate = (dateString) => {
+const formatDate = (dateString, fmt = 'dd MMM yyyy') => {
   if (!dateString) return "-";
   try {
-    return format(new Date(dateString), 'dd MMM yyyy', { locale: localeId });
+    return format(new Date(dateString), fmt, { locale: localeId });
   } catch (e) {
     return dateString;
   }
@@ -32,22 +36,17 @@ const formatDate = (dateString) => {
 
 export default function AdminLeadDashboard() {
   const router = useRouter();
-  const { user, profile, loading: authLoading, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { user, profile, loading: authLoading } = useAuth();
+  const { theme } = useTheme();
 
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [approvals, setApprovals] = useState([]);
   const [stats, setStats] = useState({
-    totalProjects: 0,
     activeProjects: 0,
-    pendingDocuments: 0,
-    pendingPayments: 0,
     totalClients: 0,
-    unreadNotifications: 0
+    pendingActions: 0
   });
-  const [recentProjects, setRecentProjects] = useState([]);
-  const [upcomingSchedules, setUpcomingSchedules] = useState([]);
-  const [recentClients, setRecentClients] = useState([]);
+  const [activeProjects, setActiveProjects] = useState([]);
 
   // Fetch dashboard data
   const fetchDashboardData = useCallback(async () => {
@@ -55,82 +54,89 @@ export default function AdminLeadDashboard() {
     setLoading(true);
 
     try {
-      // Fetch all projects owned by this admin_lead with team and client data
+      // 1. Fetch Projects (Owned or Admin Lead)
       const { data: projects, error: projectsError } = await supabase
         .from('projects')
         .select(`
-          *,
-          clients (*),
+          id, name, status, city, created_at,
+          clients (name),
           project_teams (
-            user_id,
-            role,
             profiles (full_name, avatar_url)
           )
         `)
         .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id}`)
+        .in('status', ['active', 'in_progress', 'technical_verification'])
         .order('created_at', { ascending: false });
 
       if (projectsError) throw projectsError;
 
-      const projectsList = projects || [];
-      setRecentProjects(projectsList.slice(0, 5));
+      // 2. Fetch Pending Approvals (Aggregated)
 
-      // Extract unique clients from projects
-      const clientsMap = new Map();
-      projectsList.forEach(p => {
-        if (p.clients && !clientsMap.has(p.clients.id)) {
-          clientsMap.set(p.clients.id, p.clients);
-        }
-      });
-      const clientsList = Array.from(clientsMap.values());
-      setRecentClients(clientsList.slice(0, 4));
+      // A. Checklists (Reports)
+      const { data: playlists } = await supabase
+        .from('checklists')
+        .select('id, title, status, project:projects(id, name)')
+        .eq('status', 'submitted_to_admin_lead');
 
-      // Fetch pending documents for current user's projects
-      const { data: pendingDocs } = await supabase
+      // B. Documents
+      const { data: docs } = await supabase
         .from('documents')
-        .select('id, project_id, status')
-        .in('project_id', projectsList.map(p => p.id))
-        .or('status.eq.pending,status.eq.verified');
+        .select('id, name, status, project:projects(id, name)')
+        .or('status.eq.verified,status.eq.pending') // 'verified' by team usually means waiting for admin lead
+        .in('project_id', projects?.map(p => p.id) || []);
 
-      // Unique clients count
-      const uniqueClientsCount = clientsList.length;
-
-      // Fetch pending payments for current user's projects
+      // C. Payments
       const { data: payments } = await supabase
         .from('payments')
-        .select(`id`)
-        .in('project_id', projectsList.map(p => p.id))
-        .eq('status', 'pending');
+        .select('id, amount, status, project:projects(id, name)')
+        .eq('status', 'pending')
+        .in('project_id', projects?.map(p => p.id) || []);
 
-      // Fetch unread notifications
-      const { count: notifCount } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('recipient_id', user.id)
-        .eq('is_read', false);
+      // Normalize Action Items
+      let actionItems = [];
 
-      // Fetch upcoming schedules for current user's projects
-      const nextWeek = new Date();
-      nextWeek.setDate(nextWeek.getDate() + 7);
+      if (playlists) {
+        actionItems.push(...playlists.map(item => ({
+          id: item.id,
+          type: 'report',
+          title: `Laporan: ${item.title}`,
+          subtitle: item.project?.name,
+          date: new Date(), // Idealnya ada updated_at
+          link: `/dashboard/admin-lead/approvals/reports/${item.id}`,
+          status: 'Menunggu Review'
+        })));
+      }
 
-      const { data: schedules } = await supabase
-        .from('schedules')
-        .select('*, projects!inner(name, created_by)')
-        .in('project_id', projectsList.map(p => p.id))
-        .gte('schedule_date', new Date().toISOString())
-        .lte('schedule_date', nextWeek.toISOString())
-        .order('schedule_date', { ascending: true })
-        .limit(3);
+      if (docs) {
+        actionItems.push(...docs.map(item => ({
+          id: item.id,
+          type: 'document',
+          title: `Dokumen: ${item.name}`,
+          subtitle: item.project?.name,
+          date: new Date(),
+          link: `/dashboard/admin-lead/projects/${item.project?.id}/documents`,
+          status: 'Verifikasi'
+        })));
+      }
 
-      setUpcomingSchedules(schedules || []);
+      if (payments) {
+        actionItems.push(...payments.map(item => ({
+          id: item.id,
+          type: 'payment',
+          title: `Pembayaran: Rp ${parseInt(item.amount).toLocaleString('id-ID')}`,
+          subtitle: item.project?.name,
+          date: new Date(),
+          link: `/dashboard/admin-lead/projects/${item.project?.id}/payments`,
+          status: 'Konfirmasi'
+        })));
+      }
 
+      setApprovals(actionItems);
+      setActiveProjects(projects || []);
       setStats({
-        totalProjects: projectsList.length,
-        activeProjects: projectsList.filter(p => ['active', 'in_progress', 'technical_verification'].includes(p.status)).length,
-        pendingDocuments: (pendingDocs || []).length,
-        pendingPayments: (payments || []).length,
-        totalClients: uniqueClientsCount,
-        unreadNotifications: notifCount || 0
+        activeProjects: projects?.length || 0,
+        totalClients: new Set(projects?.map(p => p.clients?.name).filter(Boolean)).size,
+        pendingActions: actionItems.length
       });
 
     } catch (error) {
@@ -147,342 +153,316 @@ export default function AdminLeadDashboard() {
     }
   }, [authLoading, user, fetchDashboardData]);
 
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/login');
+  if (authLoading || (!user && loading)) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 11) return "Selamat Pagi";
+    if (hour < 15) return "Selamat Siang";
+    if (hour < 19) return "Selamat Sore";
+    return "Selamat Malam";
   };
 
   return (
     <DashboardLayout>
-      <div className="space-y-10 focus:outline-none">
+      <div className="max-w-5xl mx-auto space-y-8 pb-20">
 
-        {/* Hero Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        {/* HEADER SECTION */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">
-              Selamat datang, <span className="text-[#7c3aed] capitalize">{profile?.full_name?.split(' ')[0] || 'Pimpinan'}</span>
-            </h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-3 text-lg font-medium flex items-center gap-2">
-              Portal Manajemen SLF & PBG <span className="size-1.5 rounded-full bg-slate-300"></span> {format(new Date(), 'dd MMMM yyyy', { locale: localeId })}
+            <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
+              {getGreeting()}, <span className="text-primary">{profile?.full_name?.split(' ')[0]}</span>
+            </h1>
+            <p className="text-muted-foreground mt-1 font-medium">
+              Dashboard Admin Lead &bull; {formatDate(new Date())}
             </p>
           </div>
-          <button
-            onClick={() => router.push('/dashboard/admin-lead/projects/new')}
-            className="h-12 px-6 w-full md:w-auto rounded-xl flex items-center justify-center bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-xl shadow-[#7c3aed]/20 transition-all font-bold tracking-widest text-xs gap-3 group"
-          >
-            <Plus className="group-hover:rotate-90 transition-transform" />
-            Proyek baru
-          </button>
+
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total proyek"
-            value={stats.totalProjects}
-            icon={Building2}
-            trend="+12%"
-            trendColor="text-emerald-500"
-            color="text-[#7c3aed]"
-            bg="bg-[#7c3aed]/10"
-            subtitle="Seluruh penugasan"
-          />
-          <StatCard
-            title="Dokumen pending"
-            value={stats.pendingDocuments}
-            icon={FileText}
-            trend="+5"
-            trendColor="text-orange-500"
-            color="text-orange-500"
-            bg="bg-orange-500/10"
-            subtitle="Perlu verifikasi"
-          />
-          <StatCard
-            title="Total klien"
-            value={stats.totalClients}
-            icon={Users}
-            trend="Stable"
-            trendColor="text-slate-400"
-            color="text-blue-500"
-            bg="bg-blue-500/10"
-            subtitle="Mitra terdaftar"
-          />
-          <StatCard
-            title="Pembayaran"
-            value={stats.pendingPayments}
-            icon={CreditCard}
-            trend="Wait"
-            trendColor="text-red-500"
-            color="text-purple-500"
-            bg="bg-purple-500/10"
-            subtitle="Menunggu bukti"
-          />
-        </div>
-
-        {/* Main Content Areas */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-
-          {/* Recent Projects Table */}
-          <div className="xl:col-span-2 space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
-                <div className="w-1.5 h-8 bg-[#7c3aed] rounded-full"></div>
-                Proyek terbaru
-              </h3>
-              <button
-                onClick={() => router.push('/dashboard/admin-lead/projects')}
-                className="text-[10px] font-bold text-[#7c3aed] hover:bg-[#7c3aed]/5 px-4 py-2 rounded-xl tracking-widest transition-all"
-              >
-                Lihat semua
-              </button>
-            </div>
-
-            <div className="bg-card rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-border overflow-hidden transition-all duration-300">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 font-bold text-[10px] tracking-[0.15em] border-b border-border">
-                    <tr>
-                      <th className="px-8 py-5">Nama proyek</th>
-                      <th className="px-8 py-5">Tim</th>
-                      <th className="px-8 py-5">Status</th>
-                      <th className="px-8 py-5 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                    {loading ? (
-                      <tr><td colSpan="4" className="px-8 py-20 text-center font-bold text-xs tracking-widest text-slate-400">Memuat data...</td></tr>
-                    ) : recentProjects.length === 0 ? (
-                      <tr>
-                        <td colSpan="4" className="px-8 py-20 text-center font-black text-xs tracking-widest text-slate-400">
-                          <div className="flex flex-col items-center gap-4">
-                            <Building size={48} className="opacity-20" />
-                            <span>Belum ada proyek aktif</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      recentProjects.map(p => (
-                        <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group cursor-pointer" onClick={() => router.push(`/dashboard/admin-lead/projects/${p.id}`)}>
-                          <td className="px-8 py-5">
-                            <div className="flex items-center gap-4">
-                              <div className="size-12 rounded-2xl bg-[#7c3aed]/10 flex items-center justify-center text-[#7c3aed] group-hover:scale-110 shadow-sm transition-all">
-                                <Building2 size={20} />
-                              </div>
-                              <div className="flex flex-col overflow-hidden">
-                                <span className="font-bold text-sm text-slate-900 dark:text-white tracking-tight truncate group-hover:text-[#7c3aed] transition-colors">{p.name}</span>
-                                <span className="text-[10px] font-bold text-slate-400 tracking-widest mt-0.5">{p.application_type || 'SLF'} • {p.city || '-'}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-8 py-5">
-                            <div className="flex -space-x-2">
-                              {p.project_teams?.slice(0, 3).map((tm, idx) => (
-                                <div key={idx} className="size-8 rounded-full border-2 border-white dark:border-slate-950 bg-slate-200 overflow-hidden shadow-sm" title={tm.profiles?.full_name}>
-                                  {tm.profiles?.avatar_url ? (
-                                    <img src={tm.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-[#7c3aed] text-white text-[8px] font-black">
-                                      {tm.profiles?.full_name?.charAt(0) || '?'}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                              {(p.project_teams?.length || 0) > 3 && (
-                                <div className="size-8 rounded-full border-2 border-white dark:border-slate-950 bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-500 shadow-sm">
-                                  +{(p.project_teams?.length || 0) - 3}
-                                </div>
-                              )}
-                              {(p.project_teams?.length || 0) === 0 && <span className="text-[10px] text-slate-400 font-bold tracking-widest">Tanpa Tim</span>}
-                            </div>
-                          </td>
-                          <td className="px-8 py-5">
-                            <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-[9px] font-bold tracking-widest border ${getStatusStyles(p.status)}`}>
-                              {p.status?.replace(/_/g, ' ') || 'Draft'}
-                            </span>
-                          </td>
-                          <td className="px-8 py-5 text-right">
-                            <div className="size-10 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-400 hover:text-[#7c3aed] hover:bg-[#7c3aed]/10 transition-all flex items-center justify-center ml-auto">
-                              <ArrowRight size={18} />
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Clients Section */}
-          <div className="space-y-6">
-            <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
-              <div className="w-1.5 h-8 bg-[#7c3aed] rounded-full"></div>
-              Klien terbaru
-            </h3>
-            <div className="bg-card rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border space-y-4">
-              {loading ? (
-                <div className="py-10 text-center text-[10px] font-bold text-slate-400 tracking-widest">Memuat klien...</div>
-              ) : recentClients.length === 0 ? (
-                <div className="py-10 text-center text-[10px] font-bold text-slate-400 tracking-widest">Belum ada klien</div>
-              ) : (
-                recentClients.map(client => (
-                  <div key={client.id} className="flex items-center justify-between p-4 rounded-3xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-transparent hover:border-slate-100 dark:hover:border-white/5 group">
-                    <div className="flex items-center gap-4">
-                      <div className="size-12 rounded-2xl bg-[#7c3aed]/10 flex items-center justify-center text-[#7c3aed] font-black text-sm group-hover:scale-110 transition-transform">
-                        {client.name?.charAt(0) || 'C'}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{client.name}</span>
-                        <span className="text-[10px] font-bold text-slate-400 tracking-widest truncate max-w-[150px]">{client.email || 'Tidak ada email'}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => router.push(`/dashboard/admin-lead/clients`)}
-                      className="size-10 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-400 group-hover:text-[#7c3aed] group-hover:bg-[#7c3aed]/10 transition-all flex items-center justify-center"
-                    >
-                      <ArrowRight size={16} />
-                    </button>
-                  </div>
-                ))
+        {/* PUSAT AKSI (ACTION CENTER) - HERO */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
+              <ShieldCheck className="text-primary w-6 h-6" />
+              Pusat Aksi
+              {approvals.length > 0 && (
+                <Badge variant="destructive" className="ml-2 rounded-full px-2">
+                  {approvals.length}
+                </Badge>
               )}
-
-              <button
-                onClick={() => router.push('/dashboard/admin-lead/clients')}
-                className="w-full py-4 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-[#7c3aed] text-[10px] font-bold tracking-widest border border-border hover:border-[#7c3aed]/30 transition-all mt-4"
-              >
-                Lihat semua klien
-              </button>
-            </div>
-
-            {/* Quick Actions (Mini) */}
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              <button
-                onClick={() => router.push('/dashboard/admin-lead/projects/new')}
-                className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-[#7c3aed] text-white hover:scale-105 transition-all shadow-lg shadow-[#7c3aed]/20"
-              >
-                <Plus size={24} />
-                <span className="text-[10px] font-bold tracking-widest">Proyek</span>
-              </button>
-              <button
-                onClick={() => router.push('/dashboard/admin-lead/team')}
-                className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-white dark:bg-white/5 text-slate-900 dark:text-white border border-border hover:scale-105 transition-all shadow-md"
-              >
-                <Users size={24} />
-                <span className="text-[10px] font-bold tracking-widest">Tim</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Sidebar Content Placeholder Area or Bottom Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2">
-            {/* Additional sections like Timeline etc could go here */}
+            </h2>
+            <Link href="/dashboard/admin-lead/approvals" className="text-sm font-semibold text-primary hover:underline">
+              Lihat Semua
+            </Link>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-card rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 dark:shadow-2xl dark:shadow-[#7c3aed]/10 border border-border h-full flex flex-col">
-              <h3 className="text-lg font-black text-slate-900 dark:text-white mb-8 flex items-center gap-3 tracking-tight">
-                <Calendar size={20} className="text-[#7c3aed]" />
-                Jadwal inspeksi
-              </h3>
+          <Card className="border-border shadow-lg bg-card/50 backdrop-blur-sm overflow-hidden">
+            <CardContent className="p-0">
+              <Tabs defaultValue="all" className="w-full">
+                <div className="border-b border-border bg-muted/30 px-4 py-2">
+                  <TabsList className="bg-transparent p-0 gap-4 w-full justify-start overflow-x-auto no-scrollbar">
+                    <TabsTrigger value="all" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-full px-4 text-xs font-bold border border-transparent data-[state=active]:border-primary/20">
+                      Semua
+                    </TabsTrigger>
+                    <TabsTrigger value="reports" className="data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-500 rounded-full px-4 text-xs font-bold border border-transparent data-[state=active]:border-blue-500/20">
+                      Laporan
+                    </TabsTrigger>
+                    <TabsTrigger value="docs" className="data-[state=active]:bg-orange-500/10 data-[state=active]:text-orange-500 rounded-full px-4 text-xs font-bold border border-transparent data-[state=active]:border-orange-500/20">
+                      Dokumen
+                    </TabsTrigger>
+                    <TabsTrigger value="payments" className="data-[state=active]:bg-green-500/10 data-[state=active]:text-green-500 rounded-full px-4 text-xs font-bold border border-transparent data-[state=active]:border-green-500/20">
+                      Pembayaran
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-              <div className="flex-1 relative pl-8 border-l border-slate-100 dark:border-white/10 space-y-10">
-                {loading ? (
-                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest py-10">Memuat kalender...</div>
-                ) : upcomingSchedules.length === 0 ? (
-                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest py-10">Tidak ada jadwal dekat</div>
-                ) : (
-                  upcomingSchedules.map((schedule) => (
-                    <div key={schedule.id} className="relative group">
-                      <div className="absolute -left-[37px] top-1 size-4 rounded-full bg-[#7c3aed] border-4 border-white dark:border-slate-950 shadow-[0_0_15px_rgba(124,58,237,0.5)] group-hover:scale-125 transition-transform duration-300"></div>
-                      <div className="bg-slate-50 dark:bg-white/5 p-5 rounded-3xl border border-border hover:bg-slate-100 dark:hover:bg-white/10 hover:border-[#7c3aed]/30 transition-all duration-300">
-                        <p className="text-[10px] font-black text-[#7c3aed] tracking-widest mb-1.5">{formatDate(schedule.schedule_date)} • {schedule.schedule_type || 'SITE'}</p>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight leading-tight">{schedule.title || 'Inspeksi lapangan'}</h4>
-                        <div className="flex items-center justify-between mt-4">
-                          <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-widest truncate max-w-[150px]">{schedule.projects?.name}</p>
-                          <div className="flex -space-x-2">
-                            <div className="size-6 rounded-full bg-[#7c3aed] flex items-center justify-center text-[8px] font-black text-white ring-2 ring-white dark:ring-[#0f172a]">PD</div>
-                            <div className="size-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[8px] font-black text-slate-700 dark:text-white ring-2 ring-white dark:ring-[#0f172a]">+3</div>
-                          </div>
-                        </div>
-                      </div>
+                {/* CONTENT: ALL */}
+                <TabsContent value="all" className="p-0 m-0">
+                  {approvals.length === 0 ? (
+                    <EmptyStateAction />
+                  ) : (
+                    <div className="divide-y divide-border">
+                      {approvals.slice(0, 5).map(item => (
+                        <ActionItem key={`${item.type}-${item.id}`} item={item} />
+                      ))}
                     </div>
-                  ))
-                )}
-              </div>
+                  )}
+                </TabsContent>
 
-              <button
-                onClick={() => router.push('/dashboard/admin-lead/schedules')}
-                className="w-full mt-10 py-4 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/70 hover:text-[#7c3aed] dark:hover:text-white text-[10px] font-bold tracking-[0.2em] border border-border hover:border-[#7c3aed]/50 hover:bg-[#7c3aed]/5 dark:hover:bg-[#7c3aed]/10 transition-all duration-300"
-              >
-                Buka kalender penuh
-              </button>
-            </div>
+                {/* CONTENT: REPORTS */}
+                <TabsContent value="reports" className="p-0 m-0">
+                  <div className="divide-y divide-border">
+                    {approvals.filter(i => i.type === 'report').length === 0 ? <EmptyStateAction /> :
+                      approvals.filter(i => i.type === 'report').map(item => (
+                        <ActionItem key={item.id} item={item} />
+                      ))}
+                  </div>
+                </TabsContent>
+
+                {/* CONTENT: DOCS */}
+                <TabsContent value="docs" className="p-0 m-0">
+                  <div className="divide-y divide-border">
+                    {approvals.filter(i => i.type === 'document').length === 0 ? <EmptyStateAction /> :
+                      approvals.filter(i => i.type === 'document').map(item => (
+                        <ActionItem key={item.id} item={item} />
+                      ))}
+                  </div>
+                </TabsContent>
+
+                {/* CONTENT: PAYMENTS */}
+                <TabsContent value="payments" className="p-0 m-0">
+                  <div className="divide-y divide-border">
+                    {approvals.filter(i => i.type === 'payment').length === 0 ? <EmptyStateAction /> :
+                      approvals.filter(i => i.type === 'payment').map(item => (
+                        <ActionItem key={item.id} item={item} />
+                      ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* AKSES CEPAT (QUICK ACTIONS) */}
+        <div>
+          <h2 className="text-lg font-bold text-foreground mb-4">Akses Cepat</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <QuickActionCard
+              icon={Plus}
+              label="Proyek Baru"
+              desc="Buat Penugasan"
+              href="/dashboard/admin-lead/projects/new"
+              color="text-white"
+              bg="bg-primary hover:bg-primary/90"
+              border="border-primary/50"
+            />
+            <QuickActionCard
+              icon={Users}
+              label="Kelola Tim"
+              desc="Atur Personil"
+              href="/dashboard/admin-lead/team"
+              color="text-blue-500"
+              bg="bg-card hover:bg-blue-500/5"
+              border="border-border hover:border-blue-500/30"
+            />
+            <QuickActionCard
+              icon={LayoutDashboard}
+              label="Semua Proyek"
+              desc="Monitoring"
+              href="/dashboard/admin-lead/projects"
+              color="text-orange-500"
+              bg="bg-card hover:bg-orange-500/5"
+              border="border-border hover:border-orange-500/30"
+            />
+            <QuickActionCard
+              icon={MessageSquare}
+              label="Pesan"
+              desc="Komunikasi"
+              href="/dashboard/messages"
+              color="text-purple-500"
+              bg="bg-card hover:bg-purple-500/5"
+              border="border-border hover:border-purple-500/30"
+            />
           </div>
         </div>
+
+        {/* STATISTIK RINGKAS (STATS) */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-card border border-border rounded-xl p-4 text-center">
+            <p className="text-3xl font-black text-foreground">{stats.activeProjects}</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mt-1">Proyek Aktif</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-4 text-center">
+            <p className="text-3xl font-black text-foreground">{stats.totalClients}</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mt-1">Total Klien</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-4 text-center">
+            <p className="text-3xl font-black text-foreground">{stats.pendingActions}</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mt-1">Pending</p>
+          </div>
+        </div>
+
+        {/* PROYEK AKTIF (ACTIVE PROJECTS STREAM) */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-foreground">Proyek Aktif</h2>
+            <Link href="/dashboard/admin-lead/projects" className="text-xs font-bold text-muted-foreground hover:text-primary tracking-wide">
+              LIHAT SEMUA
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activeProjects.length === 0 ? (
+              <div className="col-span-full py-10 text-center bg-card border border-border rounded-xl border-dashed">
+                <Building2 className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground font-medium">Belum ada proyek aktif.</p>
+                <Button variant="link" className="text-primary" onClick={() => router.push('/dashboard/admin-lead/projects/new')}>
+                  + Buat Proyek Baru
+                </Button>
+              </div>
+            ) : (
+              activeProjects.slice(0, 6).map(project => (
+                <ProjectCard key={project.id} project={project} />
+              ))
+            )}
+          </div>
+        </div>
+
       </div>
     </DashboardLayout>
   );
 }
 
-// Helper Components
-function StatCard({ title, value, icon: Icon, trend, trendColor, color, bg, subtitle }) {
+// --- SUB COMPONENTS ---
+
+function ActionItem({ item }) {
+  const getIcon = () => {
+    switch (item.type) {
+      case 'report': return <FileText size={18} />;
+      case 'document': return <Briefcase size={18} />;
+      case 'payment': return <CreditCard size={18} />;
+      default: return <AlertCircle size={18} />;
+    }
+  };
+
+  const getColors = () => {
+    switch (item.type) {
+      case 'report': return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
+      case 'document': return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
+      case 'payment': return "bg-green-500/10 text-green-600 dark:text-green-400";
+      default: return "bg-muted text-muted-foreground";
+    }
+  };
+
   return (
-    <div className="relative bg-card rounded-2xl p-6 shadow-sm border border-border transition-all duration-300 group hover:shadow-md overflow-hidden">
-      <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
-        <Icon size={80} />
+    <Link href={item.link} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group">
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${getColors()}`}>
+        {getIcon()}
       </div>
-      <div className="relative flex items-start justify-between mb-4">
-        <div className={`size-12 rounded-xl ${bg} ${color} flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm border border-gray-100 border-border`}>
-          <Icon size={24} />
-        </div>
-        {trend && (
-          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-bold tracking-wider px-2.5 py-1.5 rounded-lg border border-border`}>
-            {trend}
-          </span>
-        )}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+          {item.title}
+        </p>
+        <p className="text-xs text-muted-foreground truncate">
+          {item.subtitle} &bull; <span className="font-medium text-foreground/80">{item.status}</span>
+        </p>
       </div>
-      <div className="flex flex-col relative z-10">
-        <p className="text-text-secondary-light dark:text-text-secondary-dark text-[10px] font-bold tracking-widest leading-none mb-2">{title}</p>
-        <p className="text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter leading-none">{value}</p>
-        {subtitle && <p className="text-[10px] font-bold text-text-secondary-light dark:text-text-secondary-dark mt-2 opacity-70 tracking-widest">{subtitle}</p>}
-      </div>
+      <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+    </Link>
+  );
+}
+
+function EmptyStateAction() {
+  return (
+    <div className="p-8 text-center">
+      <CheckCircle className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
+      <p className="text-sm font-medium text-muted-foreground">Tidak ada item pending.</p>
+      <p className="text-xs text-muted-foreground/70 mt-1">Semua aman terkendali!</p>
     </div>
   );
 }
 
-function QuickActionBtn({ icon: Icon, label, desc, primary, onClick }) {
+function QuickActionCard({ icon: Icon, label, desc, href, color, bg, border }) {
   return (
-    <button
-      onClick={onClick}
-      className="group relative overflow-hidden bg-card border border-border rounded-2xl p-7 hover:shadow-md transition-all duration-300 text-left w-full"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-      <div className="flex flex-col gap-4 relative z-10">
-        <div className={`size-14 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm ${primary ? 'bg-primary text-white shadow-lg shadow-primary/30 rotate-3 group-hover:rotate-6 group-hover:scale-110' : 'bg-gray-50 dark:bg-card/20 text-slate-400 group-hover:bg-primary group-hover:text-white group-hover:-rotate-6 group-hover:scale-110'}`}>
-          <Icon size={28} />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-xs font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-primary transition-colors">{label}</span>
-          <span className="text-[9px] font-bold text-text-secondary-light dark:text-text-secondary-dark tracking-wide mt-1">{desc}</span>
-        </div>
-      </div>
-    </button>
+    <Link href={href} className={`flex flex-col p-5 rounded-2xl ${bg} ${border} border transition-all hover:scale-[1.02] active:scale-[0.98]`}>
+      <Icon className={`w-8 h-8 ${color} mb-3`} />
+      <span className={`text-sm font-bold ${color === 'text-white' ? 'text-white' : 'text-foreground'}`}>{label}</span>
+      <span className={`text-[10px] font-bold uppercase tracking-wider mt-1 ${color === 'text-white' ? 'text-white/70' : 'text-muted-foreground'}`}>{desc}</span>
+    </Link>
   );
 }
 
-function getStatusStyles(status) {
-  const styles = {
-    active: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    in_progress: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    technical_verification: 'bg-[#7c3aed]/10 text-[#7c3aed] border-[#7c3aed]/20',
-    draft: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
-    waiting: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-    completed: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
-  };
-  return styles[status] || styles.draft;
+function ProjectCard({ project }) {
+  return (
+    <Link href={`/dashboard/admin-lead/projects/${project.id}`} className="block bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-all hover:shadow-md group">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center text-primary font-bold">
+            <Building2 size={20} />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              {project.name}
+            </h3>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              {project.city || 'Lokasi tidak set'}
+            </p>
+          </div>
+        </div>
+        <Badge variant="outline" className="text-[10px]">
+          {project.status === 'active' ? 'AKTIF' : project.status.replace('_', ' ')}
+        </Badge>
+      </div>
+
+      <div className="flex items-center justify-between border-t border-border pt-3 mt-2">
+        <div className="flex -space-x-2">
+          {project.project_teams?.slice(0, 3).map((tm, i) => (
+            <div key={i} className="w-6 h-6 rounded-full border border-background bg-muted flex items-center justify-center overflow-hidden">
+              {tm.profiles?.avatar_url ? (
+                <img src={tm.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[8px] font-bold">{tm.profiles?.full_name?.charAt(0)}</span>
+              )}
+            </div>
+          ))}
+          {(project.project_teams?.length || 0) > 3 && (
+            <div className="w-6 h-6 rounded-full border border-background bg-muted flex items-center justify-center text-[8px] font-bold">
+              +{(project.project_teams?.length || 0) - 3}
+            </div>
+          )}
+        </div>
+        <div className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+          <Clock size={12} />
+          {project.created_at ? formatDate(project.created_at) : '-'}
+        </div>
+      </div>
+    </Link>
+  );
 }
-
-

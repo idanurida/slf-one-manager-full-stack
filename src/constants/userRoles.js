@@ -18,7 +18,7 @@ export const AVAILABLE_ROLES = [
   {
     value: 'admin_team',
     label: 'Admin Team',
-    description: 'Anggota tim admin',
+    description: 'Anggota Admin Team',
   },
   {
     value: 'head_consultant',
@@ -54,7 +54,7 @@ export const ROLE_DESCRIPTIONS = {
   inspector: 'Melakukan inspeksi dan pemeriksaan teknis',
   client: 'Melihat laporan dan mengelola aset',
   admin_lead: 'Lead administrator dengan akses terbatas',
-  admin_team: 'Anggota tim admin',
+  admin_team: 'Anggota Admin Team',
   head_consultant: 'Kepala konsultan',
   project_lead: 'Lead proyek',
   drafter: 'Pembuat draft',

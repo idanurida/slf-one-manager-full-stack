@@ -6,11 +6,26 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Terminal } from 'lucide-react';
 
 export default function SystemLogsPage() {
-    const dummyLogs = [
-        { id: 1, type: 'info', message: 'System startup', timestamp: new Date().toISOString() },
-        { id: 2, type: 'warning', message: 'High memory usage detected', timestamp: new Date(Date.now() - 3600000).toISOString() },
-        { id: 3, type: 'error', message: 'Failed to connect to external API', timestamp: new Date(Date.now() - 7200000).toISOString() },
-    ];
+    const [logs, setLogs] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchLogs = async () => {
+            try {
+                const res = await fetch('/api/superadmin/logs');
+                if (res.ok) {
+                    const data = await res.json();
+                    setLogs(data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch system logs:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLogs();
+    }, []);
 
     return (
         <DashboardLayout title="System Logs">
@@ -28,7 +43,7 @@ export default function SystemLogsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="bg-slate-950 text-slate-50 p-4 rounded-lg font-mono text-sm h-[500px] overflow-y-auto">
-                            {dummyLogs.map((log) => (
+                            {logs.map((log) => (
                                 <div key={log.id} className="mb-2">
                                     <span className="text-slate-500">[{new Date(log.timestamp).toLocaleString()}]</span>{' '}
                                     <span className={

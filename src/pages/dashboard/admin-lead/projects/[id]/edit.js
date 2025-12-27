@@ -66,6 +66,7 @@ export default function EditProjectPage() {
     // Data
     const [clients, setClients] = useState([]);
     const [projectLeads, setProjectLeads] = useState([]);
+    const [adminTeams, setAdminTeams] = useState([]);
     const [inspectors, setInspectors] = useState([]);
 
     // Form state
@@ -80,6 +81,7 @@ export default function EditProjectPage() {
         description: '',
         priority: 'medium',
         phases: [],
+        admin_teams: [],
         inspectors: [],
     });
 
@@ -90,15 +92,19 @@ export default function EditProjectPage() {
             setDataLoading(true);
             try {
                 // 1. Fetch Master Data
-                const [clientsRes, leadsRes, inspectorsRes] = await Promise.all([
-                    supabase.from('clients').select('id, name, email').order('name'),
-                    supabase.from('profiles').select('id, full_name, email').eq('role', 'project_lead').order('full_name'),
-                    supabase.from('profiles').select('id, full_name, email').eq('role', 'inspector').order('full_name'),
-                ]);
+                const { data: { session } } = await supabase.auth.getSession();
+                const response = await fetch('/api/projects/form-options', {
+                    headers: {
+                        'Authorization': `Bearer ${session?.access_token || ''}`
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to fetch options');
+                const data = await response.json();
 
-                setClients(clientsRes.data || []);
-                setProjectLeads(leadsRes.data || []);
-                setInspectors(inspectorsRes.data || []);
+                setClients(data.clients || []);
+                setProjectLeads(data.projectLeads || []);
+                setAdminTeams(data.adminTeams || []);
+                setInspectors(data.inspectors || []);
 
                 // 2. Fetch Project Data
                 const { data: project, error: projectErr } = await supabase
@@ -128,6 +134,7 @@ export default function EditProjectPage() {
 
                 // Parse Team Data
                 const currentLead = team.find(t => t.role === 'project_lead')?.user_id || '';
+                const currentAdminTeams = team.filter(t => t.role === 'admin_team' || t.role === 'drafter').map(t => t.user_id);
                 const currentInspectors = team.filter(t => t.role === 'inspector').map(t => t.user_id);
 
                 // Determine Category from Type (Simple logic assuming naming convention)
@@ -151,6 +158,7 @@ export default function EditProjectPage() {
                         description: p.description,
                         duration: p.estimated_duration
                     })),
+                    admin_teams: currentAdminTeams,
                     inspectors: currentInspectors,
                 });
 
@@ -204,6 +212,8 @@ export default function EditProjectPage() {
 
         if (currentStep === 3) {
             if (!formData.project_lead_id) newErrors.project_lead_id = 'Pilih Project Lead';
+            if (formData.admin_teams.length === 0) newErrors.admin_teams = 'Pilih minimal satu Admin Team';
+            if (formData.inspectors.length === 0) newErrors.inspectors = 'Pilih minimal satu Inspektor';
         }
 
         setErrors(newErrors);
@@ -245,7 +255,7 @@ export default function EditProjectPage() {
                     city: formData.city,
                     description: formData.description,
                     priority: formData.priority,
-                    estimated_duration: totalDuration,
+                    // estimated_duration: totalDuration, // Column missing in DB
                     updated_at: new Date().toISOString(),
                 })
                 .eq('id', id);
@@ -271,56 +281,65 @@ export default function EditProjectPage() {
             // - Upsert Project Lead
             // - Handle Inspectors: Delete removed ones, Insert new ones.
 
-            // A. Sync Project Lead
-            // Check if lead changed? Too complex, just delete old lead entry and insert new one or upsert.
-            // Easiest safe approach for "project_teams":
-            // Remove all with role 'project_lead' and 'inspector' for this project, then re-add.
-            // WARNING: This clears assignments if they are linked to team rows ID.
-            // Assuming 'project_teams' is a junction table (user_id, project_id, role).
-
-            // Fetch current team again to diff
+            // 3. Update Team
             const { data: currentTeam } = await supabase.from('project_teams').select('*').eq('project_id', id);
 
             const currentLead = currentTeam.find(t => t.role === 'project_lead');
-            const currentInspectors = currentTeam.filter(t => t.role === 'inspector');
+            const currentAdminEntries = currentTeam.filter(t => t.role === 'admin_team' || t.role === 'drafter');
+            const currentInspectorEntries = currentTeam.filter(t => t.role === 'inspector');
 
-            // Update Lead
+            // A. Update Lead if changed
             if (currentLead?.user_id !== formData.project_lead_id) {
-                // Remove old lead
                 if (currentLead) {
                     await supabase.from('project_teams').delete().eq('id', currentLead.id);
                 }
-                // Insert new lead
+                const leadProfile = projectLeads.find(l => l.id === formData.project_lead_id);
                 await supabase.from('project_teams').insert({
                     project_id: id,
                     user_id: formData.project_lead_id,
-                    role: 'project_lead'
+                    role: leadProfile?.role || 'project_lead'
                 });
             }
 
-            // Update Inspectors
-            const newInspectorIds = formData.inspectors;
-            const oldInspectorIds = currentInspectors.map(i => i.user_id);
+            // B. Update Admin Teams (Diff)
+            const newAdminIds = formData.admin_teams;
+            const oldAdminIds = currentAdminEntries.map(a => a.user_id);
 
-            // To Add
-            const toAdd = newInspectorIds.filter(uid => !oldInspectorIds.includes(uid));
-            // To Remove
-            const toRemove = oldInspectorIds.filter(uid => !newInspectorIds.includes(uid));
+            const adminsToAdd = newAdminIds.filter(uid => !oldAdminIds.includes(uid));
+            const adminsToRemove = oldAdminIds.filter(uid => !newAdminIds.includes(uid));
 
-            if (toRemove.length > 0) {
-                // Find DB IDs to remove
-                const idsToRemove = currentInspectors
-                    .filter(i => toRemove.includes(i.user_id))
-                    .map(i => i.id);
-
+            if (adminsToRemove.length > 0) {
+                const idsToRemove = currentAdminEntries.filter(a => adminsToRemove.includes(a.user_id)).map(a => a.id);
                 await supabase.from('project_teams').delete().in('id', idsToRemove);
             }
 
-            for (const uid of toAdd) {
+            for (const uid of adminsToAdd) {
+                const profile = adminTeams.find(a => a.id === uid);
                 await supabase.from('project_teams').insert({
                     project_id: id,
                     user_id: uid,
-                    role: 'inspector'
+                    role: profile?.role || 'admin_team'
+                });
+            }
+
+            // C. Update Inspectors (Diff)
+            const newInspectorIds = formData.inspectors;
+            const oldInspectorIds = currentInspectorEntries.map(i => i.user_id);
+
+            const inspectorsToAdd = newInspectorIds.filter(uid => !oldInspectorIds.includes(uid));
+            const inspectorsToRemove = oldInspectorIds.filter(uid => !newInspectorIds.includes(uid));
+
+            if (inspectorsToRemove.length > 0) {
+                const idsToRemove = currentInspectorEntries.filter(i => inspectorsToRemove.includes(i.user_id)).map(i => i.id);
+                await supabase.from('project_teams').delete().in('id', idsToRemove);
+            }
+
+            for (const uid of inspectorsToAdd) {
+                const profile = inspectors.find(i => i.id === uid);
+                await supabase.from('project_teams').insert({
+                    project_id: id,
+                    user_id: uid,
+                    role: profile?.role || 'inspector'
                 });
             }
 
@@ -664,7 +683,7 @@ export default function EditProjectPage() {
 
                                             <div className="space-y-6">
                                                 <div className="space-y-4">
-                                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#7c3aed] px-1">Pimpinan Proyek (Lead) *</Label>
+                                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#7c3aed] px-1 text-center block">Team Leader *</Label>
                                                     <Select value={formData.project_lead_id} onValueChange={(v) => handleChange('project_lead_id', v)}>
                                                         <SelectTrigger className="h-16 rounded-[2rem] bg-slate-50 dark:bg-white/5 border-transparent px-10 font-bold uppercase text-xs shadow-inner">
                                                             <SelectValue placeholder="Pilih Project Lead..." />
@@ -684,7 +703,50 @@ export default function EditProjectPage() {
                                                 </div>
 
                                                 <div className="space-y-4">
-                                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Inspektor Lapangan (Opsional)</Label>
+                                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Admin Team</Label>
+                                                    <Select
+                                                        onValueChange={(v) => {
+                                                            if (!formData.admin_teams.includes(v)) {
+                                                                handleChange('admin_teams', [...formData.admin_teams, v]);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <SelectTrigger className="h-16 rounded-[2rem] bg-slate-50 dark:bg-white/5 border-transparent px-10 font-bold uppercase text-xs shadow-inner">
+                                                            <SelectValue placeholder="Tambah Anggota Admin Team..." />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-2xl border-none shadow-2xl">
+                                                            {adminTeams.filter(a => !formData.admin_teams.includes(a.id)).map((admin) => (
+                                                                <SelectItem key={admin.id} value={admin.id} className="py-3">
+                                                                    <span className="font-black uppercase text-[10px]">{admin.full_name}</span>
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {errors.admin_teams && <p className="text-[9px] font-black text-red-500 uppercase tracking-widest mt-2">{errors.admin_teams}</p>}
+                                                </div>
+
+                                                {formData.admin_teams.length > 0 && (
+                                                    <div className="flex flex-wrap gap-4 pt-4">
+                                                        {formData.admin_teams.map((adminId) => {
+                                                            const admin = adminTeams.find(a => a.id === adminId);
+                                                            return admin ? (
+                                                                <Badge key={adminId} className="h-12 px-6 rounded-2xl bg-blue-500/10 text-blue-500 border-none font-black uppercase text-[9px] tracking-widest gap-4 flex items-center">
+                                                                    {admin.full_name}
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleChange('admin_teams', formData.admin_teams.filter(id => id !== adminId))}
+                                                                        className="size-6 rounded-full bg-blue-50 text-white flex items-center justify-center hover:bg-red-500 transition-all"
+                                                                    >
+                                                                        ×
+                                                                    </button>
+                                                                </Badge>
+                                                            ) : null;
+                                                        })}
+                                                    </div>
+                                                )}
+
+                                                <div className="space-y-4">
+                                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Inspector</Label>
                                                     <Select
                                                         onValueChange={(v) => {
                                                             if (!formData.inspectors.includes(v)) {
@@ -698,11 +760,19 @@ export default function EditProjectPage() {
                                                         <SelectContent className="rounded-2xl border-none shadow-2xl">
                                                             {inspectors.filter(i => !formData.inspectors.includes(i.id)).map((inspector) => (
                                                                 <SelectItem key={inspector.id} value={inspector.id} className="py-3">
-                                                                    <span className="font-black uppercase text-[10px]">{inspector.full_name}</span>
+                                                                    <div className="flex items-center justify-between w-full">
+                                                                        <span className="font-black uppercase text-[10px]">{inspector.full_name}</span>
+                                                                        {inspector.specialization && (
+                                                                            <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-[8px] font-black uppercase">
+                                                                                {inspector.specialization}
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
                                                                 </SelectItem>
                                                             ))}
                                                         </SelectContent>
                                                     </Select>
+                                                    {errors.inspectors && <p className="text-[9px] font-black text-red-500 uppercase tracking-widest mt-2">{errors.inspectors}</p>}
                                                 </div>
 
                                                 {formData.inspectors.length > 0 && (
@@ -725,6 +795,57 @@ export default function EditProjectPage() {
                                                     </div>
                                                 )}
                                             </div>
+
+                                            {/* Team Roster Summary */}
+                                            {(formData.project_lead_id || formData.admin_teams.length > 0 || formData.inspectors.length > 0) && (
+                                                <div className="mt-12 p-8 bg-slate-900 rounded-[2.5rem] text-white space-y-6 shadow-2xl relative overflow-hidden">
+                                                    <div className="absolute top-0 right-0 p-8 opacity-5">
+                                                        <Users size={80} />
+                                                    </div>
+
+                                                    <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+                                                        <div className="size-10 rounded-xl bg-[#7c3aed] flex items-center justify-center">
+                                                            <Users size={20} className="text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#7c3aed]">Rekapitulasi Tim Proyek</h4>
+                                                            <p className="text-sm font-bold uppercase tracking-tight">Daftar Penugasan Aktif</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-4 relative z-10">
+                                                        {formData.project_lead_id && (
+                                                            <div className="flex items-center justify-between py-2 border-b border-white/5">
+                                                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Project Lead</span>
+                                                                <span className="text-[10px] font-black uppercase text-[#7c3aed]">{projectLeads.find(l => l.id === formData.project_lead_id)?.full_name}</span>
+                                                            </div>
+                                                        )}
+
+                                                        {formData.admin_teams.length > 0 && formData.admin_teams.map(id => {
+                                                            const admin = adminTeams.find(a => a.id === id);
+                                                            return admin ? (
+                                                                <div key={id} className="flex items-center justify-between py-2 border-b border-white/5">
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Admin Team</span>
+                                                                    <span className="text-[10px] font-black uppercase text-blue-400">{admin.full_name}</span>
+                                                                </div>
+                                                            ) : null;
+                                                        })}
+
+                                                        {formData.inspectors.length > 0 && formData.inspectors.map(id => {
+                                                            const inspector = inspectors.find(i => i.id === id);
+                                                            return inspector ? (
+                                                                <div key={id} className="flex items-center justify-between py-2 border-b border-white/5">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Inspector</span>
+                                                                        <span className="text-[8px] font-black text-[#7c3aed] uppercase tracking-tighter">{inspector.specialization || 'Umum'}</span>
+                                                                    </div>
+                                                                    <span className="text-[10px] font-black uppercase text-white">{inspector.full_name}</span>
+                                                                </div>
+                                                            ) : null;
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -762,8 +883,17 @@ export default function EditProjectPage() {
                                                     <p className="font-bold text-sm text-slate-700 dark:text-slate-300 uppercase tracking-tight h-10 flex items-center">{clients.find(c => c.id === formData.client_id)?.name || '-'}</p>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Squad Lead</Label>
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Team Leader</Label>
                                                     <p className="font-black text-sm text-[#7c3aed] uppercase tracking-widest h-10 flex items-center">{projectLeads.find(p => p.id === formData.project_lead_id)?.full_name || '-'}</p>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Admin Team</Label>
+                                                    <div className="flex flex-wrap gap-2 pt-1 font-bold text-[10px] uppercase text-blue-500">
+                                                        {formData.admin_teams.length > 0
+                                                            ? formData.admin_teams.map(id => adminTeams.find(a => a.id === id)?.full_name).join(', ')
+                                                            : '-'
+                                                        }
+                                                    </div>
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Timeline Estimate</Label>
@@ -824,7 +954,7 @@ export default function EditProjectPage() {
 
                         {/* Sidebar Info - Quick Context */}
                         <motion.div variants={itemVariants} className="lg:col-span-4 space-y-8">
-                            <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white space-y-8 relative overflow-hidden shadow-2xl">
+                            <div className="bg-card rounded-[2.5rem] p-10 text-foreground space-y-8 relative overflow-hidden shadow-2xl border border-border">
                                 <div className="absolute top-0 right-0 p-12 opacity-5 scale-150">
                                     <Building size={120} />
                                 </div>
@@ -846,6 +976,12 @@ export default function EditProjectPage() {
                                     <div className="space-y-2">
                                         <span className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500">Service Type</span>
                                         <p className="font-black uppercase text-xs text-[#7c3aed]">{formData.application_type?.replace(/_/g, ' ') || 'Awaiting Selection'}</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <span className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500">Team Config</span>
+                                        <p className="font-black uppercase text-[10px] leading-tight">
+                                            1 Lead, {formData.admin_teams.length} Admin, {formData.inspectors.length} Inspector
+                                        </p>
                                     </div>
                                 </div>
                             </div>

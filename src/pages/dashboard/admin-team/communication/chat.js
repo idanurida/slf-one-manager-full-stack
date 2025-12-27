@@ -21,6 +21,7 @@ import {
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { fetchProjectMessages, sendMessage as sendMessageService, markMessagesAsRead } from "@/utils/messageService";
 
 export default function AdminTeamChatPage() {
     const router = useRouter();
@@ -72,18 +73,13 @@ export default function AdminTeamChatPage() {
     const fetchMessages = async () => {
         if (!user?.id || !recipient_id) return;
 
-        const { data, error } = await supabase
-            .from('notifications')
-            .select('*')
-            .or(`and(sender_id.eq.${user.id},recipient_id.eq.${recipient_id}),and(sender_id.eq.${recipient_id},recipient_id.eq.${user.id})`)
-            .order('created_at', { ascending: true });
+        // Note: For simplicity in this view, we're using recipient_id to find common project messages
+        // In a real scenario, you'd probably want project_id context
+        const { data, error } = await fetchProjectMessages(null, user.id, recipient_id);
 
         if (!error) {
             setMessages(data || []);
-            const unreadIds = data?.filter(m => !m.is_read && m.recipient_id === user.id).map(m => m.id) || [];
-            if (unreadIds.length > 0) {
-                await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
-            }
+            await markMessagesAsRead(user.id, recipient_id);
         }
     };
 
@@ -95,13 +91,10 @@ export default function AdminTeamChatPage() {
         setNewMessage("");
 
         try {
-            const { error } = await supabase.from('notifications').insert({
-                sender_id: user.id,
-                recipient_id: recipient.id,
-                title: `Pesan dari ${profile?.full_name || 'Admin Team'}`,
-                message: msgText,
-                type: 'message_internal',
-                is_read: false
+            const { error } = await sendMessageService({
+                senderId: user.id,
+                recipientId: recipient.id,
+                message: msgText
             });
 
             if (error) throw error;

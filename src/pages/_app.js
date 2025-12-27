@@ -1,5 +1,6 @@
 // FILE: src/pages/_app.js - VERSI BERSIH
 import "@/styles/globals.css";
+import Head from "next/head";
 import { ThemeProvider } from "next-themes";
 import { useState } from "react";
 import { AuthProvider } from "@/context/AuthContext";
@@ -38,6 +39,9 @@ export default function MyApp({ Component, pageProps }) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+      </Head>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <AuthProvider>
           <Component {...pageProps} />

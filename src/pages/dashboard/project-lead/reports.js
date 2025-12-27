@@ -62,7 +62,7 @@ export default function TeamLeaderReportsPage() {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [rejectionNotes, setRejectionNotes] = useState('');
-  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
+
 
   // Fetch reports assigned to this project_lead's projects
   const fetchData = useCallback(async () => {
@@ -96,36 +96,31 @@ export default function TeamLeaderReportsPage() {
 
       let reportsData = [];
       if (projectIds.length > 0) {
-        const { data: docs, error: docsErr } = await supabase
-          .from('documents')
+        const { data: reports, error: reportsErr } = await supabase
+          .from('inspection_reports')
           .select(`
             *,
-            projects!documents_project_id_fkey(name),
-            profiles!created_by(full_name, specialization)
+            projects(name),
+            inspector:profiles!inspector_id(full_name, specialization)
           `)
           .in('project_id', projectIds)
-          .eq('document_type', 'REPORT')
           .in('status', ['verified_by_admin_team', 'approved_by_pl', 'rejected_by_pl', 'submitted'])
           .order('created_at', { ascending: false });
 
-        if (docsErr) throw docsErr;
+        if (reportsErr) throw reportsErr;
 
-        reportsData = docs.map(doc => ({
-          ...doc,
-          project_name: doc.projects?.name || 'Unknown Project',
-          inspector_name: doc.profiles?.full_name || 'Tim',
-          inspector_specialization: doc.profiles?.specialization || 'Umum'
+        reportsData = reports.map(report => ({
+          ...report,
+          name: report.title, // Map title to name for UI
+          project_name: report.projects?.name || 'Unknown Project',
+          inspector_name: report.inspector?.full_name || 'Tim',
+          inspector_specialization: report.inspector?.specialization || 'Umum'
         }));
       }
 
       setReports(reportsData);
 
-      // Calculate Stats
-      setStats({
-        pending: reportsData.filter(r => r.status === 'verified_by_admin_team').length,
-        approved: reportsData.filter(r => r.status === 'approved_by_pl').length,
-        rejected: reportsData.filter(r => r.status === 'rejected_by_pl').length
-      });
+
 
     } catch (err) {
       console.error('Error fetching reports:', err);
@@ -156,9 +151,11 @@ export default function TeamLeaderReportsPage() {
   const handleApproveReport = async (reportId) => {
     try {
       const { error } = await supabase
-        .from('documents')
+        .from('inspection_reports')
         .update({
           status: 'approved_by_pl',
+          project_lead_approved: true,
+          project_lead_reviewed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('id', reportId);
@@ -183,10 +180,12 @@ export default function TeamLeaderReportsPage() {
 
     try {
       const { error } = await supabase
-        .from('documents')
+        .from('inspection_reports')
         .update({
           status: 'rejected_by_pl',
-          admin_team_feedback: rejectionNotes,
+          project_lead_approved: false,
+          project_lead_notes: rejectionNotes,
+          project_lead_reviewed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('id', reportId);
@@ -230,36 +229,7 @@ export default function TeamLeaderReportsPage() {
           </motion.div>
         </div>
 
-        {/* Stats */}
-        <motion.div variants={itemVariants} className="grid grid-cols-3 gap-6">
-          <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-between group hover:border-orange-200 transition-colors cursor-default">
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 tracking-widest mb-1">Perlu review</p>
-              <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.pending}</h3>
-            </div>
-            <div className="size-12 rounded-xl bg-status-yellow/10 text-status-yellow flex items-center justify-center group-hover:scale-110 transition-transform">
-              <AlertCircle size={24} />
-            </div>
-          </div>
-          <div className="bg-card p-6 rounded-[2rem] border border-border shadow-sm flex items-center justify-between group hover:border-status-green/50 transition-colors cursor-default">
-            <div>
-              <p className="text-xs font-bold text-muted-foreground tracking-widest mb-1">Disetujui</p>
-              <h3 className="text-3xl font-black text-foreground">{stats.approved}</h3>
-            </div>
-            <div className="size-12 rounded-xl bg-status-green/10 text-status-green flex items-center justify-center group-hover:scale-110 transition-transform">
-              <CheckCircle2 size={24} />
-            </div>
-          </div>
-          <div className="bg-card p-6 rounded-[2rem] border border-border shadow-sm flex items-center justify-between group hover:border-consultant-red/50 transition-colors cursor-default">
-            <div>
-              <p className="text-xs font-bold text-muted-foreground tracking-widest mb-1">Ditolak</p>
-              <h3 className="text-3xl font-black text-foreground">{stats.rejected}</h3>
-            </div>
-            <div className="size-12 rounded-xl bg-consultant-red/10 text-consultant-red flex items-center justify-center group-hover:scale-110 transition-transform">
-              <XCircle size={24} />
-            </div>
-          </div>
-        </motion.div>
+
 
         {/* Filters */}
         <motion.div variants={itemVariants} className="bg-card p-4 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-border flex flex-col md:flex-row gap-4">

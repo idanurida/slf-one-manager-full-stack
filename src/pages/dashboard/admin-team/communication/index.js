@@ -23,6 +23,7 @@ import {
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { fetchConversations, fetchProjectMessages } from "@/utils/messageService";
 
 // Animation variants
 const containerVariants = {
@@ -102,27 +103,20 @@ export default function AdminTeamCommunicationInbox() {
                 }
             });
 
-            // 3. Fetch Recent Messages
-            const contactIds = Object.keys(contactsMap);
-            if (contactIds.length > 0) {
-                const { data: messages } = await supabase
-                    .from('notifications')
-                    .select('*')
-                    .or(`sender_id.in.(${contactIds.join(',')}),recipient_id.in.(${contactIds.join(',')})`)
-                    .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
-                    .order('created_at', { ascending: false });
+            // 3. Fetch Recent Messages using messageService
+            const { data: convos, error: convosErr } = await fetchConversations(user.id);
+            if (convosErr) throw convosErr;
 
-                messages?.forEach(msg => {
-                    const otherId = msg.sender_id === user.id ? msg.recipient_id : msg.sender_id;
-                    if (contactsMap[otherId] && !contactsMap[otherId].latest_message) {
-                        contactsMap[otherId].latest_message = {
-                            text: msg.message,
-                            time: msg.created_at,
-                            unread: !msg.is_read && msg.recipient_id === user.id
-                        };
-                    }
-                });
-            }
+            // Map conversations to team contacts
+            convos?.forEach(conv => {
+                if (contactsMap[conv.other_party_id]) {
+                    contactsMap[conv.other_party_id].latest_message = {
+                        text: conv.last_message,
+                        time: conv.last_message_at,
+                        unread: conv.unread_count > 0
+                    };
+                }
+            });
 
             setTeamContacts(Object.values(contactsMap).sort((a, b) => {
                 const timeA = a.latest_message?.time ? new Date(a.latest_message.time) : new Date(0);
@@ -130,37 +124,16 @@ export default function AdminTeamCommunicationInbox() {
                 return timeB - timeA;
             }));
 
-            // 4. Fetch Client Conversations
-            const { data: projClients } = await supabase.from('projects').select('id, client_id, name').in('id', projectIds);
-            const clientIds = [...new Set((projClients || []).map(p => p.client_id).filter(id => id))];
-
-            let clientConvos = [];
-            if (clientIds.length > 0) {
-                const { data: clientMsgs } = await supabase
-                    .from('notifications')
-                    .select(`*, sender:profiles!sender_id(full_name), recipient:profiles!recipient_id(full_name)`)
-                    .or(`sender_id.in.(${clientIds.join(',')}),recipient_id.in.(${clientIds.join(',')})`)
-                    .order('created_at', { ascending: false });
-
-                const convMap = {};
-                clientMsgs?.forEach(msg => {
-                    const otherId = msg.sender_id === user.id ? msg.recipient_id : msg.sender_id;
-                    if (!clientIds.includes(otherId)) return;
-
-                    if (!convMap[otherId]) {
-                        convMap[otherId] = {
-                            id: otherId,
-                            name: msg.sender_id === otherId ? msg.sender?.full_name : msg.recipient?.full_name,
-                            type: 'client',
-                            last_message: msg.message,
-                            time: msg.created_at,
-                            unread: !msg.is_read && msg.recipient_id === user.id
-                        };
-                    }
-                });
-                clientConvos = Object.values(convMap);
-            }
-            setConversations(clientConvos);
+            // 4. Client Conversations (Unified inconvos if they are in projects)
+            const clientConvos = convos?.filter(c => c.other_party_role === 'client') || [];
+            setConversations(clientConvos.map(c => ({
+                id: c.other_party_id,
+                name: c.other_party_name,
+                type: 'client',
+                last_message: c.last_message,
+                time: c.last_message_at,
+                unread: c.unread_count > 0
+            })));
 
         } catch (err) {
             console.error('Error fetching data:', err);

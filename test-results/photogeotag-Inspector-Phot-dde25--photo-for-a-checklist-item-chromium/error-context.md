@@ -1,0 +1,593 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - generic:
+      - complementary:
+        - generic:
+          - generic:
+            - generic:
+              - img
+              - generic:
+                - heading [level=1]: SLF
+                - paragraph: One Manager
+            - generic:
+              - generic:
+                - generic:
+                  - generic: M
+              - generic:
+                - heading [level=1]: Maman
+                - paragraph: Inspector
+            - navigation:
+              - link:
+                - /url: /dashboard/inspector
+                - generic: dashboard
+                - generic: Dashboard
+              - link:
+                - /url: /dashboard/inspector/schedules
+                - generic: calendar_month
+                - generic: Jadwal
+              - link:
+                - /url: /dashboard/inspector/projects
+                - generic: folder_open
+                - generic: Proyek Saya
+              - link:
+                - /url: /dashboard/inspector/checklist
+                - generic: assignment
+                - generic: Daftar Periksa
+              - link:
+                - /url: /dashboard/inspector/reports
+                - generic: description
+                - generic: Laporan
+              - link:
+                - /url: /dashboard/inspector/my-inspections
+                - generic: fact_check
+                - generic: Inspeksi Saya
+          - generic:
+            - button:
+              - generic: menu
+              - generic: Sembunyikan Sidebar
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - button:
+                - img
+              - link:
+                - /url: /dashboard/notifications
+                - img
+              - button:
+                - generic:
+                  - generic: M
+                - generic:
+                  - paragraph: Maman
+                  - paragraph: Inspector
+                - generic: keyboard_arrow_down
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - button:
+                        - img
+                      - generic: Inspection Execution
+                      - generic: • Proyek Hotel Bintang 5 Bali
+                    - heading [level=1]: Monitoring Checklist
+                    - generic:
+                      - generic:
+                        - img
+                        - text: 27 November 2025
+                      - generic:
+                        - img
+                        - text: majubersama
+                      - generic: IN PROGRESS
+                  - generic:
+                    - button:
+                      - img
+                      - text: Refresh Data
+                    - button:
+                      - text: Selesaikan Inspeksi
+                      - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - heading [level=3]:
+                          - img
+                          - text: Kategori Pemeriksaan
+                        - generic:
+                          - button:
+                            - generic:
+                              - img
+                              - generic: tata bangunan
+                            - generic: "11"
+                          - button:
+                            - generic:
+                              - img
+                              - generic: keandalan
+                            - generic: "35"
+                          - button:
+                            - generic:
+                              - img
+                              - generic: keselamatan
+                            - generic: "10"
+                      - generic:
+                        - heading [level=4]: Overall Progress
+                        - generic:
+                          - generic:
+                            - generic: Total Completion
+                            - generic: 9%
+                          - paragraph: 5 of 56 items verified
+                    - generic:
+                      - generic:
+                        - img
+                      - heading [level=4]: My Specialization
+                      - paragraph: struktur
+                      - generic: READY FOR INSPECTION
+                  - generic:
+                    - generic:
+                      - generic:
+                        - heading [level=2]: tata bangunan •
+                        - generic: 11 Items In This Category
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Fungsi Bangunan Gedung
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Penggunaan Setiap Ruang Dalam Bangunan Gedung
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Koefisien Dasar Bangunan (KDB)
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: pengukuran
+                                - generic:
+                                  - spinbutton
+                                  - generic: "%"
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Koefisien Lantai Bangunan (KLB)
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: pengukuran
+                                - generic:
+                                  - spinbutton
+                                  - generic: "%"
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Koefisien Daerah Hijau (KDH)
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: pengukuran
+                                - generic:
+                                  - spinbutton
+                                  - generic: m²
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Garis Batas Bangunan (GBB)
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: pengukuran
+                                - generic:
+                                  - spinbutton
+                                  - generic: cm
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Ketinggian Bangunan
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: pengukuran
+                                - generic:
+                                  - spinbutton
+                                  - generic: meter
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Jarak Bebas Bangunan (JBB)
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: pengukuran
+                                - generic:
+                                  - spinbutton
+                                  - generic: meter
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Drainase Permukaan
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: pengetesan pengujian
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Pengelolaan Sampah
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: pengetesan pengujian
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: general • Item Detail
+                                - generic: Pengendalian Kebisingan
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: pengamatan visual
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: kesesuaian
+                                - generic:
+                                  - generic:
+                                    - button: Sesuai
+                                    - button: Tidak Sesuai
+                              - generic:
+                                - generic: pengetesan pengujian
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                              - generic:
+                                - generic: keterangan
+                                - textbox:
+                                  - /placeholder: Masukkan hasil observasi...
+                            - generic:
+                              - generic:
+                                - button:
+                                  - img
+                                  - text: Ambil Foto
+                              - button:
+                                - img
+                                - text: Simpan Perubahan
+            - generic:
+              - generic:
+                - paragraph: Copyright © 2025 PT. Puri Dimensi - SLF One Manager v2.0
+    - region "Notifications alt+T"
+  - button [ref=e6] [cursor=pointer]:
+    - img [ref=e7]
+  - generic:
+    - alert: /dashboard/inspector/inspections/17acbf0d-4f85-4924-aa5b-4b0bdcf3f8cb/checklist
+  - dialog "Visual Evidence" [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e14]:
+        - img [ref=e16]
+        - generic [ref=e19]:
+          - heading "Visual Evidence" [level=2] [ref=e20]
+          - paragraph [ref=e21]: "Documentation for: Fungsi Bangunan Gedung"
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - img [ref=e26]
+            - paragraph [ref=e28]: Menyiapkan kamera...
+            - paragraph [ref=e29]: "Gagal mengakses kamera: Not supported"
+          - generic [ref=e30]:
+            - generic [ref=e31]:
+              - img [ref=e32]
+              - text: "GPS Aktif: ±0m"
+            - button "Manual" [active] [ref=e35] [cursor=pointer]:
+              - img
+              - text: Manual
+        - generic [ref=e36]:
+          - paragraph [ref=e37]:
+            - img [ref=e38]
+            - text: South Jakarta, -
+          - button [ref=e42] [cursor=pointer]
+          - generic [ref=e45]:
+            - button "Marker" [ref=e46] [cursor=pointer]
+            - generic:
+              - generic [ref=e47]:
+                - button "Zoom in" [ref=e48] [cursor=pointer]: +
+                - button "Zoom out" [ref=e49] [cursor=pointer]: −
+              - generic [ref=e50]:
+                - link "Leaflet" [ref=e51] [cursor=pointer]:
+                  - /url: https://leafletjs.com
+                  - img [ref=e52]
+                  - text: Leaflet
+                - text: "| ©"
+                - link "OpenStreetMap" [ref=e56] [cursor=pointer]:
+                  - /url: https://www.openstreetmap.org/copyright
+      - button "Close Camera" [ref=e58] [cursor=pointer]:
+        - img
+        - text: Close Camera
+    - button "Close" [ref=e59] [cursor=pointer]:
+      - img [ref=e60]
+      - generic [ref=e63]: Close
+```

@@ -79,6 +79,7 @@ const getDashboardPath = (userRole) => {
     'admin_lead': '/dashboard/admin-lead',
     'head_consultant': '/dashboard/head-consultant',
     'superadmin': '/dashboard/superadmin',
+    'admin': '/dashboard/admin',
     'project_lead': '/dashboard/project-lead',
     'inspector': '/dashboard/inspector',
     'drafter': '/dashboard/drafter',
@@ -139,6 +140,11 @@ const getSidebarItems = (userRole) => {
       { name: "Proyek", path: "/dashboard/superadmin/projects", icon: Building, materialIcon: "folder_open" },
       { name: "Pusat Pemulihan", path: "/dashboard/superadmin/recovery-center", icon: Database, materialIcon: "settings_backup_restore" },
       { name: "Log Sistem", path: "/dashboard/superadmin/logs", icon: AlertCircle, materialIcon: "terminal" },
+    ],
+    admin: [
+      { name: "Persetujuan User", path: "/dashboard/admin/users/approvals", icon: Users, materialIcon: "person_add" },
+      { name: "Monitoring Proyek", path: "/dashboard/admin/projects", icon: Building, materialIcon: "folder_open" },
+      { name: "Support Klien", path: "/dashboard/admin/support", icon: MessageCircle, materialIcon: "support_agent" },
     ],
     inspector: [
       { name: "Jadwal", path: "/dashboard/inspector/schedules", icon: Calendar, materialIcon: "calendar_month" },
@@ -482,6 +488,15 @@ const DashboardLayout = ({
   // Tampilkan loading jika sedang memuat data otentikasi, atau sedang dalam proses redirect
   // ATAU user sudah login tetapi profile belum dimuat (waktu tunggu load data profile)
   if (authLoading || isRedirecting || (user && !profile)) {
+    if (typeof window !== 'undefined') {
+      console.log('DEBUG: DashboardLayout Loading State:', {
+        authLoading,
+        isRedirecting,
+        userExists: !!user,
+        profileExists: !!profile,
+        pathname: router.pathname
+      });
+    }
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <div className="text-center">

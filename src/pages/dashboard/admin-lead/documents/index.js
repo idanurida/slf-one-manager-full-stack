@@ -242,6 +242,23 @@ export default function AdminLeadDocumentsPage() {
 
       if (error) throw error;
 
+      // Send Notification to Uploader
+      if (verifyDialog.doc.created_by) {
+        const notifMessage = action === 'approve'
+          ? `Dokumen "${verifyDialog.doc.name}" telah disetujui.`
+          : `Dokumen "${verifyDialog.doc.name}" ditolak. Alasan: ${verifyNotes}`;
+
+        await supabase.from('notifications').insert([{
+          recipient_id: verifyDialog.doc.created_by,
+          sender_id: user.id,
+          type: action === 'approve' ? 'success' : 'error',
+          title: action === 'approve' ? 'Dokumen Disetujui' : 'Dokumen Ditolak',
+          message: notifMessage,
+          is_read: false,
+          created_at: new Date().toISOString()
+        }]);
+      }
+
       toast.success(`Dokumen ${action === 'approve' ? 'disetujui' : 'ditolak'}`);
       setVerifyDialog({ open: false, doc: null });
       setVerifyNotes('');

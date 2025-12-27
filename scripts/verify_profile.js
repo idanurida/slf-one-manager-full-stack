@@ -1,5 +1,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config({ path: '.env.local' });
+
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -7,18 +9,17 @@ const supabase = createClient(
 );
 
 async function checkProfile() {
-    console.log("🔍 Checking profile for 'ida.nuridasw@gmail.com'...");
+    console.log("🔍 Checking profile for 'admin_lead@test.com'...");
 
     const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('email', 'ida.nuridasw@gmail.com')
-        .single();
+        .eq('email', 'admin_lead@test.com');
 
     if (error) {
         console.log("❌ Error fetching profile:", error.message);
-    } else if (data) {
-        console.log("✅ Profile FOUND:", data);
+    } else if (data && data.length > 0) {
+        console.log(`✅ Profile FOUND (${data.length} records):`, data[0]);
     } else {
         console.log("⚠️ Profile NOT found.");
     }

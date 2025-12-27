@@ -13,6 +13,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Icons
 import {
@@ -142,14 +149,14 @@ export default function NewClientPage() {
                                 </button>
                                 <div>
                                     <div className="flex items-center gap-3 mb-4">
-                                        <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">Onboarding Process</Badge>
+                                        <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">Proses Registrasi</Badge>
                                         <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Step 1 of 1: Partner Details</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Langkah 1 dari 1: Detail Klien</span>
                                     </div>
                                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
-                                        Partner <span className="text-[#7c3aed]">Onboarding</span>
+                                        Registrasi <span className="text-[#7c3aed]">Klien</span>
                                     </h1>
-                                    <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium max-w-2xl">Registrasikan client baru ke dalam ekosistem manajemen proyek Anda.</p>
+                                    <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium max-w-2xl">Registrasikan klien baru ke dalam ekosistem manajemen proyek Anda.</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -174,20 +181,20 @@ export default function NewClientPage() {
                                                 <Sparkles size={20} />
                                             </div>
                                             <div>
-                                                <h3 className="text-xl font-black uppercase tracking-tighter">Identity Config</h3>
+                                                <h3 className="text-xl font-black uppercase tracking-tighter">Konfigurasi Identitas</h3>
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Informasi Utama Rekanan</p>
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-3">
-                                                <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">PIC Full Name *</Label>
+                                                <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Nama Lengkap PIC *</Label>
                                                 <div className="relative group">
                                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
                                                     <Input
                                                         id="name"
                                                         name="name"
-                                                        placeholder="Full name for communication"
+                                                        placeholder="Nama lengkap untuk korespondensi"
                                                         className="h-14 pl-12 rounded-2xl bg-slate-50 dark:bg-white/5 border-transparent focus:border-[#7c3aed]/30 transition-all font-bold"
                                                         value={formData.name}
                                                         onChange={handleChange}
@@ -197,13 +204,13 @@ export default function NewClientPage() {
                                             </div>
 
                                             <div className="space-y-3">
-                                                <Label htmlFor="company_name" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Company Name</Label>
+                                                <Label htmlFor="company_name" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Nama Perusahaan</Label>
                                                 <div className="relative group">
                                                     <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
                                                     <Input
                                                         id="company_name"
                                                         name="company_name"
-                                                        placeholder="Legal enterprise name"
+                                                        placeholder="Nama resmi perusahaan"
                                                         className="h-14 pl-12 rounded-2xl bg-slate-50 dark:bg-white/5 border-transparent focus:border-[#7c3aed]/30 transition-all font-bold"
                                                         value={formData.company_name}
                                                         onChange={handleChange}
@@ -214,14 +221,14 @@ export default function NewClientPage() {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-3">
-                                                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Business Email *</Label>
+                                                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Bisnis *</Label>
                                                 <div className="relative group">
                                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
                                                     <Input
                                                         id="email"
                                                         name="email"
                                                         type="email"
-                                                        placeholder="official@enterprise.com"
+                                                        placeholder="official@perusahaan.com"
                                                         className="h-14 pl-12 rounded-2xl bg-slate-50 dark:bg-white/5 border-transparent focus:border-[#7c3aed]/30 transition-all font-bold"
                                                         value={formData.email}
                                                         onChange={handleChange}
@@ -231,7 +238,7 @@ export default function NewClientPage() {
                                             </div>
 
                                             <div className="space-y-3">
-                                                <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Direct Contact</Label>
+                                                <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Kontak Langsung</Label>
                                                 <div className="relative group">
                                                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
                                                     <Input
@@ -247,13 +254,13 @@ export default function NewClientPage() {
                                         </div>
 
                                         <div className="space-y-3">
-                                            <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">HQ Address</Label>
+                                            <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Alamat Kantor Pusat</Label>
                                             <div className="relative group">
                                                 <MapPin className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[#7c3aed] transition-colors" size={18} />
                                                 <Textarea
                                                     id="address"
                                                     name="address"
-                                                    placeholder="Full administrative address..."
+                                                    placeholder="Alamat administratif lengkap..."
                                                     className="min-h-[120px] pl-12 pt-4 rounded-[2rem] bg-slate-50 dark:bg-white/5 border-transparent focus:border-[#7c3aed]/30 transition-all font-bold resize-none"
                                                     value={formData.address}
                                                     onChange={handleChange}
@@ -263,18 +270,18 @@ export default function NewClientPage() {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-3">
-                                                <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">City / Region</Label>
+                                                <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Kota / Wilayah</Label>
                                                 <Input
                                                     id="city"
                                                     name="city"
-                                                    placeholder="Operational location"
+                                                    placeholder="Lokasi operasional"
                                                     className="h-14 rounded-2xl bg-slate-50 dark:bg-white/5 border-transparent focus:border-[#7c3aed]/30 transition-all font-bold px-6"
                                                     value={formData.city}
                                                     onChange={handleChange}
                                                 />
                                             </div>
                                             <div className="space-y-3">
-                                                <Label htmlFor="npwp" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Tax ID (NPWP)</Label>
+                                                <Label htmlFor="npwp" className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">NPWP (ID Pajak)</Label>
                                                 <Input
                                                     id="npwp"
                                                     name="npwp"
@@ -293,7 +300,7 @@ export default function NewClientPage() {
                                             onClick={() => router.back()}
                                             className="h-16 px-10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
                                         >
-                                            Discard Changes
+                                            Batalkan Perubahan
                                         </button>
                                         <button
                                             type="submit"
@@ -301,7 +308,7 @@ export default function NewClientPage() {
                                             className="h-16 px-12 bg-[#7c3aed] text-white rounded-[1.5rem] flex items-center gap-4 font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-2xl shadow-[#7c3aed]/20 hover:scale-105 active:scale-95 disabled:opacity-50"
                                         >
                                             {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                                            Finalize Partner
+                                            Simpan Data Klien
                                         </button>
                                     </div>
                                 </form>
@@ -313,7 +320,7 @@ export default function NewClientPage() {
                                     <div className="absolute -top-12 -right-12 size-40 bg-[#7c3aed]/20 rounded-full blur-3xl" />
 
                                     <div className="relative z-10">
-                                        <h3 className="text-xl font-black uppercase tracking-tighter mb-2">Onboarding <span className="text-[#7c3aed]">Guidelines</span></h3>
+                                        <h3 className="text-xl font-black uppercase tracking-tighter mb-2">Panduan <span className="text-[#7c3aed]">Registrasi</span></h3>
                                         <p className="text-slate-400 text-xs font-medium leading-relaxed">Pastikan data yang dimasukkan akurat untuk kelancaran administrasi proyek.</p>
                                     </div>
 
@@ -323,7 +330,7 @@ export default function NewClientPage() {
                                                 <ShieldCheck className="text-[#7c3aed]" size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Data Integrity</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Integritas Data</p>
                                                 <p className="text-[9px] font-medium text-slate-400 mt-1 leading-normal">Email dan PIC digunakan untuk korespondensi resmi sistem.</p>
                                             </div>
                                         </div>
@@ -332,7 +339,7 @@ export default function NewClientPage() {
                                                 <Globe className="text-blue-400" size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Regional Database</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Database Regional</p>
                                                 <p className="text-[9px] font-medium text-slate-400 mt-1 leading-normal">Penentuan kota akan mempengaruhi zonasi pengerjaan SLF/PBG.</p>
                                             </div>
                                         </div>
@@ -341,16 +348,16 @@ export default function NewClientPage() {
                                                 <CheckCircle2 className="text-emerald-400" size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Project Ready</p>
-                                                <p className="text-[9px] font-medium text-slate-400 mt-1 leading-normal">Setelah disimpan, client langsung dapat ditautkan ke proyek baru.</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Siap Proyek</p>
+                                                <p className="text-[9px] font-medium text-slate-400 mt-1 leading-normal">Setelah disimpan, klien langsung dapat ditautkan ke proyek baru.</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="relative z-10 pt-6 border-t border-white/10 flex items-center justify-between">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-[#7c3aed] uppercase tracking-widest">Compliance Status</span>
-                                            <span className="text-xs font-bold text-white mt-0.5">Verified System</span>
+                                            <span className="text-[9px] font-black text-[#7c3aed] uppercase tracking-widest">Status Kepatuhan</span>
+                                            <span className="text-xs font-bold text-white mt-0.5">Sistem Terverifikasi</span>
                                         </div>
                                         <div className="size-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
                                             <div className="size-2 rounded-full bg-emerald-500 animate-ping" />
@@ -361,7 +368,7 @@ export default function NewClientPage() {
                                 <div className="bg-[#7c3aed]/5 rounded-[2.5rem] p-8 border border-[#7c3aed]/10">
                                     <div className="flex items-center gap-3 mb-4 text-[#7c3aed]">
                                         <Info size={18} />
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest">Need Assistance?</h4>
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest">Butuh Bantuan?</h4>
                                     </div>
                                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
                                         Jika partner memiliki struktur legal kompleks, harap gunakan kolom Nama Perusahaan untuk entitas utama.

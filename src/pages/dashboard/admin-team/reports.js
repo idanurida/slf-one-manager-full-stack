@@ -126,28 +126,28 @@ export default function AdminTeamReportsPage() {
       const projectList = (assignments || []).map(a => a.projects);
       setProjects(projectList);
 
-      // Ambil laporan (dokumen dengan type REPORT atau nama mengandung 'laporan') dari proyek-proyek saya
+      // Ambil laporan dari proyek-proyek saya
       const projectIds = projectList.map(p => p.id);
       let reportsData = [];
       if (projectIds.length > 0) {
-        const { data: docs, error: docsErr } = await supabase
-          .from('documents')
+        const { data: reports, error: reportsErr } = await supabase
+          .from('inspection_reports')
           .select(`
             *,
-            profiles!created_by(full_name, specialization),
+            inspector:profiles!inspector_id(full_name, specialization),
             projects(name)
           `)
           .in('project_id', projectIds)
-          .eq('document_type', 'REPORT') // Atau gunakan filter nama: .ilike('name', '%laporan%')
           .order('created_at', { ascending: false });
 
-        if (docsErr) throw docsErr;
+        if (reportsErr) throw reportsErr;
 
-        reportsData = docs.map(doc => ({
-          ...doc,
-          project_name: doc.projects?.name || 'Unknown Project',
-          creator_name: doc.profiles?.full_name || 'Unknown User',
-          specialization: doc.profiles?.specialization || 'Umum'
+        reportsData = reports.map(report => ({
+          ...report,
+          name: report.title, // Map title to name for UI compatibility
+          project_name: report.projects?.name || 'Unknown Project',
+          creator_name: report.inspector?.full_name || 'Unknown User',
+          specialization: report.inspector?.specialization || 'Umum'
         }));
       }
 
@@ -174,12 +174,12 @@ export default function AdminTeamReportsPage() {
     setVerifyingId(reportId);
     try {
       const { error } = await supabase
-        .from('documents')
+        .from('inspection_reports')
         .update({
           status: 'verified_by_admin_team',
-          verified_by_admin_team: user.id,
-          verified_at_admin_team: new Date().toISOString(),
-          ...(notes && { admin_team_feedback: notes })
+          admin_team_id: user.id,
+          // verified_at_admin_team: new Date().toISOString(), // Optional if schema matches
+          ...(notes && { project_lead_notes: notes }) // Read schema: project_lead_notes might be repurposed or new col needed
         })
         .eq('id', reportId);
 
@@ -201,7 +201,7 @@ export default function AdminTeamReportsPage() {
             message: `Laporan "${report.name}" telah diverifikasi oleh admin team.`,
             recipient_id: al.user_id,
             sender_id: user.id,
-            read: false,
+            is_read: false,
             created_at: new Date().toISOString()
           }));
           await supabase.from('notifications').insert(notifications);
@@ -226,10 +226,10 @@ export default function AdminTeamReportsPage() {
     }
     try {
       const { error } = await supabase
-        .from('documents')
+        .from('inspection_reports')
         .update({
           status: 'revision_requested',
-          admin_team_feedback: notes
+          project_lead_notes: notes // Using project_lead_notes for feedback since it's available in schema
         })
         .eq('id', reportId);
 
@@ -251,7 +251,7 @@ export default function AdminTeamReportsPage() {
             message: `Laporan "${report.name}" perlu direvisi: ${notes}`,
             recipient_id: pl.user_id,
             sender_id: user.id,
-            read: false,
+            is_read: false,
             created_at: new Date().toISOString()
           }));
           await supabase.from('notifications').insert(notifications);
@@ -337,13 +337,6 @@ export default function AdminTeamReportsPage() {
           </div>
         </motion.div>
 
-        {/* Stats Section */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Total laporan" value={totalReports} icon={<FileText size={24} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="All" trendColor="text-[#7c3aed]" />
-          <StatCard title="Perlu verifikasi" value={pendingVerification} icon={<ClipboardList size={24} />} color="text-orange-500" bg="bg-orange-500/10" trend="Pending" trendColor="text-orange-500" />
-          <StatCard title="Terverifikasi" value={verifiedCount} icon={<CheckCircle2 size={24} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Done" trendColor="text-emerald-500" />
-          <StatCard title="Minta revisi" value={revisionCount} icon={<FileWarning size={24} />} color="text-red-500" bg="bg-red-500/10" trend="Action" trendColor="text-red-500" />
-        </motion.div>
 
         {/* Filters and List */}
         <motion.div variants={itemVariants} className="space-y-8">
@@ -410,29 +403,6 @@ export default function AdminTeamReportsPage() {
 }
 
 // Sub-components
-function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
-  return (
-    <div className="relative bg-card rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
-      <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
-        {React.cloneElement(icon, { size: 80 })}
-      </div>
-      <div className="relative flex items-center justify-between mb-4">
-        <div className={`size-12 rounded-2xl ${bg} ${color} flex items-center justify-center transition-all duration-300 group-hover:shadow-lg`}>
-          {icon}
-        </div>
-        {trend && (
-          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-border`}>
-            {trend}
-          </span>
-        )}
-      </div>
-      <div className="flex flex-col">
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-none mb-2">{title}</p>
-        <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">{value}</p>
-      </div>
-    </div>
-  );
-}
 
 const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -506,12 +476,12 @@ const ReportItemPremium = ({ report, onVerify, onRevise, loading }) => {
               </div>
             </div>
 
-            {report.admin_team_feedback && (
+            {report.project_lead_notes && (
               <div className="bg-orange-500/5 border border-orange-500/10 p-4 rounded-2xl flex gap-3">
                 <AlertTriangle size={16} className="text-orange-500 shrink-0" />
                 <div>
                   <p className="text-[9px] font-black text-orange-500 uppercase tracking-widest mb-1">Feedback Terakhir</p>
-                  <p className="text-xs font-medium text-orange-800 dark:text-orange-400">{report.admin_team_feedback}</p>
+                  <p className="text-xs font-medium text-orange-800 dark:text-orange-400">{report.project_lead_notes}</p>
                 </div>
               </div>
             )}

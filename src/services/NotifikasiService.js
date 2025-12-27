@@ -30,7 +30,7 @@ class NotifikasiService {
         project_id: proyekId,
         sender_id: userId,
         recipient_id: admin.id,
-        read: false,
+        is_read: false,
         data: {
           document_id: dokumenId,
           action_required: true,
@@ -65,17 +65,17 @@ class NotifikasiService {
   static async kirimNotifikasiDokumenDiverifikasi(proyekId, dokumenId, status, adminId, clientId, catatan = '') {
     try {
       const isVerified = status === 'verified';
-      
+
       // Notify client
       const clientNotification = {
         type: isVerified ? 'document_verified' : 'document_rejected',
-        message: isVerified 
-          ? 'Dokumen Anda telah diverifikasi' 
+        message: isVerified
+          ? 'Dokumen Anda telah diverifikasi'
           : `Dokumen Anda perlu direvisi: ${catatan}`,
         project_id: proyekId,
         sender_id: adminId,
         recipient_id: clientId,
-        read: false,
+        is_read: false,
         data: {
           document_id: dokumenId,
           status: status,
@@ -94,7 +94,7 @@ class NotifikasiService {
       // Check if all documents are verified
       if (isVerified) {
         const allVerified = await this.cekSemuaDokumenTerverifikasi(proyekId);
-        
+
         if (allVerified) {
           await this.kirimNotifikasiKeAdminLead(proyekId, adminId);
         }
@@ -125,7 +125,7 @@ class NotifikasiService {
         project_id: proyekId,
         sender_id: senderId,
         recipient_id: admin.id,
-        read: false,
+        is_read: false,
         data: {
           action_required: true,
           target_url: `/dashboard/admin-lead/projects/${proyekId}`
@@ -159,7 +159,7 @@ class NotifikasiService {
         project_id: proyekId,
         sender_id: adminLeadId,
         recipient_id: clientId,
-        read: false,
+        is_read: false,
         data: {
           status: 'approved',
           target_url: `/dashboard/client/projects/${proyekId}`
@@ -180,7 +180,7 @@ class NotifikasiService {
         project_id: proyekId,
         sender_id: adminLeadId,
         recipient_id: admin.id,
-        read: false,
+        is_read: false,
         data: {
           status: 'approved'
         }
@@ -232,7 +232,7 @@ class NotifikasiService {
         project_id: proyekId,
         sender_id: senderId,
         recipient_id: clientId,
-        read: false,
+        is_read: false,
         data: {
           document_id: dokumenId,
           action_required: true,

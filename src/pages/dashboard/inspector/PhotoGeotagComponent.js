@@ -8,12 +8,12 @@ import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Camera, 
-  Upload, 
-  X, 
-  Loader2, 
-  MapPin, 
+import {
+  Camera,
+  Upload,
+  X,
+  Loader2,
+  MapPin,
   AlertTriangle,
   Navigation,
   CheckCircle,
@@ -39,7 +39,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
   const [manualUploadMode, setManualUploadMode] = useState(false);
-  
+
   // Geolocation state
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
@@ -65,7 +65,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
   // Auto-get location jika sudah ada permission dan butuh geotag
   useEffect(() => {
     if (permissionGranted && requiresGeotag && !manualUploadMode) {
-      getCurrentLocation(false).catch(() => {
+      getLocationWithFallback(false).catch(() => {
         // Silent fail - mungkin location services mati
       });
     }
@@ -79,7 +79,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
   }, [previewUrl]);
 
   // Get current location dengan caching dan permission management
-  const getCurrentLocation = useCallback(async (showPopup = true, forceRefresh = false) => {
+  const getCurrentLocation = useCallback(async (showPopup = true, forceRefresh = false, useHighAccuracy = true) => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         const error = new Error('Geolocation tidak didukung browser');
@@ -94,14 +94,14 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
         setLongitude(cachedLocation.coords.longitude);
         setLocationError(null);
         setPermissionGranted(true);
-        
+
         if (showPopup) {
           toast({
             title: "Lokasi dari cache",
             description: `Menggunakan lokasi terbaru: ${cachedLocation.coords.latitude.toFixed(5)}, ${cachedLocation.coords.longitude.toFixed(5)}`,
           });
         }
-        
+
         resolve(cachedLocation);
         return;
       }
@@ -115,10 +115,10 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
 
       setGettingLocation(true);
       setLocationRequested(true);
-      
+
       const options = {
-        enableHighAccuracy: true,
-        timeout: permissionGranted ? 5000 : 10000,
+        enableHighAccuracy: useHighAccuracy,
+        timeout: useHighAccuracy ? 5000 : 10000,
         maximumAge: CACHE_DURATION
       };
 
@@ -130,24 +130,59 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
           setLocationError(null);
           setPermissionGranted(true);
           hasLocationPermission = true;
-          
+
           // Cache the location
           cachedLocation = position;
           cacheTimestamp = Date.now();
-          
+
           if (showPopup) {
             toast({
               title: permissionGranted ? "Lokasi diperbarui" : "Lokasi berhasil didapatkan",
               description: `Koordinat: ${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`,
             });
           }
-          
-          resolve(position);
+
+
+          // Reverse Geocoding
+          const fetchAddress = async () => {
+            try {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+              const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=18&addressdetails=1`, {
+                headers: {
+                  'User-Agent': 'SLF-One-Manager/1.0',
+                  'Referer': 'https://slf-one-manager.vercel.app'
+                },
+                signal: controller.signal
+              });
+
+              clearTimeout(timeoutId);
+
+              if (response.ok) {
+                const data = await response.json();
+                if (data && data.address) {
+                  position.address = {
+                    village: data.address.village || data.address.suburb || data.address.neighbourhood || '-',
+                    district: data.address.city_district || data.address.county || data.address.district || '-',
+                    city: data.address.city || data.address.town || data.address.municipality || data.address.regency || '-',
+                    province: data.address.state || '-'
+                  };
+                  cachedLocation = position; // Update cache with address
+                }
+              }
+            } catch (e) {
+              console.error("Geocoding failed", e);
+            }
+            resolve(position);
+          };
+
+          fetchAddress();
         },
         (error) => {
           setGettingLocation(false);
           let errorMessage = 'Gagal mendapatkan lokasi: ';
-          
+
           switch (error.code) {
             case error.PERMISSION_DENIED:
               errorMessage += 'Izin lokasi ditolak atau popup ditutup';
@@ -156,7 +191,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
               // Clear cache karena permission dicabut
               cachedLocation = null;
               cacheTimestamp = 0;
-              
+
               errorMessage += '\n\nUntuk mengizinkan lokasi:';
               errorMessage += '\n1. Klik ikon 🔒 di address bar browser';
               errorMessage += '\n2. Pilih "Site settings"';
@@ -172,9 +207,9 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
             default:
               errorMessage += error.message;
           }
-          
+
           setLocationError(errorMessage);
-          
+
           if (showPopup) {
             toast({
               title: "Izin Lokasi Diperlukan",
@@ -183,7 +218,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
               duration: 10000,
             });
           }
-          
+
           reject(new Error(errorMessage));
         },
         options
@@ -191,10 +226,28 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
     });
   }, [permissionGranted, toast]);
 
+  // Wrapper untuk handle fallback recursive logic
+  const getLocationWithFallback = async (showPopup = true, forceRefresh = false, highAccuracy = true) => {
+    try {
+      return await getCurrentLocation(showPopup, forceRefresh, highAccuracy);
+    } catch (error) {
+      // Jika gagal dengan High Accuracy (GPS), coba Low Accuracy (Network/WiFi)
+      if (highAccuracy) {
+        if (showPopup) {
+          toast({
+            description: "GPS sulit dijangkau, mencoba lokasi Network/Wi-Fi...",
+          });
+        }
+        return await getCurrentLocation(showPopup, forceRefresh, false);
+      }
+      throw error;
+    }
+  };
+
   // Function untuk request permission lokasi
   const requestLocationPermission = useCallback(async () => {
     try {
-      await getCurrentLocation(true);
+      await getLocationWithFallback(true);
     } catch (error) {
       // Error sudah dihandle di getCurrentLocation
     }
@@ -203,7 +256,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
   // Function untuk refresh location (force new reading)
   const refreshLocation = useCallback(async () => {
     try {
-      await getCurrentLocation(true, true);
+      await getLocationWithFallback(true, true);
     } catch (error) {
       // Error sudah dihandle
     }
@@ -235,7 +288,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
 
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
-    
+
     // Otomatis coba dapatkan lokasi ketika file dipilih jika butuh geotag
     if (!manualUploadMode && requiresGeotag) {
       if (permissionGranted) {
@@ -313,7 +366,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
       // 1. Upload ke Supabase Storage
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `inspection-photos/${user.id}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('inspection_photos')
         .upload(fileName, selectedFile);
@@ -342,14 +395,21 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
         geotagAccuracy: cachedLocation?.coords?.accuracy || null,
         verificationMethod: manualUploadMode ? 'manual_input' : 'gps_automatic',
         requiresReview: manualUploadMode && requiresGeotag,
-        locationFromCache: !!(cachedLocation && lat === cachedLocation.coords.latitude)
+        locationFromCache: !!(cachedLocation && lat === cachedLocation.coords.latitude),
+
+        // Administrative Geotag Information
+        address: cachedLocation?.address || null,
+        administrative_area: cachedLocation?.address?.province || null,
+        sub_administrative_area: cachedLocation?.address?.city || null,
+        locality: cachedLocation?.address?.district || null,
+        addressString: cachedLocation?.address ? `${cachedLocation.address.city}, ${cachedLocation.address.district}` : null
       };
 
       onCapture(photoGeotagData);
 
       toast({
         title: '✅ Foto berhasil diupload',
-        description: lat 
+        description: lat
           ? `Dengan lokasi: ${lat.toFixed(5)}, ${lon.toFixed(5)}${cachedLocation && lat === cachedLocation.coords.latitude ? ' (dari cache)' : ''}`
           : requiresGeotag ? 'Upload manual (perlu review)' : 'Tanpa data lokasi',
       });
@@ -389,7 +449,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
 
     if (locationError) {
       return {
-        type: "destructive", 
+        type: "destructive",
         message: locationError,
         icon: AlertTriangle,
       };
@@ -441,7 +501,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
           {/* Status Requirements */}
           {photoRequirements && (
             <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
-              <strong>Requirements:</strong> {requiresGeotag ? 'Wajib GPS' : 'GPS opsional'} 
+              <strong>Requirements:</strong> {requiresGeotag ? 'Wajib GPS' : 'GPS opsional'}
               {photoRequirements.min_photos > 0 && ` • Min ${photoRequirements.min_photos} foto`}
               {permissionGranted && requiresGeotag && ' • Izin lokasi aktif'}
             </div>
@@ -467,7 +527,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
                   {gettingLocation ? 'Meminta...' : 'Minta Izin Lokasi'}
                 </Button>
               )}
-              
+
               {permissionGranted && (
                 <Button
                   onClick={refreshLocation}
@@ -493,7 +553,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder={
-                manualUploadMode && requiresGeotag 
+                manualUploadMode && requiresGeotag
                   ? "WAJIB: Deskripsikan lokasi pengambilan foto secara detail..."
                   : "Contoh: Kondisi retakan di dinding timur..."
               }
@@ -555,8 +615,8 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
               <Button
                 onClick={handleUpload}
                 disabled={
-                  uploading || 
-                  !selectedFile || 
+                  uploading ||
+                  !selectedFile ||
                   (requiresGeotag && manualUploadMode && !caption.trim())
                 }
                 className="flex items-center gap-2"
@@ -569,7 +629,7 @@ const PhotoGeotagComponent = ({ onCapture, itemId, templateId, itemName }) => {
                 ) : (
                   <>
                     <Camera className="w-4 h-4" />
-                    {manualUploadMode 
+                    {manualUploadMode
                       ? `Upload Manual ${requiresGeotag ? '(Perlu Review)' : ''}`
                       : 'Upload dengan Lokasi'
                     }

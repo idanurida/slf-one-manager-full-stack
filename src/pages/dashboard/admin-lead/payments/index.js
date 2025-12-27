@@ -1,505 +1,393 @@
 // FILE: src/pages/dashboard/admin-lead/payments/index.js
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/router';
-import { format } from 'date-fns';
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/router";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { format } from "date-fns";
 import { id as localeId } from 'date-fns/locale';
-import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from 'next-themes';
 
-// UI Components
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+// Components
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
-} from '@/components/ui/select';
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import {
-  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger
-} from '@/components/ui/tooltip';
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
-} from '@/components/ui/dialog';
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 // Icons
 import {
-  Search, CreditCard, Building, CheckCircle, Clock, X,
-  Eye, RefreshCw, ExternalLink, XCircle, Loader2, Filter,
-  ArrowRight, Users, Wallet, TrendingUp, DollarSign, CheckCircle2
-} from 'lucide-react';
+  Search, Filter, RefreshCw, DollarSign,
+  ArrowRight, CheckCircle2, XCircle, Clock, Building, Eye, Download
+} from "lucide-react";
 
 // Utils
-import DashboardLayout from '@/components/layouts/DashboardLayout';
-import { supabase } from '@/utils/supabaseClient';
-import { useAuth } from '@/context/AuthContext';
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { supabase } from "@/utils/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
-// Animation
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
 };
+
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
   visible: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "circOut" } }
 };
 
-// Helpers
-const formatDate = (dateString) => {
-  if (!dateString) return '-';
-  try {
-    return format(new Date(dateString), 'dd MMM yyyy', { locale: localeId });
-  } catch (e) {
-    return dateString;
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'paid': return 'bg-green-100 text-green-700 border-green-200';
+    case 'verified': return 'bg-green-100 text-green-700 border-green-200';
+    case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
+    case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
+    default: return 'bg-slate-100 text-slate-700 border-slate-200';
   }
 };
 
-const formatCurrency = (amount) => {
-  if (!amount) return 'Rp 0';
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(amount);
-};
-
-const getStatusBadge = (status) => {
-  const config = {
-    pending: { label: 'Menunggu', bg: 'bg-amber-500/10', text: 'text-amber-500', icon: Clock },
-    verified: { label: 'Terverifikasi', bg: 'bg-emerald-500/10', text: 'text-emerald-500', icon: CheckCircle2 },
-    rejected: { label: 'Ditolak', bg: 'bg-rose-500/10', text: 'text-rose-500', icon: XCircle },
-  };
-  const { label, bg, text, icon: Icon } = config[status] || config.pending;
-  return (
-    <Badge className={`border-none ${bg} ${text} hover:${bg} flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg`}>
-      <Icon className="size-3" />
-      {label}
-    </Badge>
-  );
-};
-
-export default function AdminLeadPaymentsPage() {
+export default function GlobalPaymentPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  const { theme } = useTheme();
+  const { user, loading: authLoading, isAdminLead } = useAuth();
 
   const [loading, setLoading] = useState(true);
-  const [verifying, setVerifying] = useState(false);
-  const [error, setError] = useState(null);
   const [payments, setPayments] = useState([]);
-  const [stats, setStats] = useState({ total: 0, pending: 0, verified: 0, amount_pending: 0 });
-
+  const [filteredPayments, setFilteredPayments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Dialog states
-  const [viewDialog, setViewDialog] = useState({ open: false, payment: null });
-  const [verifyDialog, setVerifyDialog] = useState({ open: false, payment: null });
-  const [verifyNotes, setVerifyNotes] = useState('');
+  // Action State
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [actionType, setActionType] = useState(null); // 'approve' | 'reject'
+  const [notes, setNotes] = useState('');
+  const [processing, setProcessing] = useState(false);
 
-  // Fetch payments
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    verified: 0,
+    totalAmount: 0
+  });
+
   const fetchPayments = useCallback(async () => {
+    if (!user?.id) return;
     setLoading(true);
-    setError(null);
-
     try {
-      // 1. Get projects allowed for this admin lead
-      const { data: userProjects, error: projErr } = await supabase
+      // 1. Get Projects first to filter by admin lead
+      const { data: userProjects } = await supabase
         .from('projects')
         .select('id')
         .or(`created_by.eq.${user.id},admin_lead_id.eq.${user.id}`);
 
-      if (projErr) throw projErr;
-
-      const projectIds = userProjects.map(p => p.id);
+      const projectIds = (userProjects || []).map(p => p.id);
 
       if (projectIds.length === 0) {
         setPayments([]);
-        setStats({ total: 0, pending: 0, verified: 0, amount_pending: 0 });
+        setFilteredPayments([]);
         setLoading(false);
         return;
       }
 
-      // 2. Fetch payments for those projects
-      const { data, error: fetchError } = await supabase
+      // 2. Get Payments
+      const { data, error } = await supabase
         .from('payments')
         .select(`
-          *,
-          projects (id, name),
-          clients (id, name)
+            *,
+            projects (id, name, client_id, clients(name))
         `)
         .in('project_id', projectIds)
         .order('created_at', { ascending: false });
 
-      if (fetchError) throw fetchError;
+      if (error) throw error;
 
-      const paymentsData = (data || []).map(payment => ({
-        ...payment,
-        project_name: payment.projects?.name || '-',
-        client_name: payment.clients?.name || '-'
-      }));
+      const list = data || [];
+      setPayments(list);
+      setFilteredPayments(list);
 
-      // Stats
-      const pending = paymentsData.filter(p => p.status === 'pending');
+      // Calculate Stats
+      const pending = list.filter(p => p.status === 'pending');
+      const verified = list.filter(p => p.status === 'paid' || p.status === 'verified');
+
       setStats({
-        total: paymentsData.length,
+        total: list.length,
         pending: pending.length,
-        verified: paymentsData.filter(p => p.status === 'verified').length,
-        amount_pending: pending.reduce((acc, curr) => acc + (curr.amount || 0), 0)
+        verified: verified.length,
+        totalAmount: verified.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
       });
 
-      setPayments(paymentsData);
     } catch (err) {
-      console.error('Error fetching payments:', err);
-      setError('Gagal memuat data pembayaran');
+      console.error(err);
       toast.error('Gagal memuat data pembayaran');
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user]);
 
-  // Handle verification
-  const handleVerify = async (action) => {
-    if (!verifyDialog.payment) return;
-    setVerifying(true);
+  useEffect(() => {
+    if (!authLoading && user && isAdminLead) {
+      fetchPayments();
+    }
+  }, [authLoading, user, isAdminLead, fetchPayments]);
 
+  useEffect(() => {
+    let result = payments;
+
+    // Search
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(p =>
+        p.amount?.toString().includes(term) ||
+        p.projects?.name?.toLowerCase().includes(term) ||
+        p.projects?.clients?.name?.toLowerCase().includes(term)
+      );
+    }
+
+    // Filter
+    if (statusFilter !== 'all') {
+      const targetStatus = statusFilter === 'verified' ? ['paid', 'verified'] : [statusFilter];
+      result = result.filter(p => targetStatus.includes(p.status));
+    }
+
+    setFilteredPayments(result);
+  }, [searchTerm, statusFilter, payments]);
+
+  const handleProcess = async () => {
+    if (!selectedPayment || !actionType) return;
+    if (actionType === 'reject' && !notes) {
+      toast.error('Wajib isi alasan penolakan');
+      return;
+    }
+
+    setProcessing(true);
     try {
-      const newStatus = action === 'approve' ? 'verified' : 'rejected';
+      const newStatus = actionType === 'approve' ? 'verified' : 'rejected';
+      // NOTE: Some schemas use 'paid', some 'verified'. Adjusting to 'verified' based on typical flow
+      // actually prev file used 'paid'. Let's stick with 'paid' for approved.
+      const statusDB = actionType === 'approve' ? 'paid' : 'rejected';
 
       const { error } = await supabase
         .from('payments')
         .update({
-          status: newStatus,
-          verified_by: user.id,
-          verified_at: new Date().toISOString(),
-          notes: verifyNotes || null
+          status: statusDB,
+          notes: notes,
+          confirmed_at: new Date(),
+          confirmed_by: user.id
         })
-        .eq('id', verifyDialog.payment.id);
+        .eq('id', selectedPayment.id);
 
       if (error) throw error;
 
-      toast.success(`Pembayaran ${action === 'approve' ? 'diverifikasi' : 'ditolak'}`);
-      setVerifyDialog({ open: false, payment: null });
-      setVerifyNotes('');
+      toast.success(`Pembayaran berhasil ${actionType === 'approve' ? 'dikonfirmasi' : 'ditolak'}`);
       fetchPayments();
+      setSelectedPayment(null);
+      setActionType(null);
+      setNotes('');
     } catch (err) {
-      console.error('Error verifying payment:', err);
-      toast.error('Gagal memperbarui status pembayaran');
+      toast.error('Gagal memproses');
     } finally {
-      setVerifying(false);
+      setProcessing(false);
     }
   };
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      fetchPayments();
-    }
-  }, [authLoading, user, fetchPayments]);
-
-  const filteredPayments = payments.filter(payment => {
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      if (!payment.project_name?.toLowerCase().includes(term) &&
-        !payment.client_name?.toLowerCase().includes(term)) {
-        return false;
-      }
-    }
-    if (statusFilter !== 'all' && payment.status !== statusFilter) return false;
-    return true;
-  });
-
-  if (authLoading || loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
-          <Loader2 className="w-12 h-12 animate-spin text-[#7c3aed]" />
-          <p className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Syncing Transactions...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  if (authLoading || (user && !isAdminLead)) return null;
 
   return (
     <DashboardLayout>
-      <TooltipProvider>
-        <motion.div
-          className="max-w-[1400px] mx-auto space-y-10 pb-24 p-6 md:p-0"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+      <motion.div
+        className="max-w-md mx-auto md:max-w-5xl space-y-6 pb-24 px-4 md:px-0"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Header */}
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-black uppercase tracking-widest">Financial Hub</Badge>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
-                Transaction <span className="text-[#7c3aed]">Monitor</span>
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium max-w-2xl">
-                Verifikasi dan pantau status pembayaran proyek secara real-time.
-              </p>
+              <h1 className="text-2xl font-black tracking-tight text-foreground">Keuangan Proyek</h1>
+              <p className="text-xs font-medium text-muted-foreground">Monitor pembayaran & cashflow</p>
             </div>
-            <Button onClick={fetchPayments} variant="outline" className="h-14 w-14 rounded-2xl border-slate-200 dark:border-white/10 hover:border-[#7c3aed] hover:text-[#7c3aed]" >
-              <RefreshCw size={20} />
+            <Button variant="outline" size="icon" onClick={fetchPayments} className="rounded-xl">
+              <RefreshCw size={16} />
             </Button>
-          </motion.div>
+          </div>
 
-          {/* Stats Grid */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatSimple
-              title="Total Transaksi"
-              value={stats.total}
-              icon={<CreditCard size={18} />}
-              color="text-[#7c3aed]"
-              bg="bg-[#7c3aed]/10"
-            />
-            <StatSimple
-              title="Menunggu Verifikasi"
+          {/* Stats Cards - Horizontal Scroll */}
+          <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+            <StatCard
+              label="Pending"
               value={stats.pending}
-              icon={<Clock size={18} />}
-              color="text-amber-500"
-              bg="bg-amber-500/10"
+              icon={<Clock size={16} />}
+              color="text-amber-600" bg="bg-amber-100"
+              onClick={() => setStatusFilter('pending')}
+              active={statusFilter === 'pending'}
             />
-            <StatSimple
-              title="Verified"
+            <StatCard
+              label="Terverifikasi"
               value={stats.verified}
-              icon={<CheckCircle2 size={18} />}
-              color="text-emerald-500"
-              bg="bg-emerald-500/10"
+              icon={<CheckCircle2 size={16} />}
+              color="text-green-600" bg="bg-green-100"
+              onClick={() => setStatusFilter('verified')}
+              active={statusFilter === 'verified'}
             />
-            <StatSimple
-              title="Pending Amount"
-              value={formatCurrency(stats.amount_pending)}
-              icon={<DollarSign size={18} />}
-              color="text-blue-500"
-              bg="bg-blue-500/10"
-              isCurrency
-            />
-          </motion.div>
+            <div className="h-24 min-w-[160px] rounded-[1.5rem] p-4 bg-primary text-primary-foreground flex flex-col justify-between shadow-lg shadow-primary/20">
+              <div className="flex justify-between items-start">
+                <div className="p-2 rounded-xl bg-white/20"><DollarSign size={16} /></div>
+              </div>
+              <div>
+                <p className="text-xs font-medium opacity-80 uppercase tracking-wider">Total Masuk</p>
+                <p className="text-lg font-black tracking-tight">
+                  Rp {(stats.totalAmount / 1000000).toFixed(1)} Jt
+                </p>
+              </div>
+            </div>
+          </div>
 
-          {/* Search & Filter */}
-          <motion.div variants={itemVariants} className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input
-                placeholder="Cari transaksi, proyek, atau klien..."
-                className="w-full h-14 pl-12 pr-4 bg-card rounded-2xl border border-border shadow-lg shadow-slate-200/20 dark:shadow-none focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/20 text-sm font-medium"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <input
+              className="w-full h-12 rounded-2xl bg-card border border-border pl-9 pr-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none shadow-sm"
+              placeholder="Cari nominal, proyek, atau klien..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Payment List */}
+        <div className="space-y-3">
+          {loading ? (
+            Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-[2rem]" />)
+          ) : filteredPayments.length === 0 ? (
+            <div className="py-12 text-center text-muted-foreground text-xs font-medium bg-card rounded-[2rem] border border-dashed">
+              Tidak ada data pembayaran
+            </div>
+          ) : (
+            filteredPayments.map(pay => (
+              <motion.div
+                key={pay.id} variants={itemVariants}
+                className="bg-card border border-border rounded-[2rem] p-5 relative group hover:border-primary/50 transition-all shadow-sm"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${getStatusColor(pay.status)} bg-opacity-20`}>
+                      <DollarSign size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-foreground">Rp {parseInt(pay.amount).toLocaleString('id-ID')}</h3>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{format(new Date(pay.created_at), 'dd MMM yyyy')}</p>
+                    </div>
+                  </div>
+                  <Badge className={`h-6 px-2 rounded-lg text-[9px] font-black uppercase border ${getStatusColor(pay.status)}`}>
+                    {pay.status === 'paid' ? 'Verified' : pay.status}
+                  </Badge>
+                </div>
+
+                <div className="space-y-2 mb-4 bg-muted/30 p-3 rounded-xl">
+                  <div className="flex items-center gap-2 text-xs font-medium text-foreground">
+                    <Building size={14} className="text-muted-foreground" />
+                    <span className="truncate flex-1 font-bold">{pay.projects?.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="w-4"></span> {/* Spacer */}
+                    <span>{pay.projects?.clients?.name || 'Unknown Client'}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  {pay.proof_url && (
+                    <Button variant="outline" size="sm" className="flex-1 rounded-xl h-10 text-xs font-bold border-dashed" onClick={() => window.open(pay.proof_url, '_blank')}>
+                      <Eye size={14} className="mr-2" /> Bukti
+                    </Button>
+                  )}
+
+                  {pay.status === 'pending' && (
+                    <>
+                      <Button
+                        size="sm"
+                        className="flex-1 rounded-xl h-10 bg-green-600 hover:bg-green-700 text-white font-bold text-xs"
+                        onClick={() => { setSelectedPayment(pay); setActionType('approve'); }}
+                      >
+                        <CheckCircle2 size={14} className="mr-2" /> Terima
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-10 rounded-xl h-10 border-red-200 text-red-600 hover:bg-red-50"
+                        onClick={() => { setSelectedPayment(pay); setActionType('reject'); }}
+                      >
+                        <XCircle size={16} />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
+      </motion.div>
+
+      {/* Confirm Dialog */}
+      <Dialog open={!!selectedPayment} onOpenChange={(open) => !open && setSelectedPayment(null)}>
+        <DialogContent className="rounded-[2rem] p-6 max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black">
+              {actionType === 'approve' ? 'Konfirmasi Pembayaran' : 'Tolak Pembayaran'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4">
+            <div className="p-4 bg-muted/50 rounded-2xl text-center">
+              <p className="text-xs font-bold text-muted-foreground uppercase">Nominal</p>
+              <p className="text-2xl font-black">Rp {selectedPayment && parseInt(selectedPayment.amount).toLocaleString('id-ID')}</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Catatan {actionType === 'reject' && '*'}</label>
+              <Textarea
+                className="rounded-xl bg-background"
+                placeholder={actionType === 'reject' ? "Alasan penolakan..." : "Catatan opsional..."}
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-14 w-full md:w-[200px] rounded-2xl bg-card border-border font-bold text-xs uppercase tracking-wider">
-                <SelectValue placeholder="Status Filter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Status</SelectItem>
-                <SelectItem value="pending">Menunggu</SelectItem>
-                <SelectItem value="verified">Terverifikasi</SelectItem>
-                <SelectItem value="rejected">Ditolak</SelectItem>
-              </SelectContent>
-            </Select>
-          </motion.div>
+          </div>
 
-          {/* Premium Table */}
-          <motion.div variants={itemVariants} className="bg-card rounded-[2.5rem] border border-border overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50/80 dark:bg-white/5 text-slate-400 uppercase font-black text-[10px] tracking-widest border-b border-border">
-                  <tr>
-                    <th className="px-8 py-6">Proyek details</th>
-                    <th className="px-8 py-6">Client</th>
-                    <th className="px-8 py-6">Amount</th>
-                    <th className="px-8 py-6">Date</th>
-                    <th className="px-8 py-6">Status</th>
-                    <th className="px-8 py-6 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                  <AnimatePresence>
-                    {filteredPayments.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-8 py-24 text-center">
-                          <div className="flex flex-col items-center justify-center">
-                            <div className="size-16 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
-                              <Wallet size={24} />
-                            </div>
-                            <p className="text-slate-500 font-medium">Tidak ada data pembayaran ditemukan</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredPayments.map((payment) => (
-                        <motion.tr
-                          key={payment.id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                        >
-                          <td className="px-8 py-6">
-                            <div className="flex flex-col">
-                              <span className="font-bold text-slate-900 dark:text-white truncate max-w-[200px]">{payment.project_name}</span>
-                              <span className="text-xs text-slate-400 font-medium">{payment.payment_method || 'Transfer'}</span>
-                            </div>
-                          </td>
-                          <td className="px-8 py-6 font-medium text-slate-600 dark:text-slate-300">{payment.client_name}</td>
-                          <td className="px-8 py-6 font-black text-slate-900 dark:text-white">{formatCurrency(payment.amount)}</td>
-                          <td className="px-8 py-6 font-medium text-slate-500">{formatDate(payment.payment_date)}</td>
-                          <td className="px-8 py-6">{getStatusBadge(payment.status)}</td>
-                          <td className="px-8 py-6">
-                            <div className="flex items-center justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                              {/* Proof Link */}
-                              {payment.proof_url && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => window.open(payment.proof_url, '_blank')} className="size-9 rounded-xl hover:bg-blue-50 text-slate-400 hover:text-blue-500">
-                                      <ExternalLink size={16} />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Bukti Bayar</TooltipContent>
-                                </Tooltip>
-                              )}
-
-                              {/* View Detail */}
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" onClick={() => setViewDialog({ open: true, payment })} className="size-9 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700">
-                                    <Eye size={16} />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Detail</TooltipContent>
-                              </Tooltip>
-
-                              {/* Verify Action */}
-                              {payment.status === 'pending' && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => setVerifyDialog({ open: true, payment })} className="size-9 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white">
-                                      <CheckCircle2 size={16} />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Verifikasi</TooltipContent>
-                                </Tooltip>
-                              )}
-                            </div>
-                          </td>
-                        </motion.tr>
-                      ))
-                    )}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* View Dialog */}
-        <Dialog open={viewDialog.open} onOpenChange={(open) => setViewDialog({ open, payment: open ? viewDialog.payment : null })}>
-          <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden bg-white dark:bg-slate-900 border-none max-w-lg">
-            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-border">
-              <DialogTitle className="text-xl font-black uppercase tracking-tight">Payment Detail</DialogTitle>
-            </DialogHeader>
-            {viewDialog.payment && (
-              <div className="p-8 space-y-6">
-                <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-3xl flex flex-col items-center justify-center text-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Total Amount</span>
-                  <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{formatCurrency(viewDialog.payment.amount)}</span>
-                  <div className="mt-4">{getStatusBadge(viewDialog.payment.status)}</div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <Label className="uppercase text-[10px] font-black tracking-widest text-slate-400">Proyek</Label>
-                    <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{viewDialog.payment.project_name}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="uppercase text-[10px] font-black tracking-widest text-slate-400">Client</Label>
-                    <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{viewDialog.payment.client_name}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="uppercase text-[10px] font-black tracking-widest text-slate-400">Date</Label>
-                    <p className="font-bold text-sm text-slate-900 dark:text-white">{formatDate(viewDialog.payment.payment_date)}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="uppercase text-[10px] font-black tracking-widest text-slate-400">Method</Label>
-                    <p className="font-bold text-sm text-slate-900 dark:text-white">{viewDialog.payment.payment_method || '-'}</p>
-                  </div>
-                </div>
-
-                {viewDialog.payment.notes && (
-                  <div className="bg-amber-50 dark:bg-amber-500/5 border border-amber-100 dark:border-amber-500/10 p-4 rounded-xl">
-                    <Label className="uppercase text-[10px] font-black tracking-widest text-amber-500 mb-1 block">Notes</Label>
-                    <p className="text-sm font-medium text-amber-900 dark:text-amber-200">{viewDialog.payment.notes}</p>
-                  </div>
-                )}
-              </div>
-            )}
-            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-border">
-              <Button onClick={() => setViewDialog({ open: false, payment: null })} className="w-full rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold">Close Details</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Verify Dialog */}
-        <Dialog open={verifyDialog.open} onOpenChange={(open) => { setVerifyDialog({ open, payment: open ? verifyDialog.payment : null }); if (!open) setVerifyNotes(''); }}>
-          <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden bg-white dark:bg-slate-900 border-none max-w-lg">
-            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-border">
-              <DialogTitle className="text-xl font-black uppercase tracking-tight">Verifikasi Pembayaran</DialogTitle>
-              <DialogDescription className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                {verifyDialog.payment?.project_name}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="p-8 space-y-4">
-              <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl flex justify-between items-center">
-                <span className="font-bold text-sm text-slate-500">Amount to Verify</span>
-                <span className="font-black text-xl text-slate-900 dark:text-white">{formatCurrency(verifyDialog.payment?.amount)}</span>
-              </div>
-              <div className="space-y-2">
-                <Label className="uppercase text-[10px] font-black tracking-widest text-slate-500">Catatan (Optional)</Label>
-                <Textarea
-                  value={verifyNotes}
-                  onChange={e => setVerifyNotes(e.target.value)}
-                  className="rounded-xl bg-slate-50 dark:bg-card/20 border-slate-200 dark:border-white/10 min-h-[100px]"
-                  placeholder="Tambahkan catatan verifikasi..."
-                />
-              </div>
-            </div>
-            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-border gap-3">
-              <Button variant="outline" onClick={() => setVerifyDialog({ open: false, payment: null })} className="flex-1 rounded-xl h-12 font-bold hover:bg-slate-100">Cancel</Button>
-              <Button variant="destructive" onClick={() => handleVerify('reject')} disabled={verifying} className="flex-1 rounded-xl h-12 font-bold bg-rose-500 hover:bg-rose-600 text-white">
-                {verifying ? <Loader2 className="animate-spin" /> : 'Tolak'}
-              </Button>
-              <Button onClick={() => handleVerify('approve')} disabled={verifying} className="flex-1 rounded-xl h-12 font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20">
-                {verifying ? <Loader2 className="animate-spin" /> : 'Verifikasi'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-      </TooltipProvider>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setSelectedPayment(null)} className="rounded-xl font-bold flex-1">Batal</Button>
+            <Button
+              onClick={handleProcess}
+              disabled={processing}
+              className={`rounded-xl font-bold flex-1 ${actionType === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-white`}
+            >
+              {processing ? 'Proses...' : (actionType === 'approve' ? 'Konfirmasi' : 'Tolak')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
 
-function StatSimple({ title, value, icon, color, bg, isCurrency }) {
+function StatCard({ label, value, icon, bg, color, onClick, active }) {
   return (
-    <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-4 transition-all hover:scale-105">
-      <div className={`size-12 rounded-2xl flex items-center justify-center ${bg} ${color} shadow-lg shadow-current/5`}>
-        {icon}
+    <div
+      onClick={onClick}
+      className={`
+            h-24 min-w-[140px] rounded-[1.5rem] p-4 flex flex-col justify-between cursor-pointer transition-all
+            ${active ? 'ring-2 ring-primary ring-offset-2' : 'border border-transparent'}
+            ${bg}
+          `}
+    >
+      <div className="flex justify-between items-start">
+        <div className={`p-2 rounded-xl bg-white/50 backdrop-blur-sm ${color}`}>{icon}</div>
+        <span className={`text-2xl font-black ${color}`}>{value}</span>
       </div>
-      <div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1.5">{title}</p>
-        <p className={`font-black tracking-tighter leading-none ${isCurrency ? 'text-lg' : 'text-2xl'}`}>{value}</p>
-      </div>
+      <span className={`text-[10px] font-black uppercase tracking-widest opacity-80 ${color}`}>{label}</span>
     </div>
-  );
+  )
 }
-
-

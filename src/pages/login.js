@@ -54,9 +54,10 @@ export default function LoginPage() {
   // ✅ OPTIMIZED: Redirect jika sudah login
   useEffect(() => {
     if (user && profile) {
-      console.log("✅ Already logged in, redirecting...");
+      console.log(`✅ Already logged in as ${profile.role}, redirecting...`);
       const redirectPaths = {
         'admin_team': '/dashboard/admin-team',
+        'admin': '/dashboard/admin', // New Admin Role
         'admin_lead': '/dashboard/admin-lead',
         'head_consultant': '/dashboard/head-consultant',
         'superadmin': '/dashboard/superadmin',
@@ -67,6 +68,7 @@ export default function LoginPage() {
       };
 
       const redirectPath = redirectPaths[profile.role] || '/dashboard';
+      console.log(`🚀 Final redirectPath: ${redirectPath}`);
       router.replace(redirectPath);
     }
   }, [user, profile, router]);

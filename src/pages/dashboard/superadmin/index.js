@@ -78,7 +78,7 @@ const getRoleBadge = (role) => {
     head_consultant: { label: 'Kepala Konsultan', variant: 'default' },
     admin_lead: { label: 'Kepala Admin', variant: 'default' },
     project_lead: { label: 'Kepala Proyek', variant: 'secondary' },
-    admin_team: { label: 'Tim Admin', variant: 'secondary' },
+    admin_team: { label: 'Admin Team', variant: 'secondary' },
     inspector: { label: 'Inspektur', variant: 'outline' },
     drafter: { label: 'Drafter', variant: 'outline' },
     client: { label: 'Klien', variant: 'outline' },

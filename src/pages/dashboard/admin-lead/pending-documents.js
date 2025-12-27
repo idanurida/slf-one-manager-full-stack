@@ -309,7 +309,7 @@ export default function PendingDocumentsPage() {
         sender_id: user.id,
         type: 'project_created',
         message: `Proyek "${projectForm.name}" telah dibuat. Dokumen Anda telah ditautkan.`,
-        read: false,
+        is_read: false,
         project_id: newProject.id,
         created_at: new Date().toISOString()
       }]);
@@ -354,7 +354,7 @@ export default function PendingDocumentsPage() {
           sender_id: user.id,
           type: 'documents_linked',
           message: `${selectedDocuments.length} dokumen telah ditautkan ke proyek "${project?.name}"`,
-          read: false,
+          is_read: false,
           project_id: selectedProjectToLink,
           created_at: new Date().toISOString()
         }]);
@@ -445,7 +445,7 @@ export default function PendingDocumentsPage() {
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
           <Loader2 className="w-12 h-12 animate-spin text-[#7c3aed]" />
-          <p className="mt-6 text-[10px] font-bold tracking-[0.3em] text-slate-400 animate-pulse">Syncing verification hub...</p>
+          <p className="mt-6 text-[10px] font-bold tracking-[0.3em] text-slate-400 animate-pulse">Sinkronisasi pusat verifikasi...</p>
         </div>
       </DashboardLayout>
     );
@@ -464,13 +464,13 @@ export default function PendingDocumentsPage() {
           <motion.div variants={itemVariants} className="flex flex-col items-start">
             <div className="flex items-center gap-3 mb-4">
               <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-none text-[8px] font-bold tracking-widest px-2 py-0.5 rounded-md">
-                Process management
+                Manajemen Berkas
               </Badge>
               <div className="w-1 h-1 rounded-full bg-slate-300" />
-              <span className="text-[10px] font-bold tracking-widest text-slate-400">Incoming files</span>
+              <span className="text-[10px] font-bold tracking-widest text-slate-400">Berkas masuk</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
-              Pending <span className="text-[#7c3aed]">documents</span>
+              Dokumen <span className="text-[#7c3aed]">Tertunda</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-4 text-sm md:text-lg font-medium max-w-2xl leading-relaxed">
               Hub sentral untuk meninjau berkas masuk dari partner dan meneruskannya ke proyek aktif.
@@ -500,46 +500,7 @@ export default function PendingDocumentsPage() {
           </motion.div>
         </motion.div>
 
-        {/* Stats Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
-        >
-          <StatSimple
-            title="Total pending"
-            value={documents.length}
-            icon={<FileText size={18} />}
-            color="text-[#7c3aed]"
-            bg="bg-[#7c3aed]/10"
-            delay={0.1}
-          />
-          <StatSimple
-            title="Client mengantri"
-            value={Object.keys(groupedByClient).length}
-            icon={<Building2 size={18} />}
-            color="text-blue-500"
-            bg="bg-blue-500/10"
-            delay={0.2}
-          />
-          <StatSimple
-            title="Terpilih"
-            value={selectedDocuments.length}
-            icon={<CheckCircle2 size={18} />}
-            color="text-emerald-500"
-            bg="bg-emerald-500/10"
-            delay={0.3}
-          />
-          <StatSimple
-            title="Status sistem"
-            value="Siaga"
-            icon={<RefreshCw size={18} />}
-            color="text-slate-500"
-            bg="bg-slate-500/10"
-            delay={0.4}
-          />
-        </motion.div>
+
 
         {/* Main Content Area */}
         <motion.div
@@ -558,8 +519,8 @@ export default function PendingDocumentsPage() {
                 <CheckCircle2 size={40} />
               </div>
               <div>
-                <h3 className="text-3xl font-black tracking-tighter mb-2">Queue clear</h3>
-                <p className="text-slate-500 font-medium max-w-md mx-auto">Tidak ada dokumen pending dari client Anda saat ini. Semua dokumen telah diproses atau belum ada upload baru.</p>
+                <h3 className="text-3xl font-black tracking-tighter mb-2">Antrian Bersih</h3>
+                <p className="text-slate-500 font-medium max-w-md mx-auto">Tidak ada dokumen tertunda dari klien Anda saat ini. Semua dokumen telah diproses atau belum ada unggahan baru.</p>
               </div>
               <Button
                 variant="outline"
@@ -581,7 +542,7 @@ export default function PendingDocumentsPage() {
                     key={clientId}
                     className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/40 dark:shadow-none overflow-hidden"
                   >
-                    <div className="p-8 border-b border-border bg-slate-50/50 dark:bg-white/[0.02]">
+                    <div className="p-8 border-b border-border bg-muted/30">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-start gap-5">
                           <div className="size-16 rounded-2xl bg-[#7c3aed] text-white flex items-center justify-center shadow-lg shadow-[#7c3aed]/20">
@@ -589,7 +550,7 @@ export default function PendingDocumentsPage() {
                           </div>
                           <div>
                             <div className="flex items-center gap-3 mb-1">
-                              <h3 className="text-xl font-bold tracking-tight">{data.clientIdentity?.company_name || 'Individual partner'}</h3>
+                              <h3 className="text-xl font-bold tracking-tight">{data.clientIdentity?.company_name || 'Mitra Individual'}</h3>
                               <Badge className="bg-[#7c3aed] text-white border-none text-[9px] font-bold tracking-widest">{data.applicationType || 'SLF'}</Badge>
                             </div>
                             <p className="text-xs font-bold text-slate-400 tracking-widest flex items-center gap-2">
@@ -608,7 +569,7 @@ export default function PendingDocumentsPage() {
                           <Button
                             onClick={() => selectAllFromClient(clientId)}
                             variant="ghost"
-                            className="h-10 px-4 rounded-xl text-slate-500 hover:text-[#7c3aed] bg-slate-100 dark:bg-white/5"
+                            className="h-10 px-4 rounded-xl text-slate-500 hover:text-[#7c3aed] bg-muted/50"
                           >
                             <Checkbox checked={allSelected} className="mr-2 rounded-[4px]" />
                             <span className="font-bold text-[10px] tracking-widest">{allSelected ? 'Batal' : 'Pilih semua'}</span>
@@ -619,7 +580,7 @@ export default function PendingDocumentsPage() {
 
                     <div className="p-8">
                       {data.buildingInfo && (
-                        <div className="mb-8 p-6 bg-slate-50 dark:bg-card/20 rounded-3xl border border-border grid md:grid-cols-3 gap-8">
+                        <div className="mb-8 p-6 bg-muted/50 rounded-3xl border border-border grid md:grid-cols-3 gap-8">
                           <div>
                             <p className="text-[9px] font-bold tracking-widest text-slate-400 mb-2">Nama gedung</p>
                             <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{data.buildingInfo.buildingName}</p>
@@ -637,9 +598,9 @@ export default function PendingDocumentsPage() {
 
                       <div className="border border-border rounded-3xl overflow-hidden transition-all">
                         {/* Mobile Card View */}
-                        <div className="md:hidden bg-slate-50/50 dark:bg-white/[0.02]">
+                        <div className="md:hidden bg-card">
                           {data.documents.map(doc => (
-                            <div key={doc.id} className="p-4 border-b border-border last:border-0 hover:bg-white dark:hover:bg-white/5 transition-colors">
+                            <div key={doc.id} className="p-4 border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
                               <div className="flex items-start gap-3">
                                 <Checkbox
                                   checked={selectedDocuments.includes(doc.id)}
@@ -691,7 +652,7 @@ export default function PendingDocumentsPage() {
                         {/* Desktop Table View */}
                         <div className="hidden md:block overflow-x-auto relative scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
                           <Table className="min-w-[800px]">
-                            <TableHeader className="bg-slate-50/50 dark:bg-white/5">
+                            <TableHeader className="bg-muted/50">
                               <TableRow className="border-b border-border">
                                 <TableHead className="w-16 text-center">
                                   <span className="sr-only">Select</span>
@@ -704,7 +665,7 @@ export default function PendingDocumentsPage() {
                             </TableHeader>
                             <TableBody>
                               {data.documents.map(doc => (
-                                <TableRow key={doc.id} className="border-b border-border last:border-0 hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-colors">
+                                <TableRow key={doc.id} className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
                                   <TableCell className="text-center">
                                     <Checkbox
                                       checked={selectedDocuments.includes(doc.id)}
@@ -777,10 +738,10 @@ export default function PendingDocumentsPage() {
               <PlusCircle size={120} strokeWidth={1} />
             </div>
             <DialogHeader>
-              <Badge className="w-fit bg-white/20 hover:bg-white/20 text-white border-none text-[9px] font-bold tracking-widest mb-4">New workflow</Badge>
+              <Badge className="w-fit bg-white/20 hover:bg-white/20 text-white border-none text-[9px] font-bold tracking-widest mb-4">Alur Baru</Badge>
               <DialogTitle className="text-3xl font-bold tracking-tighter leading-none">Inisiasi <span className="opacity-70">proyek baru</span></DialogTitle>
               <DialogDescription className="text-white/80 font-medium text-sm mt-2 max-w-sm">
-                Membuat environment kerja baru dan secara otomatis menautkan {selectedDocuments.length} dokumen yang dipilih.
+                Membuat lingkungan kerja baru dan secara otomatis menautkan {selectedDocuments.length} dokumen yang dipilih.
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -790,7 +751,7 @@ export default function PendingDocumentsPage() {
               <div className="space-y-3">
                 <Label className="text-[10px] font-bold tracking-widest text-[#7c3aed] px-1">Nama proyek *</Label>
                 <Input
-                  className="h-14 bg-slate-50 dark:bg-white/5 border-border rounded-2xl px-6 focus:ring-4 focus:ring-[#7c3aed]/10 transition-all font-bold text-xs tracking-tight placeholder:font-bold"
+                  className="h-14 bg-muted/50 border-border rounded-2xl px-6 focus:ring-4 focus:ring-[#7c3aed]/10 transition-all font-bold text-xs tracking-tight placeholder:font-bold"
                   placeholder="Contoh: Gedung Perkantoran ABC"
                   value={projectForm.name}
                   onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })}
@@ -801,7 +762,7 @@ export default function PendingDocumentsPage() {
                 <div className="space-y-3">
                   <Label className="text-[10px] font-bold tracking-widest text-slate-400 px-1">Jenis layanan</Label>
                   <Select value={projectForm.application_type} onValueChange={(v) => setProjectForm({ ...projectForm, application_type: v })}>
-                    <SelectTrigger className="h-14 bg-slate-50 dark:bg-white/5 border-border rounded-2xl px-6 font-bold text-[10px] tracking-widest">
+                    <SelectTrigger className="h-14 bg-muted/50 border-border rounded-2xl px-6 font-bold text-[10px] tracking-widest">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl">
@@ -813,7 +774,7 @@ export default function PendingDocumentsPage() {
                 <div className="space-y-3">
                   <Label className="text-[10px] font-bold tracking-widest text-slate-400 px-1">Kota</Label>
                   <Input
-                    className="h-14 bg-slate-50 dark:bg-white/5 border-border rounded-2xl px-6 font-bold text-xs tracking-tight"
+                    className="h-14 bg-muted/50 border-border rounded-2xl px-6 font-bold text-xs tracking-tight"
                     value={projectForm.city}
                     onChange={(e) => setProjectForm({ ...projectForm, city: e.target.value })}
                   />
@@ -823,7 +784,7 @@ export default function PendingDocumentsPage() {
               <div className="space-y-3">
                 <Label className="text-[10px] font-bold tracking-widest text-slate-400 px-1">Alamat bangunan</Label>
                 <Textarea
-                  className="min-h-[100px] bg-slate-50 dark:bg-white/5 border-border rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#7c3aed]/10 transition-all font-bold text-xs"
+                  className="min-h-[100px] bg-muted/50 border-border rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#7c3aed]/10 transition-all font-bold text-xs"
                   placeholder="Alamat lengkap..."
                   value={projectForm.address}
                   onChange={(e) => setProjectForm({ ...projectForm, address: e.target.value })}
@@ -832,10 +793,10 @@ export default function PendingDocumentsPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4 border-t border-border">
-              <Button variant="ghost" onClick={() => setCreateProjectDialog(false)} className="w-full sm:flex-1 h-14 rounded-2xl font-bold text-[10px] tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-600">Batal operasi</Button>
+              <Button variant="ghost" onClick={() => setCreateProjectDialog(false)} className="w-full sm:flex-1 h-14 rounded-2xl font-bold text-[10px] tracking-widest text-slate-400 hover:bg-muted hover:text-slate-600">Batal operasi</Button>
               <Button onClick={handleCreateProject} disabled={creating || !projectForm.name} className="w-full sm:flex-[2] h-14 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-2xl font-bold text-[10px] tracking-widest shadow-xl shadow-[#7c3aed]/20 transition-all">
                 {creating ? <Loader2 className="animate-spin mr-2" size={16} /> : <Sparkles className="mr-2" size={16} />}
-                Create & link data
+                Buat & tautkan data
               </Button>
             </div>
           </div>
@@ -902,23 +863,5 @@ export default function PendingDocumentsPage() {
 }
 
 // Sub-components
-function StatSimple({ title, value, icon, color, bg, delay = 0 }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: delay, duration: 0.4 }}
-      className="flex items-center gap-4 bg-card p-5 rounded-[2rem] border border-border shadow-xl shadow-slate-200/30 dark:shadow-none transition-all hover:scale-105 group"
-    >
-      <div className={`size-12 rounded-2xl flex items-center justify-center ${bg} ${color} group-hover:scale-110 transition-transform`}>
-        {icon}
-      </div>
-      <div className="flex flex-col">
-        <span className="text-[9px] font-bold text-slate-400 tracking-widest leading-none mb-1">{title}</span>
-        <span className="text-2xl font-black leading-none tracking-tighter text-slate-900 dark:text-white">{value}</span>
-      </div>
-    </motion.div>
-  );
-}
 
 

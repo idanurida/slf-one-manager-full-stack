@@ -320,14 +320,14 @@ export default function AdminLeadTimelinePage() {
             </div>
 
             <div className="bg-card p-2 rounded-2xl border border-border shadow-lg shadow-slate-200/20 dark:shadow-none flex items-center gap-2">
-              <div className="px-4 py-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-border">
+              <div className="px-4 py-2 bg-muted rounded-xl border border-border">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Active Project</span>
                 <div className="flex items-center gap-2 mt-1">
                   <Building size={14} className="text-[#7c3aed]" />
                   <span className="font-bold text-xs truncate max-w-[150px]">{selectedProject?.name || 'No Project Selected'}</span>
                 </div>
               </div>
-              <div className="h-10 w-px bg-slate-100 dark:bg-white/10 mx-2" />
+              <div className="h-10 w-px bg-border mx-2" />
               <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
                 <SelectTrigger className="w-[200px] h-12 border-none bg-transparent focus:ring-0 text-right font-bold">
                   <SelectValue placeholder="Ganti Proyek" />
@@ -351,7 +351,7 @@ export default function AdminLeadTimelinePage() {
                 value={phases.length}
                 icon={<LayoutDashboard size={18} />}
                 color="text-slate-500"
-                bg="bg-slate-100 dark:bg-white/5"
+                bg="bg-muted"
               />
               <StatSimple
                 title="Selesai"
@@ -381,7 +381,7 @@ export default function AdminLeadTimelinePage() {
           <motion.div variants={itemVariants}>
             {!selectedProject ? (
               <div className="py-24 bg-card rounded-[2.5rem] border border-border flex flex-col items-center justify-center text-center">
-                <div className="size-20 bg-slate-50 dark:bg-white/5 rounded-[2rem] flex items-center justify-center text-slate-300 dark:text-slate-600 mb-6">
+                <div className="size-20 bg-muted rounded-[2rem] flex items-center justify-center text-muted-foreground mb-6">
                   <Calendar size={32} />
                 </div>
                 <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white">Pilih Proyek</h3>
@@ -441,11 +441,11 @@ export default function AdminLeadTimelinePage() {
                           <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-6 line-clamp-2">{phase.description || 'Tidak ada deskripsi'}</p>
 
                           <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div className="bg-slate-50 dark:bg-card/20 p-3 rounded-2xl">
+                            <div className="bg-muted/50 p-3 rounded-2xl">
                               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Estimasi</span>
                               <span className="text-sm font-bold">{phase.estimated_duration} Hari</span>
                             </div>
-                            <div className="bg-slate-50 dark:bg-card/20 p-3 rounded-2xl">
+                            <div className="bg-muted/50 p-3 rounded-2xl">
                               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Mulai</span>
                               <span className="text-sm font-bold">{formatDate(phase.start_date)}</span>
                             </div>
@@ -475,7 +475,7 @@ export default function AdminLeadTimelinePage() {
                             ? 'bg-[#7c3aed] border-white dark:border-slate-950 ring-4 ring-[#7c3aed]/20'
                             : isCompleted
                               ? 'bg-emerald-500 border-white dark:border-slate-950 ring-4 ring-emerald-500/20'
-                              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700'
+                              : 'bg-background border-border'
                           }
                               `}>
                           {isCompleted ? <CheckCircle2 size={16} className="text-white" /> :
@@ -496,8 +496,8 @@ export default function AdminLeadTimelinePage() {
 
         {/* Edit Dialog */}
         <Dialog open={editDialog.open} onOpenChange={(open) => !saving && setEditDialog({ open, phase: open ? editDialog.phase : null })}>
-          <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden bg-white dark:bg-slate-900 border-none max-w-lg">
-            <DialogHeader className="p-8 pb-4 bg-slate-50/50 dark:bg-white/5 border-b border-border">
+          <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden bg-background border-none max-w-lg">
+            <DialogHeader className="p-8 pb-4 bg-muted/50 border-b border-border">
               <DialogTitle className="text-xl font-black uppercase tracking-tight">Edit Fase Pengerjaan</DialogTitle>
               <DialogDescription className="text-xs font-bold uppercase tracking-widest text-slate-400">Update status dan detail timeline proyek</DialogDescription>
             </DialogHeader>
@@ -508,7 +508,7 @@ export default function AdminLeadTimelinePage() {
                 <Input
                   value={editForm.phase_name}
                   onChange={(e) => setEditForm({ ...editForm, phase_name: e.target.value })}
-                  className="rounded-xl h-12 bg-slate-50 dark:bg-card/20 border-slate-200 dark:border-white/10 font-bold"
+                  className="rounded-xl h-12 bg-muted/50 border-border font-bold"
                 />
               </div>
 
@@ -519,13 +519,13 @@ export default function AdminLeadTimelinePage() {
                     type="number"
                     value={editForm.estimated_duration}
                     onChange={(e) => setEditForm({ ...editForm, estimated_duration: e.target.value })}
-                    className="rounded-xl h-12 bg-slate-50 dark:bg-card/20 border-slate-200 dark:border-white/10 font-bold"
+                    className="rounded-xl h-12 bg-muted/50 border-border font-bold"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="uppercase text-[10px] font-black tracking-widest text-slate-500">Status</Label>
                   <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
-                    <SelectTrigger className="rounded-xl h-12 bg-slate-50 dark:bg-card/20 border-slate-200 dark:border-white/10 font-bold">
+                    <SelectTrigger className="rounded-xl h-12 bg-muted/50 border-border font-bold">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -548,7 +548,7 @@ export default function AdminLeadTimelinePage() {
               </div>
             </div>
 
-            <DialogFooter className="p-8 pt-4 bg-slate-50/50 dark:bg-white/5 border-t border-border gap-3">
+            <DialogFooter className="p-8 pt-4 bg-muted/50 border-t border-border gap-3">
               <Button variant="outline" onClick={() => setEditDialog({ open: false, phase: null })} className="rounded-xl h-12 font-black text-[10px] uppercase tracking-widest flex-1">
                 Batal
               </Button>

@@ -195,7 +195,7 @@ export default function AdminTeamDashboard() {
         <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
-              Tim <span className="text-[#7c3aed]">admin</span>
+              Admin <span className="text-[#7c3aed]">Team</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-4 text-lg font-medium italic">
               "Halo, {profile?.full_name?.split(' ')[0] || 'Admin'}. Fokus kita hari ini: Verifikasi & Koordinasi."

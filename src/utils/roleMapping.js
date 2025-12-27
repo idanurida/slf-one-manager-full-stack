@@ -12,6 +12,7 @@ export const DB_ROLES = {
   HEAD_CONSULTANT: 'head_consultant',
   ADMIN_LEAD: 'admin_lead',
   ADMIN_TEAM: 'admin_team',
+  ADMIN: 'admin',
   PROJECT_LEAD: 'project_lead', // Database value
   INSPECTOR: 'inspector',
   DRAFTER: 'drafter',
@@ -24,6 +25,7 @@ export const UI_ROLES = {
   HEAD_CONSULTANT: 'head_consultant',
   ADMIN_LEAD: 'admin_lead',
   ADMIN_TEAM: 'admin_team',
+  ADMIN: 'admin',
   TEAM_LEADER: 'team_leader', // UI display value
   INSPECTOR: 'inspector',
   DRAFTER: 'drafter',
@@ -47,13 +49,14 @@ export const ROLE_DISPLAY_LABELS = {
   [DB_ROLES.HEAD_CONSULTANT]: 'Head Consultant',
   [DB_ROLES.ADMIN_LEAD]: 'Admin Lead',
   [DB_ROLES.ADMIN_TEAM]: 'Admin Team',
+  [DB_ROLES.ADMIN]: 'Admin',
   [DB_ROLES.PROJECT_LEAD]: 'Team Leader', // Tampilkan sebagai Team Leader
   [DB_ROLES.INSPECTOR]: 'Inspector',
   [DB_ROLES.DRAFTER]: 'Drafter',
   [DB_ROLES.CLIENT]: 'Klien',
-  
+
   // Tambahkan juga UI_ROLES untuk konsistensi di getRoleDisplayLabel
-  [UI_ROLES.TEAM_LEADER]: 'Team Leader', 
+  [UI_ROLES.TEAM_LEADER]: 'Team Leader',
 };
 
 // URL path mapping (URL yang digunakan di browser)
@@ -62,13 +65,14 @@ export const ROLE_URL_PATHS = {
   [DB_ROLES.HEAD_CONSULTANT]: 'head-consultant',
   [DB_ROLES.ADMIN_LEAD]: 'admin-lead',
   [DB_ROLES.ADMIN_TEAM]: 'admin-team',
+  [DB_ROLES.ADMIN]: 'admin',
   [DB_ROLES.PROJECT_LEAD]: 'team-leader', // DB project_lead -> URL team-leader
   [DB_ROLES.INSPECTOR]: 'inspector',
   [DB_ROLES.DRAFTER]: 'drafter',
   [DB_ROLES.CLIENT]: 'client',
-  
+
   // Tambahkan UI_ROLES.TEAM_LEADER untuk konsistensi
-  [UI_ROLES.TEAM_LEADER]: 'team-leader', 
+  [UI_ROLES.TEAM_LEADER]: 'team-leader',
 };
 
 // Reverse URL path to DB role
@@ -77,11 +81,12 @@ export const URL_PATH_TO_DB_ROLE = {
   'head-consultant': DB_ROLES.HEAD_CONSULTANT,
   'admin-lead': DB_ROLES.ADMIN_LEAD,
   'admin-team': DB_ROLES.ADMIN_TEAM,
+  'admin': DB_ROLES.ADMIN,
   'team-leader': DB_ROLES.PROJECT_LEAD, // URL team-leader -> DB project_lead
   'inspector': DB_ROLES.INSPECTOR,
   'drafter': DB_ROLES.DRAFTER,
   'client': DB_ROLES.CLIENT,
-  
+
   // Hapus 'project-lead': 'project_lead' untuk menghindari duplikasi URL
   // Jika ini diperlukan, pastikan URL asli tidak pernah digunakan lagi.
 };
@@ -99,7 +104,7 @@ export const dbRoleToUI = (dbRole) => {
   if (!dbRole) return null;
   const lowerRole = dbRole.toLowerCase();
   // Menggunakan map jika ada, jika tidak, gunakan nilai DB_ROLE
-  return DB_TO_UI_ROLE_MAP[lowerRole] || lowerRole; 
+  return DB_TO_UI_ROLE_MAP[lowerRole] || lowerRole;
 };
 
 /**
@@ -280,7 +285,7 @@ export const getRoleSelectOptions = (includeClient = false, includeSuperAdmin = 
   const options = [];
 
   // PENTING: Value harus menggunakan DB_ROLES, karena inilah yang akan dikirim saat submit form.
-  
+
   if (includeSuperAdmin) {
     options.push({ value: DB_ROLES.SUPERADMIN, label: ROLE_DISPLAY_LABELS.superadmin });
   }
@@ -289,8 +294,9 @@ export const getRoleSelectOptions = (includeClient = false, includeSuperAdmin = 
     { value: DB_ROLES.HEAD_CONSULTANT, label: ROLE_DISPLAY_LABELS.head_consultant },
     { value: DB_ROLES.ADMIN_LEAD, label: ROLE_DISPLAY_LABELS.admin_lead },
     { value: DB_ROLES.ADMIN_TEAM, label: ROLE_DISPLAY_LABELS.admin_team },
+    { value: DB_ROLES.ADMIN, label: ROLE_DISPLAY_LABELS.admin },
     // Value tetap project_lead (DB), label Team Leader (UI)
-    { value: DB_ROLES.PROJECT_LEAD, label: ROLE_DISPLAY_LABELS.project_lead }, 
+    { value: DB_ROLES.PROJECT_LEAD, label: ROLE_DISPLAY_LABELS.project_lead },
     { value: DB_ROLES.INSPECTOR, label: ROLE_DISPLAY_LABELS.inspector },
     { value: DB_ROLES.DRAFTER, label: ROLE_DISPLAY_LABELS.drafter },
   );
@@ -326,8 +332,8 @@ export const getTeamRoleOptions = () => [
 export const isValidRole = (role) => {
   if (!role) return false;
   const lowerRole = role.toLowerCase();
-  return Object.values(DB_ROLES).includes(lowerRole) || 
-           Object.values(UI_ROLES).includes(lowerRole);
+  return Object.values(DB_ROLES).includes(lowerRole) ||
+    Object.values(UI_ROLES).includes(lowerRole);
 };
 
 /**
@@ -361,13 +367,13 @@ export default {
   UI_ROLES,
   ROLE_DISPLAY_LABELS,
   ROLE_URL_PATHS,
-  
+
   // Transformations
   dbRoleToUI,
   uiRoleToDB,
   toUIDisplay,
   toDatabaseFormat,
-  
+
   // Helpers
   getRoleDisplayLabel,
   getRoleUrlPath,
@@ -378,7 +384,7 @@ export default {
   getTeamRoleOptions,
   isValidRole,
   normalizeRole,
-  
+
   // Backward compatibility
   projectLeadToTeamLeader,
   teamLeaderToProjectLead,

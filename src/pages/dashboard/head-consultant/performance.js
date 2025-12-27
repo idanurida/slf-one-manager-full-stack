@@ -342,36 +342,7 @@ export default function HeadConsultantPerformancePage() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Inspektur"
-            value={performanceData.inspectors.length}
-            icon={Users}
-            color="text-primary"
-            subtitle="Personel lapangan"
-          />
-          <StatCard
-            title="Project Leads"
-            value={performanceData.projectLeads.length}
-            icon={User}
-            color="text-status-yellow"
-            subtitle="Manajer proyek"
-          />
-          <StatCard
-            title="Total Laporan"
-            value={performanceData.overall.total_reports || 0}
-            icon={FileText}
-            color="text-status-green"
-            subtitle="Dokumen teknis"
-          />
-          <StatCard
-            title="Total Proyek"
-            value={performanceData.overall.total_projects || 0}
-            icon={Building}
-            color="text-indigo-500"
-            subtitle="Inisiatif berjalan"
-          />
-        </div>
+
 
         {/* Filters */}
         <div className="p-6 rounded-2xl bg-card border border-border shadow-sm">
@@ -512,31 +483,4 @@ export default function HeadConsultantPerformancePage() {
   );
 }
 
-function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
-  return (
-    <div className="rounded-2xl bg-card p-6 border border-border shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
-      <div className="flex items-start justify-between relative z-10">
-        <div>
-          <p className="text-sm font-bold text-text-secondary-light">{title}</p>
-          <h3 className="mt-2 text-3xl font-display font-black text-foreground tracking-tighter">{value}</h3>
-          {subtitle && <p className="text-sm font-medium text-muted-foreground mt-1 opacity-70">{subtitle}</p>}
-        </div>
-        <div className={`rounded-xl p-3 bg-muted border border-border transition-transform group-hover:scale-110 ${color}`}>
-          <Icon size={20} />
-        </div>
-      </div>
-      {trend && (
-        <div className="mt-4 flex items-center gap-1.5 relative z-10">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-xs font-bold border border-status-green/20">
-            <TrendingUp size={12} />
-            <span>+{trend}%</span>
-          </div>
-          <span className="text-xs font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
-        </div>
-      )}
-      <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-[2.5] translate-x-1/4 translate-y-1/4 ${color}`}>
-        <Icon size={60} />
-      </div>
-    </div>
-  );
-}
+

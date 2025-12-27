@@ -24,7 +24,7 @@ const RecoveryCenter = () => {
     const { data, error } = await supabase
       .from("logs")
       .select("*")
-      .order("timestamp", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(50);
     if (!error) setLogs(data || []);
     setLoading(false);
@@ -199,10 +199,10 @@ const RecoveryCenter = () => {
                           <TableCell className="font-medium">
                             <div className="flex flex-col">
                               <span className="text-sm">
-                                {new Date(log.timestamp).toLocaleDateString('id-ID')}
+                                {new Date(log.created_at).toLocaleDateString('id-ID')}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                {new Date(log.timestamp).toLocaleTimeString('id-ID')}
+                                {new Date(log.created_at).toLocaleTimeString('id-ID')}
                               </span>
                             </div>
                           </TableCell>

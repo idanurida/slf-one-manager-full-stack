@@ -136,20 +136,7 @@ const InspectorChecklistDashboard = () => {
     }
   }, [user, isInspector, toast]);
 
-  // Stats calculation
-  const stats = useMemo(() => {
-    const total = inspections.length;
-    const scheduled = inspections.filter(i => i.status === 'scheduled').length;
-    const inProgress = inspections.filter(i => i.status === 'in_progress').length;
-    const completed = inspections.filter(i => i.status === 'completed').length;
-    const today = inspections.filter(i => {
-      const inspectionDate = new Date(i.scheduled_date);
-      const today = new Date();
-      return inspectionDate.toDateString() === today.toDateString();
-    }).length;
 
-    return { total, scheduled, inProgress, completed, today };
-  }, [inspections]);
 
   // Filter inspections
   const filteredInspections = useMemo(() => {
@@ -578,72 +565,7 @@ const InspectorChecklistDashboard = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Stats Cards dengan warna soft - SESUAI GLOBAL CSS */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Total Inspections */}
-          <Card className="bg-white dark:bg-surface-dark border-blue-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-primary text-sm font-medium mb-1">Total inspeksi</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                  <p className="text-muted-foreground text-xs mt-1">Semua penugasan aktif</p>
-                </div>
-                <div className="p-3 bg-primary rounded-full">
-                  <FileText className="w-5 h-5 text-primary-foreground" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Scheduled Today */}
-          <Card className="bg-white dark:bg-surface-dark border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-secondary text-sm font-medium mb-1">Hari ini</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.today}</p>
-                  <p className="text-muted-foreground text-xs mt-1">Jadwal hari ini</p>
-                </div>
-                <div className="p-3 bg-secondary rounded-full">
-                  <Calendar className="w-5 h-5 text-secondary-foreground" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* In Progress */}
-          <Card className="bg-white dark:bg-surface-dark border-amber-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-amber-600 text-sm font-medium mb-1">Berlangsung</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.inProgress}</p>
-                  <p className="text-muted-foreground text-xs mt-1">Sedang dikerjakan</p>
-                </div>
-                <div className="p-3 bg-amber-500 rounded-full">
-                  <Activity className="w-5 h-5 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Completed */}
-          <Card className="bg-white dark:bg-surface-dark border-green-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-600 text-sm font-medium mb-1">Selesai</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.completed}</p>
-                  <p className="text-muted-foreground text-xs mt-1">Inspeksi terkirim</p>
-                </div>
-                <div className="p-3 bg-green-500 rounded-full">
-                  <CheckCircle className="w-5 h-5 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Filters Section - SESUAI GLOBAL CSS */}
         <Card className="bg-white dark:bg-surface-dark border-border shadow-sm">

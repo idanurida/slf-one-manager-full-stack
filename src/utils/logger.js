@@ -6,7 +6,7 @@ export const logActivity = async ({ type = "info", message, context = "-", detai
     const solution = getAutoSolution(message);
     await supabase.from("logs").insert([
       {
-        log_type: type,
+        type,
         message,
         context,
         details,

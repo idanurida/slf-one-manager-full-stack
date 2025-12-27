@@ -95,7 +95,7 @@ const getNotificationPriority = (type) => {
   const priorities = {
     'document_approval': 'high',
     'approval_required': 'high',
-    'task_assigned': 'medium', 
+    'task_assigned': 'medium',
     'inspection_scheduled': 'medium',
     'project_assigned': 'medium',
     'document_upload': 'low',
@@ -122,7 +122,7 @@ const getActionUrl = (type, relatedId) => {
 const NotificationCenter = () => {
   const router = useRouter();
   const { toast } = useToast();
-  
+
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -174,7 +174,7 @@ const NotificationCenter = () => {
             id,
             type,
             message,
-            read_at,
+            is_read,
             created_at,
             related_id,
             related_type,
@@ -197,12 +197,11 @@ const NotificationCenter = () => {
           title: getNotificationTitle(notif.type),
           message: notif.message,
           created_at: notif.created_at,
-          is_read: !!notif.read_at,
-          read_at: notif.read_at,
+          is_read: !!notif.is_read,
           author: notif.actors?.full_name || notif.actors?.email || 'System',
           priority: getNotificationPriority(notif.type),
           type: notif.type,
-          action_required: !notif.read_at,
+          action_required: !notif.is_read,
           action_url: getActionUrl(notif.type, notif.related_id),
           related_id: notif.related_id
         }));
@@ -235,11 +234,11 @@ const NotificationCenter = () => {
   const markAsRead = async (notificationId) => {
     try {
       setMarkingAsRead(true);
-      
+
       // Update di database
       const { error } = await supabase
         .from('notifications')
-        .update({ read_at: new Date().toISOString() })
+        .update({ is_read: true })
         .eq('id', notificationId);
 
       if (error) throw error;
@@ -247,7 +246,7 @@ const NotificationCenter = () => {
       // Update state lokal
       setNotifications(prev =>
         prev.map(n =>
-          n.id === notificationId ? { ...n, is_read: true, read_at: new Date().toISOString() } : n
+          n.id === notificationId ? { ...n, is_read: true } : n
         )
       );
 
@@ -278,15 +277,15 @@ const NotificationCenter = () => {
       // Update semua di database
       const { error } = await supabase
         .from('notifications')
-        .update({ read_at: new Date().toISOString() })
+        .update({ is_read: true })
         .eq('recipient_id', profile.id)
-        .is('read_at', null);
+        .eq('is_read', false);
 
       if (error) throw error;
 
       // Update state lokal
       setNotifications(prev =>
-        prev.map(n => ({ ...n, is_read: true, read_at: new Date().toISOString() }))
+        prev.map(n => ({ ...n, is_read: true }))
       );
 
       setUnreadCount(0);
@@ -354,7 +353,7 @@ const NotificationCenter = () => {
     if (notification.action_url) {
       router.push(notification.action_url);
     }
-    
+
     // Tandai sebagai dibaca jika belum
     if (!notification.is_read) {
       markAsRead(notification.id);
@@ -451,13 +450,13 @@ const NotificationCenter = () => {
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel>Filter Notifikasi</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => {/* Filter semua */}}>
+                      <DropdownMenuItem onClick={() => {/* Filter semua */ }}>
                         Semua Notifikasi
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => {/* Filter belum dibaca */}}>
+                      <DropdownMenuItem onClick={() => {/* Filter belum dibaca */ }}>
                         Belum Dibaca
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => {/* Filter sudah dibaca */}}>
+                      <DropdownMenuItem onClick={() => {/* Filter sudah dibaca */ }}>
                         Sudah Dibaca
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -485,11 +484,10 @@ const NotificationCenter = () => {
                       {notifications.map((notification) => (
                         <TableRow
                           key={notification.id}
-                          className={`hover:bg-accent/50 ${
-                            !notification.is_read 
-                              ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500' 
+                          className={`hover:bg-accent/50 ${!notification.is_read
+                              ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-500'
                               : ''
-                          }`}
+                            }`}
                         >
                           <TableCell>
                             <Badge variant={getStatusColor(notification.is_read)}>

@@ -72,12 +72,12 @@ const NotifikasiBell = () => {
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ is_read: true })
         .eq('id', notificationId);
 
       if (error) throw error;
-      
-      setNotifications(prev => prev.map(notif => 
+
+      setNotifications(prev => prev.map(notif =>
         notif.id === notificationId ? { ...notif, status: 'dibaca' } : notif
       ));
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -88,16 +88,16 @@ const NotifikasiBell = () => {
 
   const markAllAsRead = async () => {
     if (!user?.id) return;
-    
+
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ is_read: true })
         .eq('recipient_id', user.id)
-        .eq('read', false);
+        .eq('is_read', false);
 
       if (error) throw error;
-      
+
       setNotifications(prev => prev.map(notif => ({ ...notif, status: 'dibaca' })));
       setUnreadCount(0);
     } catch (error) {
@@ -107,7 +107,7 @@ const NotifikasiBell = () => {
 
   const handleNotificationClick = (notification) => {
     markAsRead(notification.id);
-    
+
     // Navigate based on notification type
     if (notification.project_id) {
       router.push(`/dashboard/client/projects/${notification.project_id}`);
@@ -121,8 +121,8 @@ const NotifikasiBell = () => {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -135,8 +135,8 @@ const NotifikasiBell = () => {
           <div className="flex justify-between items-center">
             <h3 className="font-semibold text-foreground">Notifikasi</h3>
             {unreadCount > 0 && (
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
                 className="text-xs h-7"
@@ -160,17 +160,15 @@ const NotifikasiBell = () => {
             </div>
           ) : (
             notifications.map(notification => (
-              <div 
+              <div
                 key={notification.id}
-                className={`p-3 border-b border-border cursor-pointer hover:bg-accent/50 transition-colors ${
-                  notification.status === 'belum_dibaca' ? 'bg-primary/5' : ''
-                }`}
+                className={`p-3 border-b border-border cursor-pointer hover:bg-accent/50 transition-colors ${notification.status === 'belum_dibaca' ? 'bg-primary/5' : ''
+                  }`}
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex gap-2">
-                  <div className={`w-2 h-2 mt-2 rounded-full flex-shrink-0 ${
-                    notification.status === 'belum_dibaca' ? 'bg-primary' : 'bg-muted'
-                  }`} />
+                  <div className={`w-2 h-2 mt-2 rounded-full flex-shrink-0 ${notification.status === 'belum_dibaca' ? 'bg-primary' : 'bg-muted'
+                    }`} />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-foreground">{notification.judul}</div>
                     <div className="text-sm text-muted-foreground line-clamp-2">{notification.pesan}</div>
@@ -189,8 +187,8 @@ const NotifikasiBell = () => {
 
         <Separator />
         <div className="p-2">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full text-sm"
             onClick={() => {
               router.push('/dashboard/notifications');

@@ -45,7 +45,7 @@ export const ContactSupport = () => {
 
       if (error) {
         console.error('Error sending support request:', error);
-        
+
         // Jika table support_requests tidak ada, buat notifikasi alternatif
         if (error.code === '42P01') {
           await createAlternativeSupportNotification();
@@ -61,7 +61,7 @@ export const ContactSupport = () => {
       setContactDialogOpen(false);
       setContactMessage('');
       setContactType('general');
-      
+
     } catch (error) {
       console.error('Error sending support request:', error);
       toast.error('Gagal mengirim permintaan bantuan. Silakan coba lagi.');
@@ -88,7 +88,7 @@ export const ContactSupport = () => {
           message: `Support Request [${contactType}]: ${contactMessage.trim()}`,
           sender_id: user.id,
           recipient_id: admin.id,
-          read: false,
+          is_read: false,
           created_at: new Date().toISOString()
         }));
 
@@ -122,7 +122,7 @@ export const ContactSupport = () => {
           message: `Support Request #${supportRequestId} [${contactType}]: ${contactMessage.substring(0, 100)}...`,
           sender_id: user.id,
           recipient_id: admin.id,
-          read: false,
+          is_read: false,
           metadata: {
             support_request_id: supportRequestId,
             request_type: contactType
@@ -167,8 +167,8 @@ export const ContactSupport = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex flex-col items-center justify-center h-20 p-2 hover:bg-blue-50 transition-colors"
               onClick={() => setContactDialogOpen(true)}
             >
@@ -176,9 +176,9 @@ export const ContactSupport = () => {
               <span className="text-sm font-medium">Kirim Pesan</span>
               <span className="text-xs text-muted-foreground mt-1">Support Ticket</span>
             </Button>
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               className="flex flex-col items-center justify-center h-20 p-2 hover:bg-green-50 transition-colors"
               asChild
             >
@@ -188,9 +188,9 @@ export const ContactSupport = () => {
                 <span className="text-xs text-muted-foreground mt-1">support@slf-system.com</span>
               </a>
             </Button>
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               className="flex flex-col items-center justify-center h-20 p-2 hover:bg-red-50 transition-colors"
               asChild
             >
@@ -230,7 +230,7 @@ export const ContactSupport = () => {
               Jelaskan pertanyaan atau kendala yang Anda hadapi. Tim support akan merespons dalam 1x24 jam.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="contact-type" className="text-sm font-medium">
@@ -274,7 +274,7 @@ export const ContactSupport = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="contact-message" className="text-sm font-medium">
                 Pesan Detail <span className="text-red-500">*</span>
@@ -307,10 +307,10 @@ export const ContactSupport = () => {
               </span>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setContactDialogOpen(false);
                 setContactMessage('');
@@ -320,8 +320,8 @@ export const ContactSupport = () => {
             >
               Batal
             </Button>
-            <Button 
-              onClick={handleContactSupport} 
+            <Button
+              onClick={handleContactSupport}
               disabled={!contactMessage.trim() || contactMessage.length < 10 || submitting}
               className="min-w-24"
             >

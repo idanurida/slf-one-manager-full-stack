@@ -124,8 +124,16 @@ const CameraGeotagging = ({
 
   // --- Geolocation ---
 
+  // --- Geolocation ---
+
   const getCurrentLocation = useCallback((useHighAccuracy = true) => {
     setIsLoadingLocation(true);
+    // Explicitly update status to inform user what method is being tried
+    if (useHighAccuracy) {
+      toast({ description: "Mencari sinyal GPS (Satelit)...", duration: 2000 });
+    } else {
+      toast({ description: "Menggunakan lokasi Network/Wi-Fi...", duration: 2000 });
+    }
 
     if (!navigator.geolocation) {
       setError('Geolocation tidak didukung browser ini.');
@@ -147,11 +155,11 @@ const CameraGeotagging = ({
           lng: longitude,
           accuracy: accuracy,
           timestamp: position.timestamp,
+          source: useHighAccuracy ? 'GPS' : 'Network/Wi-Fi' // Track source
         };
 
-        // Reverse Geocoding for "Metadata sesuai data administrasi"
+        // Reverse Geocoding
         try {
-          // Add timeout and headers to satisfy Nominatim usage policy
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -178,21 +186,30 @@ const CameraGeotagging = ({
           }
         } catch (e) {
           console.error("Geocoding failed/timeout", e);
-          // Keep address as undefined, will show only coords
         }
 
         setLocation(newLocation);
         setIsLoadingLocation(false);
+
+        // Notify user if falling back to low accuracy
+        if (!useHighAccuracy) {
+          toast({
+            title: "Lokasi Ditemukan (Wi-Fi/Network)",
+            description: `Akurasi: ±${Math.round(accuracy)}m. Sinyal GPS lemah.`,
+            variant: "default"
+          });
+        }
       },
       (err) => {
         console.warn('GPS Error:', err);
         if (useHighAccuracy) {
-          getCurrentLocation(false);
+          console.log("High accuracy failed, falling back to low accuracy (Wi-Fi/Network)...");
+          getCurrentLocation(false); // Recursive fallback
         } else {
           setIsLoadingLocation(false);
           toast({
-            title: "Sinyal GPS Lemah",
-            description: "Gagal mendapatkan lokasi akurat. Coba geser posisi atau gunakan upload manual.",
+            title: "Gagal Mendapatkan Lokasi",
+            description: "Pastikan GPS atau Wi-Fi aktif. Coba mode manual jika tetap gagal.",
             variant: "destructive"
           });
         }
@@ -374,7 +391,13 @@ const CameraGeotagging = ({
         gps_quality: photo.isManual ? 'manual' : (photo.location?.accuracy <= 20 ? 'excellent' : 'good'),
 
         captured_at: photo.timestamp,
-        category: photo.location?.address ? JSON.stringify(photo.location.address) : null
+        // category: photo.location?.address ? JSON.stringify(photo.location.address) : null // Removed incorrect usage
+
+        // New Address Columns
+        administrative_area: photo.location?.address?.province || null,
+        sub_administrative_area: photo.location?.address?.city || null,
+        locality: photo.location?.address?.district || null,
+        address_full: photo.location?.address ? `${photo.location.address.city}, ${photo.location.address.district}, ${photo.location.address.village}` : null
       };
 
       const { data: savedData, error: dbError } = await supabase

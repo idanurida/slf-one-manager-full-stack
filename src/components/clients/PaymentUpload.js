@@ -247,7 +247,7 @@ export const PaymentUpload = ({ projects, onPaymentUpload }) => {
           message: message,
           sender_id: senderId,
           recipient_id: admin.id,
-          read: false,
+          is_read: false,
           created_at: new Date().toISOString()
         }));
 

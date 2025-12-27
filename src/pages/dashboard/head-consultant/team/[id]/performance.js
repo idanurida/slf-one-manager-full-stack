@@ -309,42 +309,7 @@ export default function TeamMemberPerformanceDetail() {
               // Content
               <>
                 {/* Key Metrics */}
-                <motion.div variants={itemVariants}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard
-                      title="Total penugasan"
-                      value={performanceStats.totalTasks || 0}
-                      subtitle={`${memberData?.role === 'inspector' ? 'Berkas Laporan' : 'Proyek Strategis'}`}
-                      icon={FileText}
-                      color="text-blue-500"
-                      trend={5}
-                    />
-                    <StatCard
-                      title="Tingkat penyelesaian"
-                      value={performanceStats.completedTasks || 0}
-                      subtitle="Hasil Terverifikasi"
-                      icon={CheckCircle2}
-                      color="text-emerald-500"
-                      trend={8}
-                    />
-                    <StatCard
-                      title="Akurasi kerja"
-                      value={`${Math.round(performanceStats.successRate || 0)}%`}
-                      subtitle="Sesuai Standar Mutu"
-                      icon={Target}
-                      color="text-emerald-500"
-                      trend={3}
-                    />
-                    <StatCard
-                      title={memberData?.role === 'project_lead' ? 'Antrian aktif' : 'Pending review'}
-                      value={performanceStats.activeProjects || performanceStats.pendingTasks || 0}
-                      subtitle={memberData?.role === 'project_lead' ? 'Dalam Eksekusi' : 'Menunggu Validasi'}
-                      icon={Clock}
-                      color="text-orange-500"
-                      trend={-2}
-                    />
-                  </div>
-                </motion.div>
+
 
                 {/* Additional Stats */}
                 <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -468,33 +433,6 @@ export default function TeamMemberPerformanceDetail() {
 
 // NavItem, BottomNavItem, StatCard Helper Components
 
-function StatCard({ title, value, subtitle, icon: Icon, color, trend }) {
-  return (
-    <Card className="rounded-2xl border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className={`p-2.5 rounded-xl bg-gray-50/50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 ${color} transition-transform group-hover:scale-110 shadow-sm`}>
-            <Icon className="w-5 h-5" />
-          </div>
-          {trend !== undefined && (
-            <div className={`flex items-center px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${trend >= 0 ? 'bg-green-500/10 text-green-600 border border-green-500/20' : 'bg-red-500/10 text-red-600 border border-red-500/20'}`}>
-              {trend >= 0 ? '+' : ''}{trend}%
-            </div>
-          )}
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-text-secondary-light uppercase tracking-widest">{title}</p>
-          <div className="flex items-baseline gap-1 mt-1">
-            <h3 className="text-2xl font-display font-black text-gray-900 dark:text-white tracking-tight">{value}</h3>
-          </div>
-          {subtitle && <p className="text-[10px] font-bold text-text-secondary-light mt-1 opacity-70 uppercase tracking-widest">{subtitle}</p>}
-        </div>
-        <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-150 translate-x-1/4 translate-y-1/4 ${color}`}>
-          <Icon size={60} />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+
 
 

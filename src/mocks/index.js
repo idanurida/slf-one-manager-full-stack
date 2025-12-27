@@ -30,8 +30,8 @@ export const mockChecklistItems = {
 // ==== NOTIFICATIONS ====
 export const mockNotifications = {
   data: [
-    { id: 'notif-1', message: 'Jadwal inspeksi baru ditambahkan.', read: false },
-    { id: 'notif-2', message: 'Pembayaran proyek sudah diverifikasi.', read: true }
+    { id: 'notif-1', message: 'Jadwal inspeksi baru ditambahkan.', is_read: false },
+    { id: 'notif-2', message: 'Pembayaran proyek sudah diverifikasi.', is_read: true }
   ]
 };
 

@@ -240,7 +240,7 @@ export function useTeamLeader() {
     try {
       const { error: updateError } = await supabase
         .from('projects')
-        .update({ 
+        .update({
           project_lead_id: teamLeaderId, // DB field tetap project_lead_id
           updated_at: new Date().toISOString()
         })

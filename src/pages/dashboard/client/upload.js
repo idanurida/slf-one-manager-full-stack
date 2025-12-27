@@ -325,7 +325,7 @@ export default function UploadDokumenPage() {
           sender_id: user.id,
           type: 'document_uploaded',
           message: `Client ${profile?.full_name || user.email} mengunggah dokumen: ${documentName}`,
-          read: false,
+          is_read: false,
           created_at: new Date().toISOString()
         }));
 

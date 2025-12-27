@@ -256,13 +256,19 @@ export default function NewInspectionReport() {
         reportData.created_at = new Date().toISOString();
       }
 
+      console.log('🚀 Attempting to upsert reportData:', JSON.stringify(reportData, null, 2));
       const { data: savedReport, error } = await supabase
         .from('inspection_reports')
         .upsert(reportId ? { id: reportId, ...reportData } : [reportData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase Upsert Error:', error.message, error.details, error.hint);
+        throw error;
+      }
+
+      console.log('✅ Successfully saved report:', JSON.stringify(savedReport, null, 2));
 
       toast({
         title: status === 'draft' ? "✅ Draft disimpan" : "✅ Laporan dikirim",

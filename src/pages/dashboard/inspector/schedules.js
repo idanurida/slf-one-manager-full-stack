@@ -72,18 +72,7 @@ const itemVariants = {
 };
 
 // Premium Components
-const PremiumStat = ({ label, value, icon: Icon, color, subValue }) => (
-  <div className="bg-card p-6 rounded-[2rem] border border-border shadow-xl shadow-slate-200/40 dark:shadow-none flex items-center gap-5 transition-transform hover:scale-[1.02]">
-    <div className={`p-4 rounded-2xl ${color} bg-opacity-10 dark:bg-opacity-20 flex items-center justify-center shrink-0`}>
-      <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
-    </div>
-    <div>
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{label}</p>
-      <p className="text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none">{value}</p>
-      {subValue && <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wide">{subValue}</p>}
-    </div>
-  </div>
-);
+
 
 export default function InspectorSchedules() {
   const router = useRouter();
@@ -227,37 +216,7 @@ export default function InspectorSchedules() {
           </Button>
         </motion.div>
 
-        {/* Stats Overview */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <PremiumStat
-            label="Total jadwal"
-            value={schedules.length}
-            icon={Calendar}
-            color="bg-blue-500"
-            subValue="Semua agenda"
-          />
-          <PremiumStat
-            label="Akan datang"
-            value={schedules.filter(s => s.status === 'scheduled').length}
-            icon={Clock}
-            color="bg-orange-500"
-            subValue="Perlu persiapan"
-          />
-          <PremiumStat
-            label="Dalam proses"
-            value={schedules.filter(s => s.status === 'in_progress').length}
-            icon={Loader2}
-            color="bg-indigo-500"
-            subValue="Sedang berlangsung"
-          />
-          <PremiumStat
-            label="Selesai"
-            value={schedules.filter(s => s.status === 'completed').length}
-            icon={CheckCircle2}
-            color="bg-emerald-500"
-            subValue="Telah dilaporkan"
-          />
-        </motion.div>
+
 
         {/* Filters & Content */}
         <motion.div variants={itemVariants} className="space-y-6">

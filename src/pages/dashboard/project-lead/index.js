@@ -194,10 +194,10 @@ export default function TeamLeaderDashboard() {
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-gray-100 dark:border-gray-800/50">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl md:text-3xl font-display font-black tracking-tighter leading-none text-slate-900 dark:text-white">
-              Ketua <span className="text-primary">Tim</span>
+              Team <span className="text-primary">Leader</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">
-              Halo, {profile?.full_name?.split(' ')[0] || 'Ketua'}. Kelola tim dan pantau progres proyek Anda hari ini.
+              Halo, {profile?.full_name?.split(' ')[0] || 'Team Leader'}. Kelola tim dan pantau progres proyek Anda hari ini.
             </p>
           </div>
           <div className="flex gap-3">

@@ -381,7 +381,7 @@ export default function AdminTeamDocumentsPage() {
             message: `Dokumen "${doc.name}" telah ${status === 'verified_by_admin_team' ? 'diverifikasi' : 'diminta revisi'} oleh admin team.`,
             recipient_id: recipientId,
             sender_id: user.id,
-            read: false,
+            is_read: false,
           });
         } else {
           const recipientId = plData.user_id;
@@ -391,7 +391,7 @@ export default function AdminTeamDocumentsPage() {
             message: `Laporan "${doc.name}" telah ${status === 'verified_by_admin_team' ? 'diverifikasi' : 'diminta revisi'} oleh admin team.`,
             recipient_id: recipientId,
             sender_id: user.id,
-            read: false,
+            is_read: false,
           });
         }
       }
@@ -471,14 +471,6 @@ export default function AdminTeamDocumentsPage() {
         </motion.div>
 
         {/* Stats Section */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-          <StatCard title="Total berkas" value={stats.totalDocuments} icon={<FileText size={20} />} color="text-[#7c3aed]" bg="bg-[#7c3aed]/10" trend="Files" trendColor="text-[#7c3aed]" />
-          <StatCard title="Berkas pending" value={stats.pendingDocuments} icon={<Clock size={20} />} color="text-orange-500" bg="bg-orange-500/10" trend="Alert" trendColor="text-orange-500" />
-          <StatCard title="Berkas verified" value={stats.verifiedDocuments} icon={<CheckCircle2 size={20} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Done" trendColor="text-emerald-500" />
-          <StatCard title="Total laporan" value={stats.totalReports} icon={<FolderOpen size={20} />} color="text-blue-500" bg="bg-blue-500/10" trend="Reports" trendColor="text-blue-500" />
-          <StatCard title="Laporan pending" value={stats.pendingReports} icon={<AlertTriangle size={20} />} color="text-red-500" bg="bg-red-500/10" trend="Action" trendColor="text-red-500" />
-          <StatCard title="Laporan verified" value={stats.verifiedReports} icon={<CheckCircle2 size={20} />} color="text-emerald-500" bg="bg-emerald-500/10" trend="Safe" trendColor="text-emerald-500" />
-        </motion.div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
           {/* Section: Dokumen Client */}
@@ -585,29 +577,6 @@ export default function AdminTeamDocumentsPage() {
 }
 
 // Sub-components
-function StatCard({ title, value, icon, color, bg, trend, trendColor }) {
-  return (
-    <div className="relative bg-card rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
-      <div className="absolute right-0 top-0 p-8 opacity-[0.03] text-slate-900 dark:text-white group-hover:scale-125 transition-transform duration-500 group-hover:-rotate-12">
-        {React.cloneElement(icon, { size: 80 })}
-      </div>
-      <div className="relative flex items-center justify-between mb-4">
-        <div className={`size-12 rounded-2xl ${bg} ${color} flex items-center justify-center transition-all duration-300 group-hover:shadow-lg`}>
-          {icon}
-        </div>
-        {trend && (
-          <span className={`${trendColor} bg-slate-50 dark:bg-white/5 text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg border border-border`}>
-            {trend}
-          </span>
-        )}
-      </div>
-      <div className="flex flex-col">
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-none mb-2">{title}</p>
-        <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">{value}</p>
-      </div>
-    </div>
-  );
-}
 
 
 const DocumentVerificationItemPremium = ({ document, onStatusUpdate, loading, isReport }) => {

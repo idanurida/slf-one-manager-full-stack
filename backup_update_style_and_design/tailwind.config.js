@@ -11,46 +11,80 @@ module.exports = {
   darkMode: "class",
 
   theme: {
+    screens: {
+      'xs': '475px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
     extend: {
       colors: {
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        card: 'hsl(var(--card))',
-        'card-foreground': 'hsl(var(--card-foreground))',
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: '#7c3aed',
-          foreground: 'hsl(var(--primary-foreground))',
-          hover: '#6d28d9',
-          light: '#8b5cf6',
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+          hover: "#7c3aed",
         },
-        'primary-foreground': 'hsl(var(--primary-foreground))',
-        secondary: 'hsl(var(--secondary))',
-        'secondary-foreground': 'hsl(var(--secondary-foreground))',
-        muted: 'hsl(var(--muted))',
-        'muted-foreground': 'hsl(var(--muted-foreground))',
-        accent: 'hsl(var(--accent))',
-        'accent-foreground': 'hsl(var(--accent-foreground))',
-        destructive: 'hsl(var(--destructive))',
-        'destructive-foreground': 'hsl(var(--destructive-foreground))',
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        // Design Standard Extensions
+        "background-light": "#f9f9fb",
+        "background-dark": "#020617",
+        "surface-light": "#ffffff",
+        "surface-dark": "#0f172a",
+        "text-secondary-light": "#6b7280",
+        "text-secondary-dark": "#9ca3af",
+        "status-yellow": "#f59e0b",
+        "status-green": "#10b981",
+        "consultant-red": "#ef4444",
+        "consultant-green": "#10b981",
+        "consultant-yellow": "#f59e0b",
+      },
 
-        // Head Consultant Colors
-        'consultant-red': '#ef4444',
-        'consultant-green': '#10b981',
-        'consultant-yellow': '#f59e0b',
-        'background-light': '#f8fafc',
-        'background-dark': '#0f172a',
-        'surface-dark': '#1e293b',
-        'surface-light': '#ffffff',
-        'card-light': '#ffffff',
-        'card-dark': '#1e293b',
-      },
       fontFamily: {
-        "sans": ["Plus Jakarta Sans", "sans-serif"],
-        "display": ["Plus Jakarta Sans", "sans-serif"],
+        "display": ["Inter", "sans-serif"],
+        "body": ["Noto Sans", "sans-serif"],
+        "sans": ["Noto Sans", "sans-serif"],
       },
+      borderRadius: {
+        "none": "0",
+        "sm": "0.125rem",
+        "DEFAULT": "0.25rem",
+        "md": "0.375rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "2xl": "1rem",
+        "3xl": "1.5rem",
+        "full": "9999px",
+      }
     },
     boxShadow: {
       "soft": "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
@@ -94,7 +128,6 @@ module.exports = {
       sm: ['0.875rem', { lineHeight: '1.25' }],
     }
   },
-
 
   plugins: [
     require("@tailwindcss/forms"),

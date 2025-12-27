@@ -124,190 +124,209 @@ export default function HeadConsultantProjectsPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
-        <div className="p-4 md:p-8">
-          <div className="mx-auto max-w-7xl flex flex-col gap-8">
+      <div className="flex flex-col gap-8">
+        {/* Page Heading & Actions */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl md:text-3xl font-display font-black text-gray-900 dark:text-white tracking-tight">Eksplorasi proyek</h1>
+            <p className="text-text-secondary-light dark:text-text-secondary-dark text-sm md:text-base">Kelola dan pantau seluruh inisiatif kelaikan fungsi dalam satu pusat visual.</p>
+          </div>
+        </div>
 
-            {/* Page Heading & Actions */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900 dark:text-white tracking-tight">Eksplorasi proyek</h1>
-                <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base">Kelola dan pantau seluruh inisiatif kelaikan fungsi dalam satu pusat visual.</p>
-              </div>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Proyek berjalan"
+            value={stats.totalProjects}
+            icon={FolderOpen}
+            color="text-primary"
+            subtitle="Dalam Eksekusi"
+          />
+          <StatCard
+            title="Persetujuan akhir"
+            value={stats.pendingTTD}
+            icon={FileText}
+            color="text-status-yellow"
+            subtitle="Menunggu Validasi"
+          />
+          <StatCard
+            title="SLF terbit"
+            value={stats.completed}
+            icon={CheckCircle2}
+            color="text-status-green"
+            subtitle="Sertifikasi Selesai"
+          />
+          <StatCard
+            title="Total portfolio"
+            value={stats.totalProjects}
+            icon={TrendingUp}
+            color="text-blue-500"
+            subtitle="Total Keseluruhan"
+          />
+        </div>
+
+        {/* Filters & Search Toolbar */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-card border border-border shadow-sm">
+          {/* Left: Filters */}
+          <div className="flex w-full lg:w-auto flex-wrap gap-4">
+            <div className="relative min-w-[180px]">
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Status filter</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
+              >
+                <option>Semua Status</option>
+                <option>Draft</option>
+                <option>Verifikasi Teknis</option>
+                <option>Menunggu TTD</option>
+                <option>Selesai</option>
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
             </div>
-
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard title="Proyek berjalan" value={stats.active} icon={FolderOpen} color="text-primary" />
-              <StatCard title="Persetujuan akhir" value={stats.pending} icon={FileText} color="text-amber-500" />
-              <StatCard title="SLF terbit" value={stats.completed} icon={CheckCircle2} color="text-emerald-500" />
-              <StatCard title="Total portfolio" value={stats.total} icon={TrendingUp} color="text-blue-500" />
+            <div className="relative min-w-[180px]">
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Jendela waktu</span>
+              <select
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value)}
+                className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
+              >
+                <option>Bulan Ini</option>
+                <option>3 Bulan Terakhir</option>
+                <option>Tahun Ini</option>
+              </select>
+              <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
             </div>
-
-            {/* Filters & Search Toolbar */}
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6 p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
-              {/* Left: Filters */}
-              <div className="flex w-full lg:w-auto flex-wrap gap-4">
-                <div className="relative min-w-[180px]">
-                  <span className="absolute -top-2 left-3 px-1 bg-white dark:bg-slate-900 text-[9px] font-bold text-primary z-10">Status filter</span>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="appearance-none w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-gray-50/50 dark:bg-black/20 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-[#7c3aed] cursor-pointer text-[#1e293b] dark:text-[#f1f5f9] outline-none transition-all"
-                  >
-                    <option>Semua Status</option>
-                    <option>Draft</option>
-                    <option>Verifikasi Teknis</option>
-                    <option>Menunggu TTD</option>
-                    <option>Selesai</option>
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
-                </div>
-                <div className="relative min-w-[180px]">
-                  <span className="absolute -top-2 left-3 px-1 bg-white dark:bg-slate-900 text-[9px] font-bold text-primary z-10">Jendela waktu</span>
-                  <select
-                    value={timeFilter}
-                    onChange={(e) => setTimeFilter(e.target.value)}
-                    className="appearance-none w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-gray-50/50 dark:bg-black/20 py-3 pl-4 pr-10 text-xs font-bold tracking-wider focus:ring-2 focus:ring-[#7c3aed] cursor-pointer text-[#1e293b] dark:text-[#f1f5f9] outline-none transition-all"
-                  >
-                    <option>Bulan Ini</option>
-                    <option>3 Bulan Terakhir</option>
-                    <option>Tahun Ini</option>
-                  </select>
-                  <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
-                </div>
-              </div>
-              {/* Right: Search & Sort */}
-              <div className="flex w-full lg:w-auto items-center gap-3">
-                <div className="relative group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-                  <input
-                    type="text"
-                    placeholder="Cari nama proyek atau klien..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-gray-50/50 dark:bg-black/20 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-[#7c3aed] text-slate-900 dark:text-white outline-none transition-all placeholder:text-slate-500/50 placeholder:font-medium"
-                  />
-                </div>
-                <button className="h-11 w-11 flex items-center justify-center rounded-2xl border border-slate-100 dark:border-slate-800 bg-gray-50/50 dark:bg-black/20 text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm" title="Sort Results">
-                  <SortAsc size={20} />
-                </button>
-                <button className="h-11 w-11 flex items-center justify-center rounded-2xl border border-slate-100 dark:border-slate-800 bg-gray-50/50 dark:bg-black/20 text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm" title="Refresh">
-                  <RefreshCw size={18} />
-                </button>
-              </div>
+          </div>
+          {/* Right: Search & Sort */}
+          <div className="flex w-full lg:w-auto items-center gap-3">
+            <div className="relative group flex-1 lg:flex-none lg:min-w-[300px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary-light group-focus-within:text-primary transition-colors" />
+              <input
+                type="text"
+                placeholder="Cari nama proyek atau klien..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary text-foreground outline-none transition-all placeholder:text-muted-foreground/50"
+              />
             </div>
+            <button className="h-11 w-11 flex items-center justify-center rounded-xl border border-border bg-muted/50 text-muted-foreground hover:text-primary hover:border-primary transition-all shadow-sm" title="Sort Results">
+              <SortAsc size={20} />
+            </button>
+            <button className="h-11 w-11 flex items-center justify-center rounded-xl border border-border bg-muted/50 text-muted-foreground hover:text-primary hover:border-primary transition-all shadow-sm" title="Refresh">
+              <RefreshCw size={18} />
+            </button>
+          </div>
+        </div>
 
-            {/* Projects Table */}
-            <div className="rounded-[2.5rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1e293b] shadow-xl shadow-gray-200/50 dark:shadow-none overflow-hidden transition-all duration-300">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50/30 dark:bg-white/[0.02]">
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Informasi proyek</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Lokasi & klien</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Status progres</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider text-right">Manajemen</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#e2e8f0] dark:divide-[#334155]">
-                    {loading ? (
-                      <tr><td colSpan="5" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-xs font-bold text-slate-500">Menyelaraskan data...</span></div></td></tr>
-                    ) : (
-                      projects.length === 0 ? (
-                        <tr><td colSpan="5" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 mb-4"><FolderOpen size={40} className="text-slate-500/20" /></div><p className="font-bold text-sm text-slate-500">Database kosong</p></td></tr>
-                      ) : (
-                        projects.map(p => (
-                          <tr key={p.id} className="group hover:bg-primary/5 transition-all duration-300">
-                            <td className="px-8 py-6">
-                              <div className="flex flex-col gap-1">
-                                <span className="font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-primary transition-colors cursor-pointer text-base" onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)}>
-                                  {p.name}
-                                </span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-md tracking-wider">ID: {p.id.slice(0, 8).toUpperCase()}</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-8 py-6">
-                              <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#7c3aed] to-[#a855f7] flex items-center justify-center text-sm text-white font-bold shadow-lg shadow-[#7c3aed]/20 group-hover:scale-110 transition-transform">
-                                  {(p.clients?.name || 'K')[0]}
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="text-sm font-bold text-slate-900 dark:text-gray-200 tracking-tight">{p.clients?.name || 'Unknown Client'}</span>
-                                  <span className="text-[10px] font-medium text-slate-500">Entitas terverifikasi</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-8 py-6">
-                              <div className="flex flex-col gap-1">
-                                <span className="text-xs font-bold text-slate-900 dark:text-gray-300">{formatDate(p.created_at)}</span>
-                                <span className="text-[9px] font-bold text-primary">Pendaftaran masuk</span>
-                              </div>
-                            </td>
-                            <td className="px-8 py-6">
-                              <StatusBadge status={p.status} />
-                            </td>
-                            <td className="px-8 py-6 text-right">
-                              <button
-                                onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)}
-                                className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-gray-50/50 dark:bg-white/5 text-slate-500 hover:bg-primary hover:text-white transition-all shadow-sm"
-                              >
-                                <Eye size={18} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )
-                    )}
-                  </tbody>
-                </table>
-              </div>
+        {/* Projects Table */}
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="px-6 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Informasi proyek</th>
+                  <th className="px-6 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Lokasi & klien</th>
+                  <th className="px-6 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Status progres</th>
+                  <th className="px-6 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark text-right">Manajemen</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {loading ? (
+                  <tr><td colSpan="5" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-sm font-bold text-text-secondary-light">Menyelaraskan data...</span></div></td></tr>
+                ) : (
+                  projects.length === 0 ? (
+                    <tr><td colSpan="5" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-muted mb-4"><FolderOpen size={40} className="text-slate-500/20" /></div><p className="font-bold text-sm text-slate-500">Database kosong</p></td></tr>
+                  ) : (
+                    projects.map(p => (
+                      <tr key={p.id} className="group hover:bg-primary/5 transition-all duration-300">
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-bold text-foreground tracking-tight group-hover:text-primary transition-colors cursor-pointer text-base" onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)}>
+                              {p.name}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-md">ID: {p.id.slice(0, 8).toUpperCase()}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-sm text-white font-bold shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                              {(p.clients?.name || 'K')[0]}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-foreground tracking-tight">{p.clients?.name || 'Unknown Client'}</span>
+                              <span className="text-sm font-medium text-text-secondary-light">Entitas terverifikasi</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-sm font-bold text-foreground">{formatDate(p.created_at)}</span>
+                            <span className="text-sm font-bold text-primary">Pendaftaran masuk</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <StatusBadge status={p.status} />
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          <button
+                            onClick={() => router.push(`/dashboard/head-consultant/projects/${p.id}`)}
+                            className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-muted/50 text-muted-foreground hover:bg-primary hover:text-white transition-all shadow-sm"
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
 
-              {/* Pagination (Simplified) */}
-              <div className="flex flex-col sm:flex-row items-center justify-between border-t border-slate-100 dark:border-slate-800 px-8 py-6 gap-6 bg-gray-50/30 dark:bg-black/10">
-                <div className="flex flex-col">
-                  <p className="text-xs font-bold text-slate-500 mb-1">Status kelaikan</p>
-                  <span className="text-xs font-medium text-slate-600 dark:text-gray-400">
-                    Menampilkan <span className="font-bold text-primary">1 - {projects.length}</span> dari <span className="font-bold text-slate-900 dark:text-white">{stats.total} entri data</span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button className="h-10 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[10px] font-bold text-slate-500 hover:border-primary hover:text-primary transition-all disabled:opacity-30 shadow-sm" disabled>Sebelumnya</button>
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20">1</div>
-                  <button className="h-10 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[10px] font-bold text-slate-500 hover:border-primary hover:text-primary transition-all shadow-sm">Berikutnya</button>
-                </div>
-              </div>
+          {/* Pagination (Simplified) */}
+          <div className="flex flex-col sm:flex-row items-center justify-between border-t border-border px-8 py-6 gap-6 bg-muted/30">
+            <div className="flex flex-col">
+              <p className="text-sm font-bold text-text-secondary-light mb-1">Status kelaikan</p>
+              <span className="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">
+                Menampilkan <span className="font-bold text-primary">1 - {projects.length}</span> dari <span className="font-bold text-foreground">{stats.totalProjects} entri data</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button className="h-10 px-4 rounded-xl border border-border bg-card text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary transition-all disabled:opacity-30 shadow-sm" disabled>Sebelumnya</button>
+              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/30">1</div>
+              <button className="h-10 px-4 rounded-xl border border-border bg-card text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary transition-all shadow-sm">Berikutnya</button>
             </div>
           </div>
         </div>
       </div>
-    </DashboardLayout >
+    </DashboardLayout>
   );
 }
 
 
 function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
   return (
-    <div className="rounded-[2rem] bg-white dark:bg-[#1e293b] p-6 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none transition-all duration-300 group relative overflow-hidden">
+    <div className="rounded-2xl bg-surface-light dark:bg-surface-dark p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
       <div className="flex items-start justify-between relative z-10">
         <div>
-          <p className="text-xs font-bold text-slate-500">{title}</p>
-          <h3 className="mt-2 text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tighter">{value}</h3>
-          {subtitle && <p className="text-[10px] font-medium text-slate-500 mt-1 opacity-70">{subtitle}</p>}
+          <p className="text-sm font-bold text-text-secondary-light">{title}</p>
+          <h3 className="mt-2 text-3xl font-display font-black text-gray-900 dark:text-white tracking-tighter">{value}</h3>
+          {subtitle && <p className="text-sm font-medium text-text-secondary-light mt-1 opacity-70">{subtitle}</p>}
         </div>
-        <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-slate-100 dark:border-slate-800 transition-transform group-hover:scale-110 ${color}`}>
+        <div className={`rounded-xl p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 transition-transform group-hover:scale-110 ${color}`}>
           <Icon size={20} />
         </div>
       </div>
       {trend && (
         <div className="mt-4 flex items-center gap-1.5 relative z-10">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-100 dark:border-emerald-500/20">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-xs font-bold border border-status-green/20">
             <TrendingUp size={12} />
             <span>+{trend}%</span>
           </div>
-          <span className="text-[10px] font-medium text-slate-500 opacity-50">Trend bulanan</span>
+          <span className="text-xs font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
         </div>
       )}
       <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-[2.5] translate-x-1/4 translate-y-1/4 ${color}`}>
@@ -319,21 +338,22 @@ function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
 
 function StatusBadge({ status }) {
   const configs = {
-    'head_consultant_review': { label: 'Verifikasi teknis', class: 'bg-primary/10 text-primary border-[#7c3aed]/20' },
-    'technical_verification': { label: 'Verifikasi teknis', class: 'bg-primary/10 text-primary border-[#7c3aed]/20' },
-    'pending_ttd': { label: 'Menunggu validasi', class: 'bg-orange-500/10 text-orange-600 border-orange-500/20' },
-    'approved_by_pl': { label: 'Menunggu validasi', class: 'bg-orange-500/10 text-orange-600 border-orange-500/20' },
-    'completed': { label: 'Sertifikasi terbit', class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-    'slf_issued': { label: 'Sertifikasi terbit', class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-    'draft': { label: 'Draft proposal', class: 'bg-gray-500/10 text-gray-500 border-gray-500/20' }
+    'head_consultant_review': { label: 'Verifikasi teknis', class: 'bg-primary/10 text-primary border-primary/20' },
+    'technical_verification': { label: 'Verifikasi teknis', class: 'bg-primary/10 text-primary border-primary/20' },
+    'pending_ttd': { label: 'Menunggu validasi', class: 'bg-status-yellow/10 text-status-yellow border-status-yellow/20' },
+    'approved_by_pl': { label: 'Menunggu validasi', class: 'bg-status-yellow/10 text-status-yellow border-status-yellow/20' },
+    'completed': { label: 'Sertifikasi terbit', class: 'bg-status-green/10 text-status-green border-status-green/20' },
+    'slf_issued': { label: 'Sertifikasi terbit', class: 'bg-status-green/10 text-status-green border-status-green/20' },
+    'draft': { label: 'Draft proposal', class: 'bg-gray-400/10 text-gray-500 border-gray-400/20' }
   };
 
   const config = configs[status] || configs.draft;
 
   return (
-    <span className={`inline-flex items-center rounded-lg px-3 py-1 text-[10px] font-bold border shadow-sm ${config.class}`}>
-      <Zap size={10} className="mr-1.5 animate-pulse" />
+    <span className={`inline-flex items-center rounded-lg px-3 py-1 text-sm font-bold border shadow-sm ${config.class}`}>
+      <Zap size={10} className="mr-1.5" />
       {config.label}
     </span>
   );
 }
+

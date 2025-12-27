@@ -108,7 +108,7 @@ const InspectorChecklistDashboard = () => {
             )
           `)
           .eq('inspector_id', user.id)
-          .in('status', ['scheduled', 'in_progress'])
+          .in('status', ['scheduled', 'in_progress', 'completed'])
           .order('scheduled_date', { ascending: true });
 
         if (inspectionError) {
@@ -141,13 +141,14 @@ const InspectorChecklistDashboard = () => {
     const total = inspections.length;
     const scheduled = inspections.filter(i => i.status === 'scheduled').length;
     const inProgress = inspections.filter(i => i.status === 'in_progress').length;
+    const completed = inspections.filter(i => i.status === 'completed').length;
     const today = inspections.filter(i => {
       const inspectionDate = new Date(i.scheduled_date);
       const today = new Date();
       return inspectionDate.toDateString() === today.toDateString();
     }).length;
 
-    return { total, scheduled, inProgress, today };
+    return { total, scheduled, inProgress, completed, today };
   }, [inspections]);
 
   // Filter inspections
@@ -627,17 +628,17 @@ const InspectorChecklistDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Scheduled */}
-          <Card className="bg-white dark:bg-surface-dark border-violet-200 shadow-sm hover:shadow-md transition-shadow">
+          {/* Completed */}
+          <Card className="bg-white dark:bg-surface-dark border-green-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-primary text-sm font-medium mb-1">Terjadwal</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.scheduled}</p>
-                  <p className="text-muted-foreground text-xs mt-1">Menunggu dikerjakan</p>
+                  <p className="text-green-600 text-sm font-medium mb-1">Selesai</p>
+                  <p className="text-2xl font-bold text-foreground">{stats.completed}</p>
+                  <p className="text-muted-foreground text-xs mt-1">Inspeksi terkirim</p>
                 </div>
-                <div className="p-3 bg-primary rounded-full">
-                  <Clock className="w-5 h-5 text-primary-foreground" />
+                <div className="p-3 bg-green-500 rounded-full">
+                  <CheckCircle className="w-5 h-5 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -665,6 +666,7 @@ const InspectorChecklistDashboard = () => {
                   <SelectItem value="all" className="select-item">Semua status</SelectItem>
                   <SelectItem value="scheduled" className="select-item">Terjadwal</SelectItem>
                   <SelectItem value="in_progress" className="select-item">Berlangsung</SelectItem>
+                  <SelectItem value="completed" className="select-item">Selesai</SelectItem>
                 </SelectContent>
               </Select>
             </div>

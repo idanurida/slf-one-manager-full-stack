@@ -44,7 +44,7 @@ import {
   Users, User, BarChart3, TrendingUp, TrendingDown, FileText,
   CheckCircle2, XCircle, Clock, Calendar, Building, AlertCircle,
   RefreshCw, ArrowLeft, Eye, Filter, Search, Info,
-  LayoutDashboard, FolderOpen, Settings, LogOut, Moon, Sun, Bell, Menu, ChevronRight, Home, CalendarDays
+  LayoutDashboard, FolderOpen, Settings, LogOut, Moon, Sun, Bell, Menu, ChevronRight, ChevronDown, Home, CalendarDays
 } from "lucide-react";
 
 // Utils & Context
@@ -69,7 +69,7 @@ const getRoleColor = (role) => {
     'inspector': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
     'project_lead': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
     'admin_team': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    'admin_lead': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+    'admin_lead': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
     'head_consultant': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
     'drafter': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400',
     'client': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
@@ -308,7 +308,7 @@ export default function HeadConsultantPerformancePage() {
     return (
       <DashboardLayout>
         <div className="p-4 md:p-6">
-          <Alert variant="destructive" className="mb-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <Alert variant="destructive" className="mb-4 bg-background border-border">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
@@ -320,168 +320,223 @@ export default function HeadConsultantPerformancePage() {
   }
 
   return (
-    <DashboardLayout hideSidebar={false} showHeader={true}>
-      <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
-        <div className="p-4 md:p-8">
-          <div className="mx-auto max-w-7xl flex flex-col gap-8">
+    <DashboardLayout>
+      <div className="flex flex-col gap-8">
 
-            {/* Page Heading & Actions */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900 dark:text-white tracking-tight">Eksplorasi kinerja</h1>
-                <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base">Pantau metrik efisiensi dan kualitas output seluruh personil dalam ekosistem proyek.</p>
+        {/* Page Heading & Actions */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl md:text-3xl font-display font-extrabold text-foreground tracking-tight">Eksplorasi kinerja</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Pantau metrik efisiensi dan kualitas output seluruh personil dalam ekosistem proyek.</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center justify-center gap-2 bg-card border border-border text-foreground font-bold text-sm px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-muted disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Total Inspektur"
+            value={performanceData.inspectors.length}
+            icon={Users}
+            color="text-primary"
+            subtitle="Personel lapangan"
+          />
+          <StatCard
+            title="Project Leads"
+            value={performanceData.projectLeads.length}
+            icon={User}
+            color="text-status-yellow"
+            subtitle="Manajer proyek"
+          />
+          <StatCard
+            title="Total Laporan"
+            value={performanceData.overall.total_reports || 0}
+            icon={FileText}
+            color="text-status-green"
+            subtitle="Dokumen teknis"
+          />
+          <StatCard
+            title="Total Proyek"
+            value={performanceData.overall.total_projects || 0}
+            icon={Building}
+            color="text-indigo-500"
+            subtitle="Inisiatif berjalan"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="p-6 rounded-2xl bg-card border border-border shadow-sm">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="h-5 w-1 bg-primary rounded-full"></div>
+            <h4 className="text-sm font-black text-primary">Saring anggota</h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="relative md:col-span-2">
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Pencarian anggota</span>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary-light" />
+                <input
+                  placeholder="Cari Nama atau Spesialisasi..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-muted/50 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-text-secondary-light/50 text-foreground"
+                />
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleRefresh}
-                  disabled={loading}
-                  className="flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white font-bold text-[10px] px-6 py-3 rounded-xl shadow-sm transition-all hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+            </div>
+            <div className="relative">
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Kategori peran</span>
+              <div className="relative">
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
                 >
-                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </button>
+                  <option value="inspector">Inspector</option>
+                  <option value="project_lead">Project Lead</option>
+                  <option value="admin_team">Admin Team</option>
+                  <option value="admin_lead">Admin Lead</option>
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
               </div>
             </div>
-
-            {/* Filters */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-slate-800 shadow-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="h-5 w-1 bg-primary rounded-full"></div>
-                <h4 className="text-xs font-bold text-primary">Saring anggota</h4>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="relative md:col-span-2">
-                  <span className="absolute -top-2 left-3 px-1 bg-white dark:bg-[#1e293b] text-[9px] font-bold text-primary z-10">Pencarian anggota</span>
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      placeholder="Cari Nama atau Spesialisasi..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-gray-50/50 dark:bg-black/20 py-3 pl-12 pr-4 text-sm font-semibold focus:ring-2 focus:ring-primary outline-none transition-all placeholder-slate-400/50"
-                    />
-                  </div>
-                </div>
-                <div className="relative">
-                  <span className="absolute -top-2 left-3 px-1 bg-white dark:bg-slate-900 text-[9px] font-bold text-primary z-10">Kategori peran</span>
-                  <div className="relative">
-                    <select
-                      value={roleFilter}
-                      onChange={(e) => setRoleFilter(e.target.value)}
-                      className="appearance-none w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-black/20 py-3 pl-4 pr-10 text-xs font-bold focus:ring-2 focus:ring-primary cursor-pointer text-slate-900 dark:text-white outline-none transition-all"
-                    >
-                      <option value="inspector">Inspector</option>
-                      <option value="project_lead">Project Lead</option>
-                      <option value="admin_team">Admin Team</option>
-                      <option value="admin_lead">Admin Lead</option>
-                    </select>
-                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 rotate-90 pointer-events-none" size={16} />
-                  </div>
-                </div>
-                <div className="relative">
-                  <span className="absolute -top-2 left-3 px-1 bg-white dark:bg-slate-900 text-[9px] font-bold text-primary z-10">Jendela waktu</span>
-                  <div className="relative">
-                    <select
-                      value={periodFilter}
-                      onChange={(e) => setPeriodFilter(e.target.value)}
-                      className="appearance-none w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-black/20 py-3 pl-4 pr-10 text-xs font-bold focus:ring-2 focus:ring-primary cursor-pointer text-slate-900 dark:text-white outline-none transition-all"
-                    >
-                      <option value="this_month">Bulan Ini</option>
-                      <option value="last_month">Bulan Lalu</option>
-                      <option value="this_year">Tahun Ini</option>
-                      <option value="all_time">Semua Waktu</option>
-                    </select>
-                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 rotate-90 pointer-events-none" size={16} />
-                  </div>
-                </div>
+            <div className="relative">
+              <span className="absolute -top-2 left-3 px-1 bg-card text-sm font-bold text-primary z-10">Jendela waktu</span>
+              <div className="relative">
+                <select
+                  value={periodFilter}
+                  onChange={(e) => setPeriodFilter(e.target.value)}
+                  className="appearance-none w-full rounded-xl border border-border bg-muted/50 py-3 pl-4 pr-10 text-sm font-bold focus:ring-2 focus:ring-primary cursor-pointer text-foreground outline-none transition-all"
+                >
+                  <option value="this_month">Bulan Ini</option>
+                  <option value="last_month">Bulan Lalu</option>
+                  <option value="this_year">Tahun Ini</option>
+                  <option value="all_time">Semua Waktu</option>
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary-light pointer-events-none" size={16} />
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Table Area */}
-            <div className="rounded-[2.5rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-gray-200/50 dark:shadow-none overflow-hidden transition-all duration-300">
-              <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 bg-gray-50/30 dark:bg-black/10 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                    <BarChart3 size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Peringkat efektivitas {getRoleLabel(roleFilter)}</h3>
-                    <p className="text-[10px] font-medium text-slate-500">Key performance indicators</p>
-                  </div>
-                </div>
+        {/* Table Area */}
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300">
+          <div className="px-8 py-6 border-b border-border bg-muted/30 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <BarChart3 size={20} />
               </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/50 dark:bg-black/5">
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Anggota & spesialisasi</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Peran organigram</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Indeks performa</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider text-right">Manajemen</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                    {loading ? (
-                      <tr><td colSpan="4" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-xs font-bold text-slate-500">Mengomputasi metrik...</span></div></td></tr>
-                    ) : filteredData.length === 0 ? (
-                      <tr><td colSpan="4" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 mb-4"><BarChart3 size={40} className="text-slate-500/20" /></div><p className="font-bold text-sm text-slate-500">Data tidak ditemukan</p></td></tr>
-                    ) : (
-                      filteredData.map(member => (
-                        <tr key={member.id} className="group hover:bg-primary/5 transition-all duration-300">
-                          <td className="px-8 py-6">
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center text-sm text-white font-bold shadow-lg shadow-primary/20">
-                                {member.full_name?.[0]}
-                              </div>
-                              <div className="flex flex-col">
-                                <span className="font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-primary transition-colors cursor-pointer text-sm">
-                                  {member.full_name}
-                                </span>
-                                <span className="text-sm font-bold text-slate-900 dark:text-gray-200">
-                                  {roleFilter === 'inspector' ? member.total_reports :
-                                    roleFilter === 'admin_lead' ? member.total_projects :
-                                      member.total_projects || member.documents_verified}
-                                </span>
-                                <span className="text-[9px] font-medium text-slate-500">Total selesai</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-8 py-6">
-                            <div className="flex flex-col gap-2 w-32">
-                              <span className="text-[10px] font-bold text-slate-900 dark:text-gray-300 leading-none">
-                                {Math.round(member.completion_rate || member.success_rate || member.accuracy_rate || 0)}%
-                              </span>
-                              <div className="w-full bg-gray-100 dark:bg-white/5 rounded-full h-1.5 overflow-hidden">
-                                <div
-                                  className="bg-gradient-to-r from-primary to-[#a855f7] h-full rounded-full transition-all duration-1000"
-                                  style={{ width: `${member.completion_rate || member.success_rate || member.accuracy_rate || 0}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-8 py-6 text-right">
-                            <button
-                              onClick={() => router.push(`/dashboard/head-consultant/team/${member.id}/performance`)}
-                              className="h-10 px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-50 hover:bg-primary hover:text-white dark:bg-white/5 dark:hover:bg-primary text-slate-500 transition-all shadow-sm text-[10px] font-bold"
-                            >
-                              <Eye size={16} />
-                              Lihat detail
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+              <div>
+                <h3 className="text-sm font-bold text-foreground tracking-tight">Peringkat efektivitas {getRoleLabel(roleFilter)}</h3>
+                <p className="text-sm font-bold text-text-secondary-light">Key performance indicators</p>
               </div>
             </div>
           </div>
 
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Anggota & spesialisasi</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark">Indeks performa</th>
+                  <th className="px-8 py-4 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark text-right">Manajemen</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {loading ? (
+                  <tr><td colSpan="4" className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-sm font-bold text-text-secondary-light">Mengomputasi metrik...</span></div></td></tr>
+                ) : filteredData.length === 0 ? (
+                  <tr><td colSpan="4" className="px-8 py-20 text-center flex flex-col items-center justify-center"><div className="h-20 w-20 flex items-center justify-center rounded-full bg-muted mb-4"><BarChart3 size={40} className="text-text-secondary-light/20" /></div><p className="font-bold text-sm text-text-secondary-light">Data tidak ditemukan</p></td></tr>
+                ) : (
+                  filteredData.map(member => (
+                    <tr key={member.id} className="group hover:bg-primary/5 transition-all duration-300">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-sm text-white font-bold shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
+                            {member.full_name?.[0]}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-foreground tracking-tight group-hover:text-primary transition-colors cursor-pointer text-sm">
+                              {member.full_name}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-foreground">
+                                {roleFilter === 'inspector' ? member.total_reports :
+                                  roleFilter === 'admin_lead' ? member.total_projects :
+                                    member.total_projects || member.documents_verified}
+                              </span>
+                              <span className="text-sm font-medium text-text-secondary-light">Total selesai</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col gap-2 w-48">
+                          <span className="text-sm font-bold text-foreground leading-none">
+                            {Math.round(member.completion_rate || member.success_rate || member.accuracy_rate || 0)}% Efektivitas
+                          </span>
+                          <div className="w-full bg-muted rounded-full h-2 overflow-hidden border border-border">
+                            <div
+                              className="bg-gradient-to-r from-primary to-primary-hover h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(124,58,237,0.3)]"
+                              style={{ width: `${member.completion_rate || member.success_rate || member.accuracy_rate || 0}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <button
+                          onClick={() => router.push(`/dashboard/head-consultant/team/${member.id}/performance`)}
+                          className="h-10 px-4 inline-flex items-center justify-center gap-2 rounded-xl bg-muted/50 hover:bg-primary hover:text-white dark:bg-white/5 dark:hover:bg-primary text-text-secondary-light transition-all shadow-sm text-sm font-bold border border-border"
+                        >
+                          <Eye size={16} />
+                          Lihat detail
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </DashboardLayout>
   );
 }
 
-// NavItem & BottomNavItem
+function StatCard({ title, value, icon: Icon, trend, subtitle, color }) {
+  return (
+    <div className="rounded-2xl bg-card p-6 border border-border shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+      <div className="flex items-start justify-between relative z-10">
+        <div>
+          <p className="text-sm font-bold text-text-secondary-light">{title}</p>
+          <h3 className="mt-2 text-3xl font-display font-black text-foreground tracking-tighter">{value}</h3>
+          {subtitle && <p className="text-sm font-medium text-muted-foreground mt-1 opacity-70">{subtitle}</p>}
+        </div>
+        <div className={`rounded-xl p-3 bg-muted border border-border transition-transform group-hover:scale-110 ${color}`}>
+          <Icon size={20} />
+        </div>
+      </div>
+      {trend && (
+        <div className="mt-4 flex items-center gap-1.5 relative z-10">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-status-green/10 text-status-green text-xs font-bold border border-status-green/20">
+            <TrendingUp size={12} />
+            <span>+{trend}%</span>
+          </div>
+          <span className="text-xs font-medium text-text-secondary-light opacity-50">Trend bulanan</span>
+        </div>
+      )}
+      <div className={`absolute bottom-0 right-0 p-1 opacity-5 scale-[2.5] translate-x-1/4 translate-y-1/4 ${color}`}>
+        <Icon size={60} />
+      </div>
+    </div>
+  );
+}

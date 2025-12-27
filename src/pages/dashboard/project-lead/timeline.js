@@ -153,7 +153,13 @@ export default function TeamLeaderTimelinePage() {
   }, [user?.id, selectedProjectId]); // eslint-disable-line
 
   const handleRefresh = () => fetchAssignedProjects();
-  const handleBack = () => router.back();
+  const handleBack = () => {
+    if (selectedProjectId) {
+      setSelectedProjectId(null);
+    } else {
+      router.push('/dashboard/project-lead');
+    }
+  };
 
   // Fetch timeline for a specific project
   const fetchProjectTimeline = async (projectId) => {
@@ -288,19 +294,23 @@ export default function TeamLeaderTimelinePage() {
                 <Badge className="bg-primary/10 text-primary border-none text-[8px] font-black uppercase tracking-widest">
                   {selectedProjectId ? 'Detail Aktivitas' : 'Aktivitas Proyek'}
                 </Badge>
-                <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  {selectedProjectId ? `ID: ${selectedProjectId.substring(0, 8)}` : 'Monitoring Riwayat'}
-                </span>
+                {selectedProjectId && (
+                  <>
+                    <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      ID: {selectedProjectId.substring(0, 8)}
+                    </span>
+                  </>
+                )}
               </div>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+              <h1 className="text-3xl md:text-5xl font-black tracking-tighter leading-none uppercase">
                 {selectedProjectId ? 'Log' : 'Timeline'} <span className="text-primary">{selectedProjectId ? 'Proyek' : 'Aktivitas'}</span>
               </h1>
-              <p className="text-muted-foreground mt-4 text-sm font-medium max-w-2xl">
-                {selectedProjectId
-                  ? `Menampilkan riwayat operasional dan dokumentasi lengkap untuk proyek yang dipilih.`
-                  : 'Pantau progres dan riwayat interaksi tim secara real-time.'}
-              </p>
+              {!selectedProjectId && (
+                <p className="text-muted-foreground mt-4 text-sm font-medium max-w-2xl hidden md:block">
+                  Pantau progres dan riwayat interaksi tim secara real-time.
+                </p>
+              )}
             </div>
           </div>
 
@@ -312,10 +322,15 @@ export default function TeamLeaderTimelinePage() {
         </motion.div>
 
         {/* Split View Content */}
-        <div className="flex flex-col lg:flex-row gap-8 h-full min-h-0">
+        <div className="flex flex-col lg:flex-row gap-8 h-full min-h-0 relative overflow-hidden">
 
           {/* Left Sidebar: Project List */}
-          <motion.div variants={itemVariants} className="w-full lg:w-[400px] shrink-0 flex flex-col gap-4 bg-card rounded-[2rem] border border-border shadow-2xl overflow-hidden h-full">
+          <motion.div
+            variants={itemVariants}
+            className={`w-full lg:w-[400px] shrink-0 flex flex-col gap-4 bg-card rounded-[2rem] border border-border shadow-2xl overflow-hidden h-full transition-all duration-500
+              ${selectedProjectId ? 'hidden lg:flex' : 'flex'}
+            `}
+          >
             <div className="p-8 border-b border-border shrink-0 bg-card z-10 space-y-6">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -373,7 +388,12 @@ export default function TeamLeaderTimelinePage() {
           </motion.div>
 
           {/* Right Content: Timeline Visualization */}
-          <motion.div variants={itemVariants} className="flex-1 bg-card rounded-[2rem] border border-border shadow-2xl overflow-hidden h-full flex flex-col relative">
+          <motion.div
+            variants={itemVariants}
+            className={`flex-1 bg-card rounded-[2rem] border border-border shadow-2xl overflow-hidden h-full flex flex-col relative transition-all duration-500
+              ${selectedProjectId ? 'flex' : 'hidden lg:flex'}
+            `}
+          >
 
             {selectedProject ? (
               <>
@@ -469,7 +489,7 @@ export default function TeamLeaderTimelinePage() {
                                     <h4 className="text-lg font-black uppercase tracking-tight text-foreground">{event.title}</h4>
                                     <p className="text-sm font-medium text-muted-foreground leading-relaxed">{event.description}</p>
                                     <div className="pt-2 flex flex-wrap gap-2">
-                                      <Badge border className="bg-background text-[8px] font-black uppercase tracking-widest px-2">
+                                      <Badge variant="secondary" className="bg-background text-[8px] font-black uppercase tracking-widest px-2">
                                         {getStatusLabel(event.status)}
                                       </Badge>
                                       {event.type && (

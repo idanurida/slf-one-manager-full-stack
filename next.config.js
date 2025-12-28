@@ -15,6 +15,16 @@ const nextConfig = {
       '@': './src',
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'xonhwlzojkdjokezpdrp.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
   webpack: (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = {

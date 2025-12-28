@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -62,10 +63,13 @@ const ReportContent = ({ report, project, clientName, checklistData, photos, for
                 {/* Cover/Header */}
                 <div className="text-center space-y-6 border-b pb-8">
                     <div className="flex justify-center mb-6">
-                        <img
+                        <Image
                             src="/leaflet/images/logo-puri-dimensi.png"
                             alt="Puri Dimensi"
+                            width={200}
+                            height={96}
                             className="h-24 w-auto object-contain"
+                            priority
                         />
                     </div>
 
@@ -281,11 +285,13 @@ const ReportContent = ({ report, project, clientName, checklistData, photos, for
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-2 align-top">
-                                                        <div className="w-full aspect-video bg-slate-100 rounded overflow-hidden border border-slate-200">
-                                                            <img
+                                                        <div className="w-full aspect-video bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
+                                                            <Image
                                                                 src={photo.photo_url}
-                                                                alt={photo.caption}
-                                                                className="w-full h-full object-cover"
+                                                                alt={photo.caption || 'Foto dokumentasi'}
+                                                                fill
+                                                                className="object-cover"
+                                                                sizes="(max-width: 768px) 100vw, 400px"
                                                             />
                                                         </div>
                                                     </td>

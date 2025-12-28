@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { FiTrash2, FiMapPin, FiUser, FiInfo, FiX } from "lucide-react";
 import { motion } from 'framer-motion';
+import NextImage from 'next/image';
 
 // =================================================================
 // 1. ENVIRONMENT/SHADCN UI MOCKS (Menggantikan Chakra UI)
@@ -88,20 +89,24 @@ const Text = ({ children, className = "", fontSize, fontWeight, noOfLines, color
 };
 
 const Image = ({ src, alt, borderRadius, objectFit, height, width, ...props }) => (
-    <img
-        src={src}
-        alt={alt}
+    <div
         className={cn(
-            "w-full",
+            "relative w-full overflow-hidden",
             borderRadius === "md" && "rounded-t-xl",
-            objectFit === "cover" && "object-cover",
-            height ? `h-[${height}]` : "h-auto",
-            width && "w-full" // Assuming width="100%"
+            height ? `h-[${height}]` : "h-48"
         )}
-        style={{ height: height, width: width }}
-        loading="lazy"
-        {...props}
-    />
+    >
+        <NextImage
+            src={src}
+            alt={alt || "Inspection Photo"}
+            fill
+            className={cn(
+                objectFit === "cover" ? "object-cover" : "object-contain"
+            )}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            {...props}
+        />
+    </div>
 );
 
 const IconButton = ({ icon: Icon, size, colorScheme, onClick, className = "", ...props }) => {

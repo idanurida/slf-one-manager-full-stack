@@ -209,7 +209,7 @@ export default function InspectorSchedules() {
           </div>
           <Button
             onClick={loadSchedules}
-            className="h-12 px-6 rounded-2xl bg-card text-slate-600 dark:text-slate-300 border border-border font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-slate-50 transition-all"
+            className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground border border-primary font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-white hover:text-slate-900 hover:border-white transition-all"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh data
@@ -264,7 +264,7 @@ export default function InspectorSchedules() {
               </p>
               <Button
                 onClick={loadSchedules}
-                className="mt-8 bg-[#7c3aed] text-white rounded-xl px-8 font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-[#7c3aed]/20"
+                className="mt-8 bg-primary text-primary-foreground border border-primary rounded-xl px-8 font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-[#7c3aed]/20 hover:bg-white hover:text-slate-900 hover:border-white"
               >
                 Refresh data
               </Button>
@@ -347,7 +347,7 @@ export default function InspectorSchedules() {
                             {schedule.status === 'scheduled' && (
                               <Button
                                 size="sm"
-                                className="rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold text-[10px] uppercase tracking-wider px-4 shadow-lg shadow-[#7c3aed]/20"
+                                className="rounded-xl bg-primary text-primary-foreground border border-primary hover:bg-white hover:text-slate-900 hover:border-white font-bold text-[10px] uppercase tracking-wider px-4 shadow-lg shadow-[#7c3aed]/20"
                                 onClick={() => router.push(`/dashboard/inspector/checklist?inspectionId=${schedule.id}`)}
                               >
                                 Mulai

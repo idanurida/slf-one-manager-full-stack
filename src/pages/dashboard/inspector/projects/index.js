@@ -107,14 +107,14 @@ const PremiumProjectCard = ({ project, onClick, onChecklist }) => (
 
       <div className="flex items-center gap-2 pt-2">
         <Button
-          className="flex-1 bg-card border border-border hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase tracking-wider rounded-xl h-10 shadow-sm"
+          className="flex-1 bg-primary text-primary-foreground border border-primary hover:bg-white hover:text-slate-900 hover:border-white font-bold text-[10px] uppercase tracking-wider rounded-xl h-10 shadow-sm transition-all"
           onClick={(e) => { e.stopPropagation(); onChecklist(); }}
         >
           <ClipboardList className="w-3 h-3 mr-2" />
           Checklist
         </Button>
         <Button
-          className="w-10 h-10 rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-lg shadow-[#7c3aed]/20 p-0 flex items-center justify-center"
+          className="w-10 h-10 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 p-0 flex items-center justify-center hover:bg-white hover:text-slate-900 hover:border-white transition-all"
           onClick={onClick}
         >
           <Eye size={16} />
@@ -257,7 +257,7 @@ export default function InspectorProjects() {
             </div>
             <Button
               onClick={fetchProjects}
-              className="h-12 px-6 rounded-2xl bg-card text-slate-600 dark:text-slate-300 border border-border font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-slate-50 transition-all"
+              className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground border border-primary font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-white hover:text-slate-900 hover:border-white transition-all"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh data

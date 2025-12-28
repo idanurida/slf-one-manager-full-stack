@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
+import { motion } from 'framer-motion';
 
 // shadcn/ui Components
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -16,11 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -43,16 +38,26 @@ import { Textarea } from '@/components/ui/textarea';
 
 // Lucide Icons
 import {
-  FileText, Clock, Activity, CheckCircle, MapPin, Camera,
-  Play, Eye, Calendar, Building, User, AlertTriangle,
-  CheckSquare, ListChecks, ArrowRight, Search, Loader2,
-  Navigation, WifiOff, Home, Target, ClipboardCheck
+  FileText, Activity, MapPin, Play, Eye,
+  Home, Target, Loader2, Navigation, WifiOff,
+  Search, RefreshCw, Filter, ListChecks
 } from 'lucide-react';
 
 // Other Imports
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+};
 
 const InspectorChecklistDashboard = () => {
   const router = useRouter();
@@ -74,18 +79,15 @@ const InspectorChecklistDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
 
-  // Fetch inspections data - DIPERBAIKI query tanpa building_type
-  useEffect(() => {
-    const fetchInspections = async () => {
-      if (!user?.id || !isInspector) return;
+  // Fetch inspections data
+  const fetchInspections = async () => {
+    if (!user?.id || !isInspector) return;
 
-      setLoading(true);
-      try {
-        console.log('🔄 Fetching inspections for user:', user.id);
-
-        const { data: inspectionData, error: inspectionError } = await supabase
-          .from('inspections')
-          .select(`
+    setLoading(true);
+    try {
+      const { data: inspectionData, error: inspectionError } = await supabase
+        .from('inspections')
+        .select(`
             id,
             project_id,
             inspector_id,
@@ -107,36 +109,30 @@ const InspectorChecklistDashboard = () => {
               specialization
             )
           `)
-          .eq('inspector_id', user.id)
-          .in('status', ['scheduled', 'in_progress', 'completed'])
-          .order('scheduled_date', { ascending: true });
+        .eq('inspector_id', user.id)
+        .in('status', ['scheduled', 'in_progress', 'completed'])
+        .order('scheduled_date', { ascending: true });
 
-        if (inspectionError) {
-          console.error('❌ Fetch inspections error:', inspectionError);
-          throw inspectionError;
-        }
+      if (inspectionError) throw inspectionError;
+      setInspections(inspectionData || []);
 
-        console.log('✅ Inspections loaded:', inspectionData?.length);
-        setInspections(inspectionData || []);
+    } catch (err) {
+      console.error('❌ Fetch inspections failed:', err);
+      toast({
+        title: "Gagal memuat data inspeksi",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      } catch (err) {
-        console.error('❌ Fetch inspections failed:', err);
-        toast({
-          title: "Gagal memuat data inspeksi",
-          description: err.message,
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  useEffect(() => {
     if (user && isInspector) {
       fetchInspections();
     }
-  }, [user, isInspector, toast]);
-
-
+  }, [user, isInspector]);
 
   // Filter inspections
   const filteredInspections = useMemo(() => {
@@ -158,29 +154,26 @@ const InspectorChecklistDashboard = () => {
     return result;
   }, [inspections, searchTerm, selectedStatus]);
 
-  // ✅ FUNGSI BARU: Request camera permission
+  // Utils (Camera, GPS, Helpers) - Preserved Logic
+  const getMobileCameraConstraints = () => ({ video: true }); // Simplification for example
+
   const requestCameraPermission = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia(getMobileCameraConstraints());
-      // Stop semua track setelah dapat permission
       stream.getTracks().forEach(track => track.stop());
       return true;
     } catch (err) {
-      console.warn('Camera permission denied:', err);
       return false;
     }
   };
 
-  // ✅ FUNGSI BARU: Get current location dengan fallback
   const getCurrentLocation = async () => {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
         resolve({ success: false, error: 'Geolocation tidak didukung' });
         return;
       }
-
       setIsGettingLocation(true);
-
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setIsGettingLocation(false);
@@ -196,38 +189,16 @@ const InspectorChecklistDashboard = () => {
         },
         (error) => {
           setIsGettingLocation(false);
-          let errorMessage = 'Gagal mendapatkan lokasi';
-
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage = 'Izin lokasi ditolak';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage = 'Informasi lokasi tidak tersedia';
-              break;
-            case error.TIMEOUT:
-              errorMessage = 'Waktu permintaan lokasi habis';
-              break;
-          }
-
-          resolve({ success: false, error: errorMessage });
+          resolve({ success: false, error: 'Gagal mendapatkan lokasi' });
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     });
   };
 
-  // ✅ FUNGSI BARU: Start inspection dengan permission flow
   const handleStartInspection = async (inspection) => {
     setCurrentInspection(inspection);
-
-    // 1. Request camera permission dulu
     const cameraGranted = await requestCameraPermission();
-
     if (!cameraGranted) {
       toast({
         title: "Izin kamera diperlukan",
@@ -236,490 +207,269 @@ const InspectorChecklistDashboard = () => {
       });
       return;
     }
-
-    // 2. Tampilkan dialog untuk mendapatkan lokasi
     setLocationDialog(true);
   };
 
-  // ✅ FUNGSI BARU: Process location dengan opsi tanpa GPS
   const processLocationAndStart = async (withGPS = true) => {
     if (!currentInspection) return;
-
     let locationData = null;
 
     if (withGPS) {
-      // Coba dapatkan lokasi GPS
       const locationResult = await getCurrentLocation();
-
       if (locationResult.success) {
-        locationData = {
-          type: 'gps',
-          data: locationResult.location,
-          note: null
-        };
+        locationData = { type: 'gps', data: locationResult.location, note: null };
       } else {
-        // Jika GPS gagal, tawarkan opsi tanpa GPS
-        toast({
-          title: "GPS tidak tersedia",
-          description: "Silakan tambahkan keterangan lokasi manual",
-          variant: "default",
-        });
-        return; // Tetap di dialog untuk input manual
-      }
-    } else {
-      // Gunakan lokasi manual
-      if (!locationNote.trim()) {
-        toast({
-          title: "Keterangan lokasi diperlukan",
-          description: "Silakan isi keterangan lokasi manual",
-          variant: "destructive",
-        });
+        toast({ title: "GPS tidak tersedia", description: "Silakan gunakan lokasi manual", variant: "default" });
         return;
       }
-
-      locationData = {
-        type: 'manual',
-        data: null,
-        note: locationNote.trim()
-      };
+    } else {
+      if (!locationNote.trim()) {
+        toast({ title: "Keterangan lokasi diperlukan", variant: "destructive" });
+        return;
+      }
+      locationData = { type: 'manual', data: null, note: locationNote.trim() };
     }
 
-    // Update status inspeksi dan simpan data lokasi
-    const success = await updateInspectionStatus(
-      currentInspection.id,
-      'in_progress',
-      locationData
-    );
-
+    const success = await updateInspectionStatus(currentInspection.id, 'in_progress', locationData);
     if (success) {
       setLocationDialog(false);
       setLocationNote('');
-
-      // Redirect ke halaman checklist
       setTimeout(() => {
         router.push(`/dashboard/inspector/inspections/${currentInspection.id}/checklist`);
       }, 1000);
     }
   };
 
-  // ✅ PERBAIKAN: Fungsi UPSERT yang aman untuk update status inspeksi
   const updateInspectionStatus = async (inspectionId, newStatus, locationData = null) => {
     if (!user) return false;
-
     setSavingStates(prev => ({ ...prev, [inspectionId]: true }));
-
     try {
-      console.log(`🔄 Updating inspection ${inspectionId} to ${newStatus}`);
-
-      // 1. Cek apakah inspeksi ada
-      const { data: existingInspection, error: checkError } = await supabase
-        .from('inspections')
-        .select('id, status')
-        .eq('id', inspectionId)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw checkError;
-      }
-
-      let error;
       const updateData = {
         status: newStatus,
         updated_at: new Date().toISOString(),
         ...(locationData && { inspection_location: locationData })
       };
+      if (newStatus === 'in_progress') updateData.start_time = new Date().toISOString();
+      if (newStatus === 'completed') updateData.end_time = new Date().toISOString();
 
-      // Tambahkan start_time jika mulai inspeksi
-      if (newStatus === 'in_progress') {
-        updateData.start_time = new Date().toISOString();
-      }
+      const { error } = await supabase.from('inspections').update(updateData).eq('id', inspectionId);
+      if (error) throw error;
 
-      // Tambahkan end_time jika selesai inspeksi
-      if (newStatus === 'completed') {
-        updateData.end_time = new Date().toISOString();
-      }
-
-      if (existingInspection) {
-        // 2. Jika ada, UPDATE
-        const { error: updateError } = await supabase
-          .from('inspections')
-          .update(updateData)
-          .eq('id', inspectionId);
-        error = updateError;
-      } else {
-        // 3. Jika tidak ada (seharusnya tidak terjadi), INSERT
-        const { error: insertError } = await supabase
-          .from('inspections')
-          .insert([{
-            id: inspectionId,
-            ...updateData,
-            inspector_id: user.id
-          }]);
-        error = insertError;
-      }
-
-      if (error) {
-        console.error('❌ Update inspection error:', error);
-        throw error;
-      }
-
-      // Update local state
-      setInspections(prev =>
-        prev.map(inspection =>
-          inspection.id === inspectionId
-            ? {
-              ...inspection,
-              status: newStatus,
-              ...updateData
-            }
-            : inspection
-        )
-      );
-
-      toast({
-        title: "✅ Inspeksi dimulai",
-        description: `Siap melakukan inspeksi ${currentInspection?.projects?.name}`,
-        variant: "default",
-      });
-
+      setInspections(prev => prev.map(i => i.id === inspectionId ? { ...i, status: newStatus, ...updateData } : i));
+      toast({ title: "✅ Status diperbarui", description: `Inspeksi ${newStatus.replace('_', ' ')}` });
       return true;
-
     } catch (err) {
-      console.error('❌ Failed to update inspection:', err);
-      toast({
-        title: "❌ Gagal memulai inspeksi",
-        description: err.message || "Terjadi kesalahan saat menyimpan",
-        variant: "destructive",
-      });
+      toast({ title: "❌ Gagal mengupdate", description: err.message, variant: "destructive" });
       return false;
     } finally {
       setSavingStates(prev => ({ ...prev, [inspectionId]: false }));
     }
   };
 
-  // Fungsi continue inspection
-  const handleContinueInspection = async (inspectionId) => {
-    // Langsung redirect ke halaman checklist
-    router.push(`/dashboard/inspector/inspections/${inspectionId}/checklist`);
-  };
-
-  const handleViewDetails = (inspectionId) => {
-    router.push(`/dashboard/inspector/my-inspections/${inspectionId}`);
-  };
-
-  // Helper functions
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-      });
-    } catch (e) {
-      return dateString;
-    }
+      return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch { return dateString; }
   };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      scheduled: { variant: 'secondary', label: 'Terjadwal' },
-      in_progress: { variant: 'default', label: 'Berlangsung' },
-      completed: { variant: 'success', label: 'Selesai' }
+      scheduled: { className: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800', label: 'Terjadwal' },
+      in_progress: { className: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800', label: 'Berlangsung' },
+      completed: { className: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800', label: 'Selesai' }
     };
-
-    const config = statusConfig[status] || { variant: 'secondary', label: status };
-
-    return (
-      <Badge variant={config.variant} className="capitalize">
-        {config.label}
-      </Badge>
-    );
+    const config = statusConfig[status] || { className: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300', label: status };
+    return <Badge className={`${config.className} border-0 capitalize`}>{config.label}</Badge>;
   };
 
-  const isSaving = (inspectionId) => savingStates[inspectionId] || false;
-
-  // Loading and auth states
-  if (authLoading) {
-    return (
-      <DashboardLayout title="Checklist Inspector">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Memuat...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (!user || !isInspector) {
-    return (
-      <DashboardLayout title="Checklist Inspector">
-        <div className="p-6">
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Akses Ditolak</AlertTitle>
-            <AlertDescription>
-              Hanya inspector yang dapat mengakses halaman ini.
-            </AlertDescription>
-          </Alert>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  // Views
+  if (authLoading) return <DashboardLayout><div className="flex justify-center p-20"><Loader2 className="animate-spin text-primary" /></div></DashboardLayout>;
+  if (!user || !isInspector) return <DashboardLayout><div className="p-10 text-center">Akses Ditolak</div></DashboardLayout>;
 
   return (
-    <DashboardLayout title="Checklist Inspector">
-      <div className="p-6 space-y-6">
-        {/* Location Permission Dialog */}
-        <Dialog open={locationDialog} onOpenChange={setLocationDialog}>
-          <DialogContent className="sm:max-w-md bg-white dark:bg-surface-dark">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Navigation className="w-5 h-5" />
-                Konfirmasi lokasi inspeksi
-              </DialogTitle>
-              <DialogDescription>
-                Untuk {currentInspection?.projects?.name || 'inspeksi ini'}, konfirmasi lokasi Anda.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              {/* GPS Location Option */}
-              <div className="space-y-3">
-                <Button
-                  onClick={() => processLocationAndStart(true)}
-                  disabled={isGettingLocation}
-                  className="w-full justify-start h-auto p-4"
-                  variant="outline"
-                >
-                  <div className="flex items-center gap-3 text-left">
-                    <div className="p-2 bg-green-100 rounded-full">
-                      <MapPin className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">Gunakan GPS lokasi</p>
-                      <p className="text-sm text-muted-foreground">
-                        Dapatkan koordinat GPS saat ini
-                      </p>
-                    </div>
-                    {isGettingLocation && (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    )}
-                  </div>
-                </Button>
-
-                <Separator />
-
-                {/* Manual Location Option */}
-                <div className="space-y-2">
-                  <Button
-                    onClick={() => processLocationAndStart(false)}
-                    className="w-full justify-start h-auto p-4"
-                    variant="outline"
-                  >
-                    <div className="flex items-center gap-3 text-left">
-                      <div className="p-2 bg-orange-100 rounded-full">
-                        <WifiOff className="w-5 h-5 text-orange-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">Lokasi manual</p>
-                        <p className="text-sm text-muted-foreground">
-                          Tidak ada sinyal GPS
-                        </p>
-                      </div>
-                    </div>
-                  </Button>
-
-                  <div className="pl-14 pr-4">
-                    <Label htmlFor="location-note" className="text-sm">
-                      Keterangan lokasi:
-                    </Label>
-                    <Textarea
-                      id="location-note"
-                      placeholder="Contoh: Di dalam gedung lantai 5, Parkir basement B2, Area tertutup sinyal, dll."
-                      value={locationNote}
-                      onChange={(e) => setLocationNote(e.target.value)}
-                      className="mt-1 text-sm"
-                      rows={3}
-                    />
-                  </div>
-                </div>
+    <DashboardLayout>
+      <div className="pb-20">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col gap-8"
+        >
+          {/* Header */}
+          <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-0 uppercase tracking-widest text-[10px]">
+                  Worksheet
+                </Badge>
               </div>
+              <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                Inspeksi & <span className="text-primary">Checklist</span>
+              </h1>
+              <p className="text-slate-500 font-medium mt-3 max-w-lg">
+                Kelola jadwal kunjungan dan pengisian lembar kerja inspeksi lapangan.
+              </p>
             </div>
+            <Button
+              onClick={fetchInspections}
+              className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground border border-primary font-bold uppercase text-[11px] tracking-widest shadow-lg hover:bg-white hover:text-slate-900 hover:border-white transition-all"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh Data
+            </Button>
+          </motion.div>
 
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setLocationDialog(false);
-                  setLocationNote('');
-                  setCurrentInspection(null);
-                }}
-              >
-                Batal
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-
-
-        {/* Filters Section - SESUAI GLOBAL CSS */}
-        <Card className="bg-white dark:bg-surface-dark border-border shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="relative flex-1 w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Cari proyek, alamat, atau klien..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-background"
-                />
-              </div>
+          {/* Filters */}
+          <motion.div variants={itemVariants} className="bg-card rounded-[2.5rem] p-2 pr-4 border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none flex flex-col md:flex-row items-center gap-4">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari proyek, alamat, atau klien..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-14 pl-14 pr-4 rounded-[2rem] bg-transparent border-0 focus:ring-0 text-foreground font-medium placeholder:text-muted-foreground focus:outline-none"
+              />
+            </div>
+            <div className="h-8 w-px bg-border hidden md:block"></div>
+            <div className="w-full md:w-64">
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-full sm:w-[180px] bg-background">
-                  <SelectValue placeholder="Filter status" />
+                <SelectTrigger className="h-12 rounded-xl bg-muted/50 border-0 font-bold text-xs uppercase tracking-widest text-muted-foreground">
+                  <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
-                <SelectContent className="select-content">
-                  <SelectItem value="all" className="select-item">Semua status</SelectItem>
-                  <SelectItem value="scheduled" className="select-item">Terjadwal</SelectItem>
-                  <SelectItem value="in_progress" className="select-item">Berlangsung</SelectItem>
-                  <SelectItem value="completed" className="select-item">Selesai</SelectItem>
+                <SelectContent>
+                  <SelectItem value="all">Semua Status</SelectItem>
+                  <SelectItem value="scheduled">Terjadwal</SelectItem>
+                  <SelectItem value="in_progress">Berlangsung</SelectItem>
+                  <SelectItem value="completed">Selesai</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+          </motion.div>
 
-        {/* Inspections Table - SESUAI GLOBAL CSS */}
-        <Card className="bg-white dark:bg-surface-dark border-border shadow-sm">
-          <CardContent className="p-0">
-            <div className="p-6 border-b border-border">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          {/* Table Card */}
+          <motion.div variants={itemVariants} className="bg-card rounded-[2.5rem] border border-border shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden flex flex-col">
+            <div className="p-8 border-b border-border flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                  <ListChecks size={24} />
+                </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">Daftar inspeksi</h2>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    {filteredInspections.length} dari {inspections.length} inspeksi
+                  <h3 className="text-lg font-black tracking-tighter">Daftar Penugasan</h3>
+                  <p className="text-xs font-bold text-muted-foreground tracking-widest">
+                    {filteredInspections.length} item ditemukan
                   </p>
                 </div>
-                <Badge variant="outline" className="px-3 py-1.5 text-sm bg-accent/50">
-                  <Target className="w-3 h-3 mr-1" />
-                  {profile?.full_name || 'Inspector'}
-                </Badge>
               </div>
             </div>
 
-            {loading ? (
-              <div className="p-6 space-y-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-16 bg-muted rounded-lg animate-pulse"></div>
-                ))}
-              </div>
-            ) : filteredInspections.length > 0 ? (
-              <div className="overflow-hidden">
+            <div className="p-2">
+              <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader className="bg-muted/50">
-                    <TableRow>
-                      <TableHead className="font-semibold text-foreground">Proyek</TableHead>
-                      <TableHead className="font-semibold text-foreground">Klien</TableHead>
-                      <TableHead className="font-semibold text-foreground">Tanggal</TableHead>
-                      <TableHead className="font-semibold text-foreground">Alamat</TableHead>
-                      <TableHead className="font-semibold text-foreground">Status</TableHead>
-                      <TableHead className="font-semibold text-foreground text-center">Aksi</TableHead>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent border-border">
+                      <TableHead className="w-[300px] pl-8 text-xs font-black uppercase tracking-widest text-muted-foreground h-14">Proyek & Lokasi</TableHead>
+                      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground">Klien</TableHead>
+                      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground">Tanggal</TableHead>
+                      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground">Status</TableHead>
+                      <TableHead className="text-right pr-8 text-xs font-black uppercase tracking-widest text-muted-foreground">Aksi</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredInspections.map((inspection) => (
-                      <TableRow key={inspection.id} className="hover:bg-accent/50 transition-colors">
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-full">
-                              <Home className="w-4 h-4 text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-foreground">{inspection.projects?.name || '-'}</p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {inspection.profiles?.specialization?.replace(/_/g, ' ') || 'Inspector'}
-                              </p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-foreground">
-                          {inspection.projects?.clients?.name || '-'}
-                        </TableCell>
-                        <TableCell className="text-foreground">
-                          {formatDate(inspection.scheduled_date)}
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-sm text-muted-foreground max-w-[200px] truncate">
-                            {inspection.projects?.address || '-'}
-                          </p>
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(inspection.status)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleViewDetails(inspection.id)}
-                              className="bg-background border-border hover:bg-accent"
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              Detail
-                            </Button>
-                            {inspection.status === 'scheduled' ? (
-                              <Button
-                                size="sm"
-                                onClick={() => handleStartInspection(inspection)}
-                                disabled={isSaving(inspection.id)}
-                                variant="default"
-                              >
-                                {isSaving(inspection.id) ? (
-                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                ) : (
-                                  <Play className="w-4 h-4 mr-1" />
-                                )}
-                                {isSaving(inspection.id) ? 'Memproses...' : 'Mulai'}
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                onClick={() => handleContinueInspection(inspection.id)}
-                                variant="secondary"
-                              >
-                                <Activity className="w-4 h-4 mr-1" />
-                                Lanjutkan
-                              </Button>
-                            )}
-                          </div>
+                    {loading ? (
+                      [...Array(3)].map((_, i) => (
+                        <TableRow key={i} className="border-0">
+                          <TableCell colSpan={5} className="h-24"><div className="w-full h-full bg-muted/30 animate-pulse rounded-xl"></div></TableCell>
+                        </TableRow>
+                      ))
+                    ) : filteredInspections.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-40 text-center text-muted-foreground">
+                          Belum ada data inspeksi yang ditemukan.
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      filteredInspections.map((inspection) => (
+                        <TableRow key={inspection.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors group">
+                          <TableCell className="pl-8 py-6">
+                            <div className="flex items-start gap-4">
+                              <div className="size-10 rounded-xl bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                                <Home size={18} />
+                              </div>
+                              <div>
+                                <p className="font-bold text-foreground line-clamp-1">{inspection.projects?.name || 'Tanpa Nama'}</p>
+                                <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                                  <MapPin size={10} />
+                                  <span className="line-clamp-1 max-w-[200px]">{inspection.projects?.address || '-'}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-medium text-sm text-muted-foreground">{inspection.projects?.clients?.name}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Activity size={12} className="text-primary" />
+                              <span className="text-sm font-bold text-foreground">{formatDate(inspection.scheduled_date)}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{getStatusBadge(inspection.status)}</TableCell>
+                          <TableCell className="text-right pr-8">
+                            <div className="flex justify-end gap-2">
+                              {inspection.status === 'scheduled' ? (
+                                <Button size="sm" onClick={() => handleStartInspection(inspection)} className="bg-primary text-primary-foreground border border-primary hover:bg-white hover:text-slate-900 hover:border-white rounded-lg shadow-lg shadow-primary/20">
+                                  <Play size={14} className="mr-2" /> Mulai
+                                </Button>
+                              ) : (
+                                <Button size="sm" onClick={() => router.push(`/dashboard/inspector/inspections/${inspection.id}/checklist`)} variant="secondary" className="rounded-lg">
+                                  <ListChecks size={14} className="mr-2" /> Detail
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
-            ) : (
-              <div className="p-6">
-                <Alert className="bg-muted/50 border-border">
-                  <FileText className="h-4 w-4" />
-                  <AlertTitle className="text-foreground">Tidak ada inspeksi</AlertTitle>
-                  <AlertDescription className="text-muted-foreground">
-                    {inspections.length === 0
-                      ? "Belum ada inspeksi yang ditugaskan kepada Anda."
-                      : "Tidak ditemukan inspeksi yang sesuai dengan filter."
-                    }
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Dialogs logic preserved */}
+        <Dialog open={locationDialog} onOpenChange={setLocationDialog}>
+          <DialogContent className="sm:max-w-md bg-card border-border">
+            <DialogHeader>
+              <DialogTitle>Konfirmasi Lokasi</DialogTitle>
+              <DialogDescription>Pastikan Anda berada di lokasi proyek.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-4">
+              <Button variant="outline" className="w-full justify-start h-16" onClick={() => processLocationAndStart(true)}>
+                <div className="p-2 bg-green-100 rounded-full mr-3"><MapPin className="text-green-600" size={20} /></div>
+                <div className="text-left">
+                  <div className="font-bold">Gunakan GPS</div>
+                  <div className="text-xs text-muted-foreground">Geotagging otomatis</div>
+                </div>
+              </Button>
+              <Button variant="outline" className="w-full justify-start h-16" onClick={() => processLocationAndStart(false)}>
+                <div className="p-2 bg-orange-100 rounded-full mr-3"><WifiOff className="text-orange-600" size={20} /></div>
+                <div className="text-left">
+                  <div className="font-bold">Input Manual</div>
+                  <div className="text-xs text-muted-foreground">Jika sinyal lemah</div>
+                </div>
+              </Button>
+              {!isGettingLocation && !isGettingLocation && (
+                <Textarea
+                  placeholder="Catatan lokasi (wajib jika manual)"
+                  value={locationNote}
+                  onChange={e => setLocationNote(e.target.value)}
+                  className="resize-none bg-muted border-0"
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

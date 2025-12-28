@@ -34,6 +34,7 @@ import DynamicChecklistForm from '@/components/inspections/DynamicChecklistForm'
 import PhotoUploadWithGeotag from '@/components/inspections/PhotoUploadWithGeotag';
 import checklistData from '@/data/checklistData.json';
 import { flattenChecklistItems, isItemMatchingSpecialization } from '@/utils/checklistTemplates';
+import ReportContent from '@/components/dashboard/inspector/ReportContent';
 
 // Utility function untuk class names
 const cn = (...classes) => classes.filter(Boolean).join(' ');
@@ -515,6 +516,7 @@ export default function InspectionDetailPage() {
   // State untuk custom accordion dan tabs
   const [openAccordions, setOpenAccordions] = useState({});
   const [activeTab, setActiveTab] = useState('checklist');
+  const [showReportPreview, setShowReportPreview] = useState(false);
 
   // ✅ Safe access to query ID
   const inspectionId = router.query.id;
@@ -543,7 +545,7 @@ export default function InspectionDetailPage() {
 
   // ✅ Fungsi Baru: Handle Print
   const handlePrint = () => {
-    window.print();
+    setShowReportPreview(true);
   };
 
   // ✅ Fungsi Baru: Handle Create Report
@@ -673,7 +675,7 @@ export default function InspectionDetailPage() {
         // ✅ 4. Fetch existing photos dari tabel inspection_photos
         const { data: existingPhotos, error: photosError } = await supabase
           .from('inspection_photos')
-          .select('*')
+          .select('*, checklist_items(item_name, category, template_title)')
           .eq('inspection_id', inspectionId)
           .eq('uploaded_by', user.id);
 
@@ -796,6 +798,62 @@ export default function InspectionDetailPage() {
       });
     }
   };
+
+
+  // Helper function to format data for ReportContent
+  const getFormattedChecklistData = () => {
+    if (!checklistItems || !responses) return [];
+    return checklistItems.map(item => {
+      const respObj = responses[item.id];
+      if (!respObj) return null;
+      return {
+        id: `temp_${item.id}`,
+        checklist_item_id: item.id,
+        status: 'completed',
+        response: respObj.response || respObj,
+        notes: respObj.notes || respObj.keterangan || respObj.catatan_perbaikan,
+        checklist_items: {
+          category: item.category,
+          item_name: item.item_name,
+          template_title: item.template_title
+        }
+      };
+    }).filter(Boolean);
+  };
+
+  const getFlattenedPhotos = () => {
+    if (!photos) return [];
+    // photos is a Map { itemId: [photo1, photo2] }
+    return Object.values(photos).flat().map(p => ({
+      ...p,
+      checklist_item_id: p.checklist_item_id || p.item_id // Ensure mapping
+    }));
+  };
+
+  // Preview Mode Render
+  if (showReportPreview && inspection) {
+    return (
+      <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+        <div className="max-w-5xl mx-auto mb-6 flex items-center gap-4 print:hidden">
+          <Button onClick={() => setShowReportPreview(false)} variant="outline" className="gap-2">
+            <ArrowLeft className="w-4 h-4" /> Kembali ke Inspeksi (Edit)
+          </Button>
+          <div className="text-sm text-muted-foreground ml-auto">
+            Mode Pratinjau Laporan (Draft)
+          </div>
+        </div>
+        <ReportContent
+          report={{ ...inspection, findings: inspection.notes, recommendations: inspection.notes }}
+          project={inspection.projects}
+          clientName={inspection.projects?.clients?.name}
+          checklistData={getFormattedChecklistData()}
+          photos={getFlattenedPhotos()}
+          formatDate={formatDateSafely}
+          formatDateTime={(d) => new Date(d).toLocaleString('id-ID')}
+        />
+      </div>
+    );
+  }
 
   // Handle photo upload dengan geotag
   const handlePhotoUpload = async (itemId, photoData) => {

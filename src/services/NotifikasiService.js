@@ -253,6 +253,51 @@ class NotifikasiService {
       return { success: false, error };
     }
   }
+
+  /**
+   * Kirim notifikasi konfirmasi email ke admin
+   * @param {string} userId
+   * @param {string} userEmail
+   * @param {object} supabaseClient - Optional explicitly passed client (e.g. from SSR/API context)
+   */
+  static async kirimNotifikasiEmailDikonfirmasi(userId, userEmail, supabaseClient = null) {
+    try {
+      const client = supabaseClient || supabase;
+
+      // Get all admins (superadmin, admin_lead, admin_team)
+      const { data: admins, error: adminError } = await client
+        .from('profiles')
+        .select('id')
+        .in('role', ['superadmin', 'admin_lead', 'admin_team']);
+
+      if (adminError) throw adminError;
+
+      const notifications = (admins || []).map(admin => ({
+        type: 'email_confirmed',
+        message: `Email telah dikonfirmasi oleh user ${userEmail}. Siap untuk approval.`,
+        sender_id: userId,
+        recipient_id: admin.id,
+        is_read: false,
+        data: {
+          action_required: true,
+          target_url: `/dashboard/superadmin/users?search=${userEmail}`
+        }
+      }));
+
+      if (notifications.length > 0) {
+        const { error } = await client
+          .from('notifications')
+          .insert(notifications);
+
+        if (error) throw error;
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending email confirmation notification:', error);
+      return { success: false, error };
+    }
+  }
 }
 
 export default NotifikasiService;

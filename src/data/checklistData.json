@@ -18,60 +18,170 @@
         {
           "id": "dokumen_kelengkapan_bangunan_baru",
           "title": "Bangunan Gedung Baru",
-          "applicable_for": ["baru"],
+          "applicable_for": [
+            "baru"
+          ],
           "items": [
             {
               "id": "surat_permohonan_slf",
               "item_name": "Surat Permohonan Pemeriksaan Kelaikan Fungsi",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "bukti_status_hak_tanah",
               "item_name": "Bukti Status Hak Atas Tanah",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "bukti_status_kepemilikan_bg",
               "item_name": "Bukti Status Kepemilikan Bangunan Gedung",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "dokumen_imb",
               "item_name": "Dokumen IMB dan Lampiran Rencana Teknis BG",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "dokumen_pelaksanaan_konstruksi",
               "item_name": "Dokumen Pelaksanaan Konstruksi Bangunan Gedung",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "dokumen_ikatan_kerja",
               "item_name": "Dokumen Ikatan Kerja",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             }
           ]
@@ -79,69 +189,198 @@
         {
           "id": "dokumen_kelengkapan_bangunan_existing",
           "title": "Bangunan Gedung yang Telah Beroperasi",
-          "applicable_for": ["existing", "perpanjangan_slf"],
+          "applicable_for": [
+            "existing",
+            "perpanjangan_slf"
+          ],
           "items": [
             {
               "id": "surat_permohonan_slf_existing",
               "item_name": "Surat Permohonan Pemeriksaan Kelaikan Fungsi",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "bukti_status_hak_tanah_existing",
               "item_name": "Bukti Status Hak Atas Tanah",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "bukti_status_kepemilikan_bg_existing",
               "item_name": "Bukti Status Kepemilikan Bangunan Gedung",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "dokumen_imb_existing",
               "item_name": "Dokumen IMB dan Lampiran Rencana Teknis BG",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "dokumen_slf_terdahulu",
               "item_name": "Dokumen SLF Terdahulu (untuk Perpanjangan)",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "gambar_terbangun_existing",
               "item_name": "Gambar Terbangun (As-built drawings)",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "dokumen_operasional",
               "item_name": "Dokumen Operasi, Pemeliharaan dan Perawatan Bangunan",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             }
           ]
@@ -149,51 +388,143 @@
         {
           "id": "dokumen_kelengkapan_perubahan_fungsi",
           "title": "Bangunan Gedung Perubahan Fungsi",
-          "applicable_for": ["perubahan_fungsi"],
+          "applicable_for": [
+            "perubahan_fungsi"
+          ],
           "items": [
             {
               "id": "surat_permohonan_slf_perubahan",
               "item_name": "Surat Permohonan Pemeriksaan Kelaikan Fungsi",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "bukti_status_hak_tanah_perubahan",
               "item_name": "Bukti Status Hak Atas Tanah",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "bukti_status_kepemilikan_bg_perubahan",
               "item_name": "Bukti Status Kepemilikan Bangunan Gedung",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "dokumen_slf_terdahulu_perubahan",
               "item_name": "Dokumen SLF Terdahulu",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             },
             {
               "id": "gambar_terbangun_perubahan",
               "item_name": "Gambar Terbangun (As-built drawings)",
               "columns": [
-                { "name": "kelengkapan", "type": "radio", "options": ["Lengkap", "Tidak Lengkap"] },
-                { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-                { "name": "keterangan", "type": "textarea" }
+                {
+                  "name": "kelengkapan",
+                  "type": "radio",
+                  "options": [
+                    "Lengkap",
+                    "Tidak Lengkap"
+                  ]
+                },
+                {
+                  "name": "kesesuaian",
+                  "type": "radio_with_text",
+                  "options": [
+                    "Sesuai",
+                    "Tidak Sesuai"
+                  ],
+                  "text_label": "yaitu..."
+                },
+                {
+                  "name": "keterangan",
+                  "type": "textarea"
+                }
               ]
             }
           ]
@@ -205,24 +536,63 @@
       "title": "M.1.1. Pemeriksaan Persyaratan Peruntukan Bangunan Gedung",
       "description": "Memeriksa kesesuaian peruntukan dan penggunaan ruang bangunan.",
       "category": "tata_bangunan",
-      "applicable_for": ["baru", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "fungsi_bangunan",
           "item_name": "Fungsi Bangunan Gedung",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "penggunaan_ruang",
           "item_name": "Penggunaan Setiap Ruang Dalam Bangunan Gedung",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -232,36 +602,106 @@
       "title": "M.1.2. Pemeriksaan Persyaratan Intensitas Bangunan Gedung",
       "description": "Memeriksa parameter intensitas bangunan seperti KDB, KLB, KDH.",
       "category": "tata_bangunan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "koefisien_dasar_bangunan",
           "item_name": "Koefisien Dasar Bangunan (KDB)",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "%" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "%"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "koefisien_lantai_bangunan",
           "item_name": "Koefisien Lantai Bangunan (KLB)",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "%" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "%"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "koefisien_daerah_hijau",
           "item_name": "Koefisien Daerah Hijau (KDH)",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "m²" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "m²"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -271,36 +711,106 @@
       "title": "M.1.3. Pemeriksaan Persyaratan Arsitektur Bangunan Gedung",
       "description": "Memeriksa parameter arsitektur bangunan seperti GBB, ketinggian, JBB.",
       "category": "tata_bangunan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "garis_batas_bangunan",
           "item_name": "Garis Batas Bangunan (GBB)",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "cm" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "cm"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "ketinggian_bangunan",
           "item_name": "Ketinggian Bangunan",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "meter" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "meter"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "jarak_bebas_bangunan",
           "item_name": "Jarak Bebas Bangunan (JBB)",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "meter" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "meter"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -310,36 +820,106 @@
       "title": "M.1.4. Pemeriksaan Persyaratan Pengendalian Dampak Lingkungan",
       "description": "Memeriksa pengendalian dampak lingkungan seperti drainase, sampah, kebisingan.",
       "category": "tata_bangunan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "drainase_permukaan",
           "item_name": "Drainase Permukaan",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "pengelolaan_sampah",
           "item_name": "Pengelolaan Sampah",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "pengendalian_kebisingan",
           "item_name": "Pengendalian Kebisingan",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Sesuai", "Tidak Sesuai"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -349,86 +929,282 @@
       "title": "M.2.1. Pemeriksaan Sistem Struktur Bangunan Gedung",
       "description": "Memeriksa kondisi struktur bangunan seperti pondasi, kolom, balok, pelat, atap, tangga.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "pondasi",
           "item_name": "Pondasi",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "kolom",
           "item_name": "Kolom",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "balok",
           "item_name": "Balok",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "pelat_lantai",
           "item_name": "Pelat Lantai",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "dinding_geser_struktur",
           "item_name": "Dinding Geser/Struktur",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "atap_struktur",
           "item_name": "Atap",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "tangga",
           "item_name": "Tangga",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "struktur_atap",
           "item_name": "Struktur Atap",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -438,76 +1214,234 @@
       "title": "M.2.2. Pemeriksaan Perlengkapan Proteksi Kebakaran",
       "description": "Memeriksa perlengkapan proteksi kebakaran seperti jalur evakuasi, APAR, hydrant.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "jalur_evakuasi",
           "item_name": "Jalur Evakuasi",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "rambu_evakuasi",
           "item_name": "Rambu/Rambu Evakuasi",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "pencahayaan_darurat",
           "item_name": "Pencahayaan Darurat",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "alarm_kebakaran",
           "item_name": "Alarm Kebakaran",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "hydrant",
           "item_name": "Hydrant",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "apar",
           "item_name": "Alat Pemadam Api Ringan (APAR)",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "sistem_sprinkler",
           "item_name": "Sistem Sprinkler",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -517,33 +1451,97 @@
       "title": "M.2.3. Pemeriksaan Sistem Proteksi Kebakaran Pasif",
       "description": "Memeriksa sistem proteksi kebakaran pasif seperti kompartemenasi, struktur tahan api.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "kompartemenasi_kebakaran",
           "item_name": "Kompartemenasi Kebakaran",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "struktur_tahan_api",
           "item_name": "Struktur Tahan Api",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "pelindung_struktur_baja",
           "item_name": "Pelindung Struktur Baja",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -553,46 +1551,143 @@
       "title": "M.2.4. Pemeriksaan Sistem Lift",
       "description": "Memeriksa sistem lift seperti pintu, kabin, shaft, pengaman.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing"],
+      "applicable_for": [
+        "baru",
+        "existing"
+      ],
       "items": [
         {
           "id": "pintu_dan_kabin_lift",
           "item_name": "Pintu dan Kabin",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "ruang_mesin_lift",
           "item_name": "Ruang Mesin",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "kondisi_shaft_lift",
           "item_name": "Kondisi Shaft",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "fungsi_pengaman_lift",
           "item_name": "Fungsi Pengaman",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -602,15 +1697,39 @@
       "title": "M.2.5. Pemeriksaan Sistem Proteksi dan Pencegahan Bahaya Petir",
       "description": "Memeriksa sistem proteksi dan pencegahan bahaya petir.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "komponen_sistem_proteksi_petir",
           "item_name": "Komponen Sistem Proteksi Petir",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -620,24 +1739,64 @@
       "title": "M.2.6. Pemeriksaan Sistem Proteksi dan Pencegahan Bahaya Gempa Bumi",
       "description": "Memeriksa sistem proteksi dan pencegahan bahaya gempa bumi seperti base isolation, energy dissipation device.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "base_isolation",
           "item_name": "Base Isolation",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "energy_dissipation_device",
           "item_name": "Energy Dissipation Device",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -647,78 +1806,205 @@
       "title": "M.3.1. Pemeriksaan Kualitas Udara Dalam Ruang Bangunan Gedung",
       "description": "Memeriksa parameter kualitas udara seperti CO2, CO, formaldehida, partikulat, bakteri, virus, jamur, bau.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "co2",
           "item_name": "CO2",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "ppm" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "ppm"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "co",
           "item_name": "CO",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "ppm" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "ppm"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "formaldehida",
           "item_name": "Formaldehida",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "ppm" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "ppm"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "partikulat",
           "item_name": "Partikulat",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "μg/m³" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "μg/m³"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
-          "id": "bakteri",
+          "id": "bakteri_udara",
           "item_name": "Bakteri",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "CFU/m³" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "CFU/m³"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "virus",
           "item_name": "Virus",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "PFU/m³" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "PFU/m³"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "jamur",
           "item_name": "Jamur",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "CFU/m³" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "CFU/m³"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
-          "id": "bau",
+          "id": "bau_udara",
           "item_name": "Bau",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -728,15 +2014,34 @@
       "title": "M.3.2. Pemeriksaan Kebisingan Dalam Bangunan Gedung",
       "description": "Memeriksa tingkat kebisingan dalam bangunan gedung.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "tingkat_kebisingan",
           "item_name": "Tingkat Kebisingan",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "dB" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "dB"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -746,15 +2051,34 @@
       "title": "M.3.3. Pemeriksaan Getaran Dalam Bangunan Gedung",
       "description": "Memeriksa tingkat getaran dalam bangunan gedung.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "tingkat_getaran",
           "item_name": "Tingkat Getaran",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "mm/s" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "mm/s"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -764,15 +2088,34 @@
       "title": "M.3.4. Pemeriksaan Pencahayaan Buatan Dalam Bangunan Gedung",
       "description": "Memeriksa tingkat pencahayaan buatan dalam bangunan gedung.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "tingkat_pencahayaan_buatan",
           "item_name": "Tingkat Pencahayaan Buatan",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "lux" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "lux"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -782,33 +2125,85 @@
       "title": "M.3.5. Pemeriksaan Sistem Tata Udara",
       "description": "Memeriksa parameter sistem tata udara seperti kecepatan angin, sirkulasi udara, temperatur.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "kecepatan_angin",
           "item_name": "Kecepatan Angin",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "m/s" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "m/s"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "sirkulasi_udara",
           "item_name": "Sirkulasi Udara",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "temperatur",
           "item_name": "Temperatur",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "°C" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "°C"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -818,69 +2213,181 @@
       "title": "M.3.6. Pemeriksaan Sistem Air Minum dan Air Bersih",
       "description": "Memeriksa kualitas air minum dan air bersih seperti keburaman, bau, warna, pH, kekeruhan, logam berat, bakteri.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "pascabencana"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "pascabencana"
+      ],
       "items": [
         {
           "id": "keburaman",
           "item_name": "Keburaman",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "NTU" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "NTU"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
-          "id": "bau",
+          "id": "bau_air",
           "item_name": "Bau",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "warna",
           "item_name": "Warna",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "Pt-Co" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "Pt-Co"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "ph",
           "item_name": "pH",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": ""
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "kekeruhan",
           "item_name": "Kekeruhan",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "NTU" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "NTU"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "logam_berat",
           "item_name": "Logam Berat",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "mg/L" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "mg/L"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
-          "id": "bakteri",
+          "id": "bakteri_air",
           "item_name": "Bakteri",
           "columns": [
-            { "name": "pengukuran", "type": "input_number", "unit": "CFU/mL" },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "CFU/mL"
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -890,36 +2397,105 @@
       "title": "M.3.7. Pemeriksaan Penggunaan Bahan Bangunan Gedung",
       "description": "Memeriksa penggunaan bahan bangunan seperti bahan berbahaya/beracun, bahan menyebabkan efek silau dan pantulan, bahan menyebabkan efek peningkatan suhu.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing"],
+      "applicable_for": [
+        "baru",
+        "existing"
+      ],
       "items": [
         {
           "id": "bahan_berbahaya_beracun",
           "item_name": "Bahan Berbahaya/Beracun",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "bahan_menyebabkan_efek_silau_pantulan",
           "item_name": "Bahan Menyebabkan Efek Silau dan Pantulan",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "bahan_menyebabkan_efek_peningkatan_suhu",
           "item_name": "Bahan Menyebabkan Efek Peningkatan Suhu",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -929,15 +2505,38 @@
       "title": "M.3.8. Pemeriksaan Sistem Gas Medik",
       "description": "Memeriksa sistem gas medik.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing"],
+      "applicable_for": [
+        "baru",
+        "existing"
+      ],
       "items": [
         {
           "id": "komponen_sistem_gas_medik",
           "item_name": "Komponen Sistem Gas Medik",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -947,26 +2546,74 @@
       "title": "M.4.1. Pemeriksaan Ruang Gerak Dalam Bangunan Gedung",
       "description": "Memeriksa ruang gerak dalam bangunan gedung seperti jumlah pengguna atau batas okupansi, kapasitas dan tata letak perabot.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "jumlah_pengguna_batas_okupansi",
           "item_name": "Jumlah Pengguna atau Batas Okupansi",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "orang" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "orang"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "kapasitas_dan_tata_letak_perabot",
           "item_name": "Kapasitas dan Tata Letak Perabot",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "buah" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "buah"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -976,16 +2623,42 @@
       "title": "M.4.2. Pemeriksaan Ruang Gerak Luar Bangunan Gedung",
       "description": "Memeriksa ruang gerak luar bangunan gedung.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "ruang_gerak_luar",
           "item_name": "Ruang Gerak Luar",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "m²" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "m²"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -995,16 +2668,42 @@
       "title": "M.4.3. Pemeriksaan Kenyamanan Termal Dalam Bangunan Gedung",
       "description": "Memeriksa kenyamanan termal dalam bangunan gedung.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "kenyamanan_termal",
           "item_name": "Kenyamanan Termal",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "°C" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "°C"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -1014,16 +2713,42 @@
       "title": "M.4.4. Pemeriksaan Kenyamanan Visual Dalam Bangunan Gedung",
       "description": "Memeriksa kenyamanan visual dalam bangunan gedung.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "kenyamanan_visual",
           "item_name": "Kenyamanan Visual",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "lux" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "lux"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -1033,16 +2758,42 @@
       "title": "M.4.5. Pemeriksaan Kenyamanan Akustik Dalam Bangunan Gedung",
       "description": "Memeriksa kenyamanan akustik dalam bangunan gedung.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "kenyamanan_akustik",
           "item_name": "Kenyamanan Akustik",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "dB" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "dB"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -1052,46 +2803,138 @@
       "title": "M.5.1. Pemeriksaan Aksesibilitas bagi Penyandang Disabilitas",
       "description": "Memeriksa aksesibilitas bagi penyandang disabilitas seperti akses masuk, jalur akses, fasilitas umum, fasilitas penunjang.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "akses_masuk",
           "item_name": "Akses Masuk",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "cm" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "cm"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "jalur_akses",
           "item_name": "Jalur Akses",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "cm" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "cm"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "fasilitas_umum",
           "item_name": "Fasilitas Umum",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "buah" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "buah"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "fasilitas_penunjang",
           "item_name": "Fasilitas Penunjang",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "buah" },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "buah"
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -1101,16 +2944,44 @@
       "title": "M.5.2. Pemeriksaan Sistem Tata Air Kotor dan Limbah Bangunan Gedung",
       "description": "Memeriksa sistem tata air kotor dan limbah bangunan gedung.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "komponen_sistem_tata_air_kotor_limbah",
           "item_name": "Komponen Sistem Tata Air Kotor dan Limbah",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["Tidak Rusak", "Rusak Ringan", "Rusak Sedang", "Rusak Berat"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "Tidak Rusak",
+                "Rusak Ringan",
+                "Rusak Sedang",
+                "Rusak Berat"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]
@@ -1120,28 +2991,84 @@
       "title": "M.5.3. Pemeriksaan Kelengkapan Prasarana dan Sarana Bangunan Gedung",
       "description": "Memeriksa kelengkapan prasarana dan sarana bangunan gedung seperti toilet, tempat penyimpanan.",
       "category": "keandalan",
-      "applicable_for": ["baru", "existing", "perubahan_fungsi"],
+      "applicable_for": [
+        "baru",
+        "existing",
+        "perubahan_fungsi"
+      ],
       "items": [
         {
           "id": "toilet",
           "item_name": "Toilet",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "buah" },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "buah"
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         },
         {
           "id": "tempat_penyimpanan",
           "item_name": "Tempat Penyimpanan",
           "columns": [
-            { "name": "pengamatan_visual", "type": "radio", "options": ["ADA", "TIDAK ADA"] },
-            { "name": "kesesuaian", "type": "radio_with_text", "options": ["Sesuai", "Tidak Sesuai"], "text_label": "yaitu..." },
-            { "name": "pengukuran", "type": "input_number", "unit": "buah" },
-            { "name": "pengetesan_pengujian", "type": "textarea", "label": "Hasil:..." },
-            { "name": "keterangan", "type": "textarea" }
+            {
+              "name": "pengamatan_visual",
+              "type": "radio",
+              "options": [
+                "ADA",
+                "TIDAK ADA"
+              ]
+            },
+            {
+              "name": "kesesuaian",
+              "type": "radio_with_text",
+              "options": [
+                "Sesuai",
+                "Tidak Sesuai"
+              ],
+              "text_label": "yaitu..."
+            },
+            {
+              "name": "pengukuran",
+              "type": "input_number",
+              "unit": "buah"
+            },
+            {
+              "name": "pengetesan_pengujian",
+              "type": "textarea",
+              "label": "Hasil:..."
+            },
+            {
+              "name": "keterangan",
+              "type": "textarea"
+            }
           ]
         }
       ]

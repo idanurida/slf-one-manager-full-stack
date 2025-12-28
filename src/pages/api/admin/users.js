@@ -39,6 +39,7 @@ export default async function handler(req, res) {
     switch (req.method) {
       case 'GET':
         // Fetch only pending users, excluding those marked as deleted
+        // Fetch only pending users, excluding those marked as deleted
         const { data: pendingUsers, error: fetchError } = await supabase
           .from('profiles')
           .select('*')
@@ -48,7 +49,29 @@ export default async function handler(req, res) {
           .order('created_at', { ascending: false });
 
         if (fetchError) throw fetchError;
-        return res.status(200).json({ users: pendingUsers || [] });
+
+        // Fetch Auth Metadata to show Email Verification status
+        const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers({
+          page: 1,
+          perPage: 1000
+        });
+
+        const authUserMap = new Map();
+        if (!authError && authUsers) {
+          authUsers.forEach(u => authUserMap.set(u.id, u));
+        }
+
+        const enrichedUsers = (pendingUsers || []).map(p => {
+          const authUser = authUserMap.get(p.id);
+          return {
+            ...p,
+            email_confirmed_at: authUser?.email_confirmed_at || null,
+            email_verified: !!authUser?.email_confirmed_at,
+            user_metadata: authUser?.user_metadata
+          };
+        });
+
+        return res.status(200).json({ users: enrichedUsers });
 
       case 'POST':
         const { userId, action, reason } = req.body;

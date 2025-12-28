@@ -101,7 +101,8 @@ async function handleGet(req, res, supabase) { // supabase here is the service r
     const { id } = req.query;
 
     if (id) {
-      const { data, error } = await supabase
+      // Fetch single profile
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', id)
@@ -111,10 +112,24 @@ async function handleGet(req, res, supabase) { // supabase here is the service r
         return res.status(404).json({ error: 'User not found' });
       }
 
-      return res.status(200).json(data);
+      // Fetch single auth user metadata
+      const { data: { user }, error: authError } = await supabase.auth.admin.getUserById(id);
+
+      let enrichedProfile = { ...profile };
+      if (!authError && user) {
+        enrichedProfile = {
+          ...enrichedProfile,
+          email_confirmed_at: user.email_confirmed_at,
+          email_verified: !!user.email_confirmed_at,
+          last_sign_in_at: user.last_sign_in_at,
+          user_metadata: user.user_metadata
+        };
+      }
+
+      return res.status(200).json(enrichedProfile);
     } else {
-      // Use service role to bypass RLS and fetch ALL profiles
-      const { data, error } = await supabase
+      // 1. Fetch ALL profiles
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
@@ -124,10 +139,47 @@ async function handleGet(req, res, supabase) { // supabase here is the service r
         return res.status(400).json({ error: error.message });
       }
 
+      // 2. Fetch ALL Auth Users (to get email status)
+      // Note: listUsers defaults to 50 items. We need to fetch enough.
+      // For now, we fetch a large page size. Ideally, handle pagination loop.
+      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000
+      });
+
+      if (authError) {
+        console.warn('⚠️ Could not fetch auth users for metadata:', authError.message);
+        // Fallback to sending just profiles if auth fetch fails
+        return res.status(200).json({
+          success: true,
+          users: profiles || [],
+          count: profiles?.length || 0
+        });
+      }
+
+      // 3. Create Map for Fast Lookup
+      const authUserMap = new Map();
+      authUsers.forEach(u => {
+        authUserMap.set(u.id, u);
+      });
+
+      // 4. Merge Data
+      const enrichedProfiles = profiles.map(profile => {
+        const authUser = authUserMap.get(profile.id);
+        return {
+          ...profile,
+          email_confirmed_at: authUser?.email_confirmed_at || null,
+          email_verified: !!authUser?.email_confirmed_at,
+          last_sign_in_at: authUser?.last_sign_in_at || null,
+          // Use auth email as source of truth if available, otherwise profile email
+          email: authUser?.email || profile.email
+        };
+      });
+
       return res.status(200).json({
         success: true,
-        users: data || [],
-        count: data?.length || 0
+        users: enrichedProfiles,
+        count: enrichedProfiles.length
       });
     }
   } catch (error) {

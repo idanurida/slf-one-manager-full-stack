@@ -44,6 +44,7 @@ export default async function handler(req, res) {
           .from('profiles')
           .select('*')
           .or('status.eq.pending,is_approved.eq.false')
+          .neq('status', 'deleted')
           .not('email', 'ilike', '%_deleted_%') // Exclude ghost profiles from deletion
           .neq('role', 'superadmin') // Safety: Admin shouldn't see superadmins
           .order('created_at', { ascending: false });

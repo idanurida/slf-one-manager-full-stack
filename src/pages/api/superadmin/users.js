@@ -128,10 +128,11 @@ async function handleGet(req, res, supabase) { // supabase here is the service r
 
       return res.status(200).json(enrichedProfile);
     } else {
-      // 1. Fetch ALL profiles
+      // 1. Fetch ALL profiles (excluding deleted)
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
+        .neq('status', 'deleted')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -519,6 +520,30 @@ async function performFullUserDeletion(supabase, userId, currentUserEmail) {
     }
   } catch (err) {
     console.warn('⚠️ [API] Auth delete skipped/failed:', err.message);
+  }
+
+  // 4. Log the deletion
+  try {
+    const { error: logError } = await supabase
+      .from('logs')
+      .insert([{
+        type: 'user_deleted',
+        message: `User ${userData.email} dihapus oleh ${currentUserEmail}`,
+        metadata: {
+          user_id: userId,
+          email: userData.email,
+          deleted_by: currentUserEmail,
+          deleted_at: new Date().toISOString()
+        }
+      }]);
+
+    if (logError) {
+      console.warn('⚠️ [API] Failed to create deletion log:', logError.message);
+    } else {
+      console.log('✅ [API] Deletion log created for:', userData.email);
+    }
+  } catch (err) {
+    console.warn('⚠️ [API] Logging failed:', err.message);
   }
 
   return { success: true };
